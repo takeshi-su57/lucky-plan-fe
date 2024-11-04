@@ -1,0 +1,218 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Action {
+  args: String!
+  createdAt: DateTime!
+  id: Int!
+  name: String!
+}
+
+input AddUserInput {
+  address: String!
+}
+
+type Bot {
+  contractId: Int!
+  endedBlock: Int
+  followerAddress: String!
+  id: Int!
+  leaderAddress: String!
+  pausedBlock: Int
+  startedBlock: Int
+  status: String!
+  strategyId: Int!
+}
+
+input ChangePasswordInput {
+  newPassword: String!
+  oldPassword: String!
+}
+
+input ChangeUserRoleInput {
+  address: String!
+  role: String!
+}
+
+type Contract {
+  address: String!
+  chainId: Int!
+  id: Int!
+}
+
+input CreateBotInput {
+  contractId: Int!
+  endedBlock: Int
+  followerAddress: String!
+  leaderAddress: String!
+  pausedBlock: Int
+  startedBlock: Int
+  status: String!
+  strategyId: Int!
+}
+
+input CreateContractInput {
+  address: String!
+  chainId: Int!
+  id: Int!
+}
+
+input CreatePositionInput {
+  address: String!
+  index: Int!
+}
+
+input CreateStrategyInput {
+  params: String!
+  strategyKey: String!
+}
+
+input CreateStrategyMetadataInput {
+  description: String!
+  key: String!
+  title: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input FindPositionInput {
+  address: String!
+  index: Int!
+}
+
+type Follower {
+  accountIndex: Int!
+  address: String!
+  publicKey: String!
+}
+
+input GetFollowerByAddressInput {
+  address: String!
+}
+
+input GetTokenInput {
+  password: String!
+}
+
+type GetTokenResponse {
+  accessToken: String!
+}
+
+input GetUserByAddressInput {
+  address: String!
+}
+
+type Mission {
+  achievePositionId: Int
+  botId: Int!
+  createdAt: DateTime!
+  id: Int!
+  targetPositionId: Int!
+  updatedAt: DateTime!
+}
+
+type Mutation {
+  addUser(input: AddUserInput!): User!
+  changePassword(input: ChangePasswordInput!): Boolean!
+  changeRole(input: ChangeUserRoleInput!): User!
+  createBot(input: CreateBotInput!): Bot!
+  createContract(input: CreateContractInput!): Contract!
+  createPosition(createPositionInput: CreatePositionInput!): Position!
+  createStrategy(input: CreateStrategyInput!): Strategy!
+  createStrategyMetadata(input: CreateStrategyMetadataInput!): StrategyMetadata!
+  generateNewFollower: Follower!
+  getToken(input: GetTokenInput!): GetTokenResponse!
+  removeBot(id: Int!): Bot
+  removeContract(id: Int!): Contract
+  removeStrategy(id: Int!): Strategy
+  removeStrategyMetadata(key: String!): StrategyMetadata!
+  updateBot(id: Int!, input: UpdateBotInput!): Bot
+  updateContract(id: Int!, input: UpdateContractInput!): Contract
+  updateStrategy(id: Int!, input: UpdateStrategyInput!): Strategy
+  updateStrategyMetadata(input: UpdateStrategyMetadataInput!, key: String!): StrategyMetadata!
+}
+
+type Position {
+  address: String!
+  id: Int!
+  index: Int!
+}
+
+type Query {
+  findActionsByPosition(positionId: Float!): [Action!]!
+  findAllActions: [Action!]!
+  findAllBots: [Bot!]!
+  findAllContracts: [Contract!]!
+  findAllMissions: [Mission!]!
+  findAllPositions: [Position!]!
+  findAllStrategy: [Strategy!]!
+  findAllStrategyMetadata: [StrategyMetadata!]!
+  findAllTasks: [Task!]!
+  findBot(id: Int!): Bot
+  findContract(id: Int!): Contract
+  findMission(id: Int!): Mission
+  findMissionByBot(botId: Int!): [Mission!]!
+  findOne(id: Int!): Action
+  findPosition(input: FindPositionInput!): Position
+  findPositionById(id: Int!): Position
+  findStrategy(id: Int!): Strategy
+  findStrategyMetadata(key: String!): StrategyMetadata!
+  findTask(id: Int!): Task
+  findTasksByMission(missionId: Int!): [Task!]!
+  getAllFollowers: [Follower!]!
+  getAllLeaders: [User!]!
+  getFollowerByAddress(input: GetFollowerByAddressInput!): Follower
+  getUserByAddress(input: GetUserByAddressInput!): User
+}
+
+type Strategy {
+  id: Int!
+  params: String!
+  strategyKey: String!
+}
+
+type StrategyMetadata {
+  description: String!
+  key: String!
+  title: String!
+}
+
+type Task {
+  actionId: Int!
+  createdAt: DateTime!
+  id: Int!
+  missionId: Int!
+  status: String!
+  updatedAt: DateTime!
+}
+
+input UpdateBotInput {
+  endedBlock: Int
+  pausedBlock: Int
+  startedBlock: Int
+  status: String
+}
+
+input UpdateContractInput {
+  address: String
+  chainId: Int
+}
+
+input UpdateStrategyInput {
+  params: String
+  strategyKey: String
+}
+
+input UpdateStrategyMetadataInput {
+  description: String
+  title: String
+}
+
+type User {
+  address: String!
+  role: String!
+}
