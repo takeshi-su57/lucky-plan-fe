@@ -65,6 +65,9 @@ const cache = new InMemoryCache({
     User: {
       keyFields: ["address"],
     },
+    Follower: {
+      keyFields: ["address"],
+    },
   },
 });
 

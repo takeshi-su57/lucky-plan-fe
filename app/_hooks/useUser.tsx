@@ -4,6 +4,7 @@ import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 
 import { getFragmentData, graphql } from "@/gql/index";
 import { useEffect, useMemo } from "react";
+import { useSnackbar } from "notistack";
 
 export const USER_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment UserInfo on User {
@@ -56,6 +57,7 @@ export function useChangeUserRole() {
   );
 
   const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     if (data && !error) {
@@ -64,12 +66,9 @@ export function useChangeUserRole() {
         data.changeUserRole,
       );
 
-      console.log(
-        client.cache.identify({
-          __typename: userInfo.__typename,
-          address: userInfo.address,
-        }),
-      );
+      enqueueSnackbar("Success at changing user role!", {
+        variant: "success",
+      });
 
       client.cache.writeFragment({
         id: client.cache.identify({
@@ -80,7 +79,7 @@ export function useChangeUserRole() {
         data: userInfo,
       });
     }
-  }, [client.cache, data, error]);
+  }, [client.cache, data, enqueueSnackbar, error]);
 
   return mutateUserRole;
 }
@@ -90,6 +89,7 @@ export function useAddNewUser() {
     useMutation(ADD_USER_DOCUMENT);
 
   const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     if (newData && !error) {
@@ -97,6 +97,10 @@ export function useAddNewUser() {
         USER_INFO_FRAGMENT_DOCUMENT,
         newData.addUser,
       );
+
+      enqueueSnackbar("Success at changing user role!", {
+        variant: "success",
+      });
 
       client.cache.updateQuery(
         {
@@ -125,7 +129,7 @@ export function useAddNewUser() {
         },
       );
     }
-  }, [client.cache, newData, error]);
+  }, [client.cache, newData, error, enqueueSnackbar]);
 
   return mutateAddUser;
 }

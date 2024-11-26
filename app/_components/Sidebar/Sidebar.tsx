@@ -9,7 +9,10 @@ import { Listbox, ListboxItem } from "@nextui-org/react";
 import { usePathname } from "next/navigation";
 import { twMerge } from "tailwind-merge";
 
-export const links = [{ id: "users", label: "User", title: "User Management" }];
+export const links = [
+  { id: "users", label: "User", title: "User Management" },
+  { id: "followers", label: "Follower", title: "Follower Management" },
+];
 
 export function Sidebar() {
   const pathname = usePathname();

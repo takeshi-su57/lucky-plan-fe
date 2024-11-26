@@ -106,7 +106,9 @@ input FindPositionInput {
 type Follower {
   accountIndex: Int!
   address: String!
+  ethBalance: String!
   publicKey: String!
+  usdcBalance: String!
 }
 
 type FollowerAction {
@@ -220,7 +222,8 @@ type Query {
   getAllFollowers: [Follower!]!
   getAllLeaders: [User!]!
   getAllUsers: [User!]!
-  getFollowerByAddress(input: GetFollowerByAddressInput!): Follower
+  getFollowerByAddress(input: GetFollowerByAddressInput!): Follower!
+  getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
   getUserByAddress(input: GetUserByAddressInput!): User
 }
 
