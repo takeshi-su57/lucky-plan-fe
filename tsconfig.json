@@ -16,10 +16,19 @@
     "plugins": [
       {
         "name": "next"
+      },
+      {
+        "name": "@0no-co/graphqlsp",
+        "schema": "./schema.graphql"
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@/components/*": ["./components/*"],
+      "@/app-components/*": ["./app/_components/*"],
+      "@/app-hooks/*": ["./app/_hooks/*"],
+      "@/app-actions/*": ["./app/_actions/*"],
+      "@/gql/*": ["./graphql/gql/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

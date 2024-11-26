@@ -1,4 +1,5 @@
 /* eslint-disable */
+import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -20,9 +21,12 @@ export type Scalars = {
 export type Action = {
   __typename?: 'Action';
   args: Scalars['String']['output'];
+  blockNumber: Scalars['Int']['output'];
   createdAt: Scalars['DateTime']['output'];
   id: Scalars['Int']['output'];
   name: Scalars['String']['output'];
+  orderInBlock: Scalars['Int']['output'];
+  positionId: Scalars['Int']['output'];
 };
 
 export type AddUserInput = {
@@ -38,9 +42,33 @@ export type Bot = {
   leaderAddress: Scalars['String']['output'];
   pausedBlock?: Maybe<Scalars['Int']['output']>;
   startedBlock?: Maybe<Scalars['Int']['output']>;
-  status: Scalars['String']['output'];
+  status: BotStatus;
   strategyId: Scalars['Int']['output'];
 };
+
+export type BotDetails = {
+  __typename?: 'BotDetails';
+  contract: Contract;
+  contractId: Scalars['Int']['output'];
+  endedBlock?: Maybe<Scalars['Int']['output']>;
+  follower: Follower;
+  followerAddress: Scalars['String']['output'];
+  id: Scalars['Int']['output'];
+  leader: User;
+  leaderAddress: Scalars['String']['output'];
+  pausedBlock?: Maybe<Scalars['Int']['output']>;
+  startedBlock?: Maybe<Scalars['Int']['output']>;
+  status: BotStatus;
+  strategy: Strategy;
+  strategyId: Scalars['Int']['output'];
+};
+
+export enum BotStatus {
+  Created = 'Created',
+  Dead = 'Dead',
+  Finish = 'Finish',
+  Live = 'Live'
+}
 
 export type ChangePasswordInput = {
   newPassword: Scalars['String']['input'];
@@ -56,29 +84,21 @@ export type Contract = {
   __typename?: 'Contract';
   address: Scalars['String']['output'];
   chainId: Scalars['Int']['output'];
+  description?: Maybe<Scalars['String']['output']>;
   id: Scalars['Int']['output'];
 };
 
 export type CreateBotInput = {
   contractId: Scalars['Int']['input'];
-  endedBlock?: InputMaybe<Scalars['Int']['input']>;
   followerAddress: Scalars['String']['input'];
   leaderAddress: Scalars['String']['input'];
-  pausedBlock?: InputMaybe<Scalars['Int']['input']>;
-  startedBlock?: InputMaybe<Scalars['Int']['input']>;
-  status: Scalars['String']['input'];
   strategyId: Scalars['Int']['input'];
 };
 
 export type CreateContractInput = {
   address: Scalars['String']['input'];
   chainId: Scalars['Int']['input'];
-  id: Scalars['Int']['input'];
-};
-
-export type CreatePositionInput = {
-  address: Scalars['String']['input'];
-  index: Scalars['Int']['input'];
+  description: Scalars['String']['input'];
 };
 
 export type CreateStrategyInput = {
@@ -104,6 +124,22 @@ export type Follower = {
   publicKey: Scalars['String']['output'];
 };
 
+export type FollowerAction = {
+  __typename?: 'FollowerAction';
+  actionId: Scalars['Int']['output'];
+  id: Scalars['Int']['output'];
+  taskId: Scalars['Int']['output'];
+};
+
+export type FollowerActionDetails = {
+  __typename?: 'FollowerActionDetails';
+  action: Action;
+  actionId: Scalars['Int']['output'];
+  id: Scalars['Int']['output'];
+  task: Task;
+  taskId: Scalars['Int']['output'];
+};
+
 export type GetFollowerByAddressInput = {
   address: Scalars['String']['input'];
 };
@@ -127,28 +163,43 @@ export type Mission = {
   botId: Scalars['Int']['output'];
   createdAt: Scalars['DateTime']['output'];
   id: Scalars['Int']['output'];
+  status: MissionStatus;
   targetPositionId: Scalars['Int']['output'];
   updatedAt: Scalars['DateTime']['output'];
 };
+
+export type MissionDetails = {
+  __typename?: 'MissionDetails';
+  achievePosition?: Maybe<Position>;
+  achievePositionId?: Maybe<Scalars['Int']['output']>;
+  bot: BotDetails;
+  botId: Scalars['Int']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['Int']['output'];
+  status: MissionStatus;
+  targetPosition: Position;
+  targetPositionId: Scalars['Int']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+};
+
+export enum MissionStatus {
+  Closed = 'Closed',
+  Opened = 'Opened'
+}
 
 export type Mutation = {
   __typename?: 'Mutation';
   addUser: User;
   changePassword: Scalars['Boolean']['output'];
-  changeRole: User;
+  changeUserRole: User;
   createBot: Bot;
   createContract: Contract;
-  createPosition: Position;
   createStrategy: Strategy;
   createStrategyMetadata: StrategyMetadata;
   generateNewFollower: Follower;
   getToken: GetTokenResponse;
-  removeBot?: Maybe<Bot>;
-  removeContract?: Maybe<Contract>;
   removeStrategy?: Maybe<Strategy>;
   removeStrategyMetadata: StrategyMetadata;
-  updateBot?: Maybe<Bot>;
-  updateContract?: Maybe<Contract>;
   updateStrategy?: Maybe<Strategy>;
   updateStrategyMetadata: StrategyMetadata;
 };
@@ -164,7 +215,7 @@ export type MutationChangePasswordArgs = {
 };
 
 
-export type MutationChangeRoleArgs = {
+export type MutationChangeUserRoleArgs = {
   input: ChangeUserRoleInput;
 };
 
@@ -176,11 +227,6 @@ export type MutationCreateBotArgs = {
 
 export type MutationCreateContractArgs = {
   input: CreateContractInput;
-};
-
-
-export type MutationCreatePositionArgs = {
-  createPositionInput: CreatePositionInput;
 };
 
 
@@ -199,16 +245,6 @@ export type MutationGetTokenArgs = {
 };
 
 
-export type MutationRemoveBotArgs = {
-  id: Scalars['Int']['input'];
-};
-
-
-export type MutationRemoveContractArgs = {
-  id: Scalars['Int']['input'];
-};
-
-
 export type MutationRemoveStrategyArgs = {
   id: Scalars['Int']['input'];
 };
@@ -216,18 +252,6 @@ export type MutationRemoveStrategyArgs = {
 
 export type MutationRemoveStrategyMetadataArgs = {
   key: Scalars['String']['input'];
-};
-
-
-export type MutationUpdateBotArgs = {
-  id: Scalars['Int']['input'];
-  input: UpdateBotInput;
-};
-
-
-export type MutationUpdateContractArgs = {
-  id: Scalars['Int']['input'];
-  input: UpdateContractInput;
 };
 
 
@@ -249,22 +273,30 @@ export type Position = {
   index: Scalars['Int']['output'];
 };
 
+export type PositionInfo = {
+  __typename?: 'PositionInfo';
+  address: Scalars['String']['output'];
+  index: Scalars['Int']['output'];
+};
+
 export type Query = {
   __typename?: 'Query';
+  findAction?: Maybe<Action>;
   findActionsByPosition: Array<Action>;
   findAllActions: Array<Action>;
   findAllBots: Array<Bot>;
   findAllContracts: Array<Contract>;
+  findAllFollowerActions: Array<FollowerAction>;
   findAllMissions: Array<Mission>;
   findAllPositions: Array<Position>;
   findAllStrategy: Array<Strategy>;
   findAllStrategyMetadata: Array<StrategyMetadata>;
   findAllTasks: Array<Task>;
-  findBot?: Maybe<Bot>;
-  findContract?: Maybe<Contract>;
+  findBot: BotDetails;
+  findContract: Contract;
+  findFollowerAction?: Maybe<FollowerActionDetails>;
   findMission?: Maybe<Mission>;
   findMissionByBot: Array<Mission>;
-  findOne?: Maybe<Action>;
   findPosition?: Maybe<Position>;
   findPositionById?: Maybe<Position>;
   findStrategy?: Maybe<Strategy>;
@@ -273,8 +305,14 @@ export type Query = {
   findTasksByMission: Array<Task>;
   getAllFollowers: Array<Follower>;
   getAllLeaders: Array<User>;
+  getAllUsers: Array<User>;
   getFollowerByAddress?: Maybe<Follower>;
   getUserByAddress?: Maybe<User>;
+};
+
+
+export type QueryFindActionArgs = {
+  id: Scalars['Int']['input'];
 };
 
 
@@ -293,6 +331,11 @@ export type QueryFindContractArgs = {
 };
 
 
+export type QueryFindFollowerActionArgs = {
+  id: Scalars['Int']['input'];
+};
+
+
 export type QueryFindMissionArgs = {
   id: Scalars['Int']['input'];
 };
@@ -300,11 +343,6 @@ export type QueryFindMissionArgs = {
 
 export type QueryFindMissionByBotArgs = {
   botId: Scalars['Int']['input'];
-};
-
-
-export type QueryFindOneArgs = {
-  id: Scalars['Int']['input'];
 };
 
 
@@ -366,22 +404,18 @@ export type Task = {
   actionId: Scalars['Int']['output'];
   createdAt: Scalars['DateTime']['output'];
   id: Scalars['Int']['output'];
+  logs: Array<Scalars['String']['output']>;
   missionId: Scalars['Int']['output'];
-  status: Scalars['String']['output'];
-  updatedAt: Scalars['DateTime']['output'];
+  status: TaskStatus;
 };
 
-export type UpdateBotInput = {
-  endedBlock?: InputMaybe<Scalars['Int']['input']>;
-  pausedBlock?: InputMaybe<Scalars['Int']['input']>;
-  startedBlock?: InputMaybe<Scalars['Int']['input']>;
-  status?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type UpdateContractInput = {
-  address?: InputMaybe<Scalars['String']['input']>;
-  chainId?: InputMaybe<Scalars['Int']['input']>;
-};
+export enum TaskStatus {
+  Await = 'Await',
+  Completed = 'Completed',
+  Created = 'Created',
+  Failed = 'Failed',
+  Initiated = 'Initiated'
+}
 
 export type UpdateStrategyInput = {
   params?: InputMaybe<Scalars['String']['input']>;
@@ -396,5 +430,45 @@ export type UpdateStrategyMetadataInput = {
 export type User = {
   __typename?: 'User';
   address: Scalars['String']['output'];
-  role: Scalars['String']['output'];
+  role: UserRole;
 };
+
+export enum UserRole {
+  Leader = 'Leader',
+  User = 'User'
+}
+
+export type UserInfoFragment = { __typename?: 'User', address: string, role: UserRole } & { ' $fragmentName'?: 'UserInfoFragment' };
+
+export type GetAllUsersQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetAllUsersQuery = { __typename?: 'Query', getAllUsers: Array<(
+    { __typename?: 'User' }
+    & { ' $fragmentRefs'?: { 'UserInfoFragment': UserInfoFragment } }
+  )> };
+
+export type ChangeUserRoleMutationVariables = Exact<{
+  input: ChangeUserRoleInput;
+}>;
+
+
+export type ChangeUserRoleMutation = { __typename?: 'Mutation', changeUserRole: (
+    { __typename?: 'User' }
+    & { ' $fragmentRefs'?: { 'UserInfoFragment': UserInfoFragment } }
+  ) };
+
+export type AddUserMutationVariables = Exact<{
+  input: AddUserInput;
+}>;
+
+
+export type AddUserMutation = { __typename?: 'Mutation', addUser: (
+    { __typename?: 'User' }
+    & { ' $fragmentRefs'?: { 'UserInfoFragment': UserInfoFragment } }
+  ) };
+
+export const UserInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"UserInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"User"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"role"}}]}}]} as unknown as DocumentNode<UserInfoFragment, unknown>;
+export const GetAllUsersDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getAllUsers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getAllUsers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"UserInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"UserInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"User"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"role"}}]}}]} as unknown as DocumentNode<GetAllUsersQuery, GetAllUsersQueryVariables>;
+export const ChangeUserRoleDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"changeUserRole"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ChangeUserRoleInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"changeUserRole"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"UserInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"UserInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"User"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"role"}}]}}]} as unknown as DocumentNode<ChangeUserRoleMutation, ChangeUserRoleMutationVariables>;
+export const AddUserDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"addUser"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"AddUserInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addUser"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"UserInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"UserInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"User"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"role"}}]}}]} as unknown as DocumentNode<AddUserMutation, AddUserMutationVariables>;

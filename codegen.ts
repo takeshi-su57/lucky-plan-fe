@@ -11,6 +11,12 @@ const config: CodegenConfig = {
         fragmentMasking: { unmaskFunctionName: "getFragmentData" },
       },
     },
+    "./schema.graphql": {
+      plugins: ["schema-ast"],
+      config: {
+        includeDirectives: true,
+      },
+    },
   },
   watch: true,
 };

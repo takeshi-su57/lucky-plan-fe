@@ -1,6 +1,7 @@
-# ------------------------------------------------------
-# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
-# ------------------------------------------------------
+schema {
+  query: Query
+  mutation: Mutation
+}
 
 type Action {
   args: String!
@@ -179,10 +180,7 @@ type Mutation {
   removeStrategy(id: Int!): Strategy
   removeStrategyMetadata(key: String!): StrategyMetadata!
   updateStrategy(id: Int!, input: UpdateStrategyInput!): Strategy
-  updateStrategyMetadata(
-    input: UpdateStrategyMetadataInput!
-    key: String!
-  ): StrategyMetadata!
+  updateStrategyMetadata(input: UpdateStrategyMetadataInput!, key: String!): StrategyMetadata!
 }
 
 type Position {

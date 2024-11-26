@@ -3,6 +3,8 @@ import localFont from "next/font/local";
 import { twMerge } from "tailwind-merge";
 import "@/styles/globals.css";
 
+import { Providers } from "./providers";
+
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -28,15 +30,36 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  topbar,
+  sidebar,
 }: Readonly<{
   children: React.ReactNode;
+  topbar: React.ReactNode;
+  sidebar: React.ReactNode;
 }>) {
   return (
     <html lang="en">
       <body
-        className={twMerge(`antialiased dark`, geistSans.variable, geistMono.variable)}
+        className={twMerge(
+          `antialiased dark`,
+          geistSans.variable,
+          geistMono.variable,
+        )}
       >
-        {children}
+        <Providers>
+          <div className="flex h-screen w-screen bg-neutral-900 font-sans">
+            <div className="flex h-full w-[300px] flex-col overflow-auto border-r border-neutral-800">
+              {sidebar}
+            </div>
+
+            <div className="flex flex-1 flex-col overflow-auto">
+              <div className="w-full border-b border-neutral-800 p-4">
+                {topbar}
+              </div>
+              <div className="w-full flex-1 p-4">{children}</div>
+            </div>
+          </div>
+        </Providers>
       </body>
     </html>
   );

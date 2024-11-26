@@ -13,25 +13,21 @@ import {
   ApolloClient,
   ApolloProvider,
 } from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { createClient } from "graphql-ws";
 
-import { config } from "@/utils/wagmi";
-
-import { predictionApi, predictionWss } from "@/utils/tizz";
-
-import { UnixTime } from "@/utils/getUnixTime";
-
-UnixTime.getGap();
-
 const httpLink = new HttpLink({
-  uri: `${predictionApi}/graphql`,
+  uri: `${process.env.NEXT_PUBLIC_LUCKY_PLAN_GRAPHQL_API}`,
+  headers: {
+    "Apollo-Require-Preflight": "true",
+  },
 });
 
 const wsLink = new GraphQLWsLink(
   createClient({
-    url: predictionWss,
+    url: process.env.NEXT_PUBLIC_LUCKY_PLAN_GRAPHQL_WSS,
     retryAttempts: Infinity,
     onNonLazyError: (error) => {
       console.error("WebSocket connection failed:", error);
@@ -52,33 +48,45 @@ const splitLink = split(
   httpLink,
 );
 
-export const apolloClient = new ApolloClient({
-  cache: new InMemoryCache(),
-  link: splitLink,
+const authLink = setContext((_, { headers }) => {
+  // get the authentication token from local storage if it exists
+  const token = localStorage.getItem("token");
+  // return the headers to the context so httpLink can read them
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : "",
+    },
+  };
 });
 
-export type EventFeedData = {
-  name: string;
-  value: unknown;
-};
+const cache = new InMemoryCache({
+  typePolicies: {
+    User: {
+      keyFields: ["address"],
+    },
+  },
+});
+
+export const apolloClient = new ApolloClient({
+  cache,
+  link: authLink.concat(splitLink),
+});
+
+(window as any).apolloClient = apolloClient;
 
 export const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-
-      <QueryClientProvider client={queryClient}>
-          <ApolloProvider client={apolloClient}>
-            <NextUIProvider className="overflow-hidden">
-              <SnackbarProvider
-               
-                autoHideDuration={5000}
-                maxSnack={5}
-              >
-                {children}
-              </SnackbarProvider>
-            </NextUIProvider>
-          </ApolloProvider>
-      </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <ApolloProvider client={apolloClient}>
+        <NextUIProvider className="overflow-hidden">
+          <SnackbarProvider autoHideDuration={5000} maxSnack={5}>
+            {children}
+          </SnackbarProvider>
+        </NextUIProvider>
+      </ApolloProvider>
+    </QueryClientProvider>
   );
 }
