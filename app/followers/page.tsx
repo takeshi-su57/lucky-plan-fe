@@ -30,6 +30,7 @@ const columns: TableColumnProps[] = [
   {
     id: "action",
     component: "",
+    className: "flex-end",
   },
 ];
 
@@ -92,6 +93,7 @@ export default function Page() {
               Get Private Key
             </Button>
           ),
+          className: "w-[50px]",
         },
       },
     }));

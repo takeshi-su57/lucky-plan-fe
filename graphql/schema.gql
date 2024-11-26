@@ -82,14 +82,16 @@ input CreateContractInput {
 }
 
 input CreateStrategyInput {
+  lifeTime: String!
+  maxCollateral: String!
+  maxGas: String!
+  maxLeverage: Int!
+  minCollateral: String!
+  minGas: String!
+  minLeverage: Int!
   params: String!
+  ratio: Int!
   strategyKey: String!
-}
-
-input CreateStrategyMetadataInput {
-  description: String!
-  key: String!
-  title: String!
 }
 
 """
@@ -175,12 +177,9 @@ type Mutation {
   createBot(input: CreateBotInput!): Bot!
   createContract(input: CreateContractInput!): Contract!
   createStrategy(input: CreateStrategyInput!): Strategy!
-  createStrategyMetadata(input: CreateStrategyMetadataInput!): StrategyMetadata!
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
-  removeStrategy(id: Int!): Strategy
-  removeStrategyMetadata(key: String!): StrategyMetadata!
-  updateStrategy(id: Int!, input: UpdateStrategyInput!): Strategy
+  removeStrategy(id: Int!): Strategy!
   updateStrategyMetadata(
     input: UpdateStrategyMetadataInput!
     key: String!
@@ -207,8 +206,6 @@ type Query {
   findAllFollowerActions: [FollowerAction!]!
   findAllMissions: [Mission!]!
   findAllPositions: [Position!]!
-  findAllStrategy: [Strategy!]!
-  findAllStrategyMetadata: [StrategyMetadata!]!
   findAllTasks: [Task!]!
   findBot(id: Int!): BotDetails!
   findContract(id: Int!): Contract!
@@ -223,6 +220,8 @@ type Query {
   findTasksByMission(missionId: Int!): [Task!]!
   getAllFollowers: [Follower!]!
   getAllLeaders: [User!]!
+  getAllStrategy: [Strategy!]!
+  getAllStrategyMetadata: [StrategyMetadata!]!
   getAllUsers: [User!]!
   getFollowerByAddress(input: GetFollowerByAddressInput!): Follower!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
@@ -231,7 +230,15 @@ type Query {
 
 type Strategy {
   id: Int!
+  lifeTime: String!
+  maxCollateral: String!
+  maxGas: String!
+  maxLeverage: Int!
+  minCollateral: String!
+  minGas: String!
+  minLeverage: Int!
   params: String!
+  ratio: Int!
   strategyKey: String!
 }
 
@@ -256,11 +263,6 @@ enum TaskStatus {
   Created
   Failed
   Initiated
-}
-
-input UpdateStrategyInput {
-  params: String
-  strategyKey: String
 }
 
 input UpdateStrategyMetadataInput {

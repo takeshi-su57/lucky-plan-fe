@@ -12,6 +12,7 @@ import { twMerge } from "tailwind-merge";
 export const links = [
   { id: "users", label: "User", title: "User Management" },
   { id: "followers", label: "Follower", title: "Follower Management" },
+  { id: "strategies", label: "Strategy", title: "Strategy Management" },
 ];
 
 export function Sidebar() {

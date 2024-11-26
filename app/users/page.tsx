@@ -34,6 +34,7 @@ const columns: TableColumnProps[] = [
   {
     id: "changeRole",
     component: "",
+    className: "flex-end",
   },
 ];
 
@@ -108,6 +109,7 @@ export default function Page() {
                 Change Role
               </Button>
             ),
+            className: "w-[50px]",
           },
         },
       }));
@@ -162,7 +164,11 @@ export default function Page() {
             label="Address"
           />
 
-          <Button onClick={handleConfirm} isDisabled={!isAddress(address)}>
+          <Button
+            onClick={handleConfirm}
+            color="primary"
+            isDisabled={!isAddress(address)}
+          >
             Confirm
           </Button>
         </div>
