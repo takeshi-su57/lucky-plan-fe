@@ -52,6 +52,11 @@ enum BotStatus {
   Live
 }
 
+input ChangeContractStatusInput {
+  id: Int!
+  status: String!
+}
+
 input ChangePasswordInput {
   newPassword: String!
   oldPassword: String!
@@ -67,6 +72,12 @@ type Contract {
   chainId: Int!
   description: String
   id: Int!
+  status: ContractStatus!
+}
+
+enum ContractStatus {
+  Dead
+  Live
 }
 
 input CreateBotInput {
@@ -173,6 +184,7 @@ enum MissionStatus {
 
 type Mutation {
   addUser(input: AddUserInput!): User!
+  changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changePassword(input: ChangePasswordInput!): Boolean!
   changeUserRole(input: ChangeUserRoleInput!): User!
   createBot(input: CreateBotInput!): Bot!
@@ -200,7 +212,6 @@ type Query {
   findActionsByPosition(positionId: Float!): [Action!]!
   findAllActions: [Action!]!
   findAllBots: [Bot!]!
-  findAllContracts: [Contract!]!
   findAllFollowerActions: [FollowerAction!]!
   findAllMissions: [Mission!]!
   findAllPositions: [Position!]!
@@ -216,6 +227,7 @@ type Query {
   findStrategyMetadata(key: String!): StrategyMetadata!
   findTask(id: Int!): Task
   findTasksByMission(missionId: Int!): [Task!]!
+  getAllContracts: [Contract!]!
   getAllFollowers: [Follower!]!
   getAllLeaders: [User!]!
   getAllStrategy: [Strategy!]!

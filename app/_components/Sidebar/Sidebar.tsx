@@ -13,6 +13,7 @@ export const links = [
   { id: "users", label: "User", title: "User Management" },
   { id: "followers", label: "Follower", title: "Follower Management" },
   { id: "strategies", label: "Strategy", title: "Strategy Management" },
+  { id: "contracts", label: "Contract", title: "Contract Management" },
 ];
 
 export function Sidebar() {

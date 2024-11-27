@@ -173,7 +173,7 @@ export function useRemoveStrategy() {
           if (data && data.getAllStrategy.length > 0) {
             return {
               ...data,
-              getAllUsers: data.getAllStrategy.filter(
+              getAllStrategy: data.getAllStrategy.filter(
                 (strategy) =>
                   strategyInfo.id !==
                   getFragmentData(STRATEGY_INFO_FRAGMENT_DOCUMENT, strategy).id,

@@ -31,7 +31,7 @@ export function NumericInput({
       e.target.value === "" ||
       /^([0-9]+(?:[.,][0-9]*)?)$/.test(e.target.value)
     ) {
-      onChange(e.target.value);
+      onChange(e.target.value.replaceAll(",", ""));
     }
   };
 

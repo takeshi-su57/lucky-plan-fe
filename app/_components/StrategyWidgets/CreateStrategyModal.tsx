@@ -35,6 +35,8 @@ export function CreateStrategyModal({
   const [maxGas, setMaxGas] = useState("100000000000000000");
   const [minGas, setMinGas] = useState("1000000000000000");
 
+  console.log(ratio);
+
   const handleChangeStrategy: ChangeEventHandler<HTMLSelectElement> = (
     event,
   ) => {
