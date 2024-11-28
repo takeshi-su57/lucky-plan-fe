@@ -10,7 +10,7 @@ export function Topbar() {
   const link = links.find((item) => pathname.includes(item.id));
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="sticky flex items-center justify-between">
       <h1 className="text-3xl">{link?.title || "Unknown Page"}</h1>
 
       <Button color="danger">Logout</Button>

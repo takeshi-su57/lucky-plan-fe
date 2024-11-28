@@ -52,11 +52,11 @@ export default function RootLayout({
               {sidebar}
             </div>
 
-            <div className="flex flex-1 flex-col overflow-auto">
-              <div className="w-full border-b border-neutral-800 p-4">
+            <div className="relative flex flex-1 flex-col overflow-auto">
+              <div className="sticky top-0 z-50 w-full border-b border-neutral-800 bg-neutral-900 p-4">
                 {topbar}
               </div>
-              <div className="w-full flex-1 p-4">{children}</div>
+              <div className="relative z-0 w-full flex-1 p-4">{children}</div>
             </div>
           </div>
         </Providers>
