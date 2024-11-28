@@ -17,15 +17,19 @@ input AddUserInput {
 }
 
 type BotDetails {
-  contract: Contract!
-  contractId: Int!
-  endedBlock: Int
   follower: Follower!
   followerAddress: String!
+  followerContract: Contract!
+  followerContractId: Int!
+  followerEndedBlock: Int
+  followerStartedBlock: Int
   id: Int!
   leader: User!
   leaderAddress: String!
-  startedBlock: Int
+  leaderContract: Contract!
+  leaderContractId: Int!
+  leaderEndedBlock: Int
+  leaderStartedBlock: Int
   status: BotStatus!
   strategy: Strategy!
   strategyId: Int!
@@ -67,9 +71,10 @@ enum ContractStatus {
 }
 
 input CreateBotInput {
-  contractId: Int!
   followerAddress: String!
+  followerContractId: Int!
   leaderAddress: String!
+  leaderContractId: Int!
   strategyId: Int!
 }
 

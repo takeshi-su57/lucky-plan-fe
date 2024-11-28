@@ -14,7 +14,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 const documents = {
-    "\n  fragment BotDetailsInfo on BotDetails {\n    id\n    leaderAddress\n    followerAddress\n    contractId\n    strategyId\n    startedBlock\n    endedBlock\n    status\n    contract {\n      ...ContractInfo\n    }\n    follower {\n      ...FollowerInfo\n    }\n    leader {\n      ...UserInfo\n    }\n    strategy {\n      ...StrategyInfo\n    }\n  }\n": types.BotDetailsInfoFragmentDoc,
+    "\n  fragment BotDetailsInfo on BotDetails {\n    id\n    leaderAddress\n    followerAddress\n    strategyId\n    leaderContractId\n    leaderStartedBlock\n    leaderEndedBlock\n    followerContractId\n    followerStartedBlock\n    followerEndedBlock\n    status\n    followerContract {\n      ...ContractInfo\n    }\n    leaderContract {\n      ...ContractInfo\n    }\n    follower {\n      ...FollowerInfo\n    }\n    leader {\n      ...UserInfo\n    }\n    strategy {\n      ...StrategyInfo\n    }\n  }\n": types.BotDetailsInfoFragmentDoc,
     "\n  query getAllBots {\n    getAllBots {\n      ...BotDetailsInfo\n    }\n  }\n": types.GetAllBotsDocument,
     "\n  mutation createBot($input: CreateBotInput!) {\n    createBot(input: $input) {\n      ...BotDetailsInfo\n    }\n  }\n": types.CreateBotDocument,
     "\n  mutation liveBot($id: Int!) {\n    liveBot(id: $id) {\n      ...BotDetailsInfo\n    }\n  }\n": types.LiveBotDocument,
@@ -35,6 +35,7 @@ const documents = {
     "\n  mutation removeStrategy($id: Int!) {\n    removeStrategy(id: $id) {\n      ...StrategyInfo\n    }\n  }\n": types.RemoveStrategyDocument,
     "\n  fragment UserInfo on User {\n    address\n    role\n  }\n": types.UserInfoFragmentDoc,
     "\n  query getAllUsers {\n    getAllUsers {\n      ...UserInfo\n    }\n  }\n": types.GetAllUsersDocument,
+    "\n  query getAllLeaders {\n    getAllLeaders {\n      ...UserInfo\n    }\n  }\n": types.GetAllLeadersDocument,
     "\n  mutation changeUserRole($input: ChangeUserRoleInput!) {\n    changeUserRole(input: $input) {\n      ...UserInfo\n    }\n  }\n": types.ChangeUserRoleDocument,
     "\n  mutation addUser($input: AddUserInput!) {\n    addUser(input: $input) {\n      ...UserInfo\n    }\n  }\n": types.AddUserDocument,
 };
@@ -56,7 +57,7 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  fragment BotDetailsInfo on BotDetails {\n    id\n    leaderAddress\n    followerAddress\n    contractId\n    strategyId\n    startedBlock\n    endedBlock\n    status\n    contract {\n      ...ContractInfo\n    }\n    follower {\n      ...FollowerInfo\n    }\n    leader {\n      ...UserInfo\n    }\n    strategy {\n      ...StrategyInfo\n    }\n  }\n"): (typeof documents)["\n  fragment BotDetailsInfo on BotDetails {\n    id\n    leaderAddress\n    followerAddress\n    contractId\n    strategyId\n    startedBlock\n    endedBlock\n    status\n    contract {\n      ...ContractInfo\n    }\n    follower {\n      ...FollowerInfo\n    }\n    leader {\n      ...UserInfo\n    }\n    strategy {\n      ...StrategyInfo\n    }\n  }\n"];
+export function graphql(source: "\n  fragment BotDetailsInfo on BotDetails {\n    id\n    leaderAddress\n    followerAddress\n    strategyId\n    leaderContractId\n    leaderStartedBlock\n    leaderEndedBlock\n    followerContractId\n    followerStartedBlock\n    followerEndedBlock\n    status\n    followerContract {\n      ...ContractInfo\n    }\n    leaderContract {\n      ...ContractInfo\n    }\n    follower {\n      ...FollowerInfo\n    }\n    leader {\n      ...UserInfo\n    }\n    strategy {\n      ...StrategyInfo\n    }\n  }\n"): (typeof documents)["\n  fragment BotDetailsInfo on BotDetails {\n    id\n    leaderAddress\n    followerAddress\n    strategyId\n    leaderContractId\n    leaderStartedBlock\n    leaderEndedBlock\n    followerContractId\n    followerStartedBlock\n    followerEndedBlock\n    status\n    followerContract {\n      ...ContractInfo\n    }\n    leaderContract {\n      ...ContractInfo\n    }\n    follower {\n      ...FollowerInfo\n    }\n    leader {\n      ...UserInfo\n    }\n    strategy {\n      ...StrategyInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -137,6 +138,10 @@ export function graphql(source: "\n  fragment UserInfo on User {\n    address\n 
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query getAllUsers {\n    getAllUsers {\n      ...UserInfo\n    }\n  }\n"): (typeof documents)["\n  query getAllUsers {\n    getAllUsers {\n      ...UserInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query getAllLeaders {\n    getAllLeaders {\n      ...UserInfo\n    }\n  }\n"): (typeof documents)["\n  query getAllLeaders {\n    getAllLeaders {\n      ...UserInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

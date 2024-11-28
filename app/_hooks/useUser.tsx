@@ -5,6 +5,7 @@ import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 import { getFragmentData, graphql } from "@/gql/index";
 import { useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
+import { UserRole } from "@/graphql/gql/graphql";
 
 export const USER_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment UserInfo on User {
@@ -16,6 +17,14 @@ export const USER_INFO_FRAGMENT_DOCUMENT = graphql(`
 export const GET_ALL_USERS_DOCUMENT = graphql(`
   query getAllUsers {
     getAllUsers {
+      ...UserInfo
+    }
+  }
+`);
+
+export const GET_ALL_LEADERS_DOCUMENT = graphql(`
+  query getAllLeaders {
+    getAllLeaders {
       ...UserInfo
     }
   }
@@ -51,6 +60,20 @@ export function useGetAllUsers() {
   }, [data]);
 }
 
+export function useGetAllLeaders() {
+  const { data } = useQuery(GET_ALL_LEADERS_DOCUMENT, { variables: {} });
+
+  return useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return data.getAllLeaders.map((user) => ({
+      ...getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, user),
+    }));
+  }, [data]);
+}
+
 export function useChangeUserRole() {
   const [mutateUserRole, { data, error }] = useMutation(
     CHANGE_USER_ROLE_DOCUMENT,
@@ -78,6 +101,34 @@ export function useChangeUserRole() {
         fragment: USER_INFO_FRAGMENT_DOCUMENT,
         data: userInfo,
       });
+
+      client.cache.updateQuery(
+        {
+          query: GET_ALL_LEADERS_DOCUMENT,
+          variables: {},
+        },
+        (data) => {
+          if (data && data.getAllLeaders.length > 0) {
+            if (userInfo.role === UserRole.User) {
+              return {
+                ...data,
+                getAllUsers: data.getAllLeaders.filter(
+                  (user) =>
+                    userInfo.address !==
+                    getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, user).address,
+                ),
+              };
+            } else {
+              return {
+                ...data,
+                getAllUsers: [...data.getAllLeaders, userInfo],
+              };
+            }
+          } else {
+            return data;
+          }
+        },
+      );
     }
   }, [client.cache, data, enqueueSnackbar, error]);
 
