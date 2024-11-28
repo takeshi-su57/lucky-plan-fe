@@ -16,29 +16,20 @@ input AddUserInput {
   address: String!
 }
 
-type Bot {
-  contractId: Int!
-  endedBlock: Int
-  followerAddress: String!
-  id: Int!
-  leaderAddress: String!
-  pausedBlock: Int
-  startedBlock: Int
-  status: BotStatus!
-  strategyId: Int!
-}
-
 type BotDetails {
-  contract: Contract!
-  contractId: Int!
-  endedBlock: Int
   follower: Follower!
   followerAddress: String!
+  followerContract: Contract!
+  followerContractId: Int!
+  followerEndedBlock: Int
+  followerStartedBlock: Int
   id: Int!
   leader: User!
   leaderAddress: String!
-  pausedBlock: Int
-  startedBlock: Int
+  leaderContract: Contract!
+  leaderContractId: Int!
+  leaderEndedBlock: Int
+  leaderStartedBlock: Int
   status: BotStatus!
   strategy: Strategy!
   strategyId: Int!
@@ -47,8 +38,13 @@ type BotDetails {
 enum BotStatus {
   Created
   Dead
-  Finish
   Live
+  Stop
+}
+
+input ChangeContractStatusInput {
+  id: Int!
+  status: String!
 }
 
 input ChangePasswordInput {
@@ -64,14 +60,21 @@ input ChangeUserRoleInput {
 type Contract {
   address: String!
   chainId: Int!
-  description: String
+  description: String!
   id: Int!
+  status: ContractStatus!
+}
+
+enum ContractStatus {
+  Dead
+  Live
 }
 
 input CreateBotInput {
-  contractId: Int!
   followerAddress: String!
+  followerContractId: Int!
   leaderAddress: String!
+  leaderContractId: Int!
   strategyId: Int!
 }
 
@@ -82,14 +85,16 @@ input CreateContractInput {
 }
 
 input CreateStrategyInput {
+  lifeTime: String!
+  maxCollateral: String!
+  maxGas: String!
+  maxLeverage: Int!
+  minCollateral: String!
+  minGas: String!
+  minLeverage: Int!
   params: String!
+  ratio: Int!
   strategyKey: String!
-}
-
-input CreateStrategyMetadataInput {
-  description: String!
-  key: String!
-  title: String!
 }
 
 """
@@ -105,7 +110,9 @@ input FindPositionInput {
 type Follower {
   accountIndex: Int!
   address: String!
+  ethBalance: String!
   publicKey: String!
+  usdcBalance: String!
 }
 
 type FollowerAction {
@@ -168,17 +175,17 @@ enum MissionStatus {
 
 type Mutation {
   addUser(input: AddUserInput!): User!
+  changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changePassword(input: ChangePasswordInput!): Boolean!
   changeUserRole(input: ChangeUserRoleInput!): User!
-  createBot(input: CreateBotInput!): Bot!
+  createBot(input: CreateBotInput!): BotDetails!
   createContract(input: CreateContractInput!): Contract!
   createStrategy(input: CreateStrategyInput!): Strategy!
-  createStrategyMetadata(input: CreateStrategyMetadataInput!): StrategyMetadata!
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
-  removeStrategy(id: Int!): Strategy
-  removeStrategyMetadata(key: String!): StrategyMetadata!
-  updateStrategy(id: Int!, input: UpdateStrategyInput!): Strategy
+  liveBot(id: Int!): BotDetails!
+  removeStrategy(id: Int!): Strategy!
+  stopBot(id: Int!): BotDetails!
   updateStrategyMetadata(
     input: UpdateStrategyMetadataInput!
     key: String!
@@ -200,13 +207,9 @@ type Query {
   findAction(id: Int!): Action
   findActionsByPosition(positionId: Float!): [Action!]!
   findAllActions: [Action!]!
-  findAllBots: [Bot!]!
-  findAllContracts: [Contract!]!
   findAllFollowerActions: [FollowerAction!]!
   findAllMissions: [Mission!]!
   findAllPositions: [Position!]!
-  findAllStrategy: [Strategy!]!
-  findAllStrategyMetadata: [StrategyMetadata!]!
   findAllTasks: [Task!]!
   findBot(id: Int!): BotDetails!
   findContract(id: Int!): Contract!
@@ -219,16 +222,29 @@ type Query {
   findStrategyMetadata(key: String!): StrategyMetadata!
   findTask(id: Int!): Task
   findTasksByMission(missionId: Int!): [Task!]!
+  getAllBots: [BotDetails!]!
+  getAllContracts: [Contract!]!
   getAllFollowers: [Follower!]!
   getAllLeaders: [User!]!
+  getAllStrategy: [Strategy!]!
+  getAllStrategyMetadata: [StrategyMetadata!]!
   getAllUsers: [User!]!
-  getFollowerByAddress(input: GetFollowerByAddressInput!): Follower
+  getFollowerByAddress(input: GetFollowerByAddressInput!): Follower!
+  getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
   getUserByAddress(input: GetUserByAddressInput!): User
 }
 
 type Strategy {
   id: Int!
+  lifeTime: String!
+  maxCollateral: String!
+  maxGas: String!
+  maxLeverage: Int!
+  minCollateral: String!
+  minGas: String!
+  minLeverage: Int!
   params: String!
+  ratio: Int!
   strategyKey: String!
 }
 
@@ -253,11 +269,6 @@ enum TaskStatus {
   Created
   Failed
   Initiated
-}
-
-input UpdateStrategyInput {
-  params: String
-  strategyKey: String
 }
 
 input UpdateStrategyMetadataInput {

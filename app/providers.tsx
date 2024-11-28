@@ -65,6 +65,9 @@ const cache = new InMemoryCache({
     User: {
       keyFields: ["address"],
     },
+    Follower: {
+      keyFields: ["address"],
+    },
   },
 });
 
@@ -72,8 +75,6 @@ export const apolloClient = new ApolloClient({
   cache,
   link: authLink.concat(splitLink),
 });
-
-(window as any).apolloClient = apolloClient;
 
 export const queryClient = new QueryClient();
 
