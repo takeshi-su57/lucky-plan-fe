@@ -6,12 +6,14 @@ import { Card, Button, CardBody, Spinner } from "@nextui-org/react";
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 
 import { FollowerInfoFragment } from "@/graphql/gql/graphql";
-import { StandardModal } from "@/components/tables/modals/StandardModal";
+import { StandardModal } from "@/components/modals/StandardModal";
 import {
   useGenerateFollower,
   useGetAllFollowers,
   useGetFollowerPrivateKey,
 } from "@/app-hooks/useFollower";
+import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
+import { Address } from "viem";
 
 const columns: TableColumnProps[] = [
   {
@@ -77,15 +79,15 @@ export default function Page() {
       className: "group",
       data: {
         address: {
-          component: follower.address,
+          component: <AddressWidget address={follower.address as Address} />,
         },
         ethBalance: {
           sortableAmount: follower.ethBalance,
-          component: follower.ethBalance,
+          component: Number(follower.ethBalance),
         },
         usdcBalance: {
           sortableAmount: follower.usdcBalance,
-          component: follower.usdcBalance,
+          component: Number(follower.usdcBalance),
         },
         action: {
           component: (

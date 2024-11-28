@@ -10,10 +10,19 @@ import { usePathname } from "next/navigation";
 import { twMerge } from "tailwind-merge";
 
 export const links = [
-  { id: "users", label: "User", title: "User Management" },
-  { id: "followers", label: "Follower", title: "Follower Management" },
-  { id: "strategies", label: "Strategy", title: "Strategy Management" },
-  { id: "contracts", label: "Contract", title: "Contract Management" },
+  { id: "users", label: "User", title: "User Explorer" },
+  { id: "followers", label: "Follower", title: "Follower Explorer" },
+  { id: "strategies", label: "Strategy", title: "Strategy Explorer" },
+  { id: "contracts", label: "Contract", title: "Contract Explorer" },
+  { id: "automations", label: "Automation", title: "Automation Explorer" },
+  { id: "missions", label: "Mission", title: "Mission Explorer" },
+  { id: "tasks", label: "Task", title: "Task Explorer" },
+  { id: "actions", label: "Action", title: "Action Explorer" },
+  {
+    id: "follower-actions",
+    label: "Follower Action",
+    title: "Follower Action Explorer",
+  },
 ];
 
 export function Sidebar() {
@@ -51,9 +60,9 @@ export function Sidebar() {
               pathname.includes(link.id) &&
                 "bg-primary-400/20 !text-primary-400",
             )}
-            href={`/${link.id}`}
-            title={link.label}
-          />
+          >
+            <Link href={`/${link.id}`}>{link.label}</Link>
+          </ListboxItem>
         ))}
       </Listbox>
     </div>

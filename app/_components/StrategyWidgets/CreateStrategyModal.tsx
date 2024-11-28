@@ -2,7 +2,7 @@
 
 import { useState, ChangeEventHandler } from "react";
 
-import { StandardModal } from "@/components/tables/modals/StandardModal";
+import { StandardModal } from "@/components/modals/StandardModal";
 import {
   useAddNewStrategy,
   useGetAllStrategyMetadata,

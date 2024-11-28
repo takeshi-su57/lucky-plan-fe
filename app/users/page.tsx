@@ -10,7 +10,7 @@ import {
   CardBody,
   useDisclosure,
 } from "@nextui-org/react";
-import { isAddress } from "viem";
+import { Address, isAddress } from "viem";
 
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 import {
@@ -19,7 +19,8 @@ import {
   useGetAllUsers,
 } from "@/app/_hooks/useUser";
 import { UserInfoFragment, UserRole } from "@/graphql/gql/graphql";
-import { StandardModal } from "@/components/tables/modals/StandardModal";
+import { StandardModal } from "@/components/modals/StandardModal";
+import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 
 const columns: TableColumnProps[] = [
   {
@@ -97,7 +98,7 @@ export default function Page() {
         className: "group",
         data: {
           address: {
-            component: user.address,
+            component: <AddressWidget address={user.address as Address} />,
           },
           role: {
             sortableAmount: user.role,

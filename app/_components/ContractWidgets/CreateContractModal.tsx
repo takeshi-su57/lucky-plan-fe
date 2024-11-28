@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button, Input, Textarea } from "@nextui-org/react";
 import { isAddress } from "viem";
 
-import { StandardModal } from "@/components/tables/modals/StandardModal";
+import { StandardModal } from "@/components/modals/StandardModal";
 import { NumericInput } from "@/components/inputs/NumericInput";
 
 import { useCreateContract } from "@/app-hooks/useContract";

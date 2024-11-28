@@ -76,8 +76,6 @@ export const apolloClient = new ApolloClient({
   link: authLink.concat(splitLink),
 });
 
-(window as any).apolloClient = apolloClient;
-
 export const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: ReactNode }) {

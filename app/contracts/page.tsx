@@ -17,6 +17,8 @@ import {
   useGetAllContracts,
 } from "@/app-hooks/useContract";
 import { CreateContractModal } from "@/app-components/ContractWidgets/CreateContractModal";
+import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
+import { Address } from "viem";
 
 const columns: TableColumnProps[] = [
   {
@@ -102,7 +104,7 @@ export default function Page() {
           },
           address: {
             sortableAmount: contract.address,
-            component: contract.address,
+            component: <AddressWidget address={contract.address as Address} />,
           },
           description: {
             component: contract.description,
