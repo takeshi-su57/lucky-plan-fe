@@ -16,18 +16,6 @@ input AddUserInput {
   address: String!
 }
 
-type Bot {
-  contractId: Int!
-  endedBlock: Int
-  followerAddress: String!
-  id: Int!
-  leaderAddress: String!
-  pausedBlock: Int
-  startedBlock: Int
-  status: BotStatus!
-  strategyId: Int!
-}
-
 type BotDetails {
   contract: Contract!
   contractId: Int!
@@ -37,7 +25,6 @@ type BotDetails {
   id: Int!
   leader: User!
   leaderAddress: String!
-  pausedBlock: Int
   startedBlock: Int
   status: BotStatus!
   strategy: Strategy!
@@ -47,8 +34,8 @@ type BotDetails {
 enum BotStatus {
   Created
   Dead
-  Finish
   Live
+  Stop
 }
 
 input ChangeContractStatusInput {
@@ -69,7 +56,7 @@ input ChangeUserRoleInput {
 type Contract {
   address: String!
   chainId: Int!
-  description: String
+  description: String!
   id: Int!
   status: ContractStatus!
 }
@@ -186,12 +173,14 @@ type Mutation {
   changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changePassword(input: ChangePasswordInput!): Boolean!
   changeUserRole(input: ChangeUserRoleInput!): User!
-  createBot(input: CreateBotInput!): Bot!
+  createBot(input: CreateBotInput!): BotDetails!
   createContract(input: CreateContractInput!): Contract!
   createStrategy(input: CreateStrategyInput!): Strategy!
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
+  liveBot(id: Int!): BotDetails!
   removeStrategy(id: Int!): Strategy!
+  stopBot(id: Int!): BotDetails!
   updateStrategyMetadata(
     input: UpdateStrategyMetadataInput!
     key: String!
@@ -213,7 +202,6 @@ type Query {
   findAction(id: Int!): Action
   findActionsByPosition(positionId: Float!): [Action!]!
   findAllActions: [Action!]!
-  findAllBots: [Bot!]!
   findAllFollowerActions: [FollowerAction!]!
   findAllMissions: [Mission!]!
   findAllPositions: [Position!]!
@@ -229,6 +217,7 @@ type Query {
   findStrategyMetadata(key: String!): StrategyMetadata!
   findTask(id: Int!): Task
   findTasksByMission(missionId: Int!): [Task!]!
+  getAllBots: [BotDetails!]!
   getAllContracts: [Contract!]!
   getAllFollowers: [Follower!]!
   getAllLeaders: [User!]!
