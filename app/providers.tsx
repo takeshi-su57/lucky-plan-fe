@@ -104,6 +104,9 @@ const cache = new InMemoryCache({
     Action: {
       keyFields: ["id"],
     },
+    FollowerAction: {
+      keyFields: ["id"],
+    },
   },
 });
 

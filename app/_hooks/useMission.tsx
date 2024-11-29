@@ -141,38 +141,42 @@ export function useSubscribeMission() {
 
   useEffect(() => {
     if (updatedData && !error2) {
-      const missionInfo = getMissionFragment(updatedData.missionUpdated);
+      const missionInfos = updatedData.missionUpdated.map(getMissionFragment);
 
-      enqueueSnackbar("Mission Updated!", {
+      enqueueSnackbar("Missions Updated!", {
         variant: "info",
       });
 
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: missionInfo.__typename,
-          id: missionInfo.id,
-        }),
-        fragment: MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-        data: missionInfo,
+      missionInfos.forEach((missionInfo) => {
+        client.cache.writeFragment({
+          id: client.cache.identify({
+            __typename: missionInfo.__typename,
+            id: missionInfo.id,
+          }),
+          fragment: MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          data: missionInfo,
+        });
       });
     }
   }, [client.cache, enqueueSnackbar, error1, error2, newData, updatedData]);
 
   useEffect(() => {
     if (newData && !error1) {
-      const missionInfo = getMissionFragment(newData.missionAdded);
+      const missionInfos = newData.missionAdded.map(getMissionFragment);
 
-      enqueueSnackbar("New Mission Created!", {
+      enqueueSnackbar("New Missions Created!", {
         variant: "info",
       });
 
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: missionInfo.__typename,
-          id: missionInfo.id,
-        }),
-        fragment: MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-        data: missionInfo,
+      missionInfos.forEach((missionInfo) => {
+        client.cache.writeFragment({
+          id: client.cache.identify({
+            __typename: missionInfo.__typename,
+            id: missionInfo.id,
+          }),
+          fragment: MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          data: missionInfo,
+        });
       });
     }
   }, [client.cache, enqueueSnackbar, error1, newData]);
