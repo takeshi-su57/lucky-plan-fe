@@ -12,18 +12,7 @@ import { GetAllTasksQuery } from "@/graphql/gql/graphql";
 import { getFragmentData, graphql } from "@/gql/index";
 
 import { MISSION_INFO_FRAGMENT_DOCUMENT } from "./useMission";
-
-export const ACTION_INFO_FRAGMENT_DOCUMENT = graphql(`
-  fragment ActionInfo on Action {
-    id
-    name
-    positionId
-    args
-    blockNumber
-    orderInBlock
-    createdAt
-  }
-`);
+import { ACTION_INFO_FRAGMENT_DOCUMENT } from "./useAction";
 
 export const TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment TaskShallowDetailsInfo on TaskShallowDetails {
@@ -115,38 +104,42 @@ export function useSubscribeTask() {
 
   useEffect(() => {
     if (updatedData && !error2) {
-      const taskInfo = getTaskFragment(updatedData.taskUpdated);
+      const taskInfos = updatedData.taskUpdated.map(getTaskFragment);
 
-      enqueueSnackbar("Task Updated!", {
+      enqueueSnackbar("Tasks Updated!", {
         variant: "info",
       });
 
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: taskInfo.__typename,
-          id: taskInfo.id,
-        }),
-        fragment: TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-        data: taskInfo,
+      taskInfos.forEach((taskInfo) => {
+        client.cache.writeFragment({
+          id: client.cache.identify({
+            __typename: taskInfo.__typename,
+            id: taskInfo.id,
+          }),
+          fragment: TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          data: taskInfo,
+        });
       });
     }
   }, [client.cache, enqueueSnackbar, error1, error2, newData, updatedData]);
 
   useEffect(() => {
     if (newData && !error1) {
-      const taskInfo = getTaskFragment(newData.taskAdded);
+      const taskInfos = newData.taskAdded.map(getTaskFragment);
 
-      enqueueSnackbar("New Task Created!", {
+      enqueueSnackbar("New Tasks Created!", {
         variant: "info",
       });
 
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: taskInfo.__typename,
-          id: taskInfo.id,
-        }),
-        fragment: TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-        data: taskInfo,
+      taskInfos.forEach((taskInfo) => {
+        client.cache.writeFragment({
+          id: client.cache.identify({
+            __typename: taskInfo.__typename,
+            id: taskInfo.id,
+          }),
+          fragment: TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          data: taskInfo,
+        });
       });
     }
   }, [client.cache, enqueueSnackbar, error1, newData]);
