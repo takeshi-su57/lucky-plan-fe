@@ -9,6 +9,7 @@ import {
   Button,
   CardBody,
   useDisclosure,
+  Chip,
 } from "@nextui-org/react";
 import { Address, isAddress } from "viem";
 
@@ -102,7 +103,7 @@ export default function Page() {
           },
           role: {
             sortableAmount: user.role,
-            component: user.role,
+            component: <Chip>{user.role}</Chip>,
           },
           changeRole: {
             component: (

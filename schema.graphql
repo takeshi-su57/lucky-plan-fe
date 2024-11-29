@@ -218,6 +218,7 @@ type Mutation {
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
   liveBot(id: Int!): BotDetails!
+  performTask(id: Int!): TaskShallowDetails!
   removeStrategy(id: Int!): Strategy!
   stopBot(id: Int!): BotDetails!
   updateStrategyMetadata(input: UpdateStrategyMetadataInput!, key: String!): StrategyMetadata!
@@ -242,7 +243,6 @@ type Query {
   findAllActions: [Action!]!
   findAllFollowerActions: [FollowerAction!]!
   findAllPositions: [Position!]!
-  findAllTasks: [Task!]!
   findBot(id: Int!): BotDetails!
   findContract(id: Int!): Contract!
   findFollowerAction(id: Int!): FollowerActionDetails
@@ -250,8 +250,8 @@ type Query {
   findPositionById(id: Int!): Position
   findStrategy(id: Int!): Strategy
   findStrategyMetadata(key: String!): StrategyMetadata!
-  findTask(id: Int!): Task
-  findTasksByMission(missionId: Int!): [Task!]!
+  findTask(id: Int!): TaskShallowDetails!
+  findTasksByMission(missionId: Int!): [TaskShallowDetails!]!
   getAllBots: [BotDetails!]!
   getAllContracts: [Contract!]!
   getAllFollowers: [Follower!]!
@@ -259,6 +259,7 @@ type Query {
   getAllMissions: [MissionShallowDetails!]!
   getAllStrategy: [Strategy!]!
   getAllStrategyMetadata: [StrategyMetadata!]!
+  getAllTasks: [TaskShallowDetails!]!
   getAllUsers: [User!]!
   getFollowerByAddress(input: GetFollowerByAddressInput!): Follower!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
@@ -288,6 +289,8 @@ type StrategyMetadata {
 type Subscription {
   missionAdded: MissionShallowDetails!
   missionUpdated: MissionShallowDetails!
+  taskAdded: TaskShallowDetails!
+  taskUpdated: TaskShallowDetails!
 }
 
 type Task {
@@ -295,6 +298,17 @@ type Task {
   createdAt: DateTime!
   id: Int!
   logs: [String!]!
+  missionId: Int!
+  status: TaskStatus!
+}
+
+type TaskShallowDetails {
+  action: Action!
+  actionId: Int!
+  createdAt: DateTime!
+  id: Int!
+  logs: [String!]!
+  mission: Mission!
   missionId: Int!
   status: TaskStatus!
 }

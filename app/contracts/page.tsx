@@ -8,6 +8,7 @@ import {
   Button,
   CardBody,
   useDisclosure,
+  Chip,
 } from "@nextui-org/react";
 
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
@@ -111,7 +112,7 @@ export default function Page() {
           },
           status: {
             sortableAmount: contract.status,
-            component: contract.status,
+            component: <Chip>{contract.status}</Chip>,
           },
           action: {
             component: (
