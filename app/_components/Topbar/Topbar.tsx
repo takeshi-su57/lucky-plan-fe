@@ -1,8 +1,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+
 import { links } from "../Sidebar/Sidebar";
-import { Button } from "@nextui-org/react";
 
 export function Topbar() {
   const pathname = usePathname();
@@ -13,7 +14,13 @@ export function Topbar() {
     <div className="sticky flex items-center justify-between">
       <h1 className="text-3xl">{link?.title || "Unknown Page"}</h1>
 
-      <Button color="danger">Logout</Button>
+      <ConnectButton
+        accountStatus={{
+          smallScreen: "avatar",
+          largeScreen: "full",
+        }}
+        chainStatus="icon"
+      />
     </div>
   );
 }
