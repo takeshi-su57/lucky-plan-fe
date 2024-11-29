@@ -126,27 +126,14 @@ export function useChangeContractStatus() {
         variant: "success",
       });
 
-      client.cache.updateQuery(
-        {
-          query: GET_ALL_CONTRACT_DOCUMENT,
-          variables: {},
-        },
-        (data) => {
-          if (data && data.getAllContracts.length > 0) {
-            return {
-              ...data,
-              getAllContracts: data.getAllContracts.map((contract) =>
-                contractInfo.id ===
-                getFragmentData(CONTRACT_INFO_FRAGMENT_DOCUMENT, contract).id
-                  ? contractInfo
-                  : contract,
-              ),
-            };
-          } else {
-            return data;
-          }
-        },
-      );
+      client.cache.writeFragment({
+        id: client.cache.identify({
+          __typename: contractInfo.__typename,
+          id: contractInfo.id,
+        }),
+        fragment: CONTRACT_INFO_FRAGMENT_DOCUMENT,
+        data: contractInfo,
+      });
     }
   }, [client.cache, error, enqueueSnackbar, updatedData]);
 
