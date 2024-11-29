@@ -1,6 +1,7 @@
 schema {
   query: Query
   mutation: Mutation
+  subscription: Subscription
 }
 
 type Action {
@@ -15,6 +16,20 @@ type Action {
 
 input AddUserInput {
   address: String!
+}
+
+type Bot {
+  followerAddress: String!
+  followerContractId: Int!
+  followerEndedBlock: Int
+  followerStartedBlock: Int
+  id: Int!
+  leaderAddress: String!
+  leaderContractId: Int!
+  leaderEndedBlock: Int
+  leaderStartedBlock: Int
+  status: BotStatus!
+  strategyId: Int!
 }
 
 type BotDetails {
@@ -105,6 +120,7 @@ scalar DateTime
 
 input FindPositionInput {
   address: String!
+  contractId: Int!
   index: Int!
 }
 
@@ -169,9 +185,25 @@ type MissionDetails {
   updatedAt: DateTime!
 }
 
+type MissionShallowDetails {
+  achievePosition: Position
+  achievePositionId: Int
+  bot: Bot!
+  botId: Int!
+  createdAt: DateTime!
+  id: Int!
+  status: MissionStatus!
+  targetPosition: Position!
+  targetPositionId: Int!
+  updatedAt: DateTime!
+}
+
 enum MissionStatus {
   Closed
+  Closing
+  Created
   Opened
+  Opening
 }
 
 type Mutation {
@@ -179,6 +211,7 @@ type Mutation {
   changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changePassword(input: ChangePasswordInput!): Boolean!
   changeUserRole(input: ChangeUserRoleInput!): User!
+  closeMission(id: Int!): MissionShallowDetails!
   createBot(input: CreateBotInput!): BotDetails!
   createContract(input: CreateContractInput!): Contract!
   createStrategy(input: CreateStrategyInput!): Strategy!
@@ -192,12 +225,14 @@ type Mutation {
 
 type Position {
   address: String!
+  contractId: Int!
   id: Int!
   index: Int!
 }
 
 type PositionInfo {
   address: String!
+  contractId: Int!
   index: Int!
 }
 
@@ -206,14 +241,11 @@ type Query {
   findActionsByPosition(positionId: Float!): [Action!]!
   findAllActions: [Action!]!
   findAllFollowerActions: [FollowerAction!]!
-  findAllMissions: [Mission!]!
   findAllPositions: [Position!]!
   findAllTasks: [Task!]!
   findBot(id: Int!): BotDetails!
   findContract(id: Int!): Contract!
   findFollowerAction(id: Int!): FollowerActionDetails
-  findMission(id: Int!): Mission
-  findMissionByBot(botId: Int!): [Mission!]!
   findPosition(input: FindPositionInput!): Position
   findPositionById(id: Int!): Position
   findStrategy(id: Int!): Strategy
@@ -224,6 +256,7 @@ type Query {
   getAllContracts: [Contract!]!
   getAllFollowers: [Follower!]!
   getAllLeaders: [User!]!
+  getAllMissions: [MissionShallowDetails!]!
   getAllStrategy: [Strategy!]!
   getAllStrategyMetadata: [StrategyMetadata!]!
   getAllUsers: [User!]!
@@ -252,6 +285,11 @@ type StrategyMetadata {
   title: String!
 }
 
+type Subscription {
+  missionAdded: MissionShallowDetails!
+  missionUpdated: MissionShallowDetails!
+}
+
 type Task {
   actionId: Int!
   createdAt: DateTime!
@@ -267,6 +305,7 @@ enum TaskStatus {
   Created
   Failed
   Initiated
+  Stopped
 }
 
 input UpdateStrategyMetadataInput {

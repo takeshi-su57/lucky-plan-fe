@@ -68,6 +68,24 @@ const cache = new InMemoryCache({
     Follower: {
       keyFields: ["address"],
     },
+    Strategy: {
+      keyFields: ["id"],
+    },
+    StrategyMetadata: {
+      keyFields: ["key"],
+    },
+    Contract: {
+      keyFields: ["id"],
+    },
+    Bot: {
+      keyFields: ["id"],
+    },
+    Position: {
+      keyFields: ["id"],
+    },
+    MissionShallowDetails: {
+      keyFields: ["id"],
+    },
   },
 });
 

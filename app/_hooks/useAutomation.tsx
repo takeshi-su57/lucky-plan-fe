@@ -9,6 +9,22 @@ import { CONTRACT_INFO_FRAGMENT_DOCUMENT } from "./useContract";
 import { STRATEGY_INFO_FRAGMENT_DOCUMENT } from "./useStrategy";
 import { GetAllBotsQuery } from "@/graphql/gql/graphql";
 
+export const BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment BotInfo on Bot {
+    id
+    leaderAddress
+    followerAddress
+    strategyId
+    leaderContractId
+    leaderStartedBlock
+    leaderEndedBlock
+    followerContractId
+    followerStartedBlock
+    followerEndedBlock
+    status
+  }
+`);
+
 export const BOTDETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment BotDetailsInfo on BotDetails {
     id
@@ -164,27 +180,14 @@ export function useLiveBot() {
         variant: "success",
       });
 
-      client.cache.updateQuery(
-        {
-          query: GET_ALL_BOTS_DOCUMENT,
-          variables: {},
-        },
-        (data) => {
-          if (data && data.getAllBots.length > 0) {
-            return {
-              ...data,
-              getAllBots: data.getAllBots.map((bot) =>
-                botInfo.id ===
-                getFragmentData(BOTDETAILS_INFO_FRAGMENT_DOCUMENT, bot).id
-                  ? botInfo
-                  : bot,
-              ),
-            };
-          } else {
-            return data;
-          }
-        },
-      );
+      client.cache.writeFragment({
+        id: client.cache.identify({
+          __typename: botInfo.__typename,
+          id: botInfo.id,
+        }),
+        fragment: BOTDETAILS_INFO_FRAGMENT_DOCUMENT,
+        data: botInfo,
+      });
     }
   }, [client.cache, newData, error, enqueueSnackbar]);
 
@@ -204,27 +207,14 @@ export function useStopBot() {
         variant: "success",
       });
 
-      client.cache.updateQuery(
-        {
-          query: GET_ALL_BOTS_DOCUMENT,
-          variables: {},
-        },
-        (data) => {
-          if (data && data.getAllBots.length > 0) {
-            return {
-              ...data,
-              getAllBots: data.getAllBots.map((bot) =>
-                botInfo.id ===
-                getFragmentData(BOTDETAILS_INFO_FRAGMENT_DOCUMENT, bot).id
-                  ? botInfo
-                  : bot,
-              ),
-            };
-          } else {
-            return data;
-          }
-        },
-      );
+      client.cache.writeFragment({
+        id: client.cache.identify({
+          __typename: botInfo.__typename,
+          id: botInfo.id,
+        }),
+        fragment: BOTDETAILS_INFO_FRAGMENT_DOCUMENT,
+        data: botInfo,
+      });
     }
   }, [client.cache, newData, error, enqueueSnackbar]);
 
