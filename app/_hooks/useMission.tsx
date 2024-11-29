@@ -22,6 +22,18 @@ export const POSITION_INFO_FRAGMENT_DOCUMENT = graphql(`
   }
 `);
 
+export const MISSION_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment MissionInfo on Mission {
+    id
+    botId
+    targetPositionId
+    achievePositionId
+    status
+    createdAt
+    updatedAt
+  }
+`);
+
 export const MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment MissionShallowDetailsInfo on MissionShallowDetails {
     id
@@ -76,11 +88,11 @@ export const MISSION_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
 `);
 
 function getMissionFragment(
-  bot: GetAllMissionsQuery["getAllMissions"][number],
+  mission: GetAllMissionsQuery["getAllMissions"][number],
 ) {
   const missionInfo = getFragmentData(
     MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-    bot,
+    mission,
   );
 
   return {

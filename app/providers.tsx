@@ -95,6 +95,15 @@ const cache = new InMemoryCache({
     MissionShallowDetails: {
       keyFields: ["id"],
     },
+    Mission: {
+      keyFields: ["id"],
+    },
+    TaskShallowDetails: {
+      keyFields: ["id"],
+    },
+    Action: {
+      keyFields: ["id"],
+    },
   },
 });
 
