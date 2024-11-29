@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useCallback, useMemo, useState } from "react";
-import { Tab, Tabs, Card, Button, CardBody } from "@nextui-org/react";
+import { Tab, Tabs, Card, Button, CardBody, Chip } from "@nextui-org/react";
 import { Address } from "viem";
 
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
@@ -11,7 +11,11 @@ import {
 } from "@/graphql/gql/graphql";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 
-import { useCloseMission, useGetAllMissions } from "../_hooks/useMission";
+import {
+  useCloseMission,
+  useGetAllMissions,
+  useSubscribeMission,
+} from "../_hooks/useMission";
 
 const columns: TableColumnProps[] = [
   {
@@ -50,6 +54,8 @@ type TabType = "all" | "created" | "opening" | "opened" | "closing" | "closed";
 export default function Page() {
   const allMissions = useGetAllMissions();
   const closeMission = useCloseMission();
+
+  useSubscribeMission();
 
   const [selected, setSelected] = useState<TabType>("all");
 
@@ -162,7 +168,7 @@ export default function Page() {
             },
             status: {
               sortableAmount: mission.status,
-              component: mission.status,
+              component: <Chip>{mission.status}</Chip>,
             },
             action: {
               component: btnCom,

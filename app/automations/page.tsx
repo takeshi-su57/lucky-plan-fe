@@ -8,6 +8,7 @@ import {
   Button,
   CardBody,
   useDisclosure,
+  Chip,
 } from "@nextui-org/react";
 import { Address } from "viem";
 
@@ -208,7 +209,7 @@ export default function Page() {
             },
             status: {
               sortableAmount: bot.status,
-              component: bot.status,
+              component: <Chip>{bot.status}</Chip>,
             },
             action: {
               component: btnCom,
