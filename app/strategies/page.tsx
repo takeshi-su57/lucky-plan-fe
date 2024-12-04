@@ -18,6 +18,7 @@ import {
   useRemoveStrategy,
 } from "../_hooks/useStrategy";
 import { CreateStrategyModal } from "../_components/StrategyWidgets/CreateStrategyModal";
+import { convertMinToLifetimeItem } from "@/utils";
 
 const strategyColumns: TableColumnProps[] = [
   {
@@ -36,6 +37,11 @@ const strategyColumns: TableColumnProps[] = [
     allowsSorting: true,
   },
   {
+    id: "capacity",
+    component: "Capacity",
+    allowsSorting: true,
+  },
+  {
     id: "collateral",
     component: "Collateral",
     allowsSorting: true,
@@ -43,11 +49,6 @@ const strategyColumns: TableColumnProps[] = [
   {
     id: "leverage",
     component: "Leverage",
-    allowsSorting: true,
-  },
-  {
-    id: "gas",
-    component: "gas",
     allowsSorting: true,
   },
   {
@@ -141,7 +142,16 @@ export default function Page() {
           component: (
             <div className="flex flex-col gap-1">
               <span>{strategy.ratio} %</span>
-              <span>{strategy.lifeTime} ms</span>
+              <span>{convertMinToLifetimeItem(strategy.lifeTime).label}</span>
+            </div>
+          ),
+        },
+        capacity: {
+          sortableAmount: strategy.maxCapacity,
+          component: (
+            <div className="flex flex-col gap-1">
+              <span>max: {Number(strategy.maxCapacity)} USDC</span>
+              <span>min: {Number(strategy.minCapacity)} USDC</span>
             </div>
           ),
         },
@@ -149,8 +159,8 @@ export default function Page() {
           sortableAmount: strategy.maxCollateral,
           component: (
             <div className="flex flex-col gap-1">
-              <span>max: {Number(strategy.maxCollateral) / 1000000} USDC</span>
-              <span>min: {Number(strategy.minCollateral) / 1000000} USDC</span>
+              <span>max: {Number(strategy.maxCollateral)} USDC</span>
+              <span>min: {Number(strategy.minCollateral)} USDC</span>
             </div>
           ),
         },
@@ -160,15 +170,6 @@ export default function Page() {
             <div className="flex flex-col gap-1">
               <span>max: {strategy.maxLeverage / 1000} x</span>
               <span>min: {strategy.minLeverage / 1000} x</span>
-            </div>
-          ),
-        },
-        gas: {
-          sortableAmount: strategy.maxGas,
-          component: (
-            <div className="flex flex-col gap-1">
-              <span>max: {Number(strategy.maxGas)} wei</span>
-              <span>min: {Number(strategy.minGas)} wei</span>
             </div>
           ),
         },

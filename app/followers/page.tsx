@@ -1,19 +1,30 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { Card, Button, CardBody, Spinner } from "@nextui-org/react";
+import {
+  Card,
+  Button,
+  CardBody,
+  Spinner,
+  Autocomplete,
+  AutocompleteItem,
+} from "@nextui-org/react";
 
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 
-import { FollowerInfoFragment } from "@/graphql/gql/graphql";
+import { FollowerDetailInfoFragment } from "@/graphql/gql/graphql";
 import { StandardModal } from "@/components/modals/StandardModal";
 import {
   useGenerateFollower,
-  useGetAllFollowers,
+  useGetAllFollowerDetails,
   useGetFollowerPrivateKey,
+  useSubscribeFollowerDetailUpdated,
+  useWithdrawAll,
 } from "@/app-hooks/useFollower";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { Address } from "viem";
+import { useGetAllContracts } from "../_hooks/useContract";
+import { shrinkAddress } from "@/utils";
 
 const columns: TableColumnProps[] = [
   {
@@ -21,9 +32,12 @@ const columns: TableColumnProps[] = [
     component: "Address",
   },
   {
+    id: "privateKey",
+    component: "Private Key",
+  },
+  {
     id: "ethBalance",
     component: "ETH",
-    allowsSorting: true,
   },
   {
     id: "usdcBalance",
@@ -37,14 +51,19 @@ const columns: TableColumnProps[] = [
 ];
 
 export default function Page() {
-  const allFollowers = useGetAllFollowers();
   const { getPrivateKey, data } = useGetFollowerPrivateKey();
   const generateFollower = useGenerateFollower();
+  const withdrawAll = useWithdrawAll();
+  const allContracts = useGetAllContracts();
 
+  const [contractId, setContractId] = useState<number | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
 
+  const allFollowers = useGetAllFollowerDetails(contractId);
+  useSubscribeFollowerDetailUpdated(contractId);
+
   const handleGetPrivateKey = useCallback(
-    (follower: FollowerInfoFragment) => {
+    (follower: FollowerDetailInfoFragment) => {
       getPrivateKey({
         variables: {
           input: {
@@ -52,10 +71,24 @@ export default function Page() {
           },
         },
       });
+    },
+    [getPrivateKey],
+  );
+
+  const handleWithdrawAll = useCallback(
+    (follower: FollowerDetailInfoFragment) => {
+      withdrawAll({
+        variables: {
+          input: {
+            address: follower.address,
+            contractId: follower.contractId,
+          },
+        },
+      });
 
       setSelectedAddress(follower.address);
     },
-    [getPrivateKey],
+    [withdrawAll],
   );
 
   const handleOpenChange = (isOpen: boolean) => {
@@ -75,35 +108,66 @@ export default function Page() {
       return [];
     }
     return allFollowers.map((follower) => ({
-      id: follower.address,
+      id: `${follower.address}-${follower.contractId}`,
       className: "group",
       data: {
         address: {
           component: <AddressWidget address={follower.address as Address} />,
         },
-        ethBalance: {
-          sortableAmount: follower.ethBalance,
-          component: Number(follower.ethBalance),
-        },
-        usdcBalance: {
-          sortableAmount: follower.usdcBalance,
-          component: Number(follower.usdcBalance),
-        },
-        action: {
+        privateKey: {
           component: (
             <Button onClick={() => handleGetPrivateKey(follower)}>
               Get Private Key
+            </Button>
+          ),
+        },
+        ethBalance: {
+          component: follower.ethBalance || "",
+        },
+        usdcBalance: {
+          component: follower.usdcBalance,
+        },
+        action: {
+          component: (
+            <Button onClick={() => handleWithdrawAll(follower)}>
+              Withdraw All
             </Button>
           ),
           className: "w-[50px]",
         },
       },
     }));
-  }, [allFollowers, handleGetPrivateKey]);
+  }, [allFollowers, handleGetPrivateKey, handleWithdrawAll]);
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <Autocomplete
+          label="Follower Contract"
+          variant="underlined"
+          defaultItems={allContracts}
+          placeholder="Search contract"
+          selectedKey={contractId}
+          className="w-[400px]"
+          onSelectionChange={(key) => setContractId(key as number | null)}
+        >
+          {(item) => (
+            <AutocompleteItem
+              key={item.id}
+              className="font-mono"
+              textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
+            >
+              <div className="flex flex-col">
+                <span className="text-small">Chain: {item.chainId}</span>
+                <span className="text-small">Contract: {item.address}</span>
+                <span className="text-tiny text-default-400">
+                  {item.description}
+                </span>
+              </div>
+            </AutocompleteItem>
+          )}
+        </Autocomplete>
+
         <Button color="primary" onClick={handleGenerateFollower}>
           Generate Follower
         </Button>

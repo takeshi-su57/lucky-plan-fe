@@ -77,6 +77,9 @@ const cache = new InMemoryCache({
     Follower: {
       keyFields: ["address"],
     },
+    FollowerDetails: {
+      keyFields: ["address", "contractId"],
+    },
     Strategy: {
       keyFields: ["id"],
     },
