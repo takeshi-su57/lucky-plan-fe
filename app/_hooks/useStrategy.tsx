@@ -18,12 +18,13 @@ export const STRATEGY_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment StrategyInfo on Strategy {
     id
     lifeTime
+    maxCapacity
+    minCapacity
     maxCollateral
-    maxGas
-    maxLeverage
     minCollateral
-    minGas
+    maxLeverage
     minLeverage
+    collateralBaseline
     params
     ratio
     strategyKey
@@ -135,7 +136,9 @@ export function useAddNewStrategy() {
               getAllStrategy: [...data.getAllStrategy, strategyInfo],
             };
           } else {
-            return data;
+            return {
+              getAllStrategy: [strategyInfo],
+            };
           }
         },
       );

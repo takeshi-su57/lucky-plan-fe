@@ -16,11 +16,14 @@ export const BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
     followerAddress
     strategyId
     leaderContractId
+    leaderCollateralBaseline
     leaderStartedBlock
     leaderEndedBlock
     followerContractId
     followerStartedBlock
     followerEndedBlock
+    startedAt
+    endedAt
     status
   }
 `);
@@ -32,11 +35,14 @@ export const BOTDETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     followerAddress
     strategyId
     leaderContractId
+    leaderCollateralBaseline
     leaderStartedBlock
     leaderEndedBlock
     followerContractId
     followerStartedBlock
     followerEndedBlock
+    startedAt
+    endedAt
     status
     followerContract {
       ...ContractInfo
@@ -157,7 +163,9 @@ export function useCreateBot() {
               getAllBots: [...data.getAllBots, botInfo],
             };
           } else {
-            return data;
+            return {
+              getAllBots: [botInfo],
+            };
           }
         },
       );

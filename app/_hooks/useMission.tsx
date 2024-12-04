@@ -169,14 +169,37 @@ export function useSubscribeMission() {
       });
 
       missionInfos.forEach((missionInfo) => {
-        client.cache.writeFragment({
-          id: client.cache.identify({
-            __typename: missionInfo.__typename,
-            id: missionInfo.id,
-          }),
-          fragment: MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-          data: missionInfo,
-        });
+        client.cache.updateQuery(
+          {
+            query: GET_ALL_MISSIONS_DOCUMENT,
+            variables: {},
+          },
+          (data) => {
+            if (data && data.getAllMissions.length > 0) {
+              const alreadyExists = data.getAllMissions.filter(
+                (mission) =>
+                  missionInfo.id ===
+                  getFragmentData(
+                    MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+                    mission,
+                  ).id,
+              );
+
+              if (alreadyExists.length > 0) {
+                return data;
+              }
+
+              return {
+                ...data,
+                getAllMissions: [...data.getAllMissions, missionInfo],
+              };
+            } else {
+              return {
+                getAllMissions: [missionInfo],
+              };
+            }
+          },
+        );
       });
     }
   }, [client.cache, enqueueSnackbar, error1, newData]);

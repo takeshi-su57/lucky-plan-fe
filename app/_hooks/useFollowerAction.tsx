@@ -68,14 +68,40 @@ export function useSubscribeFollowerAction() {
       });
 
       followerActionInfos.forEach((followerActionInfo) => {
-        client.cache.writeFragment({
-          id: client.cache.identify({
-            __typename: followerActionInfo.__typename,
-            id: followerActionInfo.id,
-          }),
-          fragment: FOLLOWER_ACTION_INFO_FRAGMENT_DOCUMENT,
-          data: followerActionInfo,
-        });
+        client.cache.updateQuery(
+          {
+            query: GET_ALL_FOLLOWER_ACTIONS_DOCUMENT,
+            variables: {},
+          },
+          (data) => {
+            if (data && data.getAllFollowerActions.length > 0) {
+              const alreadyExists = data.getAllFollowerActions.filter(
+                (followerAction) =>
+                  followerActionInfo.id ===
+                  getFragmentData(
+                    FOLLOWER_ACTION_INFO_FRAGMENT_DOCUMENT,
+                    followerAction,
+                  ).id,
+              );
+
+              if (alreadyExists.length > 0) {
+                return data;
+              }
+
+              return {
+                ...data,
+                getAllFollowerActions: [
+                  ...data.getAllFollowerActions,
+                  followerActionInfo,
+                ],
+              };
+            } else {
+              return {
+                getAllFollowerActions: [followerActionInfo],
+              };
+            }
+          },
+        );
       });
     }
   }, [client.cache, enqueueSnackbar, error1, newData]);

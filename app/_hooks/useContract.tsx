@@ -97,7 +97,9 @@ export function useCreateContract() {
               getAllContracts: [...data.getAllContracts, contractInfo],
             };
           } else {
-            return data;
+            return {
+              getAllContracts: [contractInfo],
+            };
           }
         },
       );
