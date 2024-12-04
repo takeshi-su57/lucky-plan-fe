@@ -12,6 +12,7 @@ import { useGetAllLeaders } from "@/app/_hooks/useUser";
 import { useGetAllFollowers } from "@/app/_hooks/useFollower";
 import { useGetAllStrategy } from "@/app/_hooks/useStrategy";
 import { shrinkAddress } from "@/utils";
+import { NumericInput } from "@/components/inputs/NumericInput";
 
 export type CreateAutomationModalProps = {
   isOpen: boolean;
@@ -38,12 +39,14 @@ export function CreateAutomationModal({
     null,
   );
   const [strategyId, setStrategyId] = useState<string | null>(null);
+  const [collateralBaseline, setCollateralBaseline] = useState<string>("");
 
   const isDisabled =
     !leaderAddress ||
     !followerAddress ||
     !leaderContractId ||
     !followerContractId ||
+    !collateralBaseline ||
     !strategyId;
 
   const handleConfirm = () => {
@@ -59,6 +62,7 @@ export function CreateAutomationModal({
           leaderContractId: +leaderContractId,
           followerContractId: +followerContractId,
           strategyId: +strategyId,
+          leaderCollateralBaseline: Math.floor(+collateralBaseline),
         },
       },
     });
@@ -136,7 +140,7 @@ export function CreateAutomationModal({
                 key={item.address}
                 textValue={item.address}
               >
-                {`${item.address}-${Number(item.usdcBalance)}USDC-${Number(item.ethBalance)}wei`}
+                {`${item.address}`}
               </AutocompleteItem>
             )}
           </Autocomplete>
@@ -168,6 +172,12 @@ export function CreateAutomationModal({
             )}
           </Autocomplete>
 
+          <NumericInput
+            amount={collateralBaseline}
+            onChange={setCollateralBaseline}
+            label="Collateral Baseline"
+          />
+
           <Autocomplete
             label="Strategy"
             variant="underlined"
@@ -186,15 +196,15 @@ export function CreateAutomationModal({
                   <span className="text-small">{`${item.strategyKey}(${item.id}, ${item.ratio}%)`}</span>
                   <span className="text-small">
                     Collateral:
-                    {`(${Number(item.minCollateral) / 1000000} ~ ${Number(item.maxCollateral) / 1000000}) USDC`}
+                    {`(${Number(item.minCollateral)} ~ ${Number(item.maxCollateral)}) USDC`}
                   </span>
                   <span className="text-small">
                     Leverage:
                     {`(${item.minLeverage / 1000} ~ ${item.maxLeverage / 1000}) x`}
                   </span>
                   <span className="text-small">
-                    Gas:
-                    {`(${Number(item.minGas)} ~ ${Number(item.maxGas)}) wei`}
+                    Capacity:
+                    {`(${item.minCapacity} ~ ${item.maxCapacity}) USDC`}
                   </span>
                 </div>
               </AutocompleteItem>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent } from "react";
+import { ChangeEvent, ReactNode } from "react";
 import { Input, InputSlots, SlotsToClasses } from "@nextui-org/react";
 
 import { NumericFormat } from "react-number-format";
@@ -14,6 +14,8 @@ export type NumericInputProps = {
   max?: string | number;
   step?: string | number;
   label?: string;
+  errorMessage?: ReactNode;
+  isInvalid?: boolean;
 };
 
 export function NumericInput({
@@ -25,13 +27,14 @@ export function NumericInput({
   max,
   step,
   label,
+  errorMessage,
+  isInvalid,
 }: NumericInputProps) {
   const handleChangeAmount = (e: ChangeEvent<HTMLInputElement>) => {
-    if (
-      e.target.value === "" ||
-      /^([0-9]+(?:[.,][0-9]*)?)$/.test(e.target.value)
-    ) {
-      onChange(e.target.value.replaceAll(",", ""));
+    const value = e.target.value.replaceAll(",", "");
+
+    if (e.target.value === "" || /^([0-9]+(?:[.,][0-9]*)?)$/.test(value)) {
+      onChange(value);
     }
   };
 
@@ -52,6 +55,8 @@ export function NumericInput({
       allowNegative={false}
       decimalScale={12}
       thousandSeparator
+      errorMessage={errorMessage}
+      isInvalid={isInvalid}
     />
   );
 }

@@ -132,14 +132,37 @@ export function useSubscribeTask() {
       });
 
       taskInfos.forEach((taskInfo) => {
-        client.cache.writeFragment({
-          id: client.cache.identify({
-            __typename: taskInfo.__typename,
-            id: taskInfo.id,
-          }),
-          fragment: TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-          data: taskInfo,
-        });
+        client.cache.updateQuery(
+          {
+            query: GET_ALL_TASKS_DOCUMENT,
+            variables: {},
+          },
+          (data) => {
+            if (data && data.getAllTasks.length > 0) {
+              const alreadyExists = data.getAllTasks.filter(
+                (task) =>
+                  taskInfo.id ===
+                  getFragmentData(
+                    TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+                    task,
+                  ).id,
+              );
+
+              if (alreadyExists.length > 0) {
+                return data;
+              }
+
+              return {
+                ...data,
+                getAllTasks: [...data.getAllTasks, taskInfo],
+              };
+            } else {
+              return {
+                getAllTasks: [taskInfo],
+              };
+            }
+          },
+        );
       });
     }
   }, [client.cache, enqueueSnackbar, error1, newData]);

@@ -17,20 +17,24 @@ input AddUserInput {
 }
 
 type Bot {
+  endedAt: DateTime
   followerAddress: String!
   followerContractId: Int!
   followerEndedBlock: Int
   followerStartedBlock: Int
   id: Int!
   leaderAddress: String!
+  leaderCollateralBaseline: Int!
   leaderContractId: Int!
   leaderEndedBlock: Int
   leaderStartedBlock: Int
+  startedAt: DateTime
   status: BotStatus!
   strategyId: Int!
 }
 
 type BotDetails {
+  endedAt: DateTime
   follower: Follower!
   followerAddress: String!
   followerContract: Contract!
@@ -40,10 +44,12 @@ type BotDetails {
   id: Int!
   leader: User!
   leaderAddress: String!
+  leaderCollateralBaseline: Int!
   leaderContract: Contract!
   leaderContractId: Int!
   leaderEndedBlock: Int
   leaderStartedBlock: Int
+  startedAt: DateTime
   status: BotStatus!
   strategy: Strategy!
   strategyId: Int!
@@ -88,6 +94,7 @@ input CreateBotInput {
   followerAddress: String!
   followerContractId: Int!
   leaderAddress: String!
+  leaderCollateralBaseline: Int!
   leaderContractId: Int!
   strategyId: Int!
 }
@@ -99,12 +106,13 @@ input CreateContractInput {
 }
 
 input CreateStrategyInput {
-  lifeTime: String!
-  maxCollateral: String!
-  maxGas: String!
+  collateralBaseline: Int!
+  lifeTime: Float!
+  maxCapacity: Float!
+  maxCollateral: Float!
   maxLeverage: Int!
-  minCollateral: String!
-  minGas: String!
+  minCapacity: Float!
+  minCollateral: Float!
   minLeverage: Int!
   params: String!
   ratio: Int!
@@ -125,9 +133,7 @@ input FindPositionInput {
 type Follower {
   accountIndex: Int!
   address: String!
-  ethBalance: String!
   publicKey: String!
-  usdcBalance: String!
 }
 
 type FollowerAction {
@@ -142,6 +148,15 @@ type FollowerActionDetails {
   id: Int!
   task: Task!
   taskId: Int!
+}
+
+type FollowerDetail {
+  accountIndex: Int!
+  address: String!
+  contractId: Int!
+  ethBalance: String
+  publicKey: String!
+  usdcBalance: String
 }
 
 input GetFollowerByAddressInput {
@@ -223,6 +238,7 @@ type Mutation {
     input: UpdateStrategyMetadataInput!
     key: String!
   ): StrategyMetadata!
+  withdrawAll(input: WithdrawAllInput!): Boolean!
 }
 
 type Position {
@@ -255,6 +271,7 @@ type Query {
   getAllBots: [BotDetails!]!
   getAllContracts: [Contract!]!
   getAllFollowerActions: [FollowerAction!]!
+  getAllFollowerDetails(contractId: Int!): [FollowerDetail!]!
   getAllFollowers: [Follower!]!
   getAllLeaders: [User!]!
   getAllMissions: [MissionShallowDetails!]!
@@ -262,19 +279,19 @@ type Query {
   getAllStrategyMetadata: [StrategyMetadata!]!
   getAllTasks: [TaskShallowDetails!]!
   getAllUsers: [User!]!
-  getFollowerByAddress(input: GetFollowerByAddressInput!): Follower!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
   getUserByAddress(input: GetUserByAddressInput!): User
 }
 
 type Strategy {
+  collateralBaseline: Int!
   id: Int!
-  lifeTime: String!
-  maxCollateral: String!
-  maxGas: String!
+  lifeTime: Int!
+  maxCapacity: Int!
+  maxCollateral: Int!
   maxLeverage: Int!
-  minCollateral: String!
-  minGas: String!
+  minCapacity: Int!
+  minCollateral: Int!
   minLeverage: Int!
   params: String!
   ratio: Int!
@@ -290,6 +307,7 @@ type StrategyMetadata {
 type Subscription {
   actionAdded: [Action!]!
   followerActionAdded: [FollowerAction!]!
+  followerDetailsUpdated(contractId: Int!): [FollowerDetail!]!
   missionAdded: [MissionShallowDetails!]!
   missionUpdated: [MissionShallowDetails!]!
   taskAdded: [TaskShallowDetails!]!
@@ -338,4 +356,9 @@ type User {
 enum UserRole {
   Leader
   User
+}
+
+input WithdrawAllInput {
+  address: String!
+  contractId: Int!
 }

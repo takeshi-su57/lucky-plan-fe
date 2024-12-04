@@ -121,11 +121,13 @@ export function useChangeUserRole() {
             } else {
               return {
                 ...data,
-                getAllUsers: [...data.getAllLeaders, userInfo],
+                getAllLeaders: [...data.getAllLeaders, userInfo],
               };
             }
           } else {
-            return data;
+            return {
+              getAllLeaders: [userInfo],
+            };
           }
         },
       );
@@ -175,7 +177,9 @@ export function useAddNewUser() {
               getAllUsers: [...data.getAllUsers, userInfo],
             };
           } else {
-            return data;
+            return {
+              getAllUsers: [userInfo],
+            };
           }
         },
       );

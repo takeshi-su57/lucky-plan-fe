@@ -150,6 +150,10 @@ export default function Page() {
               component: (
                 <div className="flex flex-col">
                   <AddressWidget address={bot.leaderAddress as Address} />
+                  <span>
+                    Leader Collateral Baseline: {bot.leaderCollateralBaseline}{" "}
+                    USDC
+                  </span>
                   <span>Chain: {bot.leaderContract.chainId}</span>
                   <span className="flex items-center gap-2">
                     Contract:
@@ -194,15 +198,15 @@ export default function Page() {
                   <span className="text-small">{`${bot.strategy.strategyKey}(${bot.strategy.id}, ${bot.strategy.ratio}%)`}</span>
                   <span className="text-small">
                     Collateral:
-                    {`(${Number(bot.strategy.minCollateral) / 1000000} ~ ${Number(bot.strategy.maxCollateral) / 1000000}) USDC`}
+                    {`(${Number(bot.strategy.minCollateral)} ~ ${Number(bot.strategy.maxCollateral)}) USDC`}
                   </span>
                   <span className="text-small">
                     Leverage:
                     {`(${bot.strategy.minLeverage / 1000} ~ ${bot.strategy.maxLeverage / 1000}) x`}
                   </span>
                   <span className="text-small">
-                    Gas:
-                    {`(${Number(bot.strategy.minGas)} ~ ${Number(bot.strategy.maxGas)}) wei`}
+                    Capacity:
+                    {`(${Number(bot.strategy.maxCapacity)} ~ ${Number(bot.strategy.minCapacity)}) USDC`}
                   </span>
                 </div>
               ),
