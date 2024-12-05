@@ -11,7 +11,6 @@ import { WagmiProvider } from "wagmi";
 import { mainnet, polygon, optimism, arbitrum, base } from "wagmi/chains";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
 import { SnackbarProvider } from "notistack";
 import {
   split,
@@ -22,7 +21,10 @@ import {
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
-import { getMainDefinition } from "@apollo/client/utilities";
+import {
+  getMainDefinition,
+  relayStylePagination,
+} from "@apollo/client/utilities";
 import { createClient } from "graphql-ws";
 
 import "@rainbow-me/rainbowkit/styles.css";
@@ -71,6 +73,11 @@ const authLink = setContext((_, { headers }) => {
 
 const cache = new InMemoryCache({
   typePolicies: {
+    Query: {
+      fields: {
+        getPnlSnapshots: relayStylePagination(["contractId", "kind"]),
+      },
+    },
     User: {
       keyFields: ["address"],
     },
@@ -108,6 +115,15 @@ const cache = new InMemoryCache({
       keyFields: ["id"],
     },
     FollowerAction: {
+      keyFields: ["id"],
+    },
+    PnlSnapshotDetails: {
+      keyFields: ["id"],
+    },
+    PnlSnapshotDetailsEdge: {
+      keyFields: ["cursor"],
+    },
+    TradeHistory: {
       keyFields: ["id"],
     },
   },

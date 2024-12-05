@@ -103,6 +103,7 @@ input CreateContractInput {
   address: String!
   chainId: Int!
   description: String!
+  lastBlockNumber: Int!
 }
 
 input CreateStrategyInput {
@@ -241,6 +242,43 @@ type Mutation {
   withdrawAll(input: WithdrawAllInput!): Boolean!
 }
 
+type PageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
+type PnlSnapshotDetails {
+  accUSDPnl: Int!
+  address: String!
+  contractId: Int!
+  histories: [TradeHistory!]!
+  id: Int!
+  kind: PnlSnapshotKind!
+}
+
+type PnlSnapshotDetailsConnection {
+  edges: [PnlSnapshotDetailsEdge!]!
+  pageInfo: PageInfo!
+}
+
+type PnlSnapshotDetailsEdge {
+  cursor: Int!
+  node: PnlSnapshotDetails!
+}
+
+enum PnlSnapshotKind {
+  ALL_TIME
+  DAY
+  HALF_YEAR
+  MONTH
+  THREE_MONTH
+  TWO_MONTH
+  TWO_WEEK
+  TWO_YEAR
+  WEEK
+  YEAR
+}
+
 type Position {
   address: String!
   contractId: Int!
@@ -280,6 +318,13 @@ type Query {
   getAllTasks: [TaskShallowDetails!]!
   getAllUsers: [User!]!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
+  getPnlSnapshots(
+    after: Int
+    contractId: Int!
+    first: Int!
+    kind: PnlSnapshotKind!
+  ): PnlSnapshotDetailsConnection!
+  getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getUserByAddress(input: GetUserByAddressInput!): User
 }
 
@@ -341,6 +386,18 @@ enum TaskStatus {
   Failed
   Initiated
   Stopped
+}
+
+type TradeHistory {
+  address: String!
+  blockNumber: Int!
+  contractId: Int!
+  eventName: String!
+  id: Int!
+  in: Int!
+  out: Int!
+  pnl: Int!
+  timestamp: DateTime!
 }
 
 input UpdateStrategyMetadataInput {
