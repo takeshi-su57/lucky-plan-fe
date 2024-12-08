@@ -103,7 +103,13 @@ export default function Page() {
           },
           role: {
             sortableAmount: user.role,
-            component: <Chip>{user.role}</Chip>,
+            component: (
+              <Chip
+                color={user.role === UserRole.Leader ? "success" : "default"}
+              >
+                {user.role}
+              </Chip>
+            ),
           },
           changeRole: {
             component: (
@@ -141,7 +147,7 @@ export default function Page() {
             columns={columns}
             rows={rows}
             classNames={{
-              tr: "hover:bg-white/5 font-mono cursor-pointer",
+              tr: "font-mono cursor-pointer",
               td: "py-3 ",
               th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
             }}

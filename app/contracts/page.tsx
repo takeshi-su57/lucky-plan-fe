@@ -1,15 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import {
-  Tab,
-  Tabs,
-  Card,
-  Button,
-  CardBody,
-  useDisclosure,
-  Chip,
-} from "@nextui-org/react";
+import { Tab, Tabs, Card, Button, CardBody, Chip } from "@nextui-org/react";
 
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 import { ContractInfoFragment, ContractStatus } from "@/graphql/gql/graphql";
@@ -17,7 +9,7 @@ import {
   useChangeContractStatus,
   useGetAllContracts,
 } from "@/app-hooks/useContract";
-import { CreateContractModal } from "@/app-components/ContractWidgets/CreateContractModal";
+
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { Address } from "viem";
 
@@ -59,8 +51,6 @@ export default function Page() {
   const changeContractStatus = useChangeContractStatus();
 
   const [selected, setSelected] = useState<TabType>("all");
-
-  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   const handleToggleStatus = useCallback(
     (contract: ContractInfoFragment) => {
@@ -112,7 +102,17 @@ export default function Page() {
           },
           status: {
             sortableAmount: contract.status,
-            component: <Chip>{contract.status}</Chip>,
+            component: (
+              <Chip
+                color={
+                  contract.status === ContractStatus.Live
+                    ? "success"
+                    : "default"
+                }
+              >
+                {contract.status}
+              </Chip>
+            ),
           },
           action: {
             component: (
@@ -138,10 +138,6 @@ export default function Page() {
           <Tab key="live" title="Live" />
           <Tab key="dead" title="Dead" />
         </Tabs>
-
-        <Button color="primary" onClick={onOpen}>
-          Add New Contract
-        </Button>
       </div>
 
       <Card>
@@ -150,19 +146,13 @@ export default function Page() {
             columns={columns}
             rows={rows}
             classNames={{
-              tr: "hover:bg-white/5 font-mono cursor-pointer",
+              tr: "font-mono cursor-pointer",
               td: "py-3 ",
               th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
             }}
           />
         </CardBody>
       </Card>
-
-      <CreateContractModal
-        isOpen={isOpen}
-        onClose={onClose}
-        onOpenChange={onOpenChange}
-      />
     </div>
   );
 }
