@@ -23,6 +23,11 @@ export const links = [
     label: "Follower Action",
     title: "Follower Action Explorer",
   },
+  {
+    id: "leaderboards",
+    label: "Leaderboard",
+    title: "Leaderboard Explorer",
+  },
 ];
 
 export function Sidebar() {

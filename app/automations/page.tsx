@@ -18,6 +18,14 @@ import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { useGetAllBots, useLiveBot, useStopBot } from "../_hooks/useAutomation";
 import { CreateAutomationModal } from "../_components/AutomationWidgets/CreateAutomationModal";
 
+const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
+  {
+    [BotStatus.Created]: "default",
+    [BotStatus.Live]: "success",
+    [BotStatus.Stop]: "danger",
+    [BotStatus.Dead]: "default",
+  };
+
 const columns: TableColumnProps[] = [
   {
     id: "id",
@@ -213,7 +221,9 @@ export default function Page() {
             },
             status: {
               sortableAmount: bot.status,
-              component: <Chip>{bot.status}</Chip>,
+              component: (
+                <Chip color={colorsByBotsStatus[bot.status]}>{bot.status}</Chip>
+              ),
             },
             action: {
               component: btnCom,
@@ -250,7 +260,7 @@ export default function Page() {
             columns={columns}
             rows={rows}
             classNames={{
-              tr: "hover:bg-white/5 font-mono cursor-pointer",
+              tr: "font-mono cursor-pointer",
               td: "py-3",
               th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
             }}

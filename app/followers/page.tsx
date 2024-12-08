@@ -179,7 +179,7 @@ export default function Page() {
             columns={columns}
             rows={rows}
             classNames={{
-              tr: "hover:bg-white/5 font-mono cursor-pointer",
+              tr: "font-mono cursor-pointer",
               td: "py-3 ",
               th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
             }}

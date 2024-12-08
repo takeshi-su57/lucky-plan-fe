@@ -231,6 +231,7 @@ type Mutation {
   createStrategy(input: CreateStrategyInput!): Strategy!
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
+  initalizePnlSnapshot: Boolean!
   liveBot(id: Int!): BotDetails!
   performTask(id: Int!): TaskShallowDetails!
   removeStrategy(id: Int!): Strategy!
