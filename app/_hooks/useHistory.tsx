@@ -1,10 +1,11 @@
 "use client";
 
-import { useQuery } from "@apollo/client";
+import { useApolloClient, useLazyQuery, useMutation } from "@apollo/client";
 
 import { getFragmentData, graphql } from "@/gql/index";
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { GetPnlSnapshotsQuery, PnlSnapshotKind } from "@/graphql/gql/graphql";
+import { useSnackbar } from "notistack";
 
 export const TRADEHISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment TradeHistoryInfo on TradeHistory {
@@ -68,6 +69,12 @@ export const GET_PNL_SNAPSHOTS_DOCUMENT = graphql(`
   }
 `);
 
+export const INITIALIZE_PNL_SNAPSHOT_DOCUMENT = graphql(`
+  mutation initalizePnlSnapshot {
+    initalizePnlSnapshot
+  }
+`);
+
 function getPnlSnapshotInfo(
   snapshot: GetPnlSnapshotsQuery["getPnlSnapshots"]["edges"][number]["node"],
 ) {
@@ -84,11 +91,22 @@ function getPnlSnapshotInfo(
   };
 }
 
-export function useGetAllTradeHistory(variables?: {
-  address: string;
-  contractId: number;
-}) {
-  const { data } = useQuery(GET_ALL_TRADEHISTORIES_DOCUMENT, { variables });
+export function useGetAllTradeHistory(
+  address: string | null,
+  contractId: string | null,
+) {
+  const [query, { data }] = useLazyQuery(GET_ALL_TRADEHISTORIES_DOCUMENT);
+
+  useEffect(() => {
+    if (address && contractId) {
+      query({
+        variables: {
+          address,
+          contractId: +contractId,
+        },
+      });
+    }
+  }, [address, contractId, query]);
 
   return useMemo(() => {
     if (!data) {
@@ -100,18 +118,25 @@ export function useGetAllTradeHistory(variables?: {
   }, [data]);
 }
 
-export function useGetPnlSnapshots(variables?: {
-  contractId: number;
-  kind: PnlSnapshotKind;
-}) {
-  const { data, fetchMore, loading } = useQuery(GET_PNL_SNAPSHOTS_DOCUMENT, {
-    variables: variables
-      ? {
-          ...variables,
+export function useGetPnlSnapshots(
+  contractId: string | null,
+  kind: PnlSnapshotKind,
+) {
+  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
+    GET_PNL_SNAPSHOTS_DOCUMENT,
+  );
+
+  useEffect(() => {
+    if (contractId) {
+      query({
+        variables: {
+          contractId: +contractId,
+          kind,
           first: 20,
-        }
-      : undefined,
-  });
+        },
+      });
+    }
+  }, [contractId, kind, query]);
 
   const pnlSnapshots = useMemo(() => {
     if (!data) {
@@ -122,9 +147,47 @@ export function useGetPnlSnapshots(variables?: {
     );
   }, [data]);
 
+  const handleFetchMore = useCallback(() => {
+    if (data && !error && contractId) {
+      fetchMore({
+        variables: {
+          contractId: +contractId,
+          kind,
+          first: 20,
+          after: data.getPnlSnapshots.pageInfo.endCursor,
+        },
+      });
+    }
+  }, [contractId, data, error, fetchMore, kind]);
+
   return {
+    hasMore: data?.getPnlSnapshots.pageInfo.hasNextPage,
     pnlSnapshots,
-    fetchMore,
+    fetchMore: handleFetchMore,
     loading,
   };
+}
+
+export function useInitalizePnlSnapshot() {
+  const [initailizePnlSnapshot, { data, error }] = useMutation(
+    INITIALIZE_PNL_SNAPSHOT_DOCUMENT,
+  );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      if (data.initalizePnlSnapshot) {
+        enqueueSnackbar("Success at initialize pnl snapshot!", {
+          variant: "success",
+        });
+      } else {
+        enqueueSnackbar("Failed at initialize pnl snapshot", {
+          variant: "error",
+        });
+      }
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return initailizePnlSnapshot;
 }
