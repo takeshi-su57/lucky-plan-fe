@@ -15,7 +15,12 @@ import { Address } from "viem";
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 import { BotDetailsInfoFragment, BotStatus } from "@/graphql/gql/graphql";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
-import { useGetAllBots, useLiveBot, useStopBot } from "../_hooks/useAutomation";
+import {
+  useDeleteBot,
+  useGetAllBots,
+  useLiveBot,
+  useStopBot,
+} from "../_hooks/useAutomation";
 import { CreateAutomationModal } from "../_components/AutomationWidgets/CreateAutomationModal";
 
 const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
@@ -65,10 +70,22 @@ export default function Page() {
   const allBots = useGetAllBots();
   const liveBot = useLiveBot();
   const stopBot = useStopBot();
+  const deleteBot = useDeleteBot();
 
   const [selected, setSelected] = useState<TabType>("all");
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+
+  const handleDelete = useCallback(
+    (bot: BotDetailsInfoFragment) => {
+      deleteBot({
+        variables: {
+          id: bot.id,
+        },
+      });
+    },
+    [deleteBot],
+  );
 
   const handleLive = useCallback(
     (bot: BotDetailsInfoFragment) => {
@@ -123,9 +140,14 @@ export default function Page() {
 
         if (bot.status === BotStatus.Created) {
           btnCom = (
-            <Button onClick={() => handleLive(bot)} color="danger">
-              Live
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={() => handleDelete(bot)} color="default">
+                Delete
+              </Button>
+              <Button onClick={() => handleLive(bot)} color="danger">
+                Live
+              </Button>
+            </div>
           );
         }
 
@@ -232,7 +254,7 @@ export default function Page() {
           },
         };
       });
-  }, [allBots, handleLive, handleStop, selected]);
+  }, [allBots, handleDelete, handleLive, handleStop, selected]);
 
   return (
     <div className="flex flex-col gap-6">

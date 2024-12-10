@@ -13,6 +13,7 @@ import {
 
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 import {
+  MissionStatus,
   TaskShallowDetailsInfoFragment,
   TaskStatus,
 } from "@/graphql/gql/graphql";
@@ -22,6 +23,7 @@ import {
   usePerformTask,
   useSubscribeTask,
 } from "@/app-hooks/useTask";
+import { useCloseMission, useSubscribeMission } from "../_hooks/useMission";
 
 const columns: TableColumnProps[] = [
   {
@@ -67,12 +69,14 @@ type TabType =
 export default function Page() {
   const allTasks = useGetAllTasks();
   const performTask = usePerformTask();
+  const closeMission = useCloseMission();
+  useSubscribeMission();
 
   useSubscribeTask();
 
   const [selected, setSelected] = useState<TabType>("all");
 
-  const handlePerformMission = useCallback(
+  const handlePerformTask = useCallback(
     (task: TaskShallowDetailsInfoFragment) => {
       performTask({
         variables: {
@@ -83,11 +87,23 @@ export default function Page() {
     [performTask],
   );
 
+  const handleCloseMission = useCallback(
+    (missionId: number) => {
+      closeMission({
+        variables: {
+          id: missionId,
+        },
+      });
+    },
+    [closeMission],
+  );
+
   const rows = useMemo(() => {
     if (allTasks.length === 0) {
       return [];
     }
     return allTasks
+      .sort((a, b) => b.id - a.id)
       .filter((task) => {
         if (selected === "all") {
           return true;
@@ -120,11 +136,23 @@ export default function Page() {
       .map((task) => {
         let btnCom: ReactNode = null;
 
-        if (task.status === TaskStatus.Failed) {
+        if (
+          task.status === TaskStatus.Failed &&
+          task.mission.status !== MissionStatus.Closed
+        ) {
           btnCom = (
-            <Button onClick={() => handlePerformMission(task)} color="danger">
-              Perform
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={() => handlePerformTask(task)} color="primary">
+                Perform
+              </Button>
+
+              <Button
+                onClick={() => handleCloseMission(task.missionId)}
+                color="danger"
+              >
+                Close Mission
+              </Button>
+            </div>
           );
         }
 
@@ -153,7 +181,9 @@ export default function Page() {
               component: (
                 <div className="flex flex-col gap-1">
                   {task.logs.map((log, index) => (
-                    <Snippet key={index}>{log}</Snippet>
+                    <Snippet key={index}>
+                      <div className="!max-w-[500px] text-wrap">{log}</div>
+                    </Snippet>
                   ))}
                 </div>
               ),
@@ -169,7 +199,7 @@ export default function Page() {
           },
         };
       });
-  }, [allTasks, handlePerformMission, selected]);
+  }, [allTasks, handlePerformTask, handleCloseMission, selected]);
 
   return (
     <div className="flex flex-col gap-6">

@@ -56,7 +56,7 @@ export default function Page() {
   const withdrawAll = useWithdrawAll();
   const allContracts = useGetAllContracts();
 
-  const [contractId, setContractId] = useState<number | null>(null);
+  const [contractId, setContractId] = useState<string | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
 
   const allFollowers = useGetAllFollowerDetails(contractId);
@@ -71,6 +71,8 @@ export default function Page() {
           },
         },
       });
+
+      setSelectedAddress(follower.address);
     },
     [getPrivateKey],
   );
@@ -85,8 +87,6 @@ export default function Page() {
           },
         },
       });
-
-      setSelectedAddress(follower.address);
     },
     [withdrawAll],
   );
@@ -122,10 +122,10 @@ export default function Page() {
           ),
         },
         ethBalance: {
-          component: follower.ethBalance || "",
+          component: (Number(follower.ethBalance) / 1e18).toFixed(9) || "",
         },
         usdcBalance: {
-          component: follower.usdcBalance,
+          component: Number(follower.usdcBalance) / 1e6,
         },
         action: {
           component: (
@@ -149,7 +149,7 @@ export default function Page() {
           placeholder="Search contract"
           selectedKey={contractId}
           className="w-[400px]"
-          onSelectionChange={(key) => setContractId(key as number | null)}
+          onSelectionChange={(key) => setContractId(key as string | null)}
         >
           {(item) => (
             <AutocompleteItem

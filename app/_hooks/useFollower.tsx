@@ -91,9 +91,9 @@ export function useGetAllFollowers() {
   }, [data]);
 }
 
-export function useGetAllFollowerDetails(contractId: number | null) {
+export function useGetAllFollowerDetails(contractId: string | null) {
   const { data } = useQuery(GET_ALL_FOLLOWER_DETAILS_DOCUMENT, {
-    variables: contractId !== null ? { contractId } : undefined,
+    variables: contractId !== null ? { contractId: +contractId } : undefined,
   });
 
   return useMemo(() => {
@@ -107,14 +107,14 @@ export function useGetAllFollowerDetails(contractId: number | null) {
   }, [data]);
 }
 
-export function useSubscribeFollowerDetailUpdated(contractId: number | null) {
+export function useSubscribeFollowerDetailUpdated(contractId: string | null) {
   const { data, error } = useSubscription(
     FOLLOWER_DETAILS_UPDATED_SUBSCRIPTION_DOCUMENT,
     {
       variables:
         contractId !== null
           ? {
-              contractId,
+              contractId: +contractId,
             }
           : undefined,
     },

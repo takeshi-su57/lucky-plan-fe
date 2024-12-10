@@ -75,6 +75,7 @@ export default function Page() {
       return [];
     }
     return allMissions
+      .sort((a, b) => b.id - a.id)
       .filter((mission) => {
         if (selected === "all") {
           return true;
