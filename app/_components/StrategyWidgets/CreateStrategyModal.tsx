@@ -169,7 +169,7 @@ export function CreateStrategyModal({
 
   const isDisabled =
     strategyHelper.trim() !== "" ||
-    ratioHelper.trim() !== "" ||
+    (strategy === "ratioCopy" && ratioHelper.trim() !== "") ||
     maxCollateralHelper.trim() !== "" ||
     minCollateralHelper.trim() !== "" ||
     maxLeverageHelper.trim() !== "" ||
@@ -180,7 +180,7 @@ export function CreateStrategyModal({
   const handleConfirm = () => {
     if (
       !strategy ||
-      ratio.trim() === "" ||
+      (strategy === "ratioCopty" && ratio.trim() === "") ||
       lifeTimeScale.trim() === "" ||
       maxCollateral.trim() === "" ||
       minCollateral.trim() === "" ||
@@ -252,8 +252,10 @@ export function CreateStrategyModal({
                 onChange={setRatio}
                 isDisabled={strategy !== "ratioCopy"}
                 label="Ratio"
-                errorMessage={ratioHelper}
-                isInvalid={ratioHelper.trim() !== ""}
+                errorMessage={strategy === "ratioCopy" && ratioHelper}
+                isInvalid={
+                  strategy === "ratioCopy" && ratioHelper.trim() !== ""
+                }
               />
             </div>
 
@@ -264,7 +266,7 @@ export function CreateStrategyModal({
               onChange={handleChangeLifetime}
               selectionMode="single"
               className="flex-1"
-              isDisabled={ratioHelper.trim() !== "" || strategy !== "ratioCopy"}
+              isDisabled={strategy === "ratioCopy" && ratioHelper.trim() !== ""}
             >
               {lifeTimeItems.map((item) => (
                 <SelectItem key={item.id}>{item.label}</SelectItem>
@@ -279,7 +281,7 @@ export function CreateStrategyModal({
                 onChange={setMaxCapacity}
                 label="Max Capacity"
                 isDisabled={
-                  ratioHelper.trim() !== "" || strategy !== "ratioCopy"
+                  strategy === "ratioCopy" && ratioHelper.trim() !== ""
                 }
                 errorMessage={maxCapacityHelper}
                 isInvalid={maxCapacityHelper.trim() !== ""}

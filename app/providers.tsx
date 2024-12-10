@@ -99,6 +99,9 @@ const cache = new InMemoryCache({
     Bot: {
       keyFields: ["id"],
     },
+    BotDetails: {
+      keyFields: ["id"],
+    },
     Position: {
       keyFields: ["id"],
     },

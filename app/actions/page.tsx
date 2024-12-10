@@ -61,7 +61,11 @@ export default function Page() {
             component: action.blockNumber,
           },
           args: {
-            component: <Snippet>{action.args}</Snippet>,
+            component: (
+              <Snippet>
+                <div className="!max-w-[500px] text-wrap">{action.args}</div>
+              </Snippet>
+            ),
           },
           createdAt: {
             component: action.createdAt,

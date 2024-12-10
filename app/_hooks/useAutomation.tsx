@@ -78,6 +78,12 @@ export const CREATE_BOT_DOCUMENT = graphql(`
   }
 `);
 
+export const DELETE_BOT_DOCUMENT = graphql(`
+  mutation deleteBot($id: Int!) {
+    deleteBot(id: $id)
+  }
+`);
+
 export const LIVE_BOT_DOCUMENT = graphql(`
   mutation liveBot($id: Int!) {
     liveBot(id: $id) {
@@ -173,6 +179,45 @@ export function useCreateBot() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return createBot;
+}
+
+export function useDeleteBot() {
+  const [deleteBot, { data, error }] = useMutation(DELETE_BOT_DOCUMENT);
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      const deletedBotId = data.deleteBot;
+
+      enqueueSnackbar("Success at deleting a bot!", {
+        variant: "success",
+      });
+
+      client.cache.updateQuery(
+        {
+          query: GET_ALL_BOTS_DOCUMENT,
+          variables: {},
+        },
+        (data) => {
+          if (data && data.getAllBots.length > 0) {
+            return {
+              ...data,
+              getAllBots: data.getAllBots.filter(
+                (bot) =>
+                  deletedBotId !==
+                  getFragmentData(BOTDETAILS_INFO_FRAGMENT_DOCUMENT, bot).id,
+              ),
+            };
+          } else {
+            return data;
+          }
+        },
+      );
+    }
+  }, [client.cache, data, error, enqueueSnackbar]);
+
+  return deleteBot;
 }
 
 export function useLiveBot() {
