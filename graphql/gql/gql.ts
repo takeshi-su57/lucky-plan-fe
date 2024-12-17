@@ -65,7 +65,8 @@ const documents = {
     "\n  fragment UserInfo on User {\n    address\n    role\n  }\n": types.UserInfoFragmentDoc,
     "\n  fragment UserHistoryInfo on UserHistory {\n    address\n    role\n    histories {\n      ...TradeHistoryInfo\n    }\n  }\n": types.UserHistoryInfoFragmentDoc,
     "\n  query getAllUsers {\n    getAllUsers {\n      ...UserInfo\n    }\n  }\n": types.GetAllUsersDocument,
-    "\n  query getAllLeaders($contractId: Int!) {\n    getAllLeaders(contractId: $contractId) {\n      ...UserHistoryInfo\n    }\n  }\n": types.GetAllLeadersDocument,
+    "\n  query getAllLeaders {\n    getAllLeaders {\n      ...UserInfo\n    }\n  }\n": types.GetAllLeadersDocument,
+    "\n  query getAllLeaderHistories($contractId: Int!) {\n    getAllLeaderHistories(contractId: $contractId) {\n      ...UserHistoryInfo\n    }\n  }\n": types.GetAllLeaderHistoriesDocument,
     "\n  mutation changeUserRole($input: ChangeUserRoleInput!) {\n    changeUserRole(input: $input) {\n      ...UserInfo\n    }\n  }\n": types.ChangeUserRoleDocument,
     "\n  mutation addUser($input: AddUserInput!) {\n    addUser(input: $input) {\n      ...UserInfo\n    }\n  }\n": types.AddUserDocument,
     "\n  mutation addLeader($input: AddUserInput!) {\n    addLeader(input: $input) {\n      ...UserInfo\n    }\n  }\n": types.AddLeaderDocument,
@@ -292,7 +293,11 @@ export function graphql(source: "\n  query getAllUsers {\n    getAllUsers {\n   
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query getAllLeaders($contractId: Int!) {\n    getAllLeaders(contractId: $contractId) {\n      ...UserHistoryInfo\n    }\n  }\n"): (typeof documents)["\n  query getAllLeaders($contractId: Int!) {\n    getAllLeaders(contractId: $contractId) {\n      ...UserHistoryInfo\n    }\n  }\n"];
+export function graphql(source: "\n  query getAllLeaders {\n    getAllLeaders {\n      ...UserInfo\n    }\n  }\n"): (typeof documents)["\n  query getAllLeaders {\n    getAllLeaders {\n      ...UserInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query getAllLeaderHistories($contractId: Int!) {\n    getAllLeaderHistories(contractId: $contractId) {\n      ...UserHistoryInfo\n    }\n  }\n"): (typeof documents)["\n  query getAllLeaderHistories($contractId: Int!) {\n    getAllLeaderHistories(contractId: $contractId) {\n      ...UserHistoryInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

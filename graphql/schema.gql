@@ -314,7 +314,8 @@ type Query {
   getAllFollowerActions: [FollowerAction!]!
   getAllFollowerDetails(contractId: Int!): [FollowerDetail!]!
   getAllFollowers: [Follower!]!
-  getAllLeaders(contractId: Int!): [UserHistory!]!
+  getAllLeaderHistories(contractId: Int!): [UserHistory!]!
+  getAllLeaders: [User!]!
   getAllMissions: [MissionShallowDetails!]!
   getAllStrategy: [Strategy!]!
   getAllStrategyMetadata: [StrategyMetadata!]!

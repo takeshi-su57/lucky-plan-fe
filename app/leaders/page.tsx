@@ -13,7 +13,7 @@ import { Address } from "viem";
 import { useGetAllContracts } from "../_hooks/useContract";
 import { shrinkAddress } from "@/utils";
 
-import { useGetAllLeaders } from "../_hooks/useUser";
+import { useGetAllLeaderHistories } from "../_hooks/useUser";
 import { HistoriesWidget } from "../_components/LeaderboardWidgets/HistoriesWidget";
 import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 
@@ -22,7 +22,7 @@ export default function Page() {
 
   const [contractId, setContractId] = useState<string | null>(null);
 
-  const users = useGetAllLeaders(contractId);
+  const users = useGetAllLeaderHistories(contractId);
 
   return (
     <div className="flex flex-col gap-6">

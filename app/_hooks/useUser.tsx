@@ -5,7 +5,7 @@ import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 import { getFragmentData, graphql } from "@/gql/index";
 import { useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
-import { GetAllLeadersQuery } from "@/graphql/gql/graphql";
+import { GetAllLeaderHistoriesQuery } from "@/graphql/gql/graphql";
 import { TRADEHISTORY_INFO_FRAGMENT_DOCUMENT } from "./useHistory";
 
 export const USER_INFO_FRAGMENT_DOCUMENT = graphql(`
@@ -34,8 +34,16 @@ export const GET_ALL_USERS_DOCUMENT = graphql(`
 `);
 
 export const GET_ALL_LEADERS_DOCUMENT = graphql(`
-  query getAllLeaders($contractId: Int!) {
-    getAllLeaders(contractId: $contractId) {
+  query getAllLeaders {
+    getAllLeaders {
+      ...UserInfo
+    }
+  }
+`);
+
+export const GET_ALL_LEADER_HISTORIES_DOCUMENT = graphql(`
+  query getAllLeaderHistories($contractId: Int!) {
+    getAllLeaderHistories(contractId: $contractId) {
       ...UserHistoryInfo
     }
   }
@@ -80,7 +88,7 @@ export function useGetAllUsers() {
 }
 
 function getUserHistoryFragment(
-  user: GetAllLeadersQuery["getAllLeaders"][number],
+  user: GetAllLeaderHistoriesQuery["getAllLeaderHistories"][number],
 ) {
   const userInfo = getFragmentData(USER_HISTORY_INFO_FRAGMENT_DOCUMENT, user);
 
@@ -95,8 +103,24 @@ function getUserHistoryFragment(
   };
 }
 
-export function useGetAllLeaders(contractId: string | null) {
+export function useGetAllLeaders() {
   const { data } = useQuery(GET_ALL_LEADERS_DOCUMENT, {
+    variables: {},
+  });
+
+  return useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return data.getAllLeaders.map((item) => ({
+      ...getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, item),
+    }));
+  }, [data]);
+}
+
+export function useGetAllLeaderHistories(contractId: string | null) {
+  const { data } = useQuery(GET_ALL_LEADER_HISTORIES_DOCUMENT, {
     variables: contractId ? { contractId: +contractId } : undefined,
   });
 
@@ -105,7 +129,7 @@ export function useGetAllLeaders(contractId: string | null) {
       return [];
     }
 
-    return data.getAllLeaders.map(getUserHistoryFragment);
+    return data.getAllLeaderHistories.map(getUserHistoryFragment);
   }, [data]);
 }
 
