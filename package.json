@@ -27,6 +27,7 @@
     "react-dom": "19.0.0-rc-02c0e824-20241028",
     "react-number-format": "^5.4.2",
     "react-use": "^17.5.1",
+    "react-virtuoso": "^4.12.3",
     "server-only": "^0.0.1",
     "tailwind-merge": "^2.5.4",
     "viem": "2.7.8",

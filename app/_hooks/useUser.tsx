@@ -5,12 +5,23 @@ import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 import { getFragmentData, graphql } from "@/gql/index";
 import { useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
-import { UserRole } from "@/graphql/gql/graphql";
+import { GetAllLeadersQuery } from "@/graphql/gql/graphql";
+import { TRADEHISTORY_INFO_FRAGMENT_DOCUMENT } from "./useHistory";
 
 export const USER_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment UserInfo on User {
     address
     role
+  }
+`);
+
+export const USER_HISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment UserHistoryInfo on UserHistory {
+    address
+    role
+    histories {
+      ...TradeHistoryInfo
+    }
   }
 `);
 
@@ -23,9 +34,9 @@ export const GET_ALL_USERS_DOCUMENT = graphql(`
 `);
 
 export const GET_ALL_LEADERS_DOCUMENT = graphql(`
-  query getAllLeaders {
-    getAllLeaders {
-      ...UserInfo
+  query getAllLeaders($contractId: Int!) {
+    getAllLeaders(contractId: $contractId) {
+      ...UserHistoryInfo
     }
   }
 `);
@@ -46,6 +57,14 @@ export const ADD_USER_DOCUMENT = graphql(`
   }
 `);
 
+export const ADD_LEADER_DOCUMENT = graphql(`
+  mutation addLeader($input: AddUserInput!) {
+    addLeader(input: $input) {
+      ...UserInfo
+    }
+  }
+`);
+
 export function useGetAllUsers() {
   const { data } = useQuery(GET_ALL_USERS_DOCUMENT, { variables: {} });
 
@@ -60,17 +79,33 @@ export function useGetAllUsers() {
   }, [data]);
 }
 
-export function useGetAllLeaders() {
-  const { data } = useQuery(GET_ALL_LEADERS_DOCUMENT, { variables: {} });
+function getUserHistoryFragment(
+  user: GetAllLeadersQuery["getAllLeaders"][number],
+) {
+  const userInfo = getFragmentData(USER_HISTORY_INFO_FRAGMENT_DOCUMENT, user);
+
+  return {
+    ...userInfo,
+    histories: [
+      ...getFragmentData(
+        TRADEHISTORY_INFO_FRAGMENT_DOCUMENT,
+        userInfo.histories,
+      ),
+    ],
+  };
+}
+
+export function useGetAllLeaders(contractId: string | null) {
+  const { data } = useQuery(GET_ALL_LEADERS_DOCUMENT, {
+    variables: contractId ? { contractId: +contractId } : undefined,
+  });
 
   return useMemo(() => {
     if (!data) {
       return [];
     }
 
-    return data.getAllLeaders.map((user) => ({
-      ...getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, user),
-    }));
+    return data.getAllLeaders.map(getUserHistoryFragment);
   }, [data]);
 }
 
@@ -101,36 +136,6 @@ export function useChangeUserRole() {
         fragment: USER_INFO_FRAGMENT_DOCUMENT,
         data: userInfo,
       });
-
-      client.cache.updateQuery(
-        {
-          query: GET_ALL_LEADERS_DOCUMENT,
-          variables: {},
-        },
-        (data) => {
-          if (data && data.getAllLeaders.length > 0) {
-            if (userInfo.role === UserRole.User) {
-              return {
-                ...data,
-                getAllUsers: data.getAllLeaders.filter(
-                  (user) =>
-                    userInfo.address !==
-                    getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, user).address,
-                ),
-              };
-            } else {
-              return {
-                ...data,
-                getAllLeaders: [...data.getAllLeaders, userInfo],
-              };
-            }
-          } else {
-            return {
-              getAllLeaders: [userInfo],
-            };
-          }
-        },
-      );
     }
   }, [client.cache, data, enqueueSnackbar, error]);
 
@@ -152,6 +157,58 @@ export function useAddNewUser() {
       );
 
       enqueueSnackbar("Success at changing user role!", {
+        variant: "success",
+      });
+
+      client.cache.updateQuery(
+        {
+          query: GET_ALL_USERS_DOCUMENT,
+          variables: {},
+        },
+        (data) => {
+          if (data && data.getAllUsers.length > 0) {
+            const alreadyExists = data.getAllUsers.filter(
+              (user) =>
+                userInfo.address ===
+                getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, user).address,
+            );
+
+            if (alreadyExists.length > 0) {
+              return data;
+            }
+
+            return {
+              ...data,
+              getAllUsers: [...data.getAllUsers, userInfo],
+            };
+          } else {
+            return {
+              getAllUsers: [userInfo],
+            };
+          }
+        },
+      );
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return mutateAddUser;
+}
+
+export function useAddNewLeader() {
+  const [mutateAddUser, { data: newData, error }] =
+    useMutation(ADD_LEADER_DOCUMENT);
+
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      const userInfo = getFragmentData(
+        USER_INFO_FRAGMENT_DOCUMENT,
+        newData.addLeader,
+      );
+
+      enqueueSnackbar("Success at adding a new Leader!", {
         variant: "success",
       });
 

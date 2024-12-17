@@ -181,3 +181,132 @@ export function convertMinToLifetimeItem(value: number) {
     value,
   };
 }
+
+export function isSameMonth(date1: Date, date2: Date): boolean {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth()
+  );
+}
+
+function getWeekStart(date: Date): Date {
+  const day = date.getDay(); // 0 for Sunday, 1 for Monday, etc.
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday as start of week
+  const weekStart = new Date(date);
+  weekStart.setDate(diff);
+  weekStart.setHours(0, 0, 0, 0); // Set to start of the day
+  return weekStart;
+}
+
+export function isSameWeek(date1: Date, date2: Date): boolean {
+  const startOfWeek1 = getWeekStart(date1);
+  const startOfWeek2 = getWeekStart(date2);
+  return startOfWeek1.getTime() === startOfWeek2.getTime();
+}
+
+export function isSameDay(date1: Date, date2: Date): boolean {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+}
+
+export function isSameHour(date1: Date, date2: Date): boolean {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate() &&
+    date1.getHours() === date2.getHours()
+  );
+}
+
+export function isSameMinute(date1: Date, date2: Date): boolean {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate() &&
+    date1.getHours() === date2.getHours() &&
+    date1.getMinutes() === date2.getMinutes()
+  );
+}
+
+export function getAllMonthsBetween(startDate: Date, endDate: Date): Date[] {
+  // Normalize dates to the first day of the month
+  startDate.setDate(1);
+  startDate.setHours(0, 0, 0, 0);
+  endDate.setDate(1);
+  endDate.setHours(0, 0, 0, 0);
+
+  const months: Date[] = [];
+  const currentDate = new Date(startDate);
+
+  while (currentDate <= endDate) {
+    months.push(currentDate); // Format YYYY-MM
+    currentDate.setMonth(currentDate.getMonth() + 1); // Move to the next month
+  }
+
+  return months;
+}
+
+export function getAllWeeksBetween(startDate: Date, endDate: Date): Date[] {
+  const startWeek = getWeekStart(startDate);
+
+  const weeks: Date[] = [];
+  const currentWeekStart = new Date(startWeek);
+
+  while (currentWeekStart <= endDate) {
+    weeks.push(currentWeekStart); // Add the start of the week in YYYY-MM-DD format
+    currentWeekStart.setDate(currentWeekStart.getDate() + 7); // Move to the next week
+  }
+
+  return weeks;
+}
+
+export function getAllDaysBetween(startDate: Date, endDate: Date): Date[] {
+  // Normalize time to midnight for both dates
+  startDate.setHours(0, 0, 0, 0);
+  endDate.setHours(0, 0, 0, 0);
+
+  const days: Date[] = [];
+  const currentDate = new Date(startDate);
+
+  while (currentDate <= endDate) {
+    days.push(currentDate); // Push date in YYYY-MM-DD format
+    currentDate.setDate(currentDate.getDate() + 1); // Move to the next day
+  }
+
+  return days;
+}
+
+export function getAllHoursBetween(startDate: Date, endDate: Date): Date[] {
+  // Normalize dates to the start of the hour
+  startDate.setMinutes(0, 0, 0);
+  endDate.setMinutes(0, 0, 0);
+
+  const hours: Date[] = [];
+  const currentDate = new Date(startDate);
+
+  while (currentDate <= endDate) {
+    hours.push(currentDate); // Store each hour in ISO format
+    currentDate.setHours(currentDate.getHours() + 1); // Move to the next hour
+  }
+
+  return hours;
+}
+
+export function getAllMinutesBetween(startDate: Date, endDate: Date): Date[] {
+  // Normalize dates to the start of the minute
+  startDate.setSeconds(0, 0);
+  endDate.setSeconds(0, 0);
+
+  const minutes: Date[] = [];
+  const currentDate = new Date(startDate);
+
+  while (currentDate <= endDate) {
+    minutes.push(currentDate); // Store each minute in ISO format
+    currentDate.setMinutes(currentDate.getMinutes() + 1); // Move to the next minute
+  }
+
+  return minutes;
+}

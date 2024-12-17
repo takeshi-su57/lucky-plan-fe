@@ -48,7 +48,7 @@ export default function LineChart({ data, className }: LineChartProps) {
         ),
         datasets: [
           {
-            label: "PNL",
+            label: "Amount",
             data: data.map((item) => item.value),
             pointRadius: 0,
             fill: {
@@ -56,7 +56,6 @@ export default function LineChart({ data, className }: LineChartProps) {
               above: "#022c22", // Area will be red above the origin
               below: "#450a0a", // And blue below the origin
             },
-            tension: 0.1,
             borderWidth: 1,
             borderColor: "#525252",
           },
