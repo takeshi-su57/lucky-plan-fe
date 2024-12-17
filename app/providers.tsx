@@ -2,9 +2,15 @@
 
 import { ReactNode } from "react";
 import { NextUIProvider } from "@nextui-org/react";
+import {
+  getDefaultConfig,
+  RainbowKitProvider,
+  darkTheme,
+} from "@rainbow-me/rainbowkit";
+import { WagmiProvider } from "wagmi";
+import { mainnet, polygon, optimism, arbitrum, base } from "wagmi/chains";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
 import { SnackbarProvider } from "notistack";
 import {
   split,
@@ -15,8 +21,13 @@ import {
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
-import { getMainDefinition } from "@apollo/client/utilities";
+import {
+  getMainDefinition,
+  relayStylePagination,
+} from "@apollo/client/utilities";
 import { createClient } from "graphql-ws";
+
+import "@rainbow-me/rainbowkit/styles.css";
 
 const httpLink = new HttpLink({
   uri: `${process.env.NEXT_PUBLIC_LUCKY_PLAN_GRAPHQL_API}`,
@@ -62,8 +73,61 @@ const authLink = setContext((_, { headers }) => {
 
 const cache = new InMemoryCache({
   typePolicies: {
+    Query: {
+      fields: {
+        getPnlSnapshots: relayStylePagination(["contractId", "kind"]),
+      },
+    },
     User: {
       keyFields: ["address"],
+    },
+    Follower: {
+      keyFields: ["address"],
+    },
+    FollowerDetails: {
+      keyFields: ["address", "contractId"],
+    },
+    Strategy: {
+      keyFields: ["id"],
+    },
+    StrategyMetadata: {
+      keyFields: ["key"],
+    },
+    Contract: {
+      keyFields: ["id"],
+    },
+    Bot: {
+      keyFields: ["id"],
+    },
+    BotDetails: {
+      keyFields: ["id"],
+    },
+    Position: {
+      keyFields: ["id"],
+    },
+    MissionShallowDetails: {
+      keyFields: ["id"],
+    },
+    Mission: {
+      keyFields: ["id"],
+    },
+    TaskShallowDetails: {
+      keyFields: ["id"],
+    },
+    Action: {
+      keyFields: ["id"],
+    },
+    FollowerAction: {
+      keyFields: ["id"],
+    },
+    PnlSnapshotDetails: {
+      keyFields: ["id"],
+    },
+    PnlSnapshotDetailsEdge: {
+      keyFields: ["cursor"],
+    },
+    TradeHistory: {
+      keyFields: ["id"],
     },
   },
 });
@@ -73,20 +137,37 @@ export const apolloClient = new ApolloClient({
   link: authLink.concat(splitLink),
 });
 
-(window as any).apolloClient = apolloClient;
-
 export const queryClient = new QueryClient();
+
+const config = getDefaultConfig({
+  appName: "LuckyPlan",
+  projectId: "aa850d82c6ce67f82647ab0498e00c8a",
+  chains: [mainnet, polygon, optimism, arbitrum, base],
+  ssr: true, // If your dApp uses server side rendering (SSR)
+});
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ApolloProvider client={apolloClient}>
-        <NextUIProvider className="overflow-hidden">
-          <SnackbarProvider autoHideDuration={5000} maxSnack={5}>
-            {children}
-          </SnackbarProvider>
-        </NextUIProvider>
-      </ApolloProvider>
-    </QueryClientProvider>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider
+          theme={darkTheme({
+            accentColor: "#10b981",
+            accentColorForeground: "white",
+            borderRadius: "medium",
+            fontStack: "rounded",
+            overlayBlur: "none",
+          })}
+        >
+          <ApolloProvider client={apolloClient}>
+            <NextUIProvider className="overflow-hidden">
+              <SnackbarProvider autoHideDuration={5000} maxSnack={5}>
+                {children}
+              </SnackbarProvider>
+            </NextUIProvider>
+          </ApolloProvider>
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }

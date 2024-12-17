@@ -9,8 +9,9 @@ import {
   Button,
   CardBody,
   useDisclosure,
+  Chip,
 } from "@nextui-org/react";
-import { isAddress } from "viem";
+import { Address, isAddress } from "viem";
 
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 import {
@@ -19,7 +20,8 @@ import {
   useGetAllUsers,
 } from "@/app/_hooks/useUser";
 import { UserInfoFragment, UserRole } from "@/graphql/gql/graphql";
-import { StandardModal } from "@/components/tables/modals/StandardModal";
+import { StandardModal } from "@/components/modals/StandardModal";
+import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 
 const columns: TableColumnProps[] = [
   {
@@ -34,6 +36,7 @@ const columns: TableColumnProps[] = [
   {
     id: "changeRole",
     component: "",
+    className: "flex-end",
   },
 ];
 
@@ -96,11 +99,17 @@ export default function Page() {
         className: "group",
         data: {
           address: {
-            component: user.address,
+            component: <AddressWidget address={user.address as Address} />,
           },
           role: {
             sortableAmount: user.role,
-            component: user.role,
+            component: (
+              <Chip
+                color={user.role === UserRole.Leader ? "success" : "default"}
+              >
+                {user.role}
+              </Chip>
+            ),
           },
           changeRole: {
             component: (
@@ -108,6 +117,7 @@ export default function Page() {
                 Change Role
               </Button>
             ),
+            className: "w-[50px]",
           },
         },
       }));
@@ -137,7 +147,7 @@ export default function Page() {
             columns={columns}
             rows={rows}
             classNames={{
-              tr: "hover:bg-white/5 cursor-pointer",
+              tr: "font-mono cursor-pointer",
               td: "py-3 ",
               th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
             }}
@@ -162,7 +172,11 @@ export default function Page() {
             label="Address"
           />
 
-          <Button onClick={handleConfirm} isDisabled={!isAddress(address)}>
+          <Button
+            onClick={handleConfirm}
+            color="primary"
+            isDisabled={!isAddress(address)}
+          >
             Confirm
           </Button>
         </div>

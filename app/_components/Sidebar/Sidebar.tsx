@@ -9,7 +9,27 @@ import { Listbox, ListboxItem } from "@nextui-org/react";
 import { usePathname } from "next/navigation";
 import { twMerge } from "tailwind-merge";
 
-export const links = [{ id: "users", label: "User", title: "User Management" }];
+export const links = [
+  { id: "users", label: "User", title: "" },
+  { id: "leaders", label: "Leaders", title: "" },
+  { id: "followers", label: "Follower", title: "" },
+  { id: "strategies", label: "Strategy", title: "" },
+  { id: "contracts", label: "Contract", title: "" },
+  { id: "automations", label: "Automation", title: "" },
+  { id: "missions", label: "Mission", title: "" },
+  { id: "tasks", label: "Task", title: "" },
+  { id: "actions", label: "Action", title: "" },
+  {
+    id: "follower-actions",
+    label: "Follower Action",
+    title: "",
+  },
+  {
+    id: "leaderboards",
+    label: "Leaderboard",
+    title: "",
+  },
+];
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -17,7 +37,7 @@ export function Sidebar() {
   return (
     <div className="flex flex-col gap-1">
       <Link href="#">
-        <div className="flex items-center gap-2 border-b border-neutral-800 p-2">
+        <div className="flex items-center justify-center gap-2 border-b border-neutral-800 p-2">
           <Image src={logoSrc} alt="Logo" className="h-14 w-14" />
         </div>
       </Link>
@@ -46,9 +66,9 @@ export function Sidebar() {
               pathname.includes(link.id) &&
                 "bg-primary-400/20 !text-primary-400",
             )}
-            href={`/${link.id}`}
-            title={link.label}
-          />
+          >
+            <Link href={`/${link.id}`}>{link.label}</Link>
+          </ListboxItem>
         ))}
       </Listbox>
     </div>

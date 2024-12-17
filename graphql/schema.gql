@@ -17,28 +17,39 @@ input AddUserInput {
 }
 
 type Bot {
-  contractId: Int!
-  endedBlock: Int
+  endedAt: DateTime
   followerAddress: String!
+  followerContractId: Int!
+  followerEndedBlock: Int
+  followerStartedBlock: Int
   id: Int!
   leaderAddress: String!
-  pausedBlock: Int
-  startedBlock: Int
+  leaderCollateralBaseline: Int!
+  leaderContractId: Int!
+  leaderEndedBlock: Int
+  leaderStartedBlock: Int
+  startedAt: DateTime
   status: BotStatus!
   strategyId: Int!
 }
 
 type BotDetails {
-  contract: Contract!
-  contractId: Int!
-  endedBlock: Int
+  endedAt: DateTime
   follower: Follower!
   followerAddress: String!
+  followerContract: Contract!
+  followerContractId: Int!
+  followerEndedBlock: Int
+  followerStartedBlock: Int
   id: Int!
   leader: User!
   leaderAddress: String!
-  pausedBlock: Int
-  startedBlock: Int
+  leaderCollateralBaseline: Int!
+  leaderContract: Contract!
+  leaderContractId: Int!
+  leaderEndedBlock: Int
+  leaderStartedBlock: Int
+  startedAt: DateTime
   status: BotStatus!
   strategy: Strategy!
   strategyId: Int!
@@ -47,8 +58,13 @@ type BotDetails {
 enum BotStatus {
   Created
   Dead
-  Finish
   Live
+  Stop
+}
+
+input ChangeContractStatusInput {
+  id: Int!
+  status: String!
 }
 
 input ChangePasswordInput {
@@ -64,14 +80,22 @@ input ChangeUserRoleInput {
 type Contract {
   address: String!
   chainId: Int!
-  description: String
+  description: String!
   id: Int!
+  status: ContractStatus!
+}
+
+enum ContractStatus {
+  Dead
+  Live
 }
 
 input CreateBotInput {
-  contractId: Int!
   followerAddress: String!
+  followerContractId: Int!
   leaderAddress: String!
+  leaderCollateralBaseline: Int!
+  leaderContractId: Int!
   strategyId: Int!
 }
 
@@ -79,17 +103,21 @@ input CreateContractInput {
   address: String!
   chainId: Int!
   description: String!
+  lastBlockNumber: Int!
 }
 
 input CreateStrategyInput {
+  collateralBaseline: Int!
+  lifeTime: Float!
+  maxCapacity: Float!
+  maxCollateral: Float!
+  maxLeverage: Int!
+  minCapacity: Float!
+  minCollateral: Float!
+  minLeverage: Int!
   params: String!
+  ratio: Int!
   strategyKey: String!
-}
-
-input CreateStrategyMetadataInput {
-  description: String!
-  key: String!
-  title: String!
 }
 
 """
@@ -99,6 +127,7 @@ scalar DateTime
 
 input FindPositionInput {
   address: String!
+  contractId: Int!
   index: Int!
 }
 
@@ -120,6 +149,15 @@ type FollowerActionDetails {
   id: Int!
   task: Task!
   taskId: Int!
+}
+
+type FollowerDetail {
+  accountIndex: Int!
+  address: String!
+  contractId: Int!
+  ethBalance: String
+  publicKey: String!
+  usdcBalance: String
 }
 
 input GetFollowerByAddressInput {
@@ -161,74 +199,151 @@ type MissionDetails {
   updatedAt: DateTime!
 }
 
+type MissionShallowDetails {
+  achievePosition: Position
+  achievePositionId: Int
+  bot: Bot!
+  botId: Int!
+  createdAt: DateTime!
+  id: Int!
+  status: MissionStatus!
+  targetPosition: Position!
+  targetPositionId: Int!
+  updatedAt: DateTime!
+}
+
 enum MissionStatus {
   Closed
+  Closing
+  Created
   Opened
+  Opening
 }
 
 type Mutation {
+  addLeader(input: AddUserInput!): User!
   addUser(input: AddUserInput!): User!
+  changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changePassword(input: ChangePasswordInput!): Boolean!
   changeUserRole(input: ChangeUserRoleInput!): User!
-  createBot(input: CreateBotInput!): Bot!
+  closeMission(id: Int!): MissionShallowDetails!
+  createBot(input: CreateBotInput!): BotDetails!
   createContract(input: CreateContractInput!): Contract!
   createStrategy(input: CreateStrategyInput!): Strategy!
-  createStrategyMetadata(input: CreateStrategyMetadataInput!): StrategyMetadata!
+  deleteBot(id: Int!): Int!
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
-  removeStrategy(id: Int!): Strategy
-  removeStrategyMetadata(key: String!): StrategyMetadata!
-  updateStrategy(id: Int!, input: UpdateStrategyInput!): Strategy
+  initalizePnlSnapshot: Boolean!
+  liveBot(id: Int!): BotDetails!
+  performTask(id: Int!): TaskShallowDetails!
+  removeStrategy(id: Int!): Strategy!
+  stopBot(id: Int!): BotDetails!
   updateStrategyMetadata(
     input: UpdateStrategyMetadataInput!
     key: String!
   ): StrategyMetadata!
+  withdrawAll(input: WithdrawAllInput!): Boolean!
+}
+
+type PageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
+type PnlSnapshotDetails {
+  accUSDPnl: Int!
+  address: String!
+  contractId: Int!
+  histories: [TradeHistory!]!
+  id: Int!
+  kind: PnlSnapshotKind!
+}
+
+type PnlSnapshotDetailsConnection {
+  edges: [PnlSnapshotDetailsEdge!]!
+  pageInfo: PageInfo!
+}
+
+type PnlSnapshotDetailsEdge {
+  cursor: Int!
+  node: PnlSnapshotDetails!
+}
+
+enum PnlSnapshotKind {
+  ALL_TIME
+  DAY
+  HALF_YEAR
+  MONTH
+  THREE_MONTH
+  TWO_MONTH
+  TWO_WEEK
+  TWO_YEAR
+  WEEK
+  YEAR
 }
 
 type Position {
   address: String!
+  contractId: Int!
   id: Int!
   index: Int!
 }
 
 type PositionInfo {
   address: String!
+  contractId: Int!
   index: Int!
 }
 
 type Query {
   findAction(id: Int!): Action
   findActionsByPosition(positionId: Float!): [Action!]!
-  findAllActions: [Action!]!
-  findAllBots: [Bot!]!
-  findAllContracts: [Contract!]!
-  findAllFollowerActions: [FollowerAction!]!
-  findAllMissions: [Mission!]!
   findAllPositions: [Position!]!
-  findAllStrategy: [Strategy!]!
-  findAllStrategyMetadata: [StrategyMetadata!]!
-  findAllTasks: [Task!]!
   findBot(id: Int!): BotDetails!
   findContract(id: Int!): Contract!
   findFollowerAction(id: Int!): FollowerActionDetails
-  findMission(id: Int!): Mission
-  findMissionByBot(botId: Int!): [Mission!]!
   findPosition(input: FindPositionInput!): Position
   findPositionById(id: Int!): Position
   findStrategy(id: Int!): Strategy
   findStrategyMetadata(key: String!): StrategyMetadata!
-  findTask(id: Int!): Task
-  findTasksByMission(missionId: Int!): [Task!]!
+  findTask(id: Int!): TaskShallowDetails!
+  findTasksByMission(missionId: Int!): [TaskShallowDetails!]!
+  getAllActions: [Action!]!
+  getAllBots: [BotDetails!]!
+  getAllContracts: [Contract!]!
+  getAllFollowerActions: [FollowerAction!]!
+  getAllFollowerDetails(contractId: Int!): [FollowerDetail!]!
   getAllFollowers: [Follower!]!
+  getAllLeaderHistories(contractId: Int!): [UserHistory!]!
   getAllLeaders: [User!]!
+  getAllMissions: [MissionShallowDetails!]!
+  getAllStrategy: [Strategy!]!
+  getAllStrategyMetadata: [StrategyMetadata!]!
+  getAllTasks: [TaskShallowDetails!]!
   getAllUsers: [User!]!
-  getFollowerByAddress(input: GetFollowerByAddressInput!): Follower
+  getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
+  getPnlSnapshots(
+    after: Int
+    contractId: Int!
+    first: Int!
+    kind: PnlSnapshotKind!
+  ): PnlSnapshotDetailsConnection!
+  getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getUserByAddress(input: GetUserByAddressInput!): User
 }
 
 type Strategy {
+  collateralBaseline: Int!
   id: Int!
+  lifeTime: Int!
+  maxCapacity: Int!
+  maxCollateral: Int!
+  maxLeverage: Int!
+  minCapacity: Int!
+  minCollateral: Int!
+  minLeverage: Int!
   params: String!
+  ratio: Int!
   strategyKey: String!
 }
 
@@ -236,6 +351,16 @@ type StrategyMetadata {
   description: String!
   key: String!
   title: String!
+}
+
+type Subscription {
+  actionAdded: [Action!]!
+  followerActionAdded: [FollowerAction!]!
+  followerDetailsUpdated(contractId: Int!): [FollowerDetail!]!
+  missionAdded: [MissionShallowDetails!]!
+  missionUpdated: [MissionShallowDetails!]!
+  taskAdded: [TaskShallowDetails!]!
+  taskUpdated: [TaskShallowDetails!]!
 }
 
 type Task {
@@ -247,17 +372,36 @@ type Task {
   status: TaskStatus!
 }
 
+type TaskShallowDetails {
+  action: Action!
+  actionId: Int!
+  createdAt: DateTime!
+  id: Int!
+  logs: [String!]!
+  mission: Mission!
+  missionId: Int!
+  status: TaskStatus!
+}
+
 enum TaskStatus {
   Await
   Completed
   Created
   Failed
   Initiated
+  Stopped
 }
 
-input UpdateStrategyInput {
-  params: String
-  strategyKey: String
+type TradeHistory {
+  address: String!
+  blockNumber: Int!
+  contractId: Int!
+  eventName: String!
+  id: Int!
+  in: Int!
+  out: Int!
+  pnl: Int!
+  timestamp: DateTime!
 }
 
 input UpdateStrategyMetadataInput {
@@ -270,7 +414,18 @@ type User {
   role: UserRole!
 }
 
+type UserHistory {
+  address: String!
+  histories: [TradeHistory!]!
+  role: UserRole!
+}
+
 enum UserRole {
   Leader
   User
+}
+
+input WithdrawAllInput {
+  address: String!
+  contractId: Int!
 }
