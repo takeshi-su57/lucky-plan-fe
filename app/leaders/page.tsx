@@ -1,60 +1,32 @@
 "use client";
 
-import { ChangeEventHandler, useState } from "react";
+import { useState } from "react";
 import {
   Card,
   CardBody,
   Autocomplete,
   AutocompleteItem,
-  Spinner,
-  Select,
-  SelectItem,
 } from "@nextui-org/react";
 import { Virtuoso } from "react-virtuoso";
-
-import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 
 import { Address } from "viem";
 import { useGetAllContracts } from "../_hooks/useContract";
 import { shrinkAddress } from "@/utils";
-import { useGetPnlSnapshots } from "../_hooks/useHistory";
+
+import { useGetAllLeaders } from "../_hooks/useUser";
 import { HistoriesWidget } from "../_components/LeaderboardWidgets/HistoriesWidget";
+import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 
 export default function Page() {
   const allContracts = useGetAllContracts();
 
   const [contractId, setContractId] = useState<string | null>(null);
-  const [kind, setKind] = useState<PnlSnapshotKind>(PnlSnapshotKind.AllTime);
 
-  const { pnlSnapshots, fetchMore, hasMore, loading } = useGetPnlSnapshots(
-    contractId,
-    kind,
-  );
-
-  const handleChangeKind: ChangeEventHandler<HTMLSelectElement> = (event) => {
-    const value = event.target.value;
-
-    if (value.trim() !== "") {
-      setKind(value as PnlSnapshotKind);
-    }
-  };
+  const users = useGetAllLeaders(contractId);
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <Select
-          variant="underlined"
-          label="Before"
-          selectedKeys={kind ? [kind] : undefined}
-          onChange={handleChangeKind}
-          selectionMode="single"
-          className="w-[200px] font-mono"
-        >
-          {Object.values(PnlSnapshotKind).map((item) => (
-            <SelectItem key={item}>{item}</SelectItem>
-          ))}
-        </Select>
-
         <Autocomplete
           label="Follower Contract"
           variant="underlined"
@@ -86,16 +58,14 @@ export default function Page() {
         <CardBody>
           <Virtuoso
             style={{ height: 700 }}
-            data={pnlSnapshots}
+            data={users}
             itemContent={(_, snapshot) => (
               <HistoriesWidget
                 address={snapshot.address as Address}
-                kind={kind}
+                kind={PnlSnapshotKind.AllTime}
                 histories={snapshot.histories}
               />
             )}
-            endReached={() => hasMore && !loading && fetchMore()}
-            components={{ Footer: () => <Spinner color="white" size="sm" /> }}
           />
         </CardBody>
       </Card>

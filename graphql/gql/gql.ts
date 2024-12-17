@@ -63,10 +63,12 @@ const documents = {
     "\n  subscription taskAdded {\n    taskAdded {\n      ...TaskShallowDetailsInfo\n    }\n  }\n": types.TaskAddedDocument,
     "\n  subscription taskUpdated {\n    taskUpdated {\n      ...TaskShallowDetailsInfo\n    }\n  }\n": types.TaskUpdatedDocument,
     "\n  fragment UserInfo on User {\n    address\n    role\n  }\n": types.UserInfoFragmentDoc,
+    "\n  fragment UserHistoryInfo on UserHistory {\n    address\n    role\n    histories {\n      ...TradeHistoryInfo\n    }\n  }\n": types.UserHistoryInfoFragmentDoc,
     "\n  query getAllUsers {\n    getAllUsers {\n      ...UserInfo\n    }\n  }\n": types.GetAllUsersDocument,
-    "\n  query getAllLeaders {\n    getAllLeaders {\n      ...UserInfo\n    }\n  }\n": types.GetAllLeadersDocument,
+    "\n  query getAllLeaders($contractId: Int!) {\n    getAllLeaders(contractId: $contractId) {\n      ...UserHistoryInfo\n    }\n  }\n": types.GetAllLeadersDocument,
     "\n  mutation changeUserRole($input: ChangeUserRoleInput!) {\n    changeUserRole(input: $input) {\n      ...UserInfo\n    }\n  }\n": types.ChangeUserRoleDocument,
     "\n  mutation addUser($input: AddUserInput!) {\n    addUser(input: $input) {\n      ...UserInfo\n    }\n  }\n": types.AddUserDocument,
+    "\n  mutation addLeader($input: AddUserInput!) {\n    addLeader(input: $input) {\n      ...UserInfo\n    }\n  }\n": types.AddLeaderDocument,
 };
 
 /**
@@ -282,11 +284,15 @@ export function graphql(source: "\n  fragment UserInfo on User {\n    address\n 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  fragment UserHistoryInfo on UserHistory {\n    address\n    role\n    histories {\n      ...TradeHistoryInfo\n    }\n  }\n"): (typeof documents)["\n  fragment UserHistoryInfo on UserHistory {\n    address\n    role\n    histories {\n      ...TradeHistoryInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  query getAllUsers {\n    getAllUsers {\n      ...UserInfo\n    }\n  }\n"): (typeof documents)["\n  query getAllUsers {\n    getAllUsers {\n      ...UserInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query getAllLeaders {\n    getAllLeaders {\n      ...UserInfo\n    }\n  }\n"): (typeof documents)["\n  query getAllLeaders {\n    getAllLeaders {\n      ...UserInfo\n    }\n  }\n"];
+export function graphql(source: "\n  query getAllLeaders($contractId: Int!) {\n    getAllLeaders(contractId: $contractId) {\n      ...UserHistoryInfo\n    }\n  }\n"): (typeof documents)["\n  query getAllLeaders($contractId: Int!) {\n    getAllLeaders(contractId: $contractId) {\n      ...UserHistoryInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -295,6 +301,10 @@ export function graphql(source: "\n  mutation changeUserRole($input: ChangeUserR
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation addUser($input: AddUserInput!) {\n    addUser(input: $input) {\n      ...UserInfo\n    }\n  }\n"): (typeof documents)["\n  mutation addUser($input: AddUserInput!) {\n    addUser(input: $input) {\n      ...UserInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation addLeader($input: AddUserInput!) {\n    addLeader(input: $input) {\n      ...UserInfo\n    }\n  }\n"): (typeof documents)["\n  mutation addLeader($input: AddUserInput!) {\n    addLeader(input: $input) {\n      ...UserInfo\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

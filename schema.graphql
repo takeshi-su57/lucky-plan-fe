@@ -223,6 +223,7 @@ enum MissionStatus {
 }
 
 type Mutation {
+  addLeader(input: AddUserInput!): User!
   addUser(input: AddUserInput!): User!
   changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changePassword(input: ChangePasswordInput!): Boolean!
@@ -312,7 +313,7 @@ type Query {
   getAllFollowerActions: [FollowerAction!]!
   getAllFollowerDetails(contractId: Int!): [FollowerDetail!]!
   getAllFollowers: [Follower!]!
-  getAllLeaders: [User!]!
+  getAllLeaders(contractId: Int!): [UserHistory!]!
   getAllMissions: [MissionShallowDetails!]!
   getAllStrategy: [Strategy!]!
   getAllStrategyMetadata: [StrategyMetadata!]!
@@ -403,6 +404,12 @@ input UpdateStrategyMetadataInput {
 
 type User {
   address: String!
+  role: UserRole!
+}
+
+type UserHistory {
+  address: String!
+  histories: [TradeHistory!]!
   role: UserRole!
 }
 

@@ -10,23 +10,24 @@ import { usePathname } from "next/navigation";
 import { twMerge } from "tailwind-merge";
 
 export const links = [
-  { id: "users", label: "User", title: "User Explorer" },
-  { id: "followers", label: "Follower", title: "Follower Explorer" },
-  { id: "strategies", label: "Strategy", title: "Strategy Explorer" },
-  { id: "contracts", label: "Contract", title: "Contract Explorer" },
-  { id: "automations", label: "Automation", title: "Automation Explorer" },
-  { id: "missions", label: "Mission", title: "Mission Explorer" },
-  { id: "tasks", label: "Task", title: "Task Explorer" },
-  { id: "actions", label: "Action", title: "Action Explorer" },
+  { id: "users", label: "User", title: "" },
+  { id: "leaders", label: "Leaders", title: "" },
+  { id: "followers", label: "Follower", title: "" },
+  { id: "strategies", label: "Strategy", title: "" },
+  { id: "contracts", label: "Contract", title: "" },
+  { id: "automations", label: "Automation", title: "" },
+  { id: "missions", label: "Mission", title: "" },
+  { id: "tasks", label: "Task", title: "" },
+  { id: "actions", label: "Action", title: "" },
   {
     id: "follower-actions",
     label: "Follower Action",
-    title: "Follower Action Explorer",
+    title: "",
   },
   {
     id: "leaderboards",
     label: "Leaderboard",
-    title: "Leaderboard Explorer",
+    title: "",
   },
 ];
 
