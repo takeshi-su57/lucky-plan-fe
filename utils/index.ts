@@ -310,3 +310,35 @@ export function getAllMinutesBetween(startDate: Date, endDate: Date): Date[] {
 
   return minutes;
 }
+
+export function isValidColor(color: string) {
+  // Regex for Hexadecimal colors (#RRGGBB, #RGB, #RRGGBBAA, #RGBA)
+  const hexRegex =
+    /^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/;
+
+  // Regex for RGB/RGBA (e.g., rgb(255, 255, 255) or rgba(255, 255, 255, 0.5))
+  const rgbRegex =
+    /^rgb(a)?\((\s*\d{1,3}\s*,){2}\s*\d{1,3}\s*(,\s*(0|1|0?\.\d+)\s*)?\)$/;
+
+  // Regex for HSL/HSLA (e.g., hsl(360, 100%, 50%) or hsla(360, 100%, 50%, 0.5))
+  const hslRegex =
+    /^hsl(a)?\(\s*(\d{1,3})\s*,\s*(\d{1,3})%\s*,\s*(\d{1,3})%\s*(,\s*(0|1|0?\.\d+)\s*)?\)$/;
+
+  // Check if the input matches any of the above regex patterns
+  return hexRegex.test(color) || rgbRegex.test(color) || hslRegex.test(color);
+}
+
+export function hasCommonItem<T>(array1: T[], array2: T[]): boolean {
+  // Create a Set from the first array
+  const set1 = new Set(array1);
+
+  // Check if any item in array2 exists in set1
+  for (const item of array2) {
+    if (set1.has(item)) {
+      return true; // Return true if a common item is found
+    }
+  }
+
+  // If no common items are found, return false
+  return false;
+}
