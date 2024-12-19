@@ -53,9 +53,6 @@ export const BOTDETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     follower {
       ...FollowerInfo
     }
-    leader {
-      ...UserInfo
-    }
     strategy {
       ...StrategyInfo
     }

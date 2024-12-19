@@ -18,7 +18,7 @@ const documents = {
     "\n  query getAllActions {\n    getAllActions {\n      ...ActionInfo\n    }\n  }\n": types.GetAllActionsDocument,
     "\n  subscription actionAdded {\n    actionAdded {\n      ...ActionInfo\n    }\n  }\n": types.ActionAddedDocument,
     "\n  fragment BotInfo on Bot {\n    id\n    leaderAddress\n    followerAddress\n    strategyId\n    leaderContractId\n    leaderCollateralBaseline\n    leaderStartedBlock\n    leaderEndedBlock\n    followerContractId\n    followerStartedBlock\n    followerEndedBlock\n    startedAt\n    endedAt\n    status\n  }\n": types.BotInfoFragmentDoc,
-    "\n  fragment BotDetailsInfo on BotDetails {\n    id\n    leaderAddress\n    followerAddress\n    strategyId\n    leaderContractId\n    leaderCollateralBaseline\n    leaderStartedBlock\n    leaderEndedBlock\n    followerContractId\n    followerStartedBlock\n    followerEndedBlock\n    startedAt\n    endedAt\n    status\n    followerContract {\n      ...ContractInfo\n    }\n    leaderContract {\n      ...ContractInfo\n    }\n    follower {\n      ...FollowerInfo\n    }\n    leader {\n      ...UserInfo\n    }\n    strategy {\n      ...StrategyInfo\n    }\n  }\n": types.BotDetailsInfoFragmentDoc,
+    "\n  fragment BotDetailsInfo on BotDetails {\n    id\n    leaderAddress\n    followerAddress\n    strategyId\n    leaderContractId\n    leaderCollateralBaseline\n    leaderStartedBlock\n    leaderEndedBlock\n    followerContractId\n    followerStartedBlock\n    followerEndedBlock\n    startedAt\n    endedAt\n    status\n    followerContract {\n      ...ContractInfo\n    }\n    leaderContract {\n      ...ContractInfo\n    }\n    follower {\n      ...FollowerInfo\n    }\n    strategy {\n      ...StrategyInfo\n    }\n  }\n": types.BotDetailsInfoFragmentDoc,
     "\n  query getAllBots {\n    getAllBots {\n      ...BotDetailsInfo\n    }\n  }\n": types.GetAllBotsDocument,
     "\n  mutation createBot($input: CreateBotInput!) {\n    createBot(input: $input) {\n      ...BotDetailsInfo\n    }\n  }\n": types.CreateBotDocument,
     "\n  mutation deleteBot($id: Int!) {\n    deleteBot(id: $id)\n  }\n": types.DeleteBotDocument,
@@ -57,19 +57,20 @@ const documents = {
     "\n  query getAllStrategy {\n    getAllStrategy {\n      ...StrategyInfo\n    }\n  }\n": types.GetAllStrategyDocument,
     "\n  mutation createStrategy($input: CreateStrategyInput!) {\n    createStrategy(input: $input) {\n      ...StrategyInfo\n    }\n  }\n": types.CreateStrategyDocument,
     "\n  mutation removeStrategy($id: Int!) {\n    removeStrategy(id: $id) {\n      ...StrategyInfo\n    }\n  }\n": types.RemoveStrategyDocument,
+    "\n  fragment TagInfo on Tag {\n    tag\n    description\n    color\n  }\n": types.TagInfoFragmentDoc,
+    "\n  query getAllTags {\n    getAllTags {\n      ...TagInfo\n    }\n  }\n": types.GetAllTagsDocument,
+    "\n  mutation upsertTag($input: TagInput!) {\n    upsertTag(input: $input) {\n      ...TagInfo\n    }\n  }\n": types.UpsertTagDocument,
+    "\n  mutation deleteTag($tag: String!) {\n    deleteTag(tag: $tag) {\n      ...TagInfo\n    }\n  }\n": types.DeleteTagDocument,
     "\n  fragment TaskShallowDetailsInfo on TaskShallowDetails {\n    id\n    missionId\n    actionId\n    logs\n    status\n    createdAt\n    action {\n      ...ActionInfo\n    }\n    mission {\n      ...MissionInfo\n    }\n  }\n": types.TaskShallowDetailsInfoFragmentDoc,
     "\n  query getAllTasks {\n    getAllTasks {\n      ...TaskShallowDetailsInfo\n    }\n  }\n": types.GetAllTasksDocument,
     "\n  mutation performTask($id: Int!) {\n    performTask(id: $id) {\n      ...TaskShallowDetailsInfo\n    }\n  }\n": types.PerformTaskDocument,
     "\n  subscription taskAdded {\n    taskAdded {\n      ...TaskShallowDetailsInfo\n    }\n  }\n": types.TaskAddedDocument,
     "\n  subscription taskUpdated {\n    taskUpdated {\n      ...TaskShallowDetailsInfo\n    }\n  }\n": types.TaskUpdatedDocument,
-    "\n  fragment UserInfo on User {\n    address\n    role\n  }\n": types.UserInfoFragmentDoc,
-    "\n  fragment UserHistoryInfo on UserHistory {\n    address\n    role\n    histories {\n      ...TradeHistoryInfo\n    }\n  }\n": types.UserHistoryInfoFragmentDoc,
+    "\n  fragment UserInfo on User {\n    address\n    tags {\n      ...TagInfo\n    }\n  }\n": types.UserInfoFragmentDoc,
     "\n  query getAllUsers {\n    getAllUsers {\n      ...UserInfo\n    }\n  }\n": types.GetAllUsersDocument,
-    "\n  query getAllLeaders {\n    getAllLeaders {\n      ...UserInfo\n    }\n  }\n": types.GetAllLeadersDocument,
-    "\n  query getAllLeaderHistories($contractId: Int!) {\n    getAllLeaderHistories(contractId: $contractId) {\n      ...UserHistoryInfo\n    }\n  }\n": types.GetAllLeaderHistoriesDocument,
-    "\n  mutation changeUserRole($input: ChangeUserRoleInput!) {\n    changeUserRole(input: $input) {\n      ...UserInfo\n    }\n  }\n": types.ChangeUserRoleDocument,
     "\n  mutation addUser($input: AddUserInput!) {\n    addUser(input: $input) {\n      ...UserInfo\n    }\n  }\n": types.AddUserDocument,
-    "\n  mutation addLeader($input: AddUserInput!) {\n    addLeader(input: $input) {\n      ...UserInfo\n    }\n  }\n": types.AddLeaderDocument,
+    "\n  mutation addTagToUser($input: ChangeUserTagInput!) {\n    addTagToUser(input: $input) {\n      ...UserInfo\n    }\n  }\n": types.AddTagToUserDocument,
+    "\n  mutation removeTagFromUser($input: ChangeUserTagInput!) {\n    removeTagFromUser(input: $input) {\n      ...UserInfo\n    }\n  }\n": types.RemoveTagFromUserDocument,
 };
 
 /**
@@ -105,7 +106,7 @@ export function graphql(source: "\n  fragment BotInfo on Bot {\n    id\n    lead
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  fragment BotDetailsInfo on BotDetails {\n    id\n    leaderAddress\n    followerAddress\n    strategyId\n    leaderContractId\n    leaderCollateralBaseline\n    leaderStartedBlock\n    leaderEndedBlock\n    followerContractId\n    followerStartedBlock\n    followerEndedBlock\n    startedAt\n    endedAt\n    status\n    followerContract {\n      ...ContractInfo\n    }\n    leaderContract {\n      ...ContractInfo\n    }\n    follower {\n      ...FollowerInfo\n    }\n    leader {\n      ...UserInfo\n    }\n    strategy {\n      ...StrategyInfo\n    }\n  }\n"): (typeof documents)["\n  fragment BotDetailsInfo on BotDetails {\n    id\n    leaderAddress\n    followerAddress\n    strategyId\n    leaderContractId\n    leaderCollateralBaseline\n    leaderStartedBlock\n    leaderEndedBlock\n    followerContractId\n    followerStartedBlock\n    followerEndedBlock\n    startedAt\n    endedAt\n    status\n    followerContract {\n      ...ContractInfo\n    }\n    leaderContract {\n      ...ContractInfo\n    }\n    follower {\n      ...FollowerInfo\n    }\n    leader {\n      ...UserInfo\n    }\n    strategy {\n      ...StrategyInfo\n    }\n  }\n"];
+export function graphql(source: "\n  fragment BotDetailsInfo on BotDetails {\n    id\n    leaderAddress\n    followerAddress\n    strategyId\n    leaderContractId\n    leaderCollateralBaseline\n    leaderStartedBlock\n    leaderEndedBlock\n    followerContractId\n    followerStartedBlock\n    followerEndedBlock\n    startedAt\n    endedAt\n    status\n    followerContract {\n      ...ContractInfo\n    }\n    leaderContract {\n      ...ContractInfo\n    }\n    follower {\n      ...FollowerInfo\n    }\n    strategy {\n      ...StrategyInfo\n    }\n  }\n"): (typeof documents)["\n  fragment BotDetailsInfo on BotDetails {\n    id\n    leaderAddress\n    followerAddress\n    strategyId\n    leaderContractId\n    leaderCollateralBaseline\n    leaderStartedBlock\n    leaderEndedBlock\n    followerContractId\n    followerStartedBlock\n    followerEndedBlock\n    startedAt\n    endedAt\n    status\n    followerContract {\n      ...ContractInfo\n    }\n    leaderContract {\n      ...ContractInfo\n    }\n    follower {\n      ...FollowerInfo\n    }\n    strategy {\n      ...StrategyInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -261,6 +262,22 @@ export function graphql(source: "\n  mutation removeStrategy($id: Int!) {\n    r
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  fragment TagInfo on Tag {\n    tag\n    description\n    color\n  }\n"): (typeof documents)["\n  fragment TagInfo on Tag {\n    tag\n    description\n    color\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query getAllTags {\n    getAllTags {\n      ...TagInfo\n    }\n  }\n"): (typeof documents)["\n  query getAllTags {\n    getAllTags {\n      ...TagInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation upsertTag($input: TagInput!) {\n    upsertTag(input: $input) {\n      ...TagInfo\n    }\n  }\n"): (typeof documents)["\n  mutation upsertTag($input: TagInput!) {\n    upsertTag(input: $input) {\n      ...TagInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation deleteTag($tag: String!) {\n    deleteTag(tag: $tag) {\n      ...TagInfo\n    }\n  }\n"): (typeof documents)["\n  mutation deleteTag($tag: String!) {\n    deleteTag(tag: $tag) {\n      ...TagInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  fragment TaskShallowDetailsInfo on TaskShallowDetails {\n    id\n    missionId\n    actionId\n    logs\n    status\n    createdAt\n    action {\n      ...ActionInfo\n    }\n    mission {\n      ...MissionInfo\n    }\n  }\n"): (typeof documents)["\n  fragment TaskShallowDetailsInfo on TaskShallowDetails {\n    id\n    missionId\n    actionId\n    logs\n    status\n    createdAt\n    action {\n      ...ActionInfo\n    }\n    mission {\n      ...MissionInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -281,11 +298,7 @@ export function graphql(source: "\n  subscription taskUpdated {\n    taskUpdated
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  fragment UserInfo on User {\n    address\n    role\n  }\n"): (typeof documents)["\n  fragment UserInfo on User {\n    address\n    role\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  fragment UserHistoryInfo on UserHistory {\n    address\n    role\n    histories {\n      ...TradeHistoryInfo\n    }\n  }\n"): (typeof documents)["\n  fragment UserHistoryInfo on UserHistory {\n    address\n    role\n    histories {\n      ...TradeHistoryInfo\n    }\n  }\n"];
+export function graphql(source: "\n  fragment UserInfo on User {\n    address\n    tags {\n      ...TagInfo\n    }\n  }\n"): (typeof documents)["\n  fragment UserInfo on User {\n    address\n    tags {\n      ...TagInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -293,23 +306,15 @@ export function graphql(source: "\n  query getAllUsers {\n    getAllUsers {\n   
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query getAllLeaders {\n    getAllLeaders {\n      ...UserInfo\n    }\n  }\n"): (typeof documents)["\n  query getAllLeaders {\n    getAllLeaders {\n      ...UserInfo\n    }\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  query getAllLeaderHistories($contractId: Int!) {\n    getAllLeaderHistories(contractId: $contractId) {\n      ...UserHistoryInfo\n    }\n  }\n"): (typeof documents)["\n  query getAllLeaderHistories($contractId: Int!) {\n    getAllLeaderHistories(contractId: $contractId) {\n      ...UserHistoryInfo\n    }\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  mutation changeUserRole($input: ChangeUserRoleInput!) {\n    changeUserRole(input: $input) {\n      ...UserInfo\n    }\n  }\n"): (typeof documents)["\n  mutation changeUserRole($input: ChangeUserRoleInput!) {\n    changeUserRole(input: $input) {\n      ...UserInfo\n    }\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
 export function graphql(source: "\n  mutation addUser($input: AddUserInput!) {\n    addUser(input: $input) {\n      ...UserInfo\n    }\n  }\n"): (typeof documents)["\n  mutation addUser($input: AddUserInput!) {\n    addUser(input: $input) {\n      ...UserInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation addLeader($input: AddUserInput!) {\n    addLeader(input: $input) {\n      ...UserInfo\n    }\n  }\n"): (typeof documents)["\n  mutation addLeader($input: AddUserInput!) {\n    addLeader(input: $input) {\n      ...UserInfo\n    }\n  }\n"];
+export function graphql(source: "\n  mutation addTagToUser($input: ChangeUserTagInput!) {\n    addTagToUser(input: $input) {\n      ...UserInfo\n    }\n  }\n"): (typeof documents)["\n  mutation addTagToUser($input: ChangeUserTagInput!) {\n    addTagToUser(input: $input) {\n      ...UserInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation removeTagFromUser($input: ChangeUserTagInput!) {\n    removeTagFromUser(input: $input) {\n      ...UserInfo\n    }\n  }\n"): (typeof documents)["\n  mutation removeTagFromUser($input: ChangeUserTagInput!) {\n    removeTagFromUser(input: $input) {\n      ...UserInfo\n    }\n  }\n"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

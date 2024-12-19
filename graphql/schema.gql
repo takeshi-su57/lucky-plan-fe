@@ -42,7 +42,6 @@ type BotDetails {
   followerEndedBlock: Int
   followerStartedBlock: Int
   id: Int!
-  leader: User!
   leaderAddress: String!
   leaderCollateralBaseline: Int!
   leaderContract: Contract!
@@ -72,9 +71,9 @@ input ChangePasswordInput {
   oldPassword: String!
 }
 
-input ChangeUserRoleInput {
+input ChangeUserTagInput {
   address: String!
-  role: String!
+  tag: String!
 }
 
 type Contract {
@@ -221,27 +220,29 @@ enum MissionStatus {
 }
 
 type Mutation {
-  addLeader(input: AddUserInput!): User!
+  addTagToUser(input: ChangeUserTagInput!): User!
   addUser(input: AddUserInput!): User!
   changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changePassword(input: ChangePasswordInput!): Boolean!
-  changeUserRole(input: ChangeUserRoleInput!): User!
   closeMission(id: Int!): MissionShallowDetails!
   createBot(input: CreateBotInput!): BotDetails!
   createContract(input: CreateContractInput!): Contract!
   createStrategy(input: CreateStrategyInput!): Strategy!
   deleteBot(id: Int!): Int!
+  deleteTag(tag: String!): Tag!
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
   initalizePnlSnapshot: Boolean!
   liveBot(id: Int!): BotDetails!
   performTask(id: Int!): TaskShallowDetails!
   removeStrategy(id: Int!): Strategy!
+  removeTagFromUser(input: ChangeUserTagInput!): User!
   stopBot(id: Int!): BotDetails!
   updateStrategyMetadata(
     input: UpdateStrategyMetadataInput!
     key: String!
   ): StrategyMetadata!
+  upsertTag(input: TagInput!): Tag!
   withdrawAll(input: WithdrawAllInput!): Boolean!
 }
 
@@ -274,7 +275,9 @@ enum PnlSnapshotKind {
   DAY
   HALF_YEAR
   MONTH
+  THREE_DAY
   THREE_MONTH
+  TWO_DAY
   TWO_MONTH
   TWO_WEEK
   TWO_YEAR
@@ -314,11 +317,10 @@ type Query {
   getAllFollowerActions: [FollowerAction!]!
   getAllFollowerDetails(contractId: Int!): [FollowerDetail!]!
   getAllFollowers: [Follower!]!
-  getAllLeaderHistories(contractId: Int!): [UserHistory!]!
-  getAllLeaders: [User!]!
   getAllMissions: [MissionShallowDetails!]!
   getAllStrategy: [Strategy!]!
   getAllStrategyMetadata: [StrategyMetadata!]!
+  getAllTags: [Tag!]!
   getAllTasks: [TaskShallowDetails!]!
   getAllUsers: [User!]!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
@@ -329,7 +331,7 @@ type Query {
     kind: PnlSnapshotKind!
   ): PnlSnapshotDetailsConnection!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
-  getUserByAddress(input: GetUserByAddressInput!): User
+  getUserByAddress(input: GetUserByAddressInput!): User!
 }
 
 type Strategy {
@@ -361,6 +363,18 @@ type Subscription {
   missionUpdated: [MissionShallowDetails!]!
   taskAdded: [TaskShallowDetails!]!
   taskUpdated: [TaskShallowDetails!]!
+}
+
+type Tag {
+  color: String!
+  description: String!
+  tag: String!
+}
+
+input TagInput {
+  color: String!
+  description: String!
+  tag: String!
 }
 
 type Task {
@@ -411,18 +425,7 @@ input UpdateStrategyMetadataInput {
 
 type User {
   address: String!
-  role: UserRole!
-}
-
-type UserHistory {
-  address: String!
-  histories: [TradeHistory!]!
-  role: UserRole!
-}
-
-enum UserRole {
-  Leader
-  User
+  tags: [Tag!]!
 }
 
 input WithdrawAllInput {
