@@ -2,7 +2,10 @@ import { Address } from "viem";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { FollowerDetailInfoFragment } from "@/graphql/gql/graphql";
-import { useWithdrawAll } from "@/app/_hooks/useFollower";
+import {
+  useGetAvailableFollowers,
+  useWithdrawAll,
+} from "@/app/_hooks/useFollower";
 import { useCallback } from "react";
 import { Button, Chip, useDisclosure } from "@nextui-org/react";
 import { ShowPrivateKeyModal } from "./ShowPrivateKeyModal";
@@ -13,6 +16,7 @@ export type FollowerInfoWidgetProps = {
 
 export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
   const withdrawAll = useWithdrawAll();
+  const availableFollowers = useGetAvailableFollowers();
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
@@ -52,6 +56,12 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
             <span className="text-xs text-neutral-400">{item.label}</span>
           </div>
         ))}
+
+        {availableFollowers
+          .map((item) => item.address)
+          .includes(follower.address) ? (
+          <Chip color="primary">Available</Chip>
+        ) : null}
       </div>
 
       <div className="flex items-center gap-2">

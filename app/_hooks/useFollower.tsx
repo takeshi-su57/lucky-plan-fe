@@ -11,6 +11,8 @@ import {
 import { getFragmentData, graphql } from "@/gql/index";
 import { useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
+import { useGetAllBots } from "./useAutomation";
+import { BotStatus } from "@/graphql/gql/graphql";
 
 export const FOLLOWER_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment FollowerInfo on Follower {
@@ -89,6 +91,21 @@ export function useGetAllFollowers() {
       ...getFragmentData(FOLLOWER_INFO_FRAGMENT_DOCUMENT, follower),
     }));
   }, [data]);
+}
+
+export function useGetAvailableFollowers() {
+  const allFollowers = useGetAllFollowers();
+  const allBots = useGetAllBots();
+
+  return useMemo(() => {
+    const botFollowers = allBots
+      .filter((bot) => bot.status !== BotStatus.Dead)
+      .map((bot) => bot.followerAddress);
+
+    return allFollowers.filter(
+      (follower) => !botFollowers.includes(follower.address),
+    );
+  }, [allBots, allFollowers]);
 }
 
 export function useGetAllFollowerDetails(contractId: string | null) {
