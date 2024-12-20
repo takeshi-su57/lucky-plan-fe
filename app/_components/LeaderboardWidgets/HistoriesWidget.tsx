@@ -74,7 +74,21 @@ export function HistoriesWidget({
     }
   });
 
-  sortedHistories.forEach((history, index) => {
+  [
+    ...sortedHistories,
+    {
+      __typename: "TradeHistory",
+      address,
+      blockNumber: 0,
+      contractId: 0,
+      eventName: "",
+      id: 0,
+      in: 0,
+      out: 0,
+      pnl: 0,
+      timestamp: Date.now(),
+    },
+  ].forEach((history, index) => {
     pnlSum += history.pnl;
     inOutSum += history.in - history.out;
 
