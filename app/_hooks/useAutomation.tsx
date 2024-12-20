@@ -53,9 +53,6 @@ export const BOTDETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     follower {
       ...FollowerInfo
     }
-    leader {
-      ...UserInfo
-    }
     strategy {
       ...StrategyInfo
     }
@@ -129,7 +126,7 @@ export function useGetAllBots() {
     if (!data) {
       return [];
     }
-    return data.getAllBots.map(getBotFragment);
+    return data.getAllBots.map(getBotFragment).sort((a, b) => a.id - b.id);
   }, [data]);
 }
 

@@ -101,9 +101,11 @@ export function useGetAllFollowerDetails(contractId: string | null) {
       return [];
     }
 
-    return data.getAllFollowerDetails.map((follower) => ({
-      ...getFragmentData(FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT, follower),
-    }));
+    return data.getAllFollowerDetails
+      .map((follower) => ({
+        ...getFragmentData(FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT, follower),
+      }))
+      .sort((a, b) => a.accountIndex - b.accountIndex);
   }, [data]);
 }
 

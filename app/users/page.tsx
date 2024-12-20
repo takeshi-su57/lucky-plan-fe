@@ -1,140 +1,102 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useState, useMemo } from "react";
 import {
-  Tab,
-  Tabs,
+  Autocomplete,
+  AutocompleteItem,
   Card,
-  Input,
   Button,
   CardBody,
   useDisclosure,
-  Chip,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
 } from "@nextui-org/react";
-import { Address, isAddress } from "viem";
+import type { Selection } from "@nextui-org/react";
+import { Virtuoso } from "react-virtuoso";
+import { Address } from "viem";
 
-import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
-import {
-  useAddNewUser,
-  useChangeUserRole,
-  useGetAllUsers,
-} from "@/app/_hooks/useUser";
-import { UserInfoFragment, UserRole } from "@/graphql/gql/graphql";
-import { StandardModal } from "@/components/modals/StandardModal";
-import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
+import { useGetUsersByTags } from "@/app/_hooks/useUser";
+import { UserTradeHistory } from "@/app-components/UserWidgets/UserTradeHistory";
+import { useGetAllTags } from "@/app-hooks/useTag";
+import { useGetAllContracts } from "@/app-hooks/useContract";
 
-const columns: TableColumnProps[] = [
-  {
-    id: "address",
-    component: "Address",
-  },
-  {
-    id: "role",
-    component: "Role",
-    allowsSorting: true,
-  },
-  {
-    id: "changeRole",
-    component: "",
-    className: "flex-end",
-  },
-];
-
-type TabType = "all" | "users" | "leaders";
+import { shrinkAddress } from "@/utils";
+import { CreateUserModal } from "../_components/UserWidgets/CreateUserModal";
 
 export default function Page() {
-  const allUsers = useGetAllUsers();
-  const mutateUserRole = useChangeUserRole();
-  const mutateByAddUser = useAddNewUser();
-
-  const [selected, setSelected] = useState<TabType>("all");
-  const [address, setAddress] = useState("");
+  const allTags = useGetAllTags();
+  const allContracts = useGetAllContracts();
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
-  const handleToggleRole = useCallback(
-    (user: UserInfoFragment) => {
-      mutateUserRole({
-        variables: {
-          input: {
-            address: user.address,
-            role: user.role === UserRole.User ? UserRole.Leader : UserRole.User,
-          },
-        },
-      });
-    },
-    [mutateUserRole],
-  );
+  const [contractId, setContractId] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<Selection>(new Set([]));
 
-  const handleConfirm = () => {
-    if (!isAddress(address)) {
-      return;
-    }
+  const selectedValue = useMemo(() => Array.from(selectedTags), [selectedTags]);
 
-    mutateByAddUser({
-      variables: {
-        input: {
-          address,
-        },
-      },
-    });
-
-    onClose();
-  };
-
-  const rows = useMemo(() => {
-    if (allUsers.length === 0) {
-      return [];
-    }
-    return allUsers
-      .filter((user) =>
-        selected !== "all"
-          ? selected === "users"
-            ? user.role === UserRole.User
-            : user.role === UserRole.Leader
-          : true,
-      )
-      .map((user) => ({
-        id: user.address,
-        className: "group",
-        data: {
-          address: {
-            component: <AddressWidget address={user.address as Address} />,
-          },
-          role: {
-            sortableAmount: user.role,
-            component: (
-              <Chip
-                color={user.role === UserRole.Leader ? "success" : "default"}
-              >
-                {user.role}
-              </Chip>
-            ),
-          },
-          changeRole: {
-            component: (
-              <Button onClick={() => handleToggleRole(user)}>
-                Change Role
-              </Button>
-            ),
-            className: "w-[50px]",
-          },
-        },
-      }));
-  }, [allUsers, handleToggleRole, selected]);
+  const allUsers = useGetUsersByTags(selectedValue as string[]);
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <Tabs
-          aria-label="users-table-tabs"
-          selectedKey={selected}
-          onSelectionChange={(value) => value && setSelected(value as TabType)}
-        >
-          <Tab key="all" title="All" />
-          <Tab key="leaders" title="Leaders" />
-          <Tab key="users" title="Users" />
-        </Tabs>
+        <div className="flex items-center gap-4">
+          <Autocomplete
+            label="Follower Contract"
+            variant="underlined"
+            defaultItems={allContracts}
+            placeholder="Search contract"
+            selectedKey={contractId}
+            className="w-[400px]"
+            onSelectionChange={(key) => setContractId(key as string | null)}
+          >
+            {(item) => (
+              <AutocompleteItem
+                key={item.id}
+                className="font-mono"
+                textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
+              >
+                <div className="flex flex-col">
+                  <span className="text-small">Chain: {item.chainId}</span>
+                  <span className="text-small">Contract: {item.address}</span>
+                  <span className="text-tiny text-default-400">
+                    {item.description}
+                  </span>
+                </div>
+              </AutocompleteItem>
+            )}
+          </Autocomplete>
+
+          <Dropdown>
+            <DropdownTrigger>
+              <Button className="capitalize" variant="bordered">
+                {selectedValue.length > 0
+                  ? selectedValue.join(", ").replaceAll("_", " ")
+                  : "Select Tags"}
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu
+              closeOnSelect={false}
+              selectedKeys={selectedTags}
+              selectionMode="multiple"
+              variant="flat"
+              onSelectionChange={setSelectedTags}
+            >
+              {allTags.map((tag) => (
+                <DropdownItem key={tag.tag}>
+                  <div className="flex items-center gap-2">
+                    {tag.tag}
+                    <span
+                      className="h-5 w-10"
+                      style={{ background: tag.color }}
+                    />
+                  </div>
+                </DropdownItem>
+              ))}
+            </DropdownMenu>
+          </Dropdown>
+        </div>
 
         <Button color="primary" onClick={onOpen}>
           Add New User
@@ -143,44 +105,26 @@ export default function Page() {
 
       <Card>
         <CardBody>
-          <DataTable
-            columns={columns}
-            rows={rows}
-            classNames={{
-              tr: "font-mono cursor-pointer",
-              td: "py-3 ",
-              th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
-            }}
-          />
+          {contractId ? (
+            <Virtuoso
+              style={{ height: 700 }}
+              data={allUsers}
+              itemContent={(_, snapshot) => (
+                <UserTradeHistory
+                  address={snapshot.address as Address}
+                  contractId={contractId}
+                />
+              )}
+            />
+          ) : null}
         </CardBody>
       </Card>
 
-      <StandardModal
+      <CreateUserModal
         isOpen={isOpen}
+        onClose={onClose}
         onOpenChange={onOpenChange}
-        backdrop="blur"
-      >
-        <div className="flex flex-col gap-3.5">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
-            Add New User
-          </h1>
-
-          <Input
-            variant="underlined"
-            value={address}
-            onValueChange={setAddress}
-            label="Address"
-          />
-
-          <Button
-            onClick={handleConfirm}
-            color="primary"
-            isDisabled={!isAddress(address)}
-          >
-            Confirm
-          </Button>
-        </div>
-      </StandardModal>
+      />
     </div>
   );
 }

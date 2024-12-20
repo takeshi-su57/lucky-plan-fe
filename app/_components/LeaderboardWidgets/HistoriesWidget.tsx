@@ -1,5 +1,6 @@
 "use client";
 
+import { Address } from "viem";
 import { PnlSnapshotKind, TradeHistory } from "@/graphql/gql/graphql";
 
 import {
@@ -13,9 +14,8 @@ import {
 
 import LineChart from "@/components/charts/LineChart";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
-import { Address } from "viem";
-import { Button } from "@nextui-org/react";
-import { useAddNewLeader } from "@/app/_hooks/useUser";
+
+import { TagsWidget } from "../UserWidgets/TagsWidget";
 
 export type HistoriesWidgetProps = {
   address: Address;
@@ -28,18 +28,6 @@ export function HistoriesWidget({
   histories,
   kind,
 }: HistoriesWidgetProps) {
-  const mutateByAddLeader = useAddNewLeader();
-
-  const handleConfirm = () => {
-    mutateByAddLeader({
-      variables: {
-        input: {
-          address,
-        },
-      },
-    });
-  };
-
   const pnlChartData: {
     value: number;
     date: Date;
@@ -285,7 +273,7 @@ export function HistoriesWidget({
           </div>
         ))}
 
-        <Button onClick={handleConfirm}>Save as a Leader</Button>
+        <TagsWidget address={address} />
       </div>
 
       <div className="flex flex-1 flex-col gap-2">

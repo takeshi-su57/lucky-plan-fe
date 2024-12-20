@@ -11,7 +11,6 @@ import { twMerge } from "tailwind-merge";
 
 export const links = [
   { id: "users", label: "User", title: "" },
-  { id: "leaders", label: "Leaders", title: "" },
   { id: "followers", label: "Follower", title: "" },
   { id: "strategies", label: "Strategy", title: "" },
   { id: "contracts", label: "Contract", title: "" },
@@ -27,6 +26,11 @@ export const links = [
   {
     id: "leaderboards",
     label: "Leaderboard",
+    title: "",
+  },
+  {
+    id: "tags",
+    label: "Tag",
     title: "",
   },
 ];
