@@ -342,3 +342,23 @@ export function hasCommonItem<T>(array1: T[], array2: T[]): boolean {
   // If no common items are found, return false
   return false;
 }
+
+export function hasSameItems<T>(array1: T[], array2: T[]): boolean {
+  // If the lengths are different, they can't be equal
+  if (array1.length !== array2.length) {
+    return false;
+  }
+
+  // Sort both arrays and compare them
+  const sortedArray1 = [...array1].sort();
+  const sortedArray2 = [...array2].sort();
+
+  // Compare each item in the sorted arrays
+  for (let i = 0; i < sortedArray1.length; i++) {
+    if (sortedArray1[i] !== sortedArray2[i]) {
+      return false;
+    }
+  }
+
+  return true; // Arrays contain the same items
+}

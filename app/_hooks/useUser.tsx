@@ -1,13 +1,14 @@
 "use client";
 
+import { useEffect, useMemo } from "react";
+import { useSnackbar } from "notistack";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 
 import { getFragmentData, graphql } from "@/gql/index";
-import { useEffect, useMemo } from "react";
-import { useSnackbar } from "notistack";
 import { GetAllUsersQuery, TagInfoFragment } from "@/graphql/gql/graphql";
+
 import { TAG_INFO_FRAGMENT_DOCUMENT } from "./useTag";
-import { hasCommonItem } from "@/utils";
+import { hasSameItems } from "@/utils";
 
 export const USER_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment UserInfo on User {
@@ -97,11 +98,11 @@ export function useGetUsersByTags(tags: string[]) {
 
   return useMemo(() => {
     if (tags.length === 0) {
-      return users;
+      return users.filter((user) => user.tags.length === 0);
     }
 
     return users.filter((user) =>
-      hasCommonItem(
+      hasSameItems(
         user.tags.map((tag) => tag.tag),
         tags,
       ),
@@ -126,10 +127,7 @@ export function useAddNewUser() {
 
   useEffect(() => {
     if (newData && !error) {
-      const userInfo = getFragmentData(
-        USER_INFO_FRAGMENT_DOCUMENT,
-        newData.addUser,
-      );
+      const userInfo = getUserFragment(newData.addUser);
 
       enqueueSnackbar("Success at creating a new user!", {
         variant: "success",
@@ -154,11 +152,11 @@ export function useAddNewUser() {
 
             return {
               ...data,
-              getAllUsers: [...data.getAllUsers, userInfo],
+              getAllUsers: [...data.getAllUsers, newData.addUser],
             };
           } else {
             return {
-              getAllUsers: [userInfo],
+              getAllUsers: [newData.addUser],
             };
           }
         },
@@ -179,23 +177,35 @@ export function useAddTagToUser() {
 
   useEffect(() => {
     if (newData && !error) {
-      const userInfo = getFragmentData(
-        USER_INFO_FRAGMENT_DOCUMENT,
-        newData.addTagToUser,
-      );
+      const userInfo = getUserFragment(newData.addTagToUser);
 
       enqueueSnackbar("Success at adding tag!", {
         variant: "success",
       });
 
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: userInfo.__typename,
-          address: userInfo.address,
-        }),
-        fragment: USER_INFO_FRAGMENT_DOCUMENT,
-        data: userInfo,
-      });
+      client.cache.updateQuery(
+        {
+          query: GET_ALL_USERS_DOCUMENT,
+          variables: {},
+        },
+        (data) => {
+          if (data && data.getAllUsers.length > 0) {
+            return {
+              ...data,
+              getAllUsers: data.getAllUsers.map((user) =>
+                userInfo.address ===
+                getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, user).address
+                  ? newData.addTagToUser
+                  : user,
+              ),
+            };
+          } else {
+            return {
+              getAllUsers: [newData.addTagToUser],
+            };
+          }
+        },
+      );
     }
   }, [client.cache, newData, error, enqueueSnackbar]);
 
@@ -221,14 +231,29 @@ export function useRemoveTagFromUser() {
         variant: "success",
       });
 
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: userInfo.__typename,
-          address: userInfo.address,
-        }),
-        fragment: USER_INFO_FRAGMENT_DOCUMENT,
-        data: userInfo,
-      });
+      client.cache.updateQuery(
+        {
+          query: GET_ALL_USERS_DOCUMENT,
+          variables: {},
+        },
+        (data) => {
+          if (data && data.getAllUsers.length > 0) {
+            return {
+              ...data,
+              getAllUsers: data.getAllUsers.map((user) =>
+                userInfo.address ===
+                getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, user).address
+                  ? newData.removeTagFromUser
+                  : user,
+              ),
+            };
+          } else {
+            return {
+              getAllUsers: [newData.removeTagFromUser],
+            };
+          }
+        },
+      );
     }
   }, [client.cache, newData, error, enqueueSnackbar]);
 

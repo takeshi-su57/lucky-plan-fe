@@ -75,11 +75,13 @@ export default function Page() {
           component: tag.description,
         },
         color: {
-          component: <div className="h-5 w-10" style={{ color: tag.color }} />,
+          component: (
+            <div className="h-5 w-10" style={{ background: tag.color }} />
+          ),
         },
         action: {
           component: (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-end gap-2">
               <Button onClick={() => handleUpdateTag(tag)} color="primary">
                 Edit
               </Button>
@@ -97,7 +99,7 @@ export default function Page() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-end">
         <Button color="primary" onClick={handleAddNewTag}>
-          Add New User
+          Add New Tag
         </Button>
       </div>
 
