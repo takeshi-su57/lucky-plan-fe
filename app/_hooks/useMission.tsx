@@ -1,17 +1,18 @@
 "use client";
 
+import { useEffect, useMemo } from "react";
+import { useSnackbar } from "notistack";
 import {
   useApolloClient,
   useMutation,
   useQuery,
   useSubscription,
 } from "@apollo/client";
-
 import { getFragmentData, graphql } from "@/gql/index";
-import { useEffect, useMemo } from "react";
-import { useSnackbar } from "notistack";
 import { GetAllMissionsQuery } from "@/graphql/gql/graphql";
+
 import { BOT_INFO_FRAGMENT_DOCUMENT } from "./useAutomation";
+import { getTaskFragment } from "./useTask";
 
 export const POSITION_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment PositionInfo on Position {
@@ -31,6 +32,21 @@ export const MISSION_INFO_FRAGMENT_DOCUMENT = graphql(`
     status
     createdAt
     updatedAt
+  }
+`);
+
+export const MISSION_WITH_TASKS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment MissionWithTasksInfo on MissionWithTasks {
+    id
+    botId
+    targetPositionId
+    achievePositionId
+    status
+    createdAt
+    updatedAt
+    tasks {
+      ...TaskShallowDetailsInfo
+    }
   }
 `);
 
@@ -59,6 +75,14 @@ export const GET_ALL_MISSIONS_DOCUMENT = graphql(`
   query getAllMissions {
     getAllMissions {
       ...MissionShallowDetailsInfo
+    }
+  }
+`);
+
+export const FIND_MISSION_DOCUMENT = graphql(`
+  query findMission($id: Int!) {
+    findMission(id: $id) {
+      ...MissionWithTasksInfo
     }
   }
 `);
@@ -126,6 +150,28 @@ export function useGetAllMissions() {
     }
     return data.getAllMissions.map(getMissionFragment);
   }, [data]);
+}
+
+export function useGetMission(missionId: number) {
+  const { data, loading, error } = useQuery(FIND_MISSION_DOCUMENT, {
+    variables: { id: +missionId },
+  });
+
+  const missionInfo = getFragmentData(
+    MISSION_WITH_TASKS_INFO_FRAGMENT_DOCUMENT,
+    data?.findMission,
+  );
+
+  return {
+    mission: missionInfo
+      ? {
+          ...missionInfo,
+          tasks: missionInfo.tasks.map(getTaskFragment),
+        }
+      : undefined,
+    loading,
+    error,
+  };
 }
 
 export function useSubscribeMission() {

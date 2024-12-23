@@ -16,7 +16,6 @@ export const links = [
   { id: "contracts", label: "Contract", title: "" },
   { id: "automations", label: "Automation", title: "" },
   { id: "missions", label: "Mission", title: "" },
-  { id: "tasks", label: "Task", title: "" },
   {
     id: "leaderboards",
     label: "Leaderboard",

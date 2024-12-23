@@ -76,18 +76,22 @@ export function TaskSummary({ task }: TaskSummaryProps) {
   }
 
   return (
-    <div className="flex items-center gap-6">
-      <Chip>{task.id}</Chip>
+    <div className="flex items-center justify-between gap-6">
+      <div className="flex items-center gap-6">
+        <Chip>{task.id}</Chip>
 
-      <span className="min-w-[300px] text-base text-neutral-400">
-        {actionName}
-      </span>
+        <span className="min-w-[300px] text-sm text-neutral-400">
+          {actionName}
+        </span>
+      </div>
 
-      <span className="text-sm text-neutral-500">
-        {dayjs(new Date(task.createdAt)).format("YYYY/MM/DD hh:mm:ss")}
-      </span>
+      <div className="flex items-center gap-6">
+        <span className="text-xs text-neutral-600">
+          {dayjs(new Date(task.createdAt)).format("YYYY/MM/DD hh:mm:ss")}
+        </span>
 
-      <Chip color={colorsByTaskStatus[task.status]}>{task.status}</Chip>
+        <Chip color={colorsByTaskStatus[task.status]}>{task.status}</Chip>
+      </div>
     </div>
   );
 }

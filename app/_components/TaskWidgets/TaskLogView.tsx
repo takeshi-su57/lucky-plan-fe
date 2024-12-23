@@ -22,9 +22,9 @@ export function TaskLogView({ id, taskLog }: TaskLogViewProps) {
           </div>
         }
       >
-        <span className="text-wrap break-words text-xs text-neutral-400">
+        <div className="text-wrap break-words border-t border-t-neutral-400/20 py-6 text-xs text-neutral-400">
           {log.message || "Unknown log"}
-        </span>
+        </div>
       </AccordionItem>
     </Accordion>
   );

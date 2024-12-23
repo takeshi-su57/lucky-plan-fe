@@ -8,7 +8,10 @@ import {
   useQuery,
   useSubscription,
 } from "@apollo/client";
-import { GetAllTasksQuery } from "@/graphql/gql/graphql";
+import {
+  TaskShallowDetails,
+  TaskShallowDetailsInfoFragment,
+} from "@/graphql/gql/graphql";
 import { getFragmentData, graphql } from "@/gql/index";
 
 import { MISSION_INFO_FRAGMENT_DOCUMENT } from "./useMission";
@@ -110,7 +113,15 @@ export const TASK_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
   }
 `);
 
-function getTaskFragment(task: GetAllTasksQuery["getAllTasks"][number]) {
+export function getTaskFragment(
+  task: {
+    __typename?: "TaskShallowDetails";
+  } & {
+    " $fragmentRefs"?: {
+      TaskShallowDetailsInfoFragment: TaskShallowDetailsInfoFragment;
+    };
+  },
+): TaskShallowDetails {
   const taskInfo = getFragmentData(
     TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
     task,
