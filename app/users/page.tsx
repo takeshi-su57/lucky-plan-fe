@@ -12,6 +12,7 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
+  Checkbox,
 } from "@nextui-org/react";
 import type { Selection } from "@nextui-org/react";
 import { Virtuoso } from "react-virtuoso";
@@ -33,10 +34,11 @@ export default function Page() {
 
   const [contractId, setContractId] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<Selection>(new Set([]));
+  const [isAndOp, setIsAndOp] = useState(true);
 
   const selectedValue = useMemo(() => Array.from(selectedTags), [selectedTags]);
 
-  const allUsers = useGetUsersByTags(selectedValue as string[]);
+  const allUsers = useGetUsersByTags(selectedValue as string[], isAndOp);
 
   return (
     <div className="flex flex-col gap-6">
@@ -96,6 +98,10 @@ export default function Page() {
               ))}
             </DropdownMenu>
           </Dropdown>
+
+          <Checkbox isSelected={isAndOp} onValueChange={setIsAndOp}>
+            {isAndOp ? "And" : "Or"}
+          </Checkbox>
         </div>
 
         <Button color="primary" variant="bordered" onClick={onOpen}>
