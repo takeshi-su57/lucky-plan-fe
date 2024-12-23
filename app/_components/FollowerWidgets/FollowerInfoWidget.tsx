@@ -1,24 +1,23 @@
 import { Address } from "viem";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
-import { FollowerDetailInfoFragment } from "@/graphql/gql/graphql";
-import {
-  useGetAvailableFollowers,
-  useWithdrawAll,
-} from "@/app/_hooks/useFollower";
-import { useCallback } from "react";
-import { Button, Chip, useDisclosure } from "@nextui-org/react";
-import { ShowPrivateKeyModal } from "./ShowPrivateKeyModal";
+import { useGetAvailableFollowers } from "@/app/_hooks/useFollower";
+
+import { Chip } from "@nextui-org/react";
 
 export type FollowerInfoWidgetProps = {
-  follower: FollowerDetailInfoFragment;
+  follower: {
+    address: string;
+    accountIndex: number;
+    publicKey: string;
+    ethBalance: number;
+    usdcBalance: number;
+    contractId: number;
+  };
 };
 
 export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
-  const withdrawAll = useWithdrawAll();
   const availableFollowers = useGetAvailableFollowers();
-
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const items = [
     {
@@ -32,17 +31,6 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
       value: Number(follower.usdcBalance) / 1e6,
     },
   ];
-
-  const handleWithdrawAll = useCallback(() => {
-    withdrawAll({
-      variables: {
-        input: {
-          address: follower.address,
-          contractId: +follower.contractId,
-        },
-      },
-    });
-  }, [follower.address, follower.contractId, withdrawAll]);
 
   return (
     <div className="flex flex-1 items-center justify-between gap-3">
@@ -63,18 +51,6 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
           <Chip color="primary">Available</Chip>
         ) : null}
       </div>
-
-      <div className="flex items-center gap-2">
-        <Button onClick={onOpen}>Get Key</Button>
-
-        <Button onClick={handleWithdrawAll}>Withdraw All</Button>
-      </div>
-
-      <ShowPrivateKeyModal
-        address={follower.address as Address}
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-      />
     </div>
   );
 }
