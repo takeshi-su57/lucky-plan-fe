@@ -98,8 +98,8 @@ export default function Page() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-end">
-        <Button color="primary" onClick={handleAddNewTag}>
-          Add New Tag
+        <Button color="primary" variant="bordered" onClick={handleAddNewTag}>
+          + New
         </Button>
       </div>
 
