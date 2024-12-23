@@ -13,7 +13,9 @@ export function ActionView({ action }: ActionViewProps) {
   return (
     <Accordion isCompact variant="splitted">
       <AccordionItem key={action.id} title={<ActionSummary action={action} />}>
-        <JSONTree data={args} />
+        <div className="border-t border-t-neutral-400/20 py-6">
+          <JSONTree data={args} />
+        </div>
       </AccordionItem>
     </Accordion>
   );
