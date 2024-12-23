@@ -98,8 +98,8 @@ export default function Page() {
           </Dropdown>
         </div>
 
-        <Button color="primary" onClick={onOpen}>
-          Add New User
+        <Button color="primary" variant="bordered" onClick={onOpen}>
+          + New
         </Button>
       </div>
 

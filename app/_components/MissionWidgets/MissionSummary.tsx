@@ -3,7 +3,7 @@
 import { Chip } from "@nextui-org/react";
 import dayjs from "dayjs";
 
-import { MissionStatus, MissionShallowDetails } from "@/graphql/gql/graphql";
+import { MissionStatus, Mission } from "@/graphql/gql/graphql";
 
 const colorsByMissionStatus: Record<
   MissionStatus,
@@ -17,7 +17,7 @@ const colorsByMissionStatus: Record<
 };
 
 export type MissionSummaryProps = {
-  mission: MissionShallowDetails;
+  mission: Mission;
 };
 
 export function MissionSummary({ mission }: MissionSummaryProps) {

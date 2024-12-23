@@ -119,8 +119,12 @@ export default function Page() {
           )}
         </Autocomplete>
 
-        <Button color="primary" onClick={handleGenerateFollower}>
-          Generate Follower
+        <Button
+          color="primary"
+          variant="bordered"
+          onClick={handleGenerateFollower}
+        >
+          + New
         </Button>
       </div>
 
