@@ -61,6 +61,24 @@ enum BotStatus {
   Stop
 }
 
+type BotWithMissions {
+  endedAt: DateTime
+  followerAddress: String!
+  followerContractId: Int!
+  followerEndedBlock: Int
+  followerStartedBlock: Int
+  id: Int!
+  leaderAddress: String!
+  leaderCollateralBaseline: Int!
+  leaderContractId: Int!
+  leaderEndedBlock: Int
+  leaderStartedBlock: Int
+  missions: [Mission!]!
+  startedAt: DateTime
+  status: BotStatus!
+  strategyId: Int!
+}
+
 input ChangeContractStatusInput {
   id: Int!
   status: String!
@@ -312,7 +330,7 @@ type Query {
   findAction(id: Int!): Action
   findActionsByPosition(positionId: Float!): [Action!]!
   findAllPositions: [Position!]!
-  findBot(id: Int!): BotDetails!
+  findBot(id: Int!): BotWithMissions
   findContract(id: Int!): Contract!
   findFollowerAction(id: Int!): FollowerActionDetails
   findMission(id: Int!): MissionWithTasks
