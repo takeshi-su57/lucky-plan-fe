@@ -8,7 +8,7 @@ import { getFragmentData, graphql } from "@/gql/index";
 import { GetAllUsersQuery, TagInfoFragment } from "@/graphql/gql/graphql";
 
 import { TAG_INFO_FRAGMENT_DOCUMENT } from "./useTag";
-import { hasSameItems } from "@/utils";
+import { hasCommonItem, hasSameItems } from "@/utils";
 
 export const USER_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment UserInfo on User {
@@ -93,7 +93,7 @@ export function useGetAllUsers() {
   }, [data]);
 }
 
-export function useGetUsersByTags(tags: string[]) {
+export function useGetUsersByTags(tags: string[], isAndOp: boolean) {
   const { users } = useGetAllUsers();
 
   return useMemo(() => {
@@ -102,12 +102,17 @@ export function useGetUsersByTags(tags: string[]) {
     }
 
     return users.filter((user) =>
-      hasSameItems(
-        user.tags.map((tag) => tag.tag),
-        tags,
-      ),
+      isAndOp
+        ? hasSameItems(
+            user.tags.map((tag) => tag.tag),
+            tags,
+          )
+        : hasCommonItem(
+            user.tags.map((tag) => tag.tag),
+            tags,
+          ),
     );
-  }, [tags, users]);
+  }, [isAndOp, tags, users]);
 }
 
 export function useGetTagsByAddress(address: string) {
