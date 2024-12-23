@@ -1,5 +1,6 @@
 "use client";
 
+import { Address } from "viem";
 import { PnlSnapshotKind, TradeHistory } from "@/graphql/gql/graphql";
 
 import {
@@ -13,9 +14,8 @@ import {
 
 import LineChart from "@/components/charts/LineChart";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
-import { Address } from "viem";
-import { Button } from "@nextui-org/react";
-import { useAddNewLeader } from "@/app/_hooks/useUser";
+
+import { TagsWidget } from "../UserWidgets/TagsWidget";
 
 export type HistoriesWidgetProps = {
   address: Address;
@@ -28,18 +28,6 @@ export function HistoriesWidget({
   histories,
   kind,
 }: HistoriesWidgetProps) {
-  const mutateByAddLeader = useAddNewLeader();
-
-  const handleConfirm = () => {
-    mutateByAddLeader({
-      variables: {
-        input: {
-          address,
-        },
-      },
-    });
-  };
-
   const pnlChartData: {
     value: number;
     date: Date;
@@ -86,7 +74,21 @@ export function HistoriesWidget({
     }
   });
 
-  sortedHistories.forEach((history, index) => {
+  [
+    ...sortedHistories,
+    {
+      __typename: "TradeHistory",
+      address,
+      blockNumber: 0,
+      contractId: 0,
+      eventName: "",
+      id: 0,
+      in: 0,
+      out: 0,
+      pnl: 0,
+      timestamp: Date.now(),
+    },
+  ].forEach((history, index) => {
     pnlSum += history.pnl;
     inOutSum += history.in - history.out;
 
@@ -276,7 +278,7 @@ export function HistoriesWidget({
   ];
 
   return (
-    <div className="flex items-center gap-8 border-y border-neutral-600/80 p-6">
+    <div className="flex min-h-[500px] items-center gap-8 p-6">
       <div className="flex flex-col gap-2">
         {items.map((item) => (
           <div className="flex items-center gap-4" key={item.id}>
@@ -285,7 +287,7 @@ export function HistoriesWidget({
           </div>
         ))}
 
-        <Button onClick={handleConfirm}>Save as a Leader</Button>
+        <TagsWidget address={address} />
       </div>
 
       <div className="flex flex-1 flex-col gap-2">
@@ -297,7 +299,7 @@ export function HistoriesWidget({
 
       <div className="flex flex-1 flex-col gap-2">
         <span>In/Out</span>
-        <LineChart data={inOutChartData} className="h-[100px] w-full" />
+        <LineChart data={inOutChartData} className="h-[200px] w-full" />
         <span>Scale In/Out</span>
         <LineChart data={dayScaleinOutChartData} className="h-[200px] w-full" />
       </div>

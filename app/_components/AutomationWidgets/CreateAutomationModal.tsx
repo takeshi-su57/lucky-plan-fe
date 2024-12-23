@@ -8,8 +8,8 @@ import { StandardModal } from "@/components/modals/StandardModal";
 
 import { useGetAllContracts } from "@/app-hooks/useContract";
 import { useCreateBot } from "@/app/_hooks/useAutomation";
-import { useGetAllLeaders } from "@/app/_hooks/useUser";
-import { useGetAllFollowers } from "@/app/_hooks/useFollower";
+import { useGetUsersByTags } from "@/app/_hooks/useUser";
+import { useGetAvailableFollowers } from "@/app/_hooks/useFollower";
 import { useGetAllStrategy } from "@/app/_hooks/useStrategy";
 import { shrinkAddress } from "@/utils";
 import { NumericInput } from "@/components/inputs/NumericInput";
@@ -27,8 +27,8 @@ export function CreateAutomationModal({
 }: CreateAutomationModalProps) {
   const createBot = useCreateBot();
 
-  const allLeaders = useGetAllLeaders();
-  const allFollowers = useGetAllFollowers();
+  const allLeaders = useGetUsersByTags(["LEADER"]);
+  const allFollowers = useGetAvailableFollowers();
   const allContracts = useGetAllContracts();
   const allStrategies = useGetAllStrategy();
 

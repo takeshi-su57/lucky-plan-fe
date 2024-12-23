@@ -7,7 +7,9 @@ import { useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
 import { CONTRACT_INFO_FRAGMENT_DOCUMENT } from "./useContract";
 import { STRATEGY_INFO_FRAGMENT_DOCUMENT } from "./useStrategy";
-import { GetAllBotsQuery } from "@/graphql/gql/graphql";
+import { BotDetails, BotDetailsInfoFragment } from "@/graphql/gql/graphql";
+import { FOLLOWER_INFO_FRAGMENT_DOCUMENT } from "./useFollower";
+import { MISSION_INFO_FRAGMENT_DOCUMENT } from "./useMission";
 
 export const BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment BotInfo on Bot {
@@ -25,6 +27,28 @@ export const BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
     startedAt
     endedAt
     status
+  }
+`);
+
+export const BOT_WITH_MISSIONS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment BotWithMissionsInfo on BotWithMissions {
+    id
+    leaderAddress
+    followerAddress
+    strategyId
+    leaderContractId
+    leaderCollateralBaseline
+    leaderStartedBlock
+    leaderEndedBlock
+    followerContractId
+    followerStartedBlock
+    followerEndedBlock
+    startedAt
+    endedAt
+    status
+    missions {
+      ...MissionInfo
+    }
   }
 `);
 
@@ -53,9 +77,6 @@ export const BOTDETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     follower {
       ...FollowerInfo
     }
-    leader {
-      ...UserInfo
-    }
     strategy {
       ...StrategyInfo
     }
@@ -66,6 +87,14 @@ export const GET_ALL_BOTS_DOCUMENT = graphql(`
   query getAllBots {
     getAllBots {
       ...BotDetailsInfo
+    }
+  }
+`);
+
+export const FIND_BOT_DOCUMENT = graphql(`
+  query findBot($id: Int!) {
+    findBot(id: $id) {
+      ...BotWithMissionsInfo
     }
   }
 `);
@@ -100,11 +129,22 @@ export const STOP_BOT_DOCUMENT = graphql(`
   }
 `);
 
-function getBotFragment(bot: GetAllBotsQuery["getAllBots"][number]) {
+function getBotFragment(
+  bot: {
+    __typename?: "BotDetails";
+  } & {
+    " $fragmentRefs"?: {
+      BotDetailsInfoFragment: BotDetailsInfoFragment;
+    };
+  },
+): BotDetails {
   const botInfo = getFragmentData(BOTDETAILS_INFO_FRAGMENT_DOCUMENT, bot);
 
   return {
     ...botInfo,
+    follower: {
+      ...getFragmentData(FOLLOWER_INFO_FRAGMENT_DOCUMENT, botInfo.follower),
+    },
     leaderContract: {
       ...getFragmentData(
         CONTRACT_INFO_FRAGMENT_DOCUMENT,
@@ -129,8 +169,32 @@ export function useGetAllBots() {
     if (!data) {
       return [];
     }
-    return data.getAllBots.map(getBotFragment);
+    return data.getAllBots.map(getBotFragment).sort((a, b) => a.id - b.id);
   }, [data]);
+}
+
+export function useGetBot(botId: number) {
+  const { data, loading, error } = useQuery(FIND_BOT_DOCUMENT, {
+    variables: { id: +botId },
+  });
+
+  const botInfo = getFragmentData(
+    BOT_WITH_MISSIONS_INFO_FRAGMENT_DOCUMENT,
+    data?.findBot,
+  );
+
+  return {
+    bot: botInfo
+      ? {
+          ...botInfo,
+          missions: botInfo.missions.map((item) =>
+            getFragmentData(MISSION_INFO_FRAGMENT_DOCUMENT, item),
+          ),
+        }
+      : undefined,
+    loading,
+    error,
+  };
 }
 
 export function useCreateBot() {

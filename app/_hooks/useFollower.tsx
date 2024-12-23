@@ -11,6 +11,9 @@ import {
 import { getFragmentData, graphql } from "@/gql/index";
 import { useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
+import { useGetAllBots } from "./useAutomation";
+import { BotStatus } from "@/graphql/gql/graphql";
+import { useGetAllContracts } from "./useContract";
 
 export const FOLLOWER_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment FollowerInfo on Follower {
@@ -91,6 +94,21 @@ export function useGetAllFollowers() {
   }, [data]);
 }
 
+export function useGetAvailableFollowers() {
+  const allFollowers = useGetAllFollowers();
+  const allBots = useGetAllBots();
+
+  return useMemo(() => {
+    const botFollowers = allBots
+      .filter((bot) => bot.status !== BotStatus.Dead)
+      .map((bot) => bot.followerAddress);
+
+    return allFollowers.filter(
+      (follower) => !botFollowers.includes(follower.address),
+    );
+  }, [allBots, allFollowers]);
+}
+
 export function useGetAllFollowerDetails(contractId: string | null) {
   const { data } = useQuery(GET_ALL_FOLLOWER_DETAILS_DOCUMENT, {
     variables: contractId !== null ? { contractId: +contractId } : undefined,
@@ -101,9 +119,11 @@ export function useGetAllFollowerDetails(contractId: string | null) {
       return [];
     }
 
-    return data.getAllFollowerDetails.map((follower) => ({
-      ...getFragmentData(FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT, follower),
-    }));
+    return data.getAllFollowerDetails
+      .map((follower) => ({
+        ...getFragmentData(FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT, follower),
+      }))
+      .sort((a, b) => a.accountIndex - b.accountIndex);
   }, [data]);
 }
 
@@ -214,6 +234,8 @@ export function useGenerateFollower() {
   const [generateFollower, { data: newData, error }] = useMutation(
     GENERATE_NEW_FOLLOWER_DOCUMENT,
   );
+  const contracts = useGetAllContracts();
+
   const client = useApolloClient();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -258,7 +280,7 @@ export function useGenerateFollower() {
         },
       );
     }
-  }, [client.cache, newData, error, enqueueSnackbar]);
+  }, [client.cache, newData, error, enqueueSnackbar, contracts]);
 
   return generateFollower;
 }

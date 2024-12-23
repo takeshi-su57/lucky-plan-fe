@@ -1,26 +1,20 @@
 "use client";
 
+import { useEffect, useMemo } from "react";
+import { useSnackbar } from "notistack";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 
 import { getFragmentData, graphql } from "@/gql/index";
-import { useEffect, useMemo } from "react";
-import { useSnackbar } from "notistack";
-import { GetAllLeaderHistoriesQuery } from "@/graphql/gql/graphql";
-import { TRADEHISTORY_INFO_FRAGMENT_DOCUMENT } from "./useHistory";
+import { GetAllUsersQuery, TagInfoFragment } from "@/graphql/gql/graphql";
+
+import { TAG_INFO_FRAGMENT_DOCUMENT } from "./useTag";
+import { hasSameItems } from "@/utils";
 
 export const USER_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment UserInfo on User {
     address
-    role
-  }
-`);
-
-export const USER_HISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
-  fragment UserHistoryInfo on UserHistory {
-    address
-    role
-    histories {
-      ...TradeHistoryInfo
+    tags {
+      ...TagInfo
     }
   }
 `);
@@ -28,30 +22,6 @@ export const USER_HISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
 export const GET_ALL_USERS_DOCUMENT = graphql(`
   query getAllUsers {
     getAllUsers {
-      ...UserInfo
-    }
-  }
-`);
-
-export const GET_ALL_LEADERS_DOCUMENT = graphql(`
-  query getAllLeaders {
-    getAllLeaders {
-      ...UserInfo
-    }
-  }
-`);
-
-export const GET_ALL_LEADER_HISTORIES_DOCUMENT = graphql(`
-  query getAllLeaderHistories($contractId: Int!) {
-    getAllLeaderHistories(contractId: $contractId) {
-      ...UserHistoryInfo
-    }
-  }
-`);
-
-export const CHANGE_USER_ROLE_DOCUMENT = graphql(`
-  mutation changeUserRole($input: ChangeUserRoleInput!) {
-    changeUserRole(input: $input) {
       ...UserInfo
     }
   }
@@ -65,105 +35,87 @@ export const ADD_USER_DOCUMENT = graphql(`
   }
 `);
 
-export const ADD_LEADER_DOCUMENT = graphql(`
-  mutation addLeader($input: AddUserInput!) {
-    addLeader(input: $input) {
+export const ADD_TAG_TO_USER_DOCUMENT = graphql(`
+  mutation addTagToUser($input: ChangeUserTagInput!) {
+    addTagToUser(input: $input) {
       ...UserInfo
     }
   }
 `);
 
-export function useGetAllUsers() {
-  const { data } = useQuery(GET_ALL_USERS_DOCUMENT, { variables: {} });
-
-  return useMemo(() => {
-    if (!data) {
-      return [];
+export const REMOVE_TAG_TO_USER_DOCUMENT = graphql(`
+  mutation removeTagFromUser($input: ChangeUserTagInput!) {
+    removeTagFromUser(input: $input) {
+      ...UserInfo
     }
+  }
+`);
 
-    return data.getAllUsers.map((user) => ({
-      ...getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, user),
-    }));
-  }, [data]);
-}
-
-function getUserHistoryFragment(
-  user: GetAllLeaderHistoriesQuery["getAllLeaderHistories"][number],
-) {
-  const userInfo = getFragmentData(USER_HISTORY_INFO_FRAGMENT_DOCUMENT, user);
+function getUserFragment(user: GetAllUsersQuery["getAllUsers"][number]) {
+  const userInfo = getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, user);
 
   return {
     ...userInfo,
-    histories: [
-      ...getFragmentData(
-        TRADEHISTORY_INFO_FRAGMENT_DOCUMENT,
-        userInfo.histories,
+    tags: [
+      ...userInfo.tags.map((tag) =>
+        getFragmentData(TAG_INFO_FRAGMENT_DOCUMENT, tag),
       ),
     ],
   };
 }
 
-export function useGetAllLeaders() {
-  const { data } = useQuery(GET_ALL_LEADERS_DOCUMENT, {
-    variables: {},
-  });
+export function useGetAllUsers() {
+  const { data } = useQuery(GET_ALL_USERS_DOCUMENT, { variables: {} });
 
   return useMemo(() => {
+    const tagsMap = new Map<string, TagInfoFragment[]>();
+
     if (!data) {
-      return [];
+      return { users: [], tagsMap };
     }
 
-    return data.getAllLeaders.map((item) => ({
-      ...getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, item),
-    }));
+    const users = data.getAllUsers.map(getUserFragment);
+
+    users.forEach((user) => {
+      const arr = tagsMap.get(user.address.toLowerCase());
+
+      if (arr) {
+        arr.push(...user.tags);
+      } else {
+        tagsMap.set(user.address.toLowerCase(), user.tags);
+      }
+    });
+
+    return {
+      users,
+      tagsMap,
+    };
   }, [data]);
 }
 
-export function useGetAllLeaderHistories(contractId: string | null) {
-  const { data } = useQuery(GET_ALL_LEADER_HISTORIES_DOCUMENT, {
-    variables: contractId ? { contractId: +contractId } : undefined,
-  });
+export function useGetUsersByTags(tags: string[]) {
+  const { users } = useGetAllUsers();
 
   return useMemo(() => {
-    if (!data) {
-      return [];
+    if (tags.length === 0) {
+      return users.filter((user) => user.tags.length === 0);
     }
 
-    return data.getAllLeaderHistories.map(getUserHistoryFragment);
-  }, [data]);
+    return users.filter((user) =>
+      hasSameItems(
+        user.tags.map((tag) => tag.tag),
+        tags,
+      ),
+    );
+  }, [tags, users]);
 }
 
-export function useChangeUserRole() {
-  const [mutateUserRole, { data, error }] = useMutation(
-    CHANGE_USER_ROLE_DOCUMENT,
-  );
+export function useGetTagsByAddress(address: string) {
+  const { tagsMap } = useGetAllUsers();
 
-  const client = useApolloClient();
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (data && !error) {
-      const userInfo = getFragmentData(
-        USER_INFO_FRAGMENT_DOCUMENT,
-        data.changeUserRole,
-      );
-
-      enqueueSnackbar("Success at changing user role!", {
-        variant: "success",
-      });
-
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: userInfo.__typename,
-          address: userInfo.address,
-        }),
-        fragment: USER_INFO_FRAGMENT_DOCUMENT,
-        data: userInfo,
-      });
-    }
-  }, [client.cache, data, enqueueSnackbar, error]);
-
-  return mutateUserRole;
+  return useMemo(() => {
+    return tagsMap.get(address.toLowerCase()) || [];
+  }, [address, tagsMap]);
 }
 
 export function useAddNewUser() {
@@ -175,12 +127,9 @@ export function useAddNewUser() {
 
   useEffect(() => {
     if (newData && !error) {
-      const userInfo = getFragmentData(
-        USER_INFO_FRAGMENT_DOCUMENT,
-        newData.addUser,
-      );
+      const userInfo = getUserFragment(newData.addUser);
 
-      enqueueSnackbar("Success at changing user role!", {
+      enqueueSnackbar("Success at creating a new user!", {
         variant: "success",
       });
 
@@ -203,11 +152,11 @@ export function useAddNewUser() {
 
             return {
               ...data,
-              getAllUsers: [...data.getAllUsers, userInfo],
+              getAllUsers: [...data.getAllUsers, newData.addUser],
             };
           } else {
             return {
-              getAllUsers: [userInfo],
+              getAllUsers: [newData.addUser],
             };
           }
         },
@@ -218,21 +167,19 @@ export function useAddNewUser() {
   return mutateAddUser;
 }
 
-export function useAddNewLeader() {
-  const [mutateAddUser, { data: newData, error }] =
-    useMutation(ADD_LEADER_DOCUMENT);
+export function useAddTagToUser() {
+  const [mutateAddTagToUser, { data: newData, error }] = useMutation(
+    ADD_TAG_TO_USER_DOCUMENT,
+  );
 
   const client = useApolloClient();
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     if (newData && !error) {
-      const userInfo = getFragmentData(
-        USER_INFO_FRAGMENT_DOCUMENT,
-        newData.addLeader,
-      );
+      const userInfo = getUserFragment(newData.addTagToUser);
 
-      enqueueSnackbar("Success at adding a new Leader!", {
+      enqueueSnackbar("Success at adding tag!", {
         variant: "success",
       });
 
@@ -243,23 +190,18 @@ export function useAddNewLeader() {
         },
         (data) => {
           if (data && data.getAllUsers.length > 0) {
-            const alreadyExists = data.getAllUsers.filter(
-              (user) =>
-                userInfo.address ===
-                getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, user).address,
-            );
-
-            if (alreadyExists.length > 0) {
-              return data;
-            }
-
             return {
               ...data,
-              getAllUsers: [...data.getAllUsers, userInfo],
+              getAllUsers: data.getAllUsers.map((user) =>
+                userInfo.address ===
+                getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, user).address
+                  ? newData.addTagToUser
+                  : user,
+              ),
             };
           } else {
             return {
-              getAllUsers: [userInfo],
+              getAllUsers: [newData.addTagToUser],
             };
           }
         },
@@ -267,5 +209,53 @@ export function useAddNewLeader() {
     }
   }, [client.cache, newData, error, enqueueSnackbar]);
 
-  return mutateAddUser;
+  return mutateAddTagToUser;
+}
+
+export function useRemoveTagFromUser() {
+  const [mutateRemoveTagFromUser, { data: newData, error }] = useMutation(
+    REMOVE_TAG_TO_USER_DOCUMENT,
+  );
+
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      const userInfo = getFragmentData(
+        USER_INFO_FRAGMENT_DOCUMENT,
+        newData.removeTagFromUser,
+      );
+
+      enqueueSnackbar("Success at removing tag!", {
+        variant: "success",
+      });
+
+      client.cache.updateQuery(
+        {
+          query: GET_ALL_USERS_DOCUMENT,
+          variables: {},
+        },
+        (data) => {
+          if (data && data.getAllUsers.length > 0) {
+            return {
+              ...data,
+              getAllUsers: data.getAllUsers.map((user) =>
+                userInfo.address ===
+                getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, user).address
+                  ? newData.removeTagFromUser
+                  : user,
+              ),
+            };
+          } else {
+            return {
+              getAllUsers: [newData.removeTagFromUser],
+            };
+          }
+        },
+      );
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return mutateRemoveTagFromUser;
 }

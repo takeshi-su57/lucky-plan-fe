@@ -1,118 +1,33 @@
 "use client";
 
-import { ReactNode, useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Tab,
   Tabs,
-  Card,
   Button,
-  CardBody,
   useDisclosure,
-  Chip,
+  Accordion,
+  AccordionItem,
 } from "@nextui-org/react";
-import { Address } from "viem";
 
-import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
-import { BotDetailsInfoFragment, BotStatus } from "@/graphql/gql/graphql";
-import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
-import {
-  useDeleteBot,
-  useGetAllBots,
-  useLiveBot,
-  useStopBot,
-} from "../_hooks/useAutomation";
-import { CreateAutomationModal } from "../_components/AutomationWidgets/CreateAutomationModal";
+import { BotStatus } from "@/graphql/gql/graphql";
 
-const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
-  {
-    [BotStatus.Created]: "default",
-    [BotStatus.Live]: "success",
-    [BotStatus.Stop]: "danger",
-    [BotStatus.Dead]: "default",
-  };
+import { useGetAllBots } from "@/app-hooks/useAutomation";
 
-const columns: TableColumnProps[] = [
-  {
-    id: "id",
-    component: "ID",
-    allowsSorting: true,
-  },
-  {
-    id: "leader",
-    component: "Leader",
-    allowsSorting: true,
-  },
-  {
-    id: "follower",
-    component: "Follower",
-    allowsSorting: true,
-  },
-  {
-    id: "strategy",
-    component: "Strategy",
-    allowsSorting: true,
-  },
-  {
-    id: "status",
-    component: "Status",
-    allowsSorting: true,
-  },
-  {
-    id: "action",
-    component: "",
-    className: "flex-end",
-  },
-];
+import { CreateAutomationModal } from "@/app-components/AutomationWidgets/CreateAutomationModal";
+import { AutomationSummary } from "@/app-components/AutomationWidgets/AutomationSummary";
+import { AutomationDetails } from "@/app-components/AutomationWidgets/AutomationDetails";
 
 type TabType = "all" | "created" | "live" | "stop" | "dead";
 
 export default function Page() {
   const allBots = useGetAllBots();
-  const liveBot = useLiveBot();
-  const stopBot = useStopBot();
-  const deleteBot = useDeleteBot();
 
   const [selected, setSelected] = useState<TabType>("all");
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
-  const handleDelete = useCallback(
-    (bot: BotDetailsInfoFragment) => {
-      deleteBot({
-        variables: {
-          id: bot.id,
-        },
-      });
-    },
-    [deleteBot],
-  );
-
-  const handleLive = useCallback(
-    (bot: BotDetailsInfoFragment) => {
-      liveBot({
-        variables: {
-          id: bot.id,
-        },
-      });
-    },
-    [liveBot],
-  );
-
-  const handleStop = useCallback(
-    (bot: BotDetailsInfoFragment) => {
-      stopBot({
-        variables: {
-          id: bot.id,
-        },
-      });
-    },
-    [stopBot],
-  );
-
   const rows = useMemo(() => {
-    if (allBots.length === 0) {
-      return [];
-    }
     return allBots
       .filter((bot) => {
         if (selected === "all") {
@@ -135,126 +50,8 @@ export default function Page() {
 
         return false;
       })
-      .map((bot) => {
-        let btnCom: ReactNode = null;
-
-        if (bot.status === BotStatus.Created) {
-          btnCom = (
-            <div className="flex items-center gap-2">
-              <Button onClick={() => handleDelete(bot)} color="default">
-                Delete
-              </Button>
-              <Button onClick={() => handleLive(bot)} color="danger">
-                Live
-              </Button>
-            </div>
-          );
-        }
-
-        if (bot.status === BotStatus.Live) {
-          btnCom = (
-            <Button onClick={() => handleStop(bot)} color="primary">
-              Stop
-            </Button>
-          );
-        }
-
-        if (bot.status === BotStatus.Stop) {
-          btnCom = <Button disabled>Stop</Button>;
-        }
-
-        if (bot.status === BotStatus.Dead) {
-          btnCom = <Button disabled>Copy</Button>;
-        }
-
-        return {
-          id: `${bot.id}`,
-          className: "group",
-          data: {
-            id: {
-              sortableAmount: bot.id,
-              component: bot.id,
-            },
-            leader: {
-              sortableAmount: bot.leaderAddress,
-              component: (
-                <div className="flex flex-col">
-                  <AddressWidget address={bot.leaderAddress as Address} />
-                  <span>
-                    Leader Collateral Baseline: {bot.leaderCollateralBaseline}{" "}
-                    USDC
-                  </span>
-                  <span>Chain: {bot.leaderContract.chainId}</span>
-                  <span className="flex items-center gap-2">
-                    Contract:
-                    <AddressWidget
-                      address={bot.leaderContract.address as Address}
-                    />
-                  </span>
-                  {bot.leaderStartedBlock && (
-                    <span>Started: {bot.leaderStartedBlock || ""}</span>
-                  )}
-                  {bot.leaderEndedBlock && (
-                    <span>Ended: {bot.leaderEndedBlock || ""}</span>
-                  )}
-                </div>
-              ),
-            },
-            follower: {
-              sortableAmount: bot.followerAddress,
-              component: (
-                <div className="flex flex-col">
-                  <AddressWidget address={bot.followerAddress as Address} />
-                  <span>Chain: {bot.followerContract.chainId}</span>
-                  <span className="flex items-center gap-2">
-                    Contract:
-                    <AddressWidget
-                      address={bot.followerContract.address as Address}
-                    />
-                  </span>
-                  {bot.followerStartedBlock && (
-                    <span>Started: {bot.followerStartedBlock || ""}</span>
-                  )}
-                  {bot.followerEndedBlock && (
-                    <span>Ended: {bot.followerEndedBlock || ""}</span>
-                  )}
-                </div>
-              ),
-            },
-            strategy: {
-              sortableAmount: bot.strategyId,
-              component: (
-                <div className="flex flex-col font-mono">
-                  <span className="text-small">{`${bot.strategy.strategyKey}(${bot.strategy.id}, ${bot.strategy.ratio}%)`}</span>
-                  <span className="text-small">
-                    Collateral:
-                    {`(${Number(bot.strategy.minCollateral)} ~ ${Number(bot.strategy.maxCollateral)}) USDC`}
-                  </span>
-                  <span className="text-small">
-                    Leverage:
-                    {`(${bot.strategy.minLeverage / 1000} ~ ${bot.strategy.maxLeverage / 1000}) x`}
-                  </span>
-                  <span className="text-small">
-                    Capacity:
-                    {`(${Number(bot.strategy.maxCapacity)} ~ ${Number(bot.strategy.minCapacity)}) USDC`}
-                  </span>
-                </div>
-              ),
-            },
-            status: {
-              sortableAmount: bot.status,
-              component: (
-                <Chip color={colorsByBotsStatus[bot.status]}>{bot.status}</Chip>
-              ),
-            },
-            action: {
-              component: btnCom,
-              className: "w-[50px]",
-            },
-          },
-        };
-      });
-  }, [allBots, handleDelete, handleLive, handleStop, selected]);
+      .sort((a, b) => b.id - a.id);
+  }, [allBots, selected]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -271,24 +68,18 @@ export default function Page() {
           <Tab key="dead" title="Dead" />
         </Tabs>
 
-        <Button color="primary" onClick={onOpen}>
-          Add New Automation
+        <Button color="primary" variant="bordered" onClick={onOpen}>
+          + New
         </Button>
       </div>
 
-      <Card>
-        <CardBody>
-          <DataTable
-            columns={columns}
-            rows={rows}
-            classNames={{
-              tr: "font-mono cursor-pointer",
-              td: "py-3",
-              th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
-            }}
-          />
-        </CardBody>
-      </Card>
+      <Accordion isCompact variant="splitted">
+        {rows.map((bot) => (
+          <AccordionItem key={bot.id} title={<AutomationSummary bot={bot} />}>
+            <AutomationDetails botId={bot.id} />
+          </AccordionItem>
+        ))}
+      </Accordion>
 
       <CreateAutomationModal
         isOpen={isOpen}

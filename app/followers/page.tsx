@@ -1,101 +1,42 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
+import { Address } from "viem";
 import {
-  Card,
   Button,
-  CardBody,
-  Spinner,
   Autocomplete,
   AutocompleteItem,
+  Accordion,
+  AccordionItem,
+  useDisclosure,
 } from "@nextui-org/react";
 
-import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
-
-import { FollowerDetailInfoFragment } from "@/graphql/gql/graphql";
-import { StandardModal } from "@/components/modals/StandardModal";
 import {
+  useWithdrawAll,
   useGenerateFollower,
   useGetAllFollowerDetails,
-  useGetFollowerPrivateKey,
+  useGetAllFollowers,
   useSubscribeFollowerDetailUpdated,
-  useWithdrawAll,
 } from "@/app-hooks/useFollower";
-import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
-import { Address } from "viem";
-import { useGetAllContracts } from "../_hooks/useContract";
+import { useGetAllContracts } from "@/app-hooks/useContract";
 import { shrinkAddress } from "@/utils";
-
-const columns: TableColumnProps[] = [
-  {
-    id: "address",
-    component: "Address",
-  },
-  {
-    id: "privateKey",
-    component: "Private Key",
-  },
-  {
-    id: "ethBalance",
-    component: "ETH",
-  },
-  {
-    id: "usdcBalance",
-    component: "USDC",
-  },
-  {
-    id: "action",
-    component: "",
-    className: "flex-end",
-  },
-];
+import { FollowerInfoWidget } from "@/app-components/FollowerWidgets/FollowerInfoWidget";
+import { UserTradeHistory } from "@/app-components/UserWidgets/UserTradeHistory";
+import { ShowPrivateKeyModal } from "@/app-components/FollowerWidgets/ShowPrivateKeyModal";
 
 export default function Page() {
-  const { getPrivateKey, data } = useGetFollowerPrivateKey();
+  const allFollowers = useGetAllFollowers();
+  const allContracts = useGetAllContracts();
   const generateFollower = useGenerateFollower();
   const withdrawAll = useWithdrawAll();
-  const allContracts = useGetAllContracts();
+
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const [contractId, setContractId] = useState<string | null>(null);
-  const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
+  const [followerAddress, setFollowerAddress] = useState<string | null>(null);
 
-  const allFollowers = useGetAllFollowerDetails(contractId);
+  const followerDetails = useGetAllFollowerDetails(contractId);
   useSubscribeFollowerDetailUpdated(contractId);
-
-  const handleGetPrivateKey = useCallback(
-    (follower: FollowerDetailInfoFragment) => {
-      getPrivateKey({
-        variables: {
-          input: {
-            address: follower.address,
-          },
-        },
-      });
-
-      setSelectedAddress(follower.address);
-    },
-    [getPrivateKey],
-  );
-
-  const handleWithdrawAll = useCallback(
-    (follower: FollowerDetailInfoFragment) => {
-      withdrawAll({
-        variables: {
-          input: {
-            address: follower.address,
-            contractId: follower.contractId,
-          },
-        },
-      });
-    },
-    [withdrawAll],
-  );
-
-  const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen) {
-      setSelectedAddress(null);
-    }
-  };
 
   const handleGenerateFollower = () => {
     generateFollower({
@@ -103,41 +44,51 @@ export default function Page() {
     });
   };
 
-  const rows = useMemo(() => {
-    if (allFollowers.length === 0) {
+  const handleWithdrawAll = useCallback(
+    (address: string, contractId: string) => {
+      withdrawAll({
+        variables: {
+          input: {
+            address,
+            contractId: +contractId,
+          },
+        },
+      });
+    },
+    [withdrawAll],
+  );
+
+  const followers = useMemo(() => {
+    if (contractId === null) {
       return [];
     }
-    return allFollowers.map((follower) => ({
-      id: `${follower.address}-${follower.contractId}`,
-      className: "group",
-      data: {
-        address: {
-          component: <AddressWidget address={follower.address as Address} />,
-        },
-        privateKey: {
-          component: (
-            <Button onClick={() => handleGetPrivateKey(follower)}>
-              Get Private Key
-            </Button>
-          ),
-        },
-        ethBalance: {
-          component: (Number(follower.ethBalance) / 1e18).toFixed(9) || "",
-        },
-        usdcBalance: {
-          component: Number(follower.usdcBalance) / 1e6,
-        },
-        action: {
-          component: (
-            <Button onClick={() => handleWithdrawAll(follower)}>
-              Withdraw All
-            </Button>
-          ),
-          className: "w-[50px]",
-        },
-      },
-    }));
-  }, [allFollowers, handleGetPrivateKey, handleWithdrawAll]);
+
+    return allFollowers.map((follower) => {
+      const exist = followerDetails.find(
+        (item) => item.address === follower.address,
+      );
+
+      if (exist) {
+        return {
+          address: exist.address,
+          accountIndex: exist.accountIndex,
+          publicKey: exist.publicKey,
+          ethBalance: exist.ethBalance ? Number(exist.ethBalance) : 0,
+          usdcBalance: exist.usdcBalance ? Number(exist.usdcBalance) : 0,
+          contractId: exist.contractId,
+        };
+      } else {
+        return {
+          address: follower.address,
+          accountIndex: follower.accountIndex,
+          publicKey: follower.publicKey,
+          usdcBalance: 0,
+          ethBalance: 0,
+          contractId: +contractId,
+        };
+      }
+    });
+  }, [allFollowers, contractId, followerDetails]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -168,44 +119,62 @@ export default function Page() {
           )}
         </Autocomplete>
 
-        <Button color="primary" onClick={handleGenerateFollower}>
-          Generate Follower
+        <Button
+          color="primary"
+          variant="bordered"
+          onClick={handleGenerateFollower}
+        >
+          + New
         </Button>
       </div>
 
-      <Card>
-        <CardBody>
-          <DataTable
-            columns={columns}
-            rows={rows}
-            classNames={{
-              tr: "font-mono cursor-pointer",
-              td: "py-3 ",
-              th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
-            }}
-          />
-        </CardBody>
-      </Card>
+      {contractId ? (
+        <Accordion isCompact variant="splitted">
+          {followers.map((follower) => (
+            <AccordionItem
+              key={follower.address}
+              title={<FollowerInfoWidget follower={follower} />}
+            >
+              <div className="flex flex-col gap-6">
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => {
+                      onOpen();
+                      setFollowerAddress(follower.address);
+                    }}
+                  >
+                    Get Key
+                  </Button>
 
-      <StandardModal
-        isOpen={!!selectedAddress}
-        onOpenChange={handleOpenChange}
-        backdrop="blur"
-      >
-        <div className="flex flex-col gap-3.5">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
-            Follower Private Key
-          </h1>
+                  <Button
+                    onClick={() =>
+                      handleWithdrawAll(
+                        follower.address,
+                        `${follower.contractId}`,
+                      )
+                    }
+                  >
+                    Withdraw All
+                  </Button>
+                </div>
 
-          {!data ? (
-            <Spinner size="lg" />
-          ) : (
-            <span className="text-clip text-wrap break-words">
-              {data.getFollowerPrivateKey}
-            </span>
-          )}
-        </div>
-      </StandardModal>
+                <UserTradeHistory
+                  address={follower.address as Address}
+                  contractId={contractId}
+                />
+              </div>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      ) : null}
+
+      {followerAddress ? (
+        <ShowPrivateKeyModal
+          address={followerAddress as Address}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+        />
+      ) : null}
     </div>
   );
 }

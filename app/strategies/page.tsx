@@ -201,8 +201,8 @@ export default function Page() {
         </Tabs>
 
         {selected === "strategy" && (
-          <Button color="primary" onClick={onOpen}>
-            Create Strategy
+          <Button color="primary" variant="bordered" onClick={onOpen}>
+            + new
           </Button>
         )}
       </div>
