@@ -27,7 +27,7 @@ export function CreateAutomationModal({
 }: CreateAutomationModalProps) {
   const createBot = useCreateBot();
 
-  const allLeaders = useGetUsersByTags(["LEADER"]);
+  const allLeaders = useGetUsersByTags(["LEADER"], false);
   const allFollowers = useGetAvailableFollowers();
   const allContracts = useGetAllContracts();
   const allStrategies = useGetAllStrategy();
