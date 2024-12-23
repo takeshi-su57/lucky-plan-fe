@@ -218,6 +218,17 @@ enum MissionStatus {
   Opening
 }
 
+type MissionWithTasks {
+  achievePositionId: Int
+  botId: Int!
+  createdAt: DateTime!
+  id: Int!
+  status: MissionStatus!
+  targetPositionId: Int!
+  tasks: [TaskShallowDetails!]!
+  updatedAt: DateTime!
+}
+
 type Mutation {
   addTagToUser(input: ChangeUserTagInput!): User!
   addUser(input: AddUserInput!): User!
@@ -304,6 +315,7 @@ type Query {
   findBot(id: Int!): BotDetails!
   findContract(id: Int!): Contract!
   findFollowerAction(id: Int!): FollowerActionDetails
+  findMission(id: Int!): MissionWithTasks
   findPosition(input: FindPositionInput!): Position
   findPositionById(id: Int!): Position
   findStrategy(id: Int!): Strategy
