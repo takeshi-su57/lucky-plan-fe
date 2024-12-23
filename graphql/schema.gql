@@ -146,7 +146,6 @@ type FollowerActionDetails {
   action: Action!
   actionId: Int!
   id: Int!
-  task: Task!
   taskId: Int!
 }
 
@@ -309,8 +308,7 @@ type Query {
   findPositionById(id: Int!): Position
   findStrategy(id: Int!): Strategy
   findStrategyMetadata(key: String!): StrategyMetadata!
-  findTask(id: Int!): TaskShallowDetails!
-  findTasksByMission(missionId: Int!): [TaskShallowDetails!]!
+  findTask(id: Int!): TaskWithActions
   getAllActions: [Action!]!
   getAllBots: [BotDetails!]!
   getAllContracts: [Contract!]!
@@ -377,15 +375,6 @@ input TagInput {
   tag: String!
 }
 
-type Task {
-  actionId: Int!
-  createdAt: DateTime!
-  id: Int!
-  logs: [String!]!
-  missionId: Int!
-  status: TaskStatus!
-}
-
 type TaskShallowDetails {
   action: Action!
   actionId: Int!
@@ -404,6 +393,17 @@ enum TaskStatus {
   Failed
   Initiated
   Stopped
+}
+
+type TaskWithActions {
+  action: Action!
+  actionId: Int!
+  createdAt: DateTime!
+  followerActions: [FollowerActionDetails!]!
+  id: Int!
+  logs: [String!]!
+  missionId: Int!
+  status: TaskStatus!
 }
 
 type TradeHistory {

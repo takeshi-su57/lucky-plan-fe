@@ -12,7 +12,46 @@ import { GetAllTasksQuery } from "@/graphql/gql/graphql";
 import { getFragmentData, graphql } from "@/gql/index";
 
 import { MISSION_INFO_FRAGMENT_DOCUMENT } from "./useMission";
-import { ACTION_INFO_FRAGMENT_DOCUMENT } from "./useAction";
+
+export const ACTION_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment ActionInfo on Action {
+    id
+    name
+    positionId
+    args
+    blockNumber
+    orderInBlock
+    createdAt
+  }
+`);
+
+export const FOLLOWER_ACTION_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment FollowerActionDetailsInfo on FollowerActionDetails {
+    id
+    taskId
+    actionId
+    action {
+      ...ActionInfo
+    }
+  }
+`);
+
+export const TASK_WITH_ACTIONS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment TaskWithActionsInfo on TaskWithActions {
+    id
+    missionId
+    actionId
+    logs
+    status
+    createdAt
+    action {
+      ...ActionInfo
+    }
+    followerActions {
+      ...FollowerActionDetailsInfo
+    }
+  }
+`);
 
 export const TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment TaskShallowDetailsInfo on TaskShallowDetails {
@@ -35,6 +74,14 @@ export const GET_ALL_TASKS_DOCUMENT = graphql(`
   query getAllTasks {
     getAllTasks {
       ...TaskShallowDetailsInfo
+    }
+  }
+`);
+
+export const FIND_TASK_DOCUMENT = graphql(`
+  query findTask($id: Int!) {
+    findTask(id: $id) {
+      ...TaskWithActionsInfo
     }
   }
 `);
@@ -89,6 +136,38 @@ export function useGetAllTasks() {
     }
     return data.getAllTasks.map(getTaskFragment);
   }, [data]);
+}
+
+export function useGetTask(taskId: number) {
+  const { data, loading, error } = useQuery(FIND_TASK_DOCUMENT, {
+    variables: { id: +taskId },
+  });
+
+  const taskInfo = getFragmentData(
+    TASK_WITH_ACTIONS_INFO_FRAGMENT_DOCUMENT,
+    data?.findTask,
+  );
+
+  return {
+    task: taskInfo
+      ? {
+          ...taskInfo,
+          action: getFragmentData(
+            ACTION_INFO_FRAGMENT_DOCUMENT,
+            taskInfo.action,
+          ),
+          followerActions: taskInfo.followerActions
+            .map((item) =>
+              getFragmentData(FOLLOWER_ACTION_INFO_FRAGMENT_DOCUMENT, item),
+            )
+            .map((item) =>
+              getFragmentData(ACTION_INFO_FRAGMENT_DOCUMENT, item.action),
+            ),
+        }
+      : undefined,
+    loading,
+    error,
+  };
 }
 
 export function useSubscribeTask() {

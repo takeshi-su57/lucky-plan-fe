@@ -117,6 +117,9 @@ const cache = new InMemoryCache({
     TaskShallowDetails: {
       keyFields: ["id"],
     },
+    TaskWithActions: {
+      keyFields: ["id"],
+    },
     Action: {
       keyFields: ["id"],
     },

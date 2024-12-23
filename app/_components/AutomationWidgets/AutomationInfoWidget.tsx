@@ -1,7 +1,6 @@
 "use client";
 
-import { ReactNode, useCallback } from "react";
-import { Button, Chip } from "@nextui-org/react";
+import { Chip } from "@nextui-org/react";
 import { Address } from "viem";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
@@ -10,12 +9,6 @@ import { BotDetailsInfoFragment, BotStatus } from "@/graphql/gql/graphql";
 import { getFragmentData } from "@/graphql/gql";
 import { CONTRACT_INFO_FRAGMENT_DOCUMENT } from "@/app/_hooks/useContract";
 import { STRATEGY_INFO_FRAGMENT_DOCUMENT } from "@/app/_hooks/useStrategy";
-
-import {
-  useDeleteBot,
-  useLiveBot,
-  useStopBot,
-} from "@/app-hooks/useAutomation";
 
 const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
   {
@@ -30,10 +23,6 @@ export type AutomationInfoWidgetProps = {
 };
 
 export function AutomationInfoWidget({ bot }: AutomationInfoWidgetProps) {
-  const liveBot = useLiveBot();
-  const stopBot = useStopBot();
-  const deleteBot = useDeleteBot();
-
   const leaderContract = getFragmentData(
     CONTRACT_INFO_FRAGMENT_DOCUMENT,
     bot.leaderContract,
@@ -90,83 +79,15 @@ export function AutomationInfoWidget({ bot }: AutomationInfoWidgetProps) {
     },
   ];
 
-  const handleDelete = useCallback(
-    (bot: BotDetailsInfoFragment) => {
-      deleteBot({
-        variables: {
-          id: bot.id,
-        },
-      });
-    },
-    [deleteBot],
-  );
-
-  const handleLive = useCallback(
-    (bot: BotDetailsInfoFragment) => {
-      liveBot({
-        variables: {
-          id: bot.id,
-        },
-      });
-    },
-    [liveBot],
-  );
-
-  const handleStop = useCallback(
-    (bot: BotDetailsInfoFragment) => {
-      stopBot({
-        variables: {
-          id: bot.id,
-        },
-      });
-    },
-    [stopBot],
-  );
-
-  let btnCom: ReactNode = null;
-
-  if (bot.status === BotStatus.Created) {
-    btnCom = (
-      <div className="flex items-center gap-2">
-        <Button onClick={() => handleDelete(bot)} color="default">
-          Delete
-        </Button>
-        <Button onClick={() => handleLive(bot)} color="danger">
-          Live
-        </Button>
-      </div>
-    );
-  }
-
-  if (bot.status === BotStatus.Live) {
-    btnCom = (
-      <Button onClick={() => handleStop(bot)} color="primary">
-        Stop
-      </Button>
-    );
-  }
-
-  if (bot.status === BotStatus.Stop) {
-    btnCom = <Button disabled>Stop</Button>;
-  }
-
-  if (bot.status === BotStatus.Dead) {
-    btnCom = <Button disabled>Copy</Button>;
-  }
-
   return (
-    <div className="flex flex-1 items-center justify-between">
-      <div className="flex items-center gap-6">
-        <Chip>{bot.id}</Chip>
+    <div className="flex items-center gap-6">
+      <Chip>{bot.id}</Chip>
 
-        {items.map((item) => (
-          <div key={item.id} className="flex flex-col gap-4">
-            {item.value}
-          </div>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-2">{btnCom}</div>
+      {items.map((item) => (
+        <div key={item.id} className="flex flex-col gap-4">
+          {item.value}
+        </div>
+      ))}
     </div>
   );
 }

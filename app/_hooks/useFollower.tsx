@@ -13,6 +13,7 @@ import { useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
 import { useGetAllBots } from "./useAutomation";
 import { BotStatus } from "@/graphql/gql/graphql";
+import { useGetAllContracts } from "./useContract";
 
 export const FOLLOWER_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment FollowerInfo on Follower {
@@ -233,6 +234,8 @@ export function useGenerateFollower() {
   const [generateFollower, { data: newData, error }] = useMutation(
     GENERATE_NEW_FOLLOWER_DOCUMENT,
   );
+  const contracts = useGetAllContracts();
+
   const client = useApolloClient();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -277,7 +280,7 @@ export function useGenerateFollower() {
         },
       );
     }
-  }, [client.cache, newData, error, enqueueSnackbar]);
+  }, [client.cache, newData, error, enqueueSnackbar, contracts]);
 
   return generateFollower;
 }

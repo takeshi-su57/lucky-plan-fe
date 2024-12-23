@@ -1,17 +1,8 @@
 "use client";
 
-import { ReactNode, useCallback, useMemo, useState } from "react";
-import {
-  Tab,
-  Tabs,
-  Card,
-  Button,
-  CardBody,
-  Snippet,
-  Chip,
-} from "@nextui-org/react";
+import { useCallback, useMemo, useState } from "react";
+import { Tab, Tabs, Accordion, AccordionItem, Button } from "@nextui-org/react";
 
-import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 import {
   MissionStatus,
   TaskShallowDetailsInfoFragment,
@@ -24,38 +15,8 @@ import {
   useSubscribeTask,
 } from "@/app-hooks/useTask";
 import { useCloseMission, useSubscribeMission } from "../_hooks/useMission";
-
-const columns: TableColumnProps[] = [
-  {
-    id: "id",
-    component: "ID",
-    allowsSorting: true,
-  },
-  {
-    id: "mission",
-    component: "Mission",
-    allowsSorting: true,
-  },
-  {
-    id: "action",
-    component: "Action",
-    allowsSorting: true,
-  },
-  {
-    id: "logs",
-    component: "Logs",
-  },
-  {
-    id: "status",
-    component: "Status",
-    allowsSorting: true,
-  },
-  {
-    id: "control",
-    component: "",
-    className: "flex-end",
-  },
-];
+import { TaskSummary } from "../_components/TaskWidgets/TaskSummary";
+import { TaskDetails } from "../_components/TaskWidgets/TaskDetails";
 
 type TabType =
   | "all"
@@ -132,74 +93,8 @@ export default function Page() {
         }
 
         return false;
-      })
-      .map((task) => {
-        let btnCom: ReactNode = null;
-
-        if (
-          task.status === TaskStatus.Failed &&
-          task.mission.status !== MissionStatus.Closed
-        ) {
-          btnCom = (
-            <div className="flex items-center gap-2">
-              <Button onClick={() => handlePerformTask(task)} color="primary">
-                Perform
-              </Button>
-
-              <Button
-                onClick={() => handleCloseMission(task.missionId)}
-                color="danger"
-              >
-                Close Mission
-              </Button>
-            </div>
-          );
-        }
-
-        return {
-          id: `${task.id}`,
-          className: "group",
-          data: {
-            id: {
-              sortableAmount: task.id,
-              component: task.id,
-            },
-            mission: {
-              sortableAmount: task.missionId,
-              component: task.missionId,
-            },
-            action: {
-              sortableAmount: task.actionId,
-              component: (
-                <div className="flex flex-col">
-                  <span>Id: {task.actionId}</span>
-                  <span>Name: {task.action.name}</span>
-                </div>
-              ),
-            },
-            logs: {
-              component: (
-                <div className="flex flex-col gap-1">
-                  {task.logs.map((log, index) => (
-                    <Snippet key={index}>
-                      <div className="!max-w-[500px] text-wrap">{log}</div>
-                    </Snippet>
-                  ))}
-                </div>
-              ),
-            },
-            status: {
-              sortableAmount: task.status,
-              component: <Chip>{task.status}</Chip>,
-            },
-            control: {
-              component: btnCom,
-              className: "w-[50px]",
-            },
-          },
-        };
       });
-  }, [allTasks, handlePerformTask, handleCloseMission, selected]);
+  }, [allTasks, selected]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -219,19 +114,35 @@ export default function Page() {
         </Tabs>
       </div>
 
-      <Card>
-        <CardBody>
-          <DataTable
-            columns={columns}
-            rows={rows}
-            classNames={{
-              tr: "font-mono cursor-pointer",
-              td: "py-3",
-              th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
-            }}
-          />
-        </CardBody>
-      </Card>
+      <Accordion isCompact variant="splitted">
+        {rows.map((task) => (
+          <AccordionItem key={task.id} title={<TaskSummary task={task} />}>
+            <div className="flex flex-col gap-8">
+              {task.status === TaskStatus.Failed &&
+              task.mission.status !== MissionStatus.Closed &&
+              task.mission.status !== MissionStatus.Closing ? (
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => handlePerformTask(task)}
+                    color="primary"
+                  >
+                    Perform
+                  </Button>
+
+                  <Button
+                    onClick={() => handleCloseMission(task.missionId)}
+                    color="danger"
+                  >
+                    Close Mission
+                  </Button>
+                </div>
+              ) : null}
+
+              <TaskDetails taskId={task.id} />
+            </div>
+          </AccordionItem>
+        ))}
+      </Accordion>
     </div>
   );
 }

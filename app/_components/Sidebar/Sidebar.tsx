@@ -17,12 +17,6 @@ export const links = [
   { id: "automations", label: "Automation", title: "" },
   { id: "missions", label: "Mission", title: "" },
   { id: "tasks", label: "Task", title: "" },
-  { id: "actions", label: "Action", title: "" },
-  {
-    id: "follower-actions",
-    label: "Follower Action",
-    title: "",
-  },
   {
     id: "leaderboards",
     label: "Leaderboard",
