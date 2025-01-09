@@ -362,3 +362,47 @@ export function hasSameItems<T>(array1: T[], array2: T[]): boolean {
 
   return true; // Arrays contain the same items
 }
+
+export function getDayGap(date1: Date, date2: Date): number {
+  // Convert both dates to UTC to avoid timezone issues
+  const utcDate1 = Date.UTC(
+    date1.getFullYear(),
+    date1.getMonth(),
+    date1.getDate(),
+  );
+  const utcDate2 = Date.UTC(
+    date2.getFullYear(),
+    date2.getMonth(),
+    date2.getDate(),
+  );
+
+  // Calculate the difference in milliseconds
+  const diffInMilliseconds = Math.abs(utcDate2 - utcDate1);
+
+  // Convert milliseconds to days
+  return Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24));
+}
+
+export function getDateAfterDays(date: Date, days: number): Date {
+  const currentDate = date; // Get the current date and time
+  const resultDate = currentDate; // Create a new Date object for the result
+  resultDate.setDate(currentDate.getDate() + days); // Add the specified number of days
+  return resultDate;
+}
+
+export function convertMillisToReadableTime(milliseconds: number): string {
+  const msInMinute = 1000 * 60;
+  const msInHour = msInMinute * 60;
+  const msInDay = msInHour * 24;
+
+  if (milliseconds < msInHour) {
+    const minutes = Math.floor(milliseconds / msInMinute);
+    return `${minutes} min${minutes === 1 ? "" : "s"}`;
+  } else if (milliseconds < msInDay) {
+    const hours = Math.floor(milliseconds / msInHour);
+    return `${hours} hr${hours === 1 ? "" : "s"}`;
+  } else {
+    const days = Math.floor(milliseconds / msInDay);
+    return `${days} day${days === 1 ? "" : "s"}`;
+  }
+}

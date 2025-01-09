@@ -25,6 +25,7 @@ import { useGetAllContracts } from "@/app-hooks/useContract";
 
 import { shrinkAddress } from "@/utils";
 import { CreateUserModal } from "../_components/UserWidgets/CreateUserModal";
+import { FaPlus } from "react-icons/fa";
 
 export default function Page() {
   const allTags = useGetAllTags();
@@ -104,8 +105,8 @@ export default function Page() {
           </Checkbox>
         </div>
 
-        <Button color="primary" variant="bordered" onClick={onOpen}>
-          + New
+        <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>
+          <FaPlus />
         </Button>
       </div>
 

@@ -8,6 +8,7 @@ import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 import { TagInfoFragment } from "@/graphql/gql/graphql";
 import { useDeleteTag, useGetAllTags } from "../_hooks/useTag";
 import { UpsertTagModal } from "../_components/TagWidgets/UpsertTagModal";
+import { FaPlus } from "react-icons/fa";
 
 const columns: TableColumnProps[] = [
   {
@@ -98,8 +99,13 @@ export default function Page() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-end">
-        <Button color="primary" variant="bordered" onClick={handleAddNewTag}>
-          + New
+        <Button
+          isIconOnly
+          color="primary"
+          variant="flat"
+          onClick={handleAddNewTag}
+        >
+          <FaPlus />
         </Button>
       </div>
 

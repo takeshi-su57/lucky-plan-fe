@@ -65,11 +65,11 @@ export function TagsWidget({ address }: TagsWidgetProps) {
 
       <Dropdown>
         <DropdownTrigger>
-          <Button color="primary" variant="light">
+          <Button color="default" className="underline" variant="light">
             + Add Tag
           </Button>
         </DropdownTrigger>
-        <DropdownMenu>
+        <DropdownMenu classNames={{ list: "max-h-[250px] overflow-y-auto" }}>
           {allTags.map((tag) => (
             <DropdownItem key={tag.tag} onPress={() => handleAddTag(tag)}>
               <div className="flex items-center gap-2">
