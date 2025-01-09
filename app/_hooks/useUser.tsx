@@ -184,6 +184,8 @@ export function useAddTagToUser() {
     if (newData && !error) {
       const userInfo = getUserFragment(newData.addTagToUser);
 
+      console.log(userInfo);
+
       enqueueSnackbar("Success at adding tag!", {
         variant: "success",
       });
@@ -195,15 +197,28 @@ export function useAddTagToUser() {
         },
         (data) => {
           if (data && data.getAllUsers.length > 0) {
-            return {
-              ...data,
-              getAllUsers: data.getAllUsers.map((user) =>
+            const exists = data.getAllUsers.find(
+              (user) =>
                 userInfo.address ===
-                getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, user).address
-                  ? newData.addTagToUser
-                  : user,
-              ),
-            };
+                getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, user).address,
+            );
+
+            if (exists) {
+              return {
+                ...data,
+                getAllUsers: data.getAllUsers.map((user) =>
+                  userInfo.address ===
+                  getFragmentData(USER_INFO_FRAGMENT_DOCUMENT, user).address
+                    ? newData.addTagToUser
+                    : user,
+                ),
+              };
+            } else {
+              return {
+                ...data,
+                getAllUsers: [...data.getAllUsers, newData.addTagToUser],
+              };
+            }
           } else {
             return {
               getAllUsers: [newData.addTagToUser],
