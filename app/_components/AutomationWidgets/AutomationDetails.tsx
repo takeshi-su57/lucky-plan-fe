@@ -27,6 +27,7 @@ import {
 } from "@/app-hooks/useAutomation";
 import { MissionSummary } from "../MissionWidgets/MissionSummary";
 import { MissionDetails } from "../MissionWidgets/MissionDetails";
+import { FaCopy } from "react-icons/fa";
 
 type TabType = "chart" | "missions";
 
@@ -129,7 +130,11 @@ export function AutomationDetails({ botId }: AutomationDetailsProps) {
 
         {bot.status === BotStatus.Stop ? <Button disabled>Stop</Button> : null}
 
-        {bot.status === BotStatus.Dead ? <Button disabled>Copy</Button> : null}
+        {bot.status === BotStatus.Dead ? (
+          <Button isIconOnly disabled variant="flat">
+            <FaCopy />
+          </Button>
+        ) : null}
       </div>
 
       {selected === "chart" ? (

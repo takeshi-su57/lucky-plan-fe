@@ -17,6 +17,7 @@ import { useGetAllBots } from "@/app-hooks/useAutomation";
 import { CreateAutomationModal } from "@/app-components/AutomationWidgets/CreateAutomationModal";
 import { AutomationSummary } from "@/app-components/AutomationWidgets/AutomationSummary";
 import { AutomationDetails } from "@/app-components/AutomationWidgets/AutomationDetails";
+import { FaPlus } from "react-icons/fa";
 
 type TabType = "all" | "created" | "live" | "stop" | "dead";
 
@@ -68,8 +69,8 @@ export default function Page() {
           <Tab key="dead" title="Dead" />
         </Tabs>
 
-        <Button color="primary" variant="bordered" onClick={onOpen}>
-          + New
+        <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>
+          <FaPlus />
         </Button>
       </div>
 

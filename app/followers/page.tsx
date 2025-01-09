@@ -11,6 +11,7 @@ import {
   useDisclosure,
   Chip,
 } from "@nextui-org/react";
+import { FaPlus } from "react-icons/fa";
 
 import {
   useWithdrawAll,
@@ -138,11 +139,12 @@ export default function Page() {
           </Chip>
 
           <Button
+            isIconOnly
             color="primary"
-            variant="bordered"
+            variant="flat"
             onClick={handleGenerateFollower}
           >
-            + New
+            <FaPlus />
           </Button>
         </div>
       </div>

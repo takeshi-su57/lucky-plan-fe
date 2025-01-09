@@ -19,6 +19,7 @@ import {
 } from "../_hooks/useStrategy";
 import { CreateStrategyModal } from "../_components/StrategyWidgets/CreateStrategyModal";
 import { convertMinToLifetimeItem } from "@/utils";
+import { FaPlus } from "react-icons/fa";
 
 const strategyColumns: TableColumnProps[] = [
   {
@@ -201,8 +202,8 @@ export default function Page() {
         </Tabs>
 
         {selected === "strategy" && (
-          <Button color="primary" variant="bordered" onClick={onOpen}>
-            + new
+          <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>
+            <FaPlus />
           </Button>
         )}
       </div>
