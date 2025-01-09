@@ -9,6 +9,7 @@ import {
   Accordion,
   AccordionItem,
   useDisclosure,
+  Chip,
 } from "@nextui-org/react";
 
 import {
@@ -119,13 +120,31 @@ export default function Page() {
           )}
         </Autocomplete>
 
-        <Button
-          color="primary"
-          variant="bordered"
-          onClick={handleGenerateFollower}
-        >
-          + New
-        </Button>
+        <div className="flex items-center gap-4">
+          <Chip>
+            {`${(
+              followers
+                .map((item) => item.ethBalance)
+                .reduce((acc, item) => acc + item, 0) / 1e18
+            ).toFixed(8)} ETH`}
+          </Chip>
+
+          <Chip>
+            {`${(
+              followers
+                .map((item) => item.usdcBalance)
+                .reduce((acc, item) => acc + item, 0) / 1e6
+            ).toFixed(2)} USDC`}
+          </Chip>
+
+          <Button
+            color="primary"
+            variant="bordered"
+            onClick={handleGenerateFollower}
+          >
+            + New
+          </Button>
+        </div>
       </div>
 
       {contractId ? (

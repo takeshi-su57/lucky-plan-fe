@@ -48,7 +48,7 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
         {availableFollowers
           .map((item) => item.address)
           .includes(follower.address) ? (
-          <Chip color="primary">Available</Chip>
+          <Chip>Available</Chip>
         ) : null}
       </div>
     </div>
