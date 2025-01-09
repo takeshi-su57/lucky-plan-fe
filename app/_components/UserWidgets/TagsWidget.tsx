@@ -65,7 +65,7 @@ export function TagsWidget({ address }: TagsWidgetProps) {
 
       <Dropdown>
         <DropdownTrigger>
-          <Button color="primary" variant="light">
+          <Button color="default" className="underline" variant="light">
             + Add Tag
           </Button>
         </DropdownTrigger>

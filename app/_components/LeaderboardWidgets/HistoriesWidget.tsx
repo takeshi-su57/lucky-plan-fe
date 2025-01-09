@@ -1,12 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import { Address } from "viem";
+import { Card, CardBody, Slider } from "@nextui-org/react";
 import { PnlSnapshotKind, TradeHistory } from "@/graphql/gql/graphql";
+import dayjs from "dayjs";
 
 import {
+  convertMillisToReadableTime,
   getAllDaysBetween,
   getAllHoursBetween,
   getAllMinutesBetween,
+  getDateAfterDays,
+  getDayGap,
   isSameDay,
   isSameHour,
   isSameMinute,
@@ -28,6 +34,11 @@ export function HistoriesWidget({
   histories,
   kind,
 }: HistoriesWidgetProps) {
+  const [range, setRange] = useState<{
+    from: number;
+    to: number;
+  } | null>(null);
+
   const pnlChartData: {
     value: number;
     date: Date;
@@ -89,6 +100,15 @@ export function HistoriesWidget({
       timestamp: Date.now(),
     },
   ].forEach((history, index) => {
+    const gap = getDayGap(
+      new Date(history.timestamp),
+      new Date(sortedHistories[0].timestamp),
+    );
+
+    if (range && (range.from > gap || range.to < gap)) {
+      return;
+    }
+
     pnlSum += history.pnl;
     inOutSum += history.in - history.out;
 
@@ -277,39 +297,232 @@ export function HistoriesWidget({
     },
   ];
 
+  const openCyclcData = outChartData.filter((item) => item.value < 0);
+
+  let minOpenCycle = Date.now();
+  let maxOpenCycle = 0;
+
+  for (let i = 0; i < openCyclcData.length - 1; i++) {
+    minOpenCycle = Math.min(
+      openCyclcData[i + 1].date.getTime() - openCyclcData[i].date.getTime(),
+      minOpenCycle,
+    );
+
+    maxOpenCycle = Math.max(
+      openCyclcData[i + 1].date.getTime() - openCyclcData[i].date.getTime(),
+      maxOpenCycle,
+    );
+  }
+
+  const closeCycleData = inChartData.filter((item) => item.value > 0);
+
+  let minCloseCycle = Date.now();
+  let maxCloseCycle = 0;
+
+  for (let i = 0; i < closeCycleData.length - 1; i++) {
+    minCloseCycle = Math.min(
+      closeCycleData[i + 1].date.getTime() - closeCycleData[i].date.getTime(),
+      minCloseCycle,
+    );
+
+    maxCloseCycle = Math.max(
+      closeCycleData[i + 1].date.getTime() - closeCycleData[i].date.getTime(),
+      maxCloseCycle,
+    );
+  }
+
   return (
-    <div className="flex min-h-[500px] items-center gap-8 p-6">
-      <div className="flex flex-col gap-2">
-        {items.map((item) => (
-          <div className="flex items-center gap-4" key={item.id}>
-            <span className="text-base text-neutral-400">{item.label}:</span>
-            <span className="text-base font-bold text-white">{item.value}</span>
+    <Card className="mb-4" isBlurred>
+      <CardBody>
+        <div className="flex min-h-[500px] items-center gap-8 p-3">
+          <div className="flex h-full w-[200px] flex-col justify-between gap-8">
+            <div className="flex flex-col gap-2">
+              {items.map((item) => (
+                <div
+                  className="flex w-full items-center justify-between gap-4"
+                  key={item.id}
+                >
+                  <span className="text-base text-neutral-400">
+                    {item.label}:
+                  </span>
+                  <span className="text-base font-bold text-white">
+                    {item.value}
+                  </span>
+                </div>
+              ))}
+
+              <div className="flex items-center justify-between">
+                <span className="text-base text-neutral-400">
+                  First Activity:
+                </span>
+                <span className="text-sm font-bold text-white">
+                  {dayjs(new Date(sortedHistories[0].timestamp)).format(
+                    "YYYY/MM/DD",
+                  )}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-base text-neutral-400">
+                  Last Activity:
+                </span>
+                <span className="text-sm font-bold text-white">
+                  {dayjs(
+                    new Date(
+                      sortedHistories[sortedHistories.length - 1].timestamp,
+                    ),
+                  ).format("YYYY/MM/DD")}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex w-full flex-col gap-2">
+              <span className="text-base text-neutral-400">Open Cycle:</span>
+
+              {openCyclcData.length > 1 ? (
+                <div className="flex w-full items-center justify-between">
+                  <span className="text-sm font-bold text-white">
+                    {convertMillisToReadableTime(minOpenCycle)}
+                  </span>
+                  <span className="text-sm font-bold text-white">
+                    {convertMillisToReadableTime(maxOpenCycle)}
+                  </span>
+                </div>
+              ) : (
+                <span className="text-sm font-bold text-white">
+                  1 Time Cycle
+                </span>
+              )}
+            </div>
+
+            <div className="flex w-full flex-col gap-2">
+              <span className="text-base text-neutral-400">Close Cycle:</span>
+
+              {closeCycleData.length > 1 ? (
+                <div className="flex w-full items-center justify-between">
+                  <span className="text-sm font-bold text-white">
+                    {convertMillisToReadableTime(minCloseCycle)}
+                  </span>
+                  <span className="text-sm font-bold text-white">
+                    {convertMillisToReadableTime(maxCloseCycle)}
+                  </span>
+                </div>
+              ) : (
+                <span className="text-sm font-bold text-white">
+                  1 Time Cycle
+                </span>
+              )}
+            </div>
+
+            <div className="flex w-full flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <span className="text-base text-neutral-400">From:</span>
+                <span className="text-sm font-bold text-white">
+                  {dayjs(
+                    getDateAfterDays(
+                      new Date(sortedHistories[0].timestamp),
+                      range?.from || 0,
+                    ),
+                  ).format("YYYY/MM/DD")}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-base text-neutral-400">To:</span>
+                <span className="text-sm font-bold text-white">
+                  {dayjs(
+                    range
+                      ? getDateAfterDays(
+                          new Date(sortedHistories[0].timestamp),
+                          range.to,
+                        )
+                      : new Date(),
+                  ).format("YYYY/MM/DD")}
+                </span>
+              </div>
+
+              <Slider
+                value={
+                  range
+                    ? [range.from, range.to]
+                    : [
+                        0,
+                        sortedHistories.length > 0
+                          ? getDayGap(
+                              new Date(sortedHistories[0].timestamp),
+                              new Date(),
+                            )
+                          : 0,
+                      ]
+                }
+                onChange={(value) => {
+                  if (Array.isArray(value)) {
+                    setRange({
+                      from: value[0],
+                      to: value[1],
+                    });
+                  }
+                }}
+                label="Date Range"
+                className="grow-0"
+                hideValue
+                size="sm"
+                maxValue={
+                  sortedHistories.length > 0
+                    ? getDayGap(
+                        new Date(sortedHistories[0].timestamp),
+                        new Date(),
+                      )
+                    : 0
+                }
+                minValue={0}
+                step={1}
+              />
+            </div>
+
+            <TagsWidget address={address} />
           </div>
-        ))}
 
-        <TagsWidget address={address} />
-      </div>
+          <div className="flex flex-1 flex-col gap-2">
+            <span>PNL</span>
+            <LineChart
+              data={pnlChartData}
+              className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+            />
+            <span>Scale PNL</span>
+            <LineChart
+              data={dayScalePnlChartData}
+              className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+            />
+          </div>
 
-      <div className="flex flex-1 flex-col gap-2">
-        <span>PNL</span>
-        <LineChart data={pnlChartData} className="h-[200px] w-full" />
-        <span>Scale PNL</span>
-        <LineChart data={dayScalePnlChartData} className="h-[200px] w-full" />
-      </div>
+          <div className="flex flex-1 flex-col gap-2">
+            <span>In/Out</span>
+            <LineChart
+              data={inOutChartData}
+              className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+            />
+            <span>Scale In/Out</span>
+            <LineChart
+              data={dayScaleinOutChartData}
+              className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+            />
+          </div>
 
-      <div className="flex flex-1 flex-col gap-2">
-        <span>In/Out</span>
-        <LineChart data={inOutChartData} className="h-[200px] w-full" />
-        <span>Scale In/Out</span>
-        <LineChart data={dayScaleinOutChartData} className="h-[200px] w-full" />
-      </div>
-
-      <div className="flex flex-1 flex-col gap-2">
-        <span>In</span>
-        <LineChart data={inChartData} className="h-[200px] w-full" />
-        <span>Out</span>
-        <LineChart data={outChartData} className="h-[200px] w-full" />
-      </div>
-    </div>
+          <div className="flex flex-1 flex-col gap-2">
+            <span>In</span>
+            <LineChart
+              data={inChartData}
+              className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+            />
+            <span>Out</span>
+            <LineChart
+              data={outChartData}
+              className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+            />
+          </div>
+        </div>
+      </CardBody>
+    </Card>
   );
 }
