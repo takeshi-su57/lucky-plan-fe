@@ -257,6 +257,7 @@ type Mutation {
   createContract(input: CreateContractInput!): Contract!
   createStrategy(input: CreateStrategyInput!): Strategy!
   deleteBot(id: Int!): Int!
+  deleteCategory(id: Int!): TagCategory!
   deleteTag(tag: String!): Tag!
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
@@ -270,6 +271,7 @@ type Mutation {
     input: UpdateStrategyMetadataInput!
     key: String!
   ): StrategyMetadata!
+  upsertCategory(input: TagCategoryInput!): TagCategory!
   upsertTag(input: TagInput!): Tag!
   withdrawAll(input: WithdrawAllInput!): Boolean!
 }
@@ -341,6 +343,7 @@ type Query {
   findTask(id: Int!): TaskWithActions
   getAllActions: [Action!]!
   getAllBots: [BotDetails!]!
+  getAllCategories: [TagCategory!]!
   getAllContracts: [Contract!]!
   getAllFollowerActions: [FollowerAction!]!
   getAllFollowerDetails(contractId: Int!): [FollowerDetail!]!
@@ -394,12 +397,25 @@ type Subscription {
 }
 
 type Tag {
+  categoryId: Int
   color: String!
   description: String!
   tag: String!
 }
 
+type TagCategory {
+  category: String!
+  description: String!
+  id: Int!
+}
+
+input TagCategoryInput {
+  category: String!
+  description: String!
+}
+
 input TagInput {
+  categoryId: Int
   color: String!
   description: String!
   tag: String!
