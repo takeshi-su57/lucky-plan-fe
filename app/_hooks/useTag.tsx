@@ -6,11 +6,20 @@ import { getFragmentData, graphql } from "@/gql/index";
 import { useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
 
+export const TAG_CATEGORY_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment TagCategoryInfo on TagCategory {
+    id
+    category
+    description
+  }
+`);
+
 export const TAG_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment TagInfo on Tag {
     tag
     description
     color
+    categoryId
   }
 `);
 
@@ -34,6 +43,30 @@ export const DELETE_TAG_DOCUMENT = graphql(`
   mutation deleteTag($tag: String!) {
     deleteTag(tag: $tag) {
       ...TagInfo
+    }
+  }
+`);
+
+export const GET_ALL_CATEGORIES_DOCUMENT = graphql(`
+  query getAllCategories {
+    getAllCategories {
+      ...TagCategoryInfo
+    }
+  }
+`);
+
+export const UPSERT_CATEGORY_DOCUMENT = graphql(`
+  mutation upsertCategory($input: TagCategoryInput!) {
+    upsertCategory(input: $input) {
+      ...TagCategoryInfo
+    }
+  }
+`);
+
+export const DELETE_CATEGORY_DOCUMENT = graphql(`
+  mutation deleteCategory($id: Int!) {
+    deleteCategory(id: $id) {
+      ...TagCategoryInfo
     }
   }
 `);
@@ -155,4 +188,129 @@ export function useDeleteTag() {
   }, [client.cache, data, enqueueSnackbar, error]);
 
   return mutateDeleteTag;
+}
+
+export function useGetAllCategories() {
+  const { data } = useQuery(GET_ALL_CATEGORIES_DOCUMENT, { variables: {} });
+
+  return useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return data.getAllCategories.map((category) => ({
+      ...getFragmentData(TAG_CATEGORY_INFO_FRAGMENT_DOCUMENT, category),
+    }));
+  }, [data]);
+}
+
+export function useUpsertCategory() {
+  const [mutateUpsertCategory, { data, error }] = useMutation(
+    UPSERT_CATEGORY_DOCUMENT,
+  );
+
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      const categoryInfo = getFragmentData(
+        TAG_CATEGORY_INFO_FRAGMENT_DOCUMENT,
+        data.upsertCategory,
+      );
+
+      enqueueSnackbar("Success at adding Category!", {
+        variant: "success",
+      });
+
+      client.cache.writeFragment({
+        id: client.cache.identify({
+          __typename: categoryInfo.__typename,
+          id: categoryInfo.id,
+        }),
+        fragment: TAG_CATEGORY_INFO_FRAGMENT_DOCUMENT,
+        data: categoryInfo,
+      });
+
+      client.cache.updateQuery(
+        {
+          query: GET_ALL_CATEGORIES_DOCUMENT,
+          variables: {},
+        },
+        (data) => {
+          if (data && data.getAllCategories.length > 0) {
+            const alreadyExists = data.getAllCategories.filter(
+              (category) =>
+                categoryInfo.id ===
+                getFragmentData(TAG_CATEGORY_INFO_FRAGMENT_DOCUMENT, category)
+                  .id,
+            );
+
+            if (alreadyExists.length > 0) {
+              return data;
+            }
+
+            return {
+              ...data,
+              getAllCategories: [...data.getAllCategories, categoryInfo],
+            };
+          } else {
+            return {
+              getAllCategories: [categoryInfo],
+            };
+          }
+        },
+      );
+    }
+  }, [client.cache, data, enqueueSnackbar, error]);
+
+  return mutateUpsertCategory;
+}
+
+export function useDeleteCategory() {
+  const [mutateDeleteCategory, { data, error }] = useMutation(
+    DELETE_CATEGORY_DOCUMENT,
+  );
+
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      const categoryInfo = getFragmentData(
+        TAG_CATEGORY_INFO_FRAGMENT_DOCUMENT,
+        data.deleteCategory,
+      );
+
+      enqueueSnackbar("Success at deleting Category!", {
+        variant: "success",
+      });
+
+      client.cache.updateQuery(
+        {
+          query: GET_ALL_CATEGORIES_DOCUMENT,
+          variables: {},
+        },
+        (data) => {
+          if (data && data.getAllCategories.length > 0) {
+            return {
+              ...data,
+              getAllCategories: data.getAllCategories.filter(
+                (category) =>
+                  categoryInfo.id !==
+                  getFragmentData(TAG_CATEGORY_INFO_FRAGMENT_DOCUMENT, category)
+                    .id,
+              ),
+            };
+          } else {
+            return {
+              getAllCategories: [],
+            };
+          }
+        },
+      );
+    }
+  }, [client.cache, data, enqueueSnackbar, error]);
+
+  return mutateDeleteCategory;
 }
