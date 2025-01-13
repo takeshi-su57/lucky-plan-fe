@@ -21,7 +21,7 @@ import {
 import LineChart from "@/components/charts/LineChart";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 
-import { TagsWidget } from "../UserWidgets/TagsWidget";
+import { TagsWidget } from "../TagWidgets/TagsWidget";
 
 export type HistoriesWidgetProps = {
   address: Address;
@@ -84,6 +84,10 @@ export function HistoriesWidget({
       return 0;
     }
   });
+
+  if (sortedHistories.length === 0) {
+    return null;
+  }
 
   [
     ...sortedHistories,

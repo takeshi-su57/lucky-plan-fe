@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button, Input } from "@nextui-org/react";
-import { TagInfoFragment } from "@/graphql/gql/graphql";
+import { Button, Input, Select, SelectItem } from "@nextui-org/react";
+import { Tag } from "@/graphql/gql/graphql";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 
 import { isValidColor } from "@/utils";
-import { useUpsertTag } from "@/app/_hooks/useTag";
+import { useGetAllCategories, useUpsertTag } from "@/app/_hooks/useTag";
 
 export type UpsertTagModalProps = {
-  tag: TagInfoFragment | null;
+  tag: Tag | null;
   isOpen: boolean;
   onClose: () => void;
   onOpenChange: (value: boolean) => void;
@@ -22,21 +22,26 @@ export function UpsertTagModal({
   onClose,
   onOpenChange,
 }: UpsertTagModalProps) {
+  const allCategories = useGetAllCategories();
+
   const upsertTag = useUpsertTag();
 
   const [tagStr, setTagStr] = useState("");
   const [description, setDescription] = useState("");
   const [color, setColor] = useState("");
+  const [category, setCategory] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (tag) {
       setTagStr(tag.tag);
       setDescription(tag.description);
       setColor(tag.color);
+      setCategory(tag.categoryId ? `${tag.categoryId}` : undefined);
     } else {
       setTagStr("");
       setDescription("");
       setColor("");
+      setCategory(undefined);
     }
   }, [tag]);
 
@@ -53,6 +58,7 @@ export function UpsertTagModal({
           tag: tagStr.toUpperCase(),
           description,
           color,
+          categoryId: category ? +category : null,
         },
       },
     });
@@ -85,6 +91,18 @@ export function UpsertTagModal({
           onValueChange={setColor}
           label="Color"
         />
+        <Select
+          variant="underlined"
+          label="Category"
+          selectedKeys={category ? [category] : undefined}
+          onChange={(e) => setCategory(e.target.value)}
+          selectionMode="single"
+          className="flex-1"
+        >
+          {allCategories.map((category) => (
+            <SelectItem key={category.id}>{category.category}</SelectItem>
+          ))}
+        </Select>
 
         <Button onClick={handleConfirm} color="primary" isDisabled={isDisabled}>
           Save
