@@ -87,7 +87,7 @@ export function TagsWidget({ address }: TagsWidgetProps) {
         .sort((a, b) => (a[0] > b[0] ? 1 : a[0] === b[0] ? 0 : -1))
         .map(([key, value]) => ({
           id: key,
-          title: categoriesMap[key].category,
+          title: categoriesMap[key]?.category || "",
           color: "",
           tags: value,
         })),

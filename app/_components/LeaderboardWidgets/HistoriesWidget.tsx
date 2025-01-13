@@ -85,203 +85,201 @@ export function HistoriesWidget({
     }
   });
 
-  if (sortedHistories.length === 0) {
-    return null;
-  }
+  if (sortedHistories.length > 0) {
+    [
+      ...sortedHistories,
+      {
+        __typename: "TradeHistory",
+        address,
+        blockNumber: 0,
+        contractId: 0,
+        eventName: "",
+        id: 0,
+        in: 0,
+        out: 0,
+        pnl: 0,
+        timestamp: Date.now(),
+      },
+    ].forEach((history, index) => {
+      const gap = getDayGap(
+        new Date(history.timestamp),
+        new Date(sortedHistories[0].timestamp),
+      );
 
-  [
-    ...sortedHistories,
-    {
-      __typename: "TradeHistory",
-      address,
-      blockNumber: 0,
-      contractId: 0,
-      eventName: "",
-      id: 0,
-      in: 0,
-      out: 0,
-      pnl: 0,
-      timestamp: Date.now(),
-    },
-  ].forEach((history, index) => {
-    const gap = getDayGap(
-      new Date(history.timestamp),
-      new Date(sortedHistories[0].timestamp),
-    );
+      if (range && (range.from > gap || range.to < gap)) {
+        return;
+      }
 
-    if (range && (range.from > gap || range.to < gap)) {
-      return;
-    }
+      pnlSum += history.pnl;
+      inOutSum += history.in - history.out;
 
-    pnlSum += history.pnl;
-    inOutSum += history.in - history.out;
+      if (pnlChartData.length === 0) {
+        pnlChartData.push({
+          value: 0,
+          date: new Date(history.timestamp),
+        });
+      }
 
-    if (pnlChartData.length === 0) {
+      if (inOutChartData.length === 0) {
+        inOutChartData.push({
+          value: 0,
+          date: new Date(history.timestamp),
+        });
+      }
+
+      if (outChartData.length === 0) {
+        outChartData.push({
+          value: 0,
+          date: new Date(history.timestamp),
+        });
+      }
+
+      if (inChartData.length === 0) {
+        outChartData.push({
+          value: 0,
+          date: new Date(history.timestamp),
+        });
+      }
+
+      if (dayScalePnlChartData.length === 0) {
+        dayScalePnlChartData.push({
+          value: 0,
+          date: new Date(history.timestamp),
+        });
+      } else if (
+        kind === PnlSnapshotKind.Day &&
+        !isSameMinute(
+          new Date(history.timestamp),
+          new Date(sortedHistories[index - 1].timestamp),
+        )
+      ) {
+        const minutes = getAllMinutesBetween(
+          new Date(sortedHistories[index - 1].timestamp),
+          new Date(history.timestamp),
+        );
+
+        minutes.slice(1).forEach((minute) => {
+          dayScalePnlChartData.push({
+            value: pnlSum,
+            date: minute,
+          });
+        });
+      } else if (
+        kind === PnlSnapshotKind.Week &&
+        !isSameHour(
+          new Date(history.timestamp),
+          new Date(sortedHistories[index - 1].timestamp),
+        )
+      ) {
+        const hours = getAllHoursBetween(
+          new Date(sortedHistories[index - 1].timestamp),
+          new Date(history.timestamp),
+        );
+
+        hours.slice(1).forEach((hour) => {
+          dayScalePnlChartData.push({
+            value: pnlSum,
+            date: hour,
+          });
+        });
+      } else if (
+        !isSameDay(
+          new Date(history.timestamp),
+          new Date(sortedHistories[index - 1].timestamp),
+        )
+      ) {
+        const days = getAllDaysBetween(
+          new Date(sortedHistories[index - 1].timestamp),
+          new Date(history.timestamp),
+        );
+
+        days.slice(1).forEach((day) => {
+          dayScalePnlChartData.push({
+            value: pnlSum,
+            date: day,
+          });
+        });
+      }
+
+      if (dayScaleinOutChartData.length === 0) {
+        dayScaleinOutChartData.push({
+          value: 0,
+          date: new Date(history.timestamp),
+        });
+      } else if (
+        kind === PnlSnapshotKind.Day &&
+        !isSameMinute(
+          new Date(history.timestamp),
+          new Date(sortedHistories[index - 1].timestamp),
+        )
+      ) {
+        const minutes = getAllMinutesBetween(
+          new Date(sortedHistories[index - 1].timestamp),
+          new Date(history.timestamp),
+        );
+
+        minutes.slice(1).forEach((minute) => {
+          dayScaleinOutChartData.push({
+            value: inOutSum,
+            date: minute,
+          });
+        });
+      } else if (
+        kind === PnlSnapshotKind.Week &&
+        !isSameHour(
+          new Date(history.timestamp),
+          new Date(sortedHistories[index - 1].timestamp),
+        )
+      ) {
+        const hours = getAllHoursBetween(
+          new Date(sortedHistories[index - 1].timestamp),
+          new Date(history.timestamp),
+        );
+
+        hours.slice(1).forEach((hour) => {
+          dayScaleinOutChartData.push({
+            value: inOutSum,
+            date: hour,
+          });
+        });
+      } else if (
+        !isSameDay(
+          new Date(history.timestamp),
+          new Date(sortedHistories[index - 1].timestamp),
+        )
+      ) {
+        const days = getAllDaysBetween(
+          new Date(sortedHistories[index - 1].timestamp),
+          new Date(history.timestamp),
+        );
+
+        days.slice(1).forEach((day) => {
+          dayScaleinOutChartData.push({
+            value: inOutSum,
+            date: day,
+          });
+        });
+      }
+
       pnlChartData.push({
-        value: 0,
+        value: pnlSum,
         date: new Date(history.timestamp),
       });
-    }
-
-    if (inOutChartData.length === 0) {
       inOutChartData.push({
-        value: 0,
+        value: inOutSum,
         date: new Date(history.timestamp),
       });
-    }
 
-    if (outChartData.length === 0) {
+      inChartData.push({
+        value: history.in,
+        date: new Date(history.timestamp),
+      });
       outChartData.push({
-        value: 0,
+        value: -history.out,
         date: new Date(history.timestamp),
       });
-    }
-
-    if (inChartData.length === 0) {
-      outChartData.push({
-        value: 0,
-        date: new Date(history.timestamp),
-      });
-    }
-
-    if (dayScalePnlChartData.length === 0) {
-      dayScalePnlChartData.push({
-        value: 0,
-        date: new Date(history.timestamp),
-      });
-    } else if (
-      kind === PnlSnapshotKind.Day &&
-      !isSameMinute(
-        new Date(history.timestamp),
-        new Date(sortedHistories[index - 1].timestamp),
-      )
-    ) {
-      const minutes = getAllMinutesBetween(
-        new Date(sortedHistories[index - 1].timestamp),
-        new Date(history.timestamp),
-      );
-
-      minutes.slice(1).forEach((minute) => {
-        dayScalePnlChartData.push({
-          value: pnlSum,
-          date: minute,
-        });
-      });
-    } else if (
-      kind === PnlSnapshotKind.Week &&
-      !isSameHour(
-        new Date(history.timestamp),
-        new Date(sortedHistories[index - 1].timestamp),
-      )
-    ) {
-      const hours = getAllHoursBetween(
-        new Date(sortedHistories[index - 1].timestamp),
-        new Date(history.timestamp),
-      );
-
-      hours.slice(1).forEach((hour) => {
-        dayScalePnlChartData.push({
-          value: pnlSum,
-          date: hour,
-        });
-      });
-    } else if (
-      !isSameDay(
-        new Date(history.timestamp),
-        new Date(sortedHistories[index - 1].timestamp),
-      )
-    ) {
-      const days = getAllDaysBetween(
-        new Date(sortedHistories[index - 1].timestamp),
-        new Date(history.timestamp),
-      );
-
-      days.slice(1).forEach((day) => {
-        dayScalePnlChartData.push({
-          value: pnlSum,
-          date: day,
-        });
-      });
-    }
-
-    if (dayScaleinOutChartData.length === 0) {
-      dayScaleinOutChartData.push({
-        value: 0,
-        date: new Date(history.timestamp),
-      });
-    } else if (
-      kind === PnlSnapshotKind.Day &&
-      !isSameMinute(
-        new Date(history.timestamp),
-        new Date(sortedHistories[index - 1].timestamp),
-      )
-    ) {
-      const minutes = getAllMinutesBetween(
-        new Date(sortedHistories[index - 1].timestamp),
-        new Date(history.timestamp),
-      );
-
-      minutes.slice(1).forEach((minute) => {
-        dayScaleinOutChartData.push({
-          value: inOutSum,
-          date: minute,
-        });
-      });
-    } else if (
-      kind === PnlSnapshotKind.Week &&
-      !isSameHour(
-        new Date(history.timestamp),
-        new Date(sortedHistories[index - 1].timestamp),
-      )
-    ) {
-      const hours = getAllHoursBetween(
-        new Date(sortedHistories[index - 1].timestamp),
-        new Date(history.timestamp),
-      );
-
-      hours.slice(1).forEach((hour) => {
-        dayScaleinOutChartData.push({
-          value: inOutSum,
-          date: hour,
-        });
-      });
-    } else if (
-      !isSameDay(
-        new Date(history.timestamp),
-        new Date(sortedHistories[index - 1].timestamp),
-      )
-    ) {
-      const days = getAllDaysBetween(
-        new Date(sortedHistories[index - 1].timestamp),
-        new Date(history.timestamp),
-      );
-
-      days.slice(1).forEach((day) => {
-        dayScaleinOutChartData.push({
-          value: inOutSum,
-          date: day,
-        });
-      });
-    }
-
-    pnlChartData.push({
-      value: pnlSum,
-      date: new Date(history.timestamp),
     });
-    inOutChartData.push({
-      value: inOutSum,
-      date: new Date(history.timestamp),
-    });
-
-    inChartData.push({
-      value: history.in,
-      date: new Date(history.timestamp),
-    });
-    outChartData.push({
-      value: -history.out,
-      date: new Date(history.timestamp),
-    });
-  });
+  }
 
   const items = [
     {
@@ -360,9 +358,11 @@ export function HistoriesWidget({
                   First Activity:
                 </span>
                 <span className="text-sm font-bold text-white">
-                  {dayjs(new Date(sortedHistories[0].timestamp)).format(
-                    "YYYY/MM/DD",
-                  )}
+                  {sortedHistories.length > 0
+                    ? dayjs(new Date(sortedHistories[0].timestamp)).format(
+                        "YYYY/MM/DD",
+                      )
+                    : ""}
                 </span>
               </div>
 
@@ -371,11 +371,13 @@ export function HistoriesWidget({
                   Last Activity:
                 </span>
                 <span className="text-sm font-bold text-white">
-                  {dayjs(
-                    new Date(
-                      sortedHistories[sortedHistories.length - 1].timestamp,
-                    ),
-                  ).format("YYYY/MM/DD")}
+                  {sortedHistories.length > 0
+                    ? dayjs(
+                        new Date(
+                          sortedHistories[sortedHistories.length - 1].timestamp,
+                        ),
+                      ).format("YYYY/MM/DD")
+                    : ""}
                 </span>
               </div>
             </div>
@@ -422,26 +424,30 @@ export function HistoriesWidget({
               <div className="flex items-center justify-between">
                 <span className="text-base text-neutral-400">From:</span>
                 <span className="text-sm font-bold text-white">
-                  {dayjs(
-                    getDateAfterDays(
-                      new Date(sortedHistories[0].timestamp),
-                      range?.from || 0,
-                    ),
-                  ).format("YYYY/MM/DD")}
+                  {sortedHistories.length > 0
+                    ? dayjs(
+                        getDateAfterDays(
+                          new Date(sortedHistories[0].timestamp),
+                          range?.from || 0,
+                        ),
+                      ).format("YYYY/MM/DD")
+                    : ""}
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
                 <span className="text-base text-neutral-400">To:</span>
                 <span className="text-sm font-bold text-white">
-                  {dayjs(
-                    range
-                      ? getDateAfterDays(
-                          new Date(sortedHistories[0].timestamp),
-                          range.to,
-                        )
-                      : new Date(),
-                  ).format("YYYY/MM/DD")}
+                  {sortedHistories.length > 0
+                    ? dayjs(
+                        range
+                          ? getDateAfterDays(
+                              new Date(sortedHistories[0].timestamp),
+                              range.to,
+                            )
+                          : new Date(),
+                      ).format("YYYY/MM/DD")
+                    : ""}
                 </span>
               </div>
 
