@@ -43,8 +43,7 @@ export function MissionDetails({ missionId }: MissionDetailsProps) {
 
   return (
     <div className="flex flex-col gap-2 border-t border-t-neutral-400/20 py-6">
-      {mission.status === MissionStatus.Created ||
-      mission.status === MissionStatus.Opened ? (
+      {mission.status !== MissionStatus.Closed ? (
         <Button
           onClick={handleCloseMission}
           color="secondary"
