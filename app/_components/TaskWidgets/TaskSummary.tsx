@@ -4,6 +4,7 @@ import { Chip } from "@nextui-org/react";
 import dayjs from "dayjs";
 
 import { TaskShallowDetails, TaskStatus } from "@/graphql/gql/graphql";
+import { PendingOrderType } from "@/types";
 
 const colorsByTaskStatus: Record<
   TaskStatus,
@@ -28,10 +29,22 @@ export function TaskSummary({ task }: TaskSummaryProps) {
 
   switch (task.action.name) {
     case "LimitExecuted": {
-      if (args.open) {
+      if (
+        [PendingOrderType.LIMIT_OPEN, PendingOrderType.STOP_OPEN].includes(
+          args.orderType,
+        )
+      ) {
         actionName = "Open Task";
-      } else {
+      } else if (
+        [
+          PendingOrderType.LIQ_CLOSE,
+          PendingOrderType.SL_CLOSE,
+          PendingOrderType.TP_CLOSE,
+        ].includes(args.orderType)
+      ) {
         actionName = "Close Task";
+      } else {
+        actionName = "Unknown LimitExecuted Task";
       }
 
       break;

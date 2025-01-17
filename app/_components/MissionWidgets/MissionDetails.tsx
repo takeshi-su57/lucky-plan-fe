@@ -55,11 +55,13 @@ export function MissionDetails({ missionId }: MissionDetailsProps) {
       <span className="px-2 text-base">Tasks</span>
 
       <Accordion isCompact variant="splitted">
-        {mission.tasks.map((task) => (
-          <AccordionItem key={task.id} title={<TaskSummary task={task} />}>
-            <TaskDetails taskId={task.id} missionStatus={mission.status} />
-          </AccordionItem>
-        ))}
+        {mission.tasks
+          .sort((a, b) => a.id - b.id)
+          .map((task) => (
+            <AccordionItem key={task.id} title={<TaskSummary task={task} />}>
+              <TaskDetails taskId={task.id} />
+            </AccordionItem>
+          ))}
       </Accordion>
     </div>
   );

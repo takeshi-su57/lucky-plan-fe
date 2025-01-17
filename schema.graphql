@@ -355,6 +355,7 @@ type Query {
   getAllUsers: [User!]!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
   getPnlSnapshots(after: Int, contractId: Int!, first: Int!, kind: PnlSnapshotKind!): PnlSnapshotDetailsConnection!
+  getTasksByStatus(status: TaskStatus!): [TaskShallowDetails!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getUserByAddress(input: GetUserByAddressInput!): User!
 }

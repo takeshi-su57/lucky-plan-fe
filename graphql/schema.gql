@@ -361,6 +361,7 @@ type Query {
     first: Int!
     kind: PnlSnapshotKind!
   ): PnlSnapshotDetailsConnection!
+  getTasksByStatus(status: TaskStatus!): [TaskShallowDetails!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getUserByAddress(input: GetUserByAddressInput!): User!
 }
