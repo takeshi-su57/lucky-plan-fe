@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { Button, Progress } from "@nextui-org/react";
-import { MissionStatus, TaskStatus } from "@/graphql/gql/graphql";
+import { TaskStatus } from "@/graphql/gql/graphql";
 
 import { useGetTask } from "@/app-hooks/useTask";
 import { usePerformTask } from "@/app/_hooks/useTask";
@@ -12,10 +12,9 @@ import { TaskLogView } from "./TaskLogView";
 
 export type TaskDetailsProps = {
   taskId: number;
-  missionStatus: MissionStatus;
 };
 
-export function TaskDetails({ taskId, missionStatus }: TaskDetailsProps) {
+export function TaskDetails({ taskId }: TaskDetailsProps) {
   const { task, loading, error } = useGetTask(taskId);
 
   const performTask = usePerformTask();
@@ -44,11 +43,13 @@ export function TaskDetails({ taskId, missionStatus }: TaskDetailsProps) {
     return null;
   }
 
+  console.log("taskDetails ==>", task);
+
   return (
     <div className="flex flex-col gap-6 border-t border-t-neutral-400/20 py-6 text-neutral-400">
-      {task.status === TaskStatus.Failed &&
-      missionStatus !== MissionStatus.Closed &&
-      missionStatus !== MissionStatus.Closing ? (
+      {task.status !== TaskStatus.Await &&
+      task.status !== TaskStatus.Stopped &&
+      task.status !== TaskStatus.Completed ? (
         <div className="flex items-center gap-2">
           <Button onClick={handlePerformTask} color="primary">
             Perform

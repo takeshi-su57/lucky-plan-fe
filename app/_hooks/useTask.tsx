@@ -11,6 +11,7 @@ import {
 import {
   TaskShallowDetails,
   TaskShallowDetailsInfoFragment,
+  TaskStatus,
 } from "@/graphql/gql/graphql";
 import { getFragmentData, graphql } from "@/gql/index";
 
@@ -81,6 +82,14 @@ export const GET_ALL_TASKS_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_TASKS_BY_STATUS_DOCUMENT = graphql(`
+  query getTasksByStatus($status: TaskStatus!) {
+    getTasksByStatus(status: $status) {
+      ...TaskShallowDetailsInfo
+    }
+  }
+`);
+
 export const FIND_TASK_DOCUMENT = graphql(`
   query findTask($id: Int!) {
     findTask(id: $id) {
@@ -146,6 +155,49 @@ export function useGetAllTasks() {
       return [];
     }
     return data.getAllTasks.map(getTaskFragment);
+  }, [data]);
+}
+
+export function useGetTasksByStatus(status: TaskStatus) {
+  const { data } = useQuery(GET_TASKS_BY_STATUS_DOCUMENT, {
+    variables: { status },
+  });
+
+  return useMemo(() => {
+    const taskMaps: Record<string, Record<string, number>> = {};
+
+    if (!data) {
+      return {
+        tasks: [],
+        satistic: {},
+      };
+    }
+
+    data.getTasksByStatus.forEach((item) => {
+      const task = getTaskFragment(item);
+
+      const botId = task.mission.botId;
+      const missionId = task.missionId;
+
+      const missionMap = taskMaps[botId];
+
+      if (missionMap) {
+        if (missionMap[missionId]) {
+          missionMap[missionId] = missionMap[missionId] + 1;
+        } else {
+          missionMap[missionId] = 1;
+        }
+      } else {
+        taskMaps[botId] = {
+          [missionId]: 1,
+        };
+      }
+    });
+
+    return {
+      tasks: data.getTasksByStatus.map(getTaskFragment),
+      satistic: taskMaps,
+    };
   }, [data]);
 }
 

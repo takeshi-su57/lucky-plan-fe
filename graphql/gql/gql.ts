@@ -68,6 +68,7 @@ const documents = {
     "\n  fragment TaskWithActionsInfo on TaskWithActions {\n    id\n    missionId\n    actionId\n    logs\n    status\n    createdAt\n    action {\n      ...ActionInfo\n    }\n    followerActions {\n      ...FollowerActionDetailsInfo\n    }\n  }\n": types.TaskWithActionsInfoFragmentDoc,
     "\n  fragment TaskShallowDetailsInfo on TaskShallowDetails {\n    id\n    missionId\n    actionId\n    logs\n    status\n    createdAt\n    action {\n      ...ActionInfo\n    }\n    mission {\n      ...MissionInfo\n    }\n  }\n": types.TaskShallowDetailsInfoFragmentDoc,
     "\n  query getAllTasks {\n    getAllTasks {\n      ...TaskShallowDetailsInfo\n    }\n  }\n": types.GetAllTasksDocument,
+    "\n  query getTasksByStatus($status: TaskStatus!) {\n    getTasksByStatus(status: $status) {\n      ...TaskShallowDetailsInfo\n    }\n  }\n": types.GetTasksByStatusDocument,
     "\n  query findTask($id: Int!) {\n    findTask(id: $id) {\n      ...TaskWithActionsInfo\n    }\n  }\n": types.FindTaskDocument,
     "\n  mutation performTask($id: Int!) {\n    performTask(id: $id) {\n      ...TaskShallowDetailsInfo\n    }\n  }\n": types.PerformTaskDocument,
     "\n  subscription taskAdded {\n    taskAdded {\n      ...TaskShallowDetailsInfo\n    }\n  }\n": types.TaskAddedDocument,
@@ -309,6 +310,10 @@ export function graphql(source: "\n  fragment TaskShallowDetailsInfo on TaskShal
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query getAllTasks {\n    getAllTasks {\n      ...TaskShallowDetailsInfo\n    }\n  }\n"): (typeof documents)["\n  query getAllTasks {\n    getAllTasks {\n      ...TaskShallowDetailsInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query getTasksByStatus($status: TaskStatus!) {\n    getTasksByStatus(status: $status) {\n      ...TaskShallowDetailsInfo\n    }\n  }\n"): (typeof documents)["\n  query getTasksByStatus($status: TaskStatus!) {\n    getTasksByStatus(status: $status) {\n      ...TaskShallowDetailsInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

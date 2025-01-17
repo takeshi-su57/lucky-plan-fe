@@ -1,9 +1,10 @@
 "use client";
 
-import { Chip } from "@nextui-org/react";
+import { Badge, Chip } from "@nextui-org/react";
 import dayjs from "dayjs";
 
-import { MissionStatus, Mission } from "@/graphql/gql/graphql";
+import { MissionStatus, Mission, TaskStatus } from "@/graphql/gql/graphql";
+import { useGetTasksByStatus } from "@/app/_hooks/useTask";
 
 const colorsByMissionStatus: Record<
   MissionStatus,
@@ -21,6 +22,35 @@ export type MissionSummaryProps = {
 };
 
 export function MissionSummary({ mission }: MissionSummaryProps) {
+  const { satistic: createdStatistic } = useGetTasksByStatus(
+    TaskStatus.Created,
+  );
+  const { satistic: awaitedStatistic } = useGetTasksByStatus(TaskStatus.Await);
+  const { satistic: initiatedStatistic } = useGetTasksByStatus(
+    TaskStatus.Initiated,
+  );
+  const { satistic: failedStatistic } = useGetTasksByStatus(TaskStatus.Failed);
+
+  const createdCount =
+    (createdStatistic[mission.botId] &&
+      createdStatistic[mission.botId][mission.id]) ||
+    0;
+
+  const awaitedCount =
+    (awaitedStatistic[mission.botId] &&
+      awaitedStatistic[mission.botId][mission.id]) ||
+    0;
+
+  const initiatedCount =
+    (initiatedStatistic[mission.botId] &&
+      initiatedStatistic[mission.botId][mission.id]) ||
+    0;
+
+  const failedCount =
+    (failedStatistic[mission.botId] &&
+      failedStatistic[mission.botId][mission.id]) ||
+    0;
+
   return (
     <div className="flex w-full items-center justify-between gap-6">
       <div className="flex items-center gap-6">
@@ -37,6 +67,32 @@ export function MissionSummary({ mission }: MissionSummaryProps) {
         <span className="text-xs text-neutral-600">
           {dayjs(new Date(mission.createdAt)).format("YYYY/MM/DD hh:mm:ss")}
         </span>
+
+        <div className="flex flex-row items-center gap-3 font-mono">
+          {createdCount > 0 ? (
+            <Badge color="secondary" content={createdCount}>
+              <Chip color="secondary">Created</Chip>
+            </Badge>
+          ) : null}
+
+          {awaitedCount > 0 ? (
+            <Badge color="warning" content={awaitedCount}>
+              <Chip color="warning">Await</Chip>
+            </Badge>
+          ) : null}
+
+          {initiatedCount > 0 ? (
+            <Badge color="success" content={initiatedCount}>
+              <Chip color="success">Initiated</Chip>
+            </Badge>
+          ) : null}
+
+          {failedCount > 0 ? (
+            <Badge color="danger" content={failedCount}>
+              <Chip color="danger">Failed</Chip>
+            </Badge>
+          ) : null}
+        </div>
       </div>
 
       <Chip color={colorsByMissionStatus[mission.status]}>
