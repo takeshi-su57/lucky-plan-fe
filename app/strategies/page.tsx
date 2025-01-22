@@ -38,11 +38,6 @@ const strategyColumns: TableColumnProps[] = [
     allowsSorting: true,
   },
   {
-    id: "capacity",
-    component: "Capacity",
-    allowsSorting: true,
-  },
-  {
     id: "collateral",
     component: "Collateral",
     allowsSorting: true,
@@ -144,15 +139,6 @@ export default function Page() {
             <div className="flex flex-col gap-1">
               <span>{strategy.ratio} %</span>
               <span>{convertMinToLifetimeItem(strategy.lifeTime).label}</span>
-            </div>
-          ),
-        },
-        capacity: {
-          sortableAmount: strategy.maxCapacity,
-          component: (
-            <div className="flex flex-col gap-1">
-              <span>max: {Number(strategy.maxCapacity)} USDC</span>
-              <span>min: {Number(strategy.minCapacity)} USDC</span>
             </div>
           ),
         },
