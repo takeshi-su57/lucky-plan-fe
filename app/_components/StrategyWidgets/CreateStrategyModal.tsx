@@ -83,7 +83,7 @@ export function CreateStrategyModal({
     maxCollateralHelper = "Invalid max collateral";
   } else {
     if (+maxCollateral < 5) {
-      maxCollateralHelper = "Too small max capacity";
+      maxCollateralHelper = "Too small max collateral";
     }
   }
 
@@ -131,7 +131,7 @@ export function CreateStrategyModal({
     }
 
     if (+minLeverage < 1.1) {
-      minLeverageHelper = "Too small min capacity";
+      minLeverageHelper = "Too small min leverage";
     }
   }
 
