@@ -128,10 +128,8 @@ input CreateContractInput {
 input CreateStrategyInput {
   collateralBaseline: Int!
   lifeTime: Float!
-  maxCapacity: Float!
   maxCollateral: Float!
   maxLeverage: Int!
-  minCapacity: Float!
   minCollateral: Float!
   minLeverage: Int!
   params: String!
@@ -364,10 +362,8 @@ type Strategy {
   collateralBaseline: Int!
   id: Int!
   lifeTime: Int!
-  maxCapacity: Int!
   maxCollateral: Int!
   maxLeverage: Int!
-  minCapacity: Int!
   minCollateral: Int!
   minLeverage: Int!
   params: String!

@@ -14,7 +14,7 @@ export function AddressWidget({
 }) {
   const [isCopied, setIsCopied] = useState(false);
 
-  const handleCopy: MouseEventHandler<SVGSVGElement> = (e) => {
+  const handleCopy: MouseEventHandler<HTMLDivElement> = (e) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -25,19 +25,14 @@ export function AddressWidget({
 
   return (
     <div
+      onClick={handleCopy}
       className={twMerge(
         "flex items-center gap-2 text-sm leading-7 text-neutral-400",
         className,
       )}
     >
       <span>{shrinkAddress(address)}</span>
-      <CopyIcon
-        onClick={handleCopy}
-        size={16}
-        width={12}
-        height={12}
-        className="cursor-pointer"
-      />
+      <CopyIcon size={16} width={12} height={12} className="cursor-pointer" />
       <span>{isCopied ? "Copied!" : ""}</span>
     </div>
   );

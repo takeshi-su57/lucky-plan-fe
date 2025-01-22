@@ -35,8 +35,6 @@ export function CreateStrategyModal({
   const [collateralBaseline, setCollateralBaseline] = useState("");
   const [maxLeverage, setMaxLeverage] = useState("");
   const [minLeverage, setMinLeverage] = useState("");
-  const [maxCapacity, setMaxCapacity] = useState("");
-  const [minCapacity, setMinCapacity] = useState("");
 
   const handleChangeStrategy: ChangeEventHandler<HTMLSelectElement> = (
     event,
@@ -68,8 +66,6 @@ export function CreateStrategyModal({
   let collateralBaselineHelper = "";
   let maxLeverageHelper = "";
   let minLeverageHelper = "";
-  let maxCapacityHelper = "";
-  let minCapacityHelper = "";
 
   if (!strategy) {
     strategyHelper = "Please select strategy";
@@ -83,37 +79,9 @@ export function CreateStrategyModal({
     }
   }
 
-  if (Number.isNaN(+maxCapacity)) {
-    maxCapacityHelper = "Invalid max capacity";
-  } else {
-    if (+maxCapacity > 1000000) {
-      maxCapacityHelper = "Too big max capacity";
-    }
-
-    if (+maxCapacity < 50) {
-      maxCapacityHelper = "Too small max capacity";
-    }
-  }
-
-  if (Number.isNaN(+minCapacity)) {
-    minCapacityHelper = "Invalid min capacity";
-  } else {
-    if (+minCapacity > +maxCapacity) {
-      minCapacityHelper = "Too big min capacity";
-    }
-
-    if (+minCapacity < 50) {
-      minCapacityHelper = "Too small min capacity";
-    }
-  }
-
   if (Number.isNaN(+maxCollateral)) {
     maxCollateralHelper = "Invalid max collateral";
   } else {
-    if (+maxCollateral > +minCapacity) {
-      maxCollateralHelper = "Too big max collateral";
-    }
-
     if (+maxCollateral < 5) {
       maxCollateralHelper = "Too small max capacity";
     }
@@ -173,9 +141,7 @@ export function CreateStrategyModal({
     maxCollateralHelper.trim() !== "" ||
     minCollateralHelper.trim() !== "" ||
     maxLeverageHelper.trim() !== "" ||
-    minLeverageHelper.trim() !== "" ||
-    maxCapacityHelper.trim() !== "" ||
-    minCapacityHelper.trim() !== "";
+    minLeverageHelper.trim() !== "";
 
   const handleConfirm = () => {
     if (
@@ -186,9 +152,7 @@ export function CreateStrategyModal({
       minCollateral.trim() === "" ||
       collateralBaseline.trim() === "" ||
       maxLeverage.trim() === "" ||
-      minLeverage.trim() === "" ||
-      maxCapacity.trim() === "" ||
-      minCapacity.trim() === ""
+      minLeverage.trim() === ""
     ) {
       return;
     }
@@ -205,8 +169,6 @@ export function CreateStrategyModal({
           strategyKey: strategy,
           ratio: Math.floor(+ratio),
           lifeTime: lifeTime.value,
-          maxCapacity: Math.floor(+maxCapacity),
-          minCapacity: Math.floor(+minCapacity),
           maxCollateral: Math.floor(+maxCollateral),
           minCollateral: Math.floor(+minCollateral),
           collateralBaseline: Math.floor(+collateralBaseline),
@@ -218,9 +180,6 @@ export function CreateStrategyModal({
     });
     onClose();
   };
-
-  console.log(maxCapacity, maxCapacityHelper);
-  console.log(minCapacity, minCapacityHelper);
 
   return (
     <StandardModal isOpen={isOpen} onOpenChange={onOpenChange} backdrop="blur">
@@ -277,35 +236,9 @@ export function CreateStrategyModal({
           <div className="flex w-full items-center gap-4">
             <div className="flex-1">
               <NumericInput
-                amount={maxCapacity}
-                onChange={setMaxCapacity}
-                label="Max Capacity"
-                isDisabled={
-                  strategy === "ratioCopy" && ratioHelper.trim() !== ""
-                }
-                errorMessage={maxCapacityHelper}
-                isInvalid={maxCapacityHelper.trim() !== ""}
-              />
-            </div>
-            <div className="flex-1">
-              <NumericInput
-                amount={minCapacity}
-                onChange={setMinCapacity}
-                label="Min Capacity"
-                isDisabled={maxCapacityHelper.trim() !== ""}
-                errorMessage={minCapacityHelper}
-                isInvalid={minCapacityHelper.trim() !== ""}
-              />
-            </div>
-          </div>
-
-          <div className="flex w-full items-center gap-4">
-            <div className="flex-1">
-              <NumericInput
                 amount={maxCollateral}
                 onChange={setMaxCollateral}
                 label="Max Collateral"
-                isDisabled={minCapacityHelper.trim() !== ""}
                 errorMessage={maxCollateralHelper}
                 isInvalid={maxCollateralHelper.trim() !== ""}
               />

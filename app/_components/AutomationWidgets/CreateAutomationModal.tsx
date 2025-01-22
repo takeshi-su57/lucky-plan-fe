@@ -202,10 +202,6 @@ export function CreateAutomationModal({
                     Leverage:
                     {`(${item.minLeverage / 1000} ~ ${item.maxLeverage / 1000}) x`}
                   </span>
-                  <span className="text-small">
-                    Capacity:
-                    {`(${item.minCapacity} ~ ${item.maxCapacity}) USDC`}
-                  </span>
                 </div>
               </AutocompleteItem>
             )}

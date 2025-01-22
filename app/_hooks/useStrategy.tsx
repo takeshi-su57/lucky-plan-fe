@@ -18,8 +18,6 @@ export const STRATEGY_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment StrategyInfo on Strategy {
     id
     lifeTime
-    maxCapacity
-    minCapacity
     maxCollateral
     minCollateral
     maxLeverage
