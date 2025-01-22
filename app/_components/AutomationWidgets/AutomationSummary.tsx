@@ -101,10 +101,6 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
             Leverage:
             {`(${strategy.minLeverage / 1000} ~ ${strategy.maxLeverage / 1000}) x`}
           </span>
-          <span className="text-xs">
-            Capacity:
-            {`(${Number(strategy.maxCapacity)} ~ ${Number(strategy.minCapacity)}) USDC`}
-          </span>
         </div>
 
         <div className="flex flex-col font-mono">
