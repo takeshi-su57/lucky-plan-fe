@@ -281,6 +281,14 @@ type PageInfo {
   hasNextPage: Boolean!
 }
 
+type PnlSnapshot {
+  accUSDPnl: Int!
+  address: String!
+  contractId: Int!
+  id: Int!
+  kind: PnlSnapshotKind!
+}
+
 type PnlSnapshotDetails {
   accUSDPnl: Int!
   address: String!
@@ -361,6 +369,7 @@ type Query {
     first: Int!
     kind: PnlSnapshotKind!
   ): PnlSnapshotDetailsConnection!
+  getPnlSnapshotsByAddress(address: String!, contractId: Int!): [PnlSnapshot!]!
   getTasksByStatus(status: TaskStatus!): [TaskShallowDetails!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getUserByAddress(input: GetUserByAddressInput!): User!
