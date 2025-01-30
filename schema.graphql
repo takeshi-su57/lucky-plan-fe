@@ -358,6 +358,7 @@ type Query {
   getTasksByStatus(status: TaskStatus!): [TaskShallowDetails!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getUserByAddress(input: GetUserByAddressInput!): User!
+  systemStatus: Boolean!
 }
 
 type Strategy {
