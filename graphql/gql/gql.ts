@@ -36,9 +36,11 @@ const documents = {
     "\n  mutation withdrawAll($input: WithdrawAllInput!) {\n    withdrawAll(input: $input)\n  }\n": types.WithdrawAllDocument,
     "\n  subscription followerDetailsUpdated($contractId: Int!) {\n    followerDetailsUpdated(contractId: $contractId) {\n      ...FollowerDetailInfo\n    }\n  }\n": types.FollowerDetailsUpdatedDocument,
     "\n  fragment TradeHistoryInfo on TradeHistory {\n    address\n    blockNumber\n    contractId\n    eventName\n    id\n    in\n    out\n    pnl\n    timestamp\n  }\n": types.TradeHistoryInfoFragmentDoc,
+    "\n  fragment PnlSnapshotInfo on PnlSnapshot {\n    accUSDPnl\n    address\n    contractId\n    id\n    kind\n  }\n": types.PnlSnapshotInfoFragmentDoc,
     "\n  fragment PnlSnapshotDetailsInfo on PnlSnapshotDetails {\n    accUSDPnl\n    address\n    contractId\n    histories {\n      ...TradeHistoryInfo\n    }\n    id\n    kind\n  }\n": types.PnlSnapshotDetailsInfoFragmentDoc,
     "\n  query getTradeHistories($address: String!, $contractId: Int!) {\n    getTradeHistories(address: $address, contractId: $contractId) {\n      ...TradeHistoryInfo\n    }\n  }\n": types.GetTradeHistoriesDocument,
     "\n  query getPnlSnapshots(\n    $contractId: Int!\n    $kind: PnlSnapshotKind!\n    $first: Int!\n    $after: Int\n  ) {\n    getPnlSnapshots(\n      contractId: $contractId\n      kind: $kind\n      first: $first\n      after: $after\n    ) {\n      edges {\n        cursor\n        node {\n          ...PnlSnapshotDetailsInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n": types.GetPnlSnapshotsDocument,
+    "\n  query getPnlSnapshotsByAddress($address: String!, $contractId: Int!) {\n    getPnlSnapshotsByAddress(address: $address, contractId: $contractId) {\n      ...PnlSnapshotInfo\n    }\n  }\n": types.GetPnlSnapshotsByAddressDocument,
     "\n  mutation initalizePnlSnapshot {\n    initalizePnlSnapshot\n  }\n": types.InitalizePnlSnapshotDocument,
     "\n  fragment PositionInfo on Position {\n    id\n    contractId\n    address\n    index\n  }\n": types.PositionInfoFragmentDoc,
     "\n  fragment MissionInfo on Mission {\n    id\n    botId\n    targetPositionId\n    achievePositionId\n    status\n    createdAt\n    updatedAt\n  }\n": types.MissionInfoFragmentDoc,
@@ -46,7 +48,7 @@ const documents = {
     "\n  fragment MissionShallowDetailsInfo on MissionShallowDetails {\n    id\n    botId\n    targetPositionId\n    achievePositionId\n    createdAt\n    updatedAt\n    status\n    achievePosition {\n      ...PositionInfo\n    }\n    targetPosition {\n      ...PositionInfo\n    }\n    bot {\n      ...BotInfo\n    }\n  }\n": types.MissionShallowDetailsInfoFragmentDoc,
     "\n  query getAllMissions {\n    getAllMissions {\n      ...MissionShallowDetailsInfo\n    }\n  }\n": types.GetAllMissionsDocument,
     "\n  query findMission($id: Int!) {\n    findMission(id: $id) {\n      ...MissionWithTasksInfo\n    }\n  }\n": types.FindMissionDocument,
-    "\n  mutation closeMission($id: Int!) {\n    closeMission(id: $id) {\n      ...MissionShallowDetailsInfo\n    }\n  }\n": types.CloseMissionDocument,
+    "\n  mutation closeMission($id: Int!, $isForce: Boolean!) {\n    closeMission(id: $id, isForce: $isForce) {\n      ...MissionShallowDetailsInfo\n    }\n  }\n": types.CloseMissionDocument,
     "\n  subscription missionAdded {\n    missionAdded {\n      ...MissionShallowDetailsInfo\n    }\n  }\n": types.MissionAddedDocument,
     "\n  subscription missionUpdated {\n    missionUpdated {\n      ...MissionShallowDetailsInfo\n    }\n  }\n": types.MissionUpdatedDocument,
     "\n  fragment StrategyMetadataInfo on StrategyMetadata {\n    key\n    title\n    description\n  }\n": types.StrategyMetadataInfoFragmentDoc,
@@ -55,6 +57,9 @@ const documents = {
     "\n  query getAllStrategy {\n    getAllStrategy {\n      ...StrategyInfo\n    }\n  }\n": types.GetAllStrategyDocument,
     "\n  mutation createStrategy($input: CreateStrategyInput!) {\n    createStrategy(input: $input) {\n      ...StrategyInfo\n    }\n  }\n": types.CreateStrategyDocument,
     "\n  mutation removeStrategy($id: Int!) {\n    removeStrategy(id: $id) {\n      ...StrategyInfo\n    }\n  }\n": types.RemoveStrategyDocument,
+    "\n  mutation pauseSystem {\n    pauseSystem\n  }\n": types.PauseSystemDocument,
+    "\n  mutation resumeSystem {\n    resumeSystem\n  }\n": types.ResumeSystemDocument,
+    "\n  query getSystemStatus {\n    systemStatus\n  }\n": types.GetSystemStatusDocument,
     "\n  fragment TagCategoryInfo on TagCategory {\n    id\n    category\n    description\n  }\n": types.TagCategoryInfoFragmentDoc,
     "\n  fragment TagInfo on Tag {\n    tag\n    description\n    color\n    categoryId\n  }\n": types.TagInfoFragmentDoc,
     "\n  query getAllTags {\n    getAllTags {\n      ...TagInfo\n    }\n  }\n": types.GetAllTagsDocument,
@@ -185,6 +190,10 @@ export function graphql(source: "\n  fragment TradeHistoryInfo on TradeHistory {
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  fragment PnlSnapshotInfo on PnlSnapshot {\n    accUSDPnl\n    address\n    contractId\n    id\n    kind\n  }\n"): (typeof documents)["\n  fragment PnlSnapshotInfo on PnlSnapshot {\n    accUSDPnl\n    address\n    contractId\n    id\n    kind\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  fragment PnlSnapshotDetailsInfo on PnlSnapshotDetails {\n    accUSDPnl\n    address\n    contractId\n    histories {\n      ...TradeHistoryInfo\n    }\n    id\n    kind\n  }\n"): (typeof documents)["\n  fragment PnlSnapshotDetailsInfo on PnlSnapshotDetails {\n    accUSDPnl\n    address\n    contractId\n    histories {\n      ...TradeHistoryInfo\n    }\n    id\n    kind\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -194,6 +203,10 @@ export function graphql(source: "\n  query getTradeHistories($address: String!, 
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query getPnlSnapshots(\n    $contractId: Int!\n    $kind: PnlSnapshotKind!\n    $first: Int!\n    $after: Int\n  ) {\n    getPnlSnapshots(\n      contractId: $contractId\n      kind: $kind\n      first: $first\n      after: $after\n    ) {\n      edges {\n        cursor\n        node {\n          ...PnlSnapshotDetailsInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n"): (typeof documents)["\n  query getPnlSnapshots(\n    $contractId: Int!\n    $kind: PnlSnapshotKind!\n    $first: Int!\n    $after: Int\n  ) {\n    getPnlSnapshots(\n      contractId: $contractId\n      kind: $kind\n      first: $first\n      after: $after\n    ) {\n      edges {\n        cursor\n        node {\n          ...PnlSnapshotDetailsInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query getPnlSnapshotsByAddress($address: String!, $contractId: Int!) {\n    getPnlSnapshotsByAddress(address: $address, contractId: $contractId) {\n      ...PnlSnapshotInfo\n    }\n  }\n"): (typeof documents)["\n  query getPnlSnapshotsByAddress($address: String!, $contractId: Int!) {\n    getPnlSnapshotsByAddress(address: $address, contractId: $contractId) {\n      ...PnlSnapshotInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -225,7 +238,7 @@ export function graphql(source: "\n  query findMission($id: Int!) {\n    findMis
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation closeMission($id: Int!) {\n    closeMission(id: $id) {\n      ...MissionShallowDetailsInfo\n    }\n  }\n"): (typeof documents)["\n  mutation closeMission($id: Int!) {\n    closeMission(id: $id) {\n      ...MissionShallowDetailsInfo\n    }\n  }\n"];
+export function graphql(source: "\n  mutation closeMission($id: Int!, $isForce: Boolean!) {\n    closeMission(id: $id, isForce: $isForce) {\n      ...MissionShallowDetailsInfo\n    }\n  }\n"): (typeof documents)["\n  mutation closeMission($id: Int!, $isForce: Boolean!) {\n    closeMission(id: $id, isForce: $isForce) {\n      ...MissionShallowDetailsInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -258,6 +271,18 @@ export function graphql(source: "\n  mutation createStrategy($input: CreateStrat
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation removeStrategy($id: Int!) {\n    removeStrategy(id: $id) {\n      ...StrategyInfo\n    }\n  }\n"): (typeof documents)["\n  mutation removeStrategy($id: Int!) {\n    removeStrategy(id: $id) {\n      ...StrategyInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation pauseSystem {\n    pauseSystem\n  }\n"): (typeof documents)["\n  mutation pauseSystem {\n    pauseSystem\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation resumeSystem {\n    resumeSystem\n  }\n"): (typeof documents)["\n  mutation resumeSystem {\n    resumeSystem\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query getSystemStatus {\n    systemStatus\n  }\n"): (typeof documents)["\n  query getSystemStatus {\n    systemStatus\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

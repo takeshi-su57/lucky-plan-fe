@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, ChangeEventHandler } from "react";
 import { Address } from "viem";
 import {
   Button,
@@ -10,6 +10,8 @@ import {
   AccordionItem,
   useDisclosure,
   Chip,
+  Select,
+  SelectItem,
 } from "@nextui-org/react";
 import { FaPlus } from "react-icons/fa";
 
@@ -25,6 +27,7 @@ import { shrinkAddress } from "@/utils";
 import { FollowerInfoWidget } from "@/app-components/FollowerWidgets/FollowerInfoWidget";
 import { UserTradeHistory } from "@/app-components/UserWidgets/UserTradeHistory";
 import { ShowPrivateKeyModal } from "@/app-components/FollowerWidgets/ShowPrivateKeyModal";
+import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 
 export default function Page() {
   const allFollowers = useGetAllFollowers();
@@ -35,6 +38,8 @@ export default function Page() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const [contractId, setContractId] = useState<string | null>(null);
+  const [kind, setKind] = useState<PnlSnapshotKind>(PnlSnapshotKind.AllTime);
+
   const [followerAddress, setFollowerAddress] = useState<string | null>(null);
 
   const followerDetails = useGetAllFollowerDetails(contractId);
@@ -44,6 +49,14 @@ export default function Page() {
     generateFollower({
       variables: {},
     });
+  };
+
+  const handleChangeKind: ChangeEventHandler<HTMLSelectElement> = (event) => {
+    const value = event.target.value;
+
+    if (value.trim() !== "") {
+      setKind(value as PnlSnapshotKind);
+    }
   };
 
   const handleWithdrawAll = useCallback(
@@ -95,31 +108,46 @@ export default function Page() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <Autocomplete
-          label="Follower Contract"
-          variant="underlined"
-          defaultItems={allContracts}
-          placeholder="Search contract"
-          selectedKey={contractId}
-          className="w-[400px]"
-          onSelectionChange={(key) => setContractId(key as string | null)}
-        >
-          {(item) => (
-            <AutocompleteItem
-              key={item.id}
-              className="font-mono"
-              textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
-            >
-              <div className="flex flex-col">
-                <span className="text-small">Chain: {item.chainId}</span>
-                <span className="text-small">Contract: {item.address}</span>
-                <span className="text-tiny text-default-400">
-                  {item.description}
-                </span>
-              </div>
-            </AutocompleteItem>
-          )}
-        </Autocomplete>
+        <div className="flex items-center gap-4">
+          <Autocomplete
+            label="Follower Contract"
+            variant="underlined"
+            defaultItems={allContracts}
+            placeholder="Search contract"
+            selectedKey={contractId}
+            className="w-[400px]"
+            onSelectionChange={(key) => setContractId(key as string | null)}
+          >
+            {(item) => (
+              <AutocompleteItem
+                key={item.id}
+                className="font-mono"
+                textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
+              >
+                <div className="flex flex-col">
+                  <span className="text-small">Chain: {item.chainId}</span>
+                  <span className="text-small">Contract: {item.address}</span>
+                  <span className="text-tiny text-default-400">
+                    {item.description}
+                  </span>
+                </div>
+              </AutocompleteItem>
+            )}
+          </Autocomplete>
+
+          <Select
+            variant="underlined"
+            label="Before"
+            selectedKeys={kind ? [kind] : undefined}
+            onChange={handleChangeKind}
+            selectionMode="single"
+            className="w-[200px] font-mono"
+          >
+            {Object.values(PnlSnapshotKind).map((item) => (
+              <SelectItem key={item}>{item}</SelectItem>
+            ))}
+          </Select>
+        </div>
 
         <div className="flex items-center gap-4">
           <Chip>
@@ -154,7 +182,7 @@ export default function Page() {
           {followers.map((follower) => (
             <AccordionItem
               key={follower.address}
-              title={<FollowerInfoWidget follower={follower} />}
+              title={<FollowerInfoWidget follower={follower} kind={kind} />}
             >
               <div className="flex flex-col gap-6">
                 <div className="flex items-center gap-2">

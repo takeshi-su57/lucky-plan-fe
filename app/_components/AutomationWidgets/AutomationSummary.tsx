@@ -30,7 +30,13 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
   );
   const { satistic: failedStatistic } = useGetTasksByStatus(TaskStatus.Failed);
 
-  const { leaderContract, followerContract, strategy } = bot;
+  const {
+    leaderContract,
+    followerContract,
+    strategy,
+    leaderAddress,
+    followerAddress,
+  } = bot;
 
   const createdCount = createdStatistic[bot.id]
     ? Object.values(createdStatistic[bot.id]).reduce(
@@ -70,7 +76,7 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
             <span className="text-xs">{`Chain:${leaderContract.chainId}`}</span>
             <Divider orientation="vertical" />
             <AddressWidget
-              address={leaderContract.address as Address}
+              address={leaderAddress as Address}
               className="text-xs"
             />
           </div>
@@ -80,7 +86,7 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
             </span>
             <Divider orientation="vertical" />
             <AddressWidget
-              address={followerContract.address as Address}
+              address={followerAddress as Address}
               className="text-xs"
             />
           </div>

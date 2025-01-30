@@ -1,11 +1,10 @@
 "use client";
 
-import { useApolloClient, useLazyQuery, useMutation } from "@apollo/client";
+import { useLazyQuery, useQuery } from "@apollo/client";
 
 import { getFragmentData, graphql } from "@/gql/index";
 import { useCallback, useEffect, useMemo } from "react";
 import { GetPnlSnapshotsQuery, PnlSnapshotKind } from "@/graphql/gql/graphql";
-import { useSnackbar } from "notistack";
 
 export const TRADEHISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment TradeHistoryInfo on TradeHistory {
@@ -18,6 +17,16 @@ export const TRADEHISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
     out
     pnl
     timestamp
+  }
+`);
+
+export const PNL_SNAPSHOT_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment PnlSnapshotInfo on PnlSnapshot {
+    accUSDPnl
+    address
+    contractId
+    id
+    kind
   }
 `);
 
@@ -65,6 +74,14 @@ export const GET_PNL_SNAPSHOTS_DOCUMENT = graphql(`
         endCursor
         hasNextPage
       }
+    }
+  }
+`);
+
+export const GET_PNL_SNAPSHOTS_BY_ADDRESS_DOCUMENT = graphql(`
+  query getPnlSnapshotsByAddress($address: String!, $contractId: Int!) {
+    getPnlSnapshotsByAddress(address: $address, contractId: $contractId) {
+      ...PnlSnapshotInfo
     }
   }
 `);
@@ -168,26 +185,28 @@ export function useGetPnlSnapshots(
   };
 }
 
-export function useInitalizePnlSnapshot() {
-  const [initailizePnlSnapshot, { data, error }] = useMutation(
-    INITIALIZE_PNL_SNAPSHOT_DOCUMENT,
-  );
-  const client = useApolloClient();
-  const { enqueueSnackbar } = useSnackbar();
+export function useGetPnlSnapshotsByAddress(
+  address: string,
+  contractId: number,
+) {
+  const { data, loading } = useQuery(GET_PNL_SNAPSHOTS_BY_ADDRESS_DOCUMENT, {
+    variables: {
+      contractId: +contractId,
+      address,
+    },
+  });
 
-  useEffect(() => {
-    if (data && !error) {
-      if (data.initalizePnlSnapshot) {
-        enqueueSnackbar("Success at initialize pnl snapshot!", {
-          variant: "success",
-        });
-      } else {
-        enqueueSnackbar("Failed at initialize pnl snapshot", {
-          variant: "error",
-        });
-      }
+  const pnlSnapshots = useMemo(() => {
+    if (!data) {
+      return [];
     }
-  }, [client.cache, error, enqueueSnackbar, data]);
+    return data.getPnlSnapshotsByAddress.map((snapshot) =>
+      getFragmentData(PNL_SNAPSHOT_INFO_FRAGMENT_DOCUMENT, snapshot),
+    );
+  }, [data]);
 
-  return initailizePnlSnapshot;
+  return {
+    pnlSnapshots,
+    loading,
+  };
 }
