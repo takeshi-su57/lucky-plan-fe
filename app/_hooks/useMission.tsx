@@ -88,8 +88,8 @@ export const FIND_MISSION_DOCUMENT = graphql(`
 `);
 
 export const CLOSE_MISSION_DOCUMENT = graphql(`
-  mutation closeMission($id: Int!) {
-    closeMission(id: $id) {
+  mutation closeMission($id: Int!, $isForce: Boolean!) {
+    closeMission(id: $id, isForce: $isForce) {
       ...MissionShallowDetailsInfo
     }
   }

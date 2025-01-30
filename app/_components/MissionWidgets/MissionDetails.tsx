@@ -21,6 +21,16 @@ export function MissionDetails({ missionId }: MissionDetailsProps) {
     closeMission({
       variables: {
         id: missionId,
+        isForce: false,
+      },
+    });
+  }, [closeMission, missionId]);
+
+  const handleCloseForceMission = useCallback(() => {
+    closeMission({
+      variables: {
+        id: missionId,
+        isForce: true,
       },
     });
   }, [closeMission, missionId]);
@@ -43,15 +53,27 @@ export function MissionDetails({ missionId }: MissionDetailsProps) {
 
   return (
     <div className="flex flex-col gap-2 border-t border-t-neutral-400/20 py-6">
-      {mission.status !== MissionStatus.Closed ? (
-        <Button
-          onClick={handleCloseMission}
-          color="secondary"
-          className="w-fit"
-        >
-          Close Mission
-        </Button>
-      ) : null}
+      <div className="flex flex-row items-center gap-4">
+        {mission.status !== MissionStatus.Closed ? (
+          <Button
+            onClick={handleCloseMission}
+            color="secondary"
+            className="w-fit"
+          >
+            Close Mission
+          </Button>
+        ) : null}
+
+        {mission.status !== MissionStatus.Closed ? (
+          <Button
+            onClick={handleCloseForceMission}
+            color="danger"
+            className="w-fit"
+          >
+            Close Force Mission
+          </Button>
+        ) : null}
+      </div>
       <span className="px-2 text-base">Tasks</span>
 
       <Accordion isCompact variant="splitted">

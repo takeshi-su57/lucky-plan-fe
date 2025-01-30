@@ -250,7 +250,7 @@ type Mutation {
   addUser(input: AddUserInput!): User!
   changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changePassword(input: ChangePasswordInput!): Boolean!
-  closeMission(id: Int!): MissionShallowDetails!
+  closeMission(id: Int!, isForce: Boolean!): MissionShallowDetails!
   createBot(input: CreateBotInput!): BotDetails!
   createContract(input: CreateContractInput!): Contract!
   createStrategy(input: CreateStrategyInput!): Strategy!
@@ -261,9 +261,11 @@ type Mutation {
   getToken(input: GetTokenInput!): GetTokenResponse!
   initalizePnlSnapshot: Boolean!
   liveBot(id: Int!): BotDetails!
+  pauseSystem: Boolean!
   performTask(id: Int!): TaskShallowDetails!
   removeStrategy(id: Int!): Strategy!
   removeTagFromUser(input: ChangeUserTagInput!): User!
+  resumeSystem: Boolean!
   stopBot(id: Int!): BotDetails!
   updateStrategyMetadata(
     input: UpdateStrategyMetadataInput!

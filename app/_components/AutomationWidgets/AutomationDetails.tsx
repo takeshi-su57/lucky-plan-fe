@@ -81,6 +81,7 @@ export function AutomationDetails({ botId }: AutomationDetailsProps) {
       await closeMission({
         variables: {
           id: mission.id,
+          isForce: false,
         },
       });
     });
