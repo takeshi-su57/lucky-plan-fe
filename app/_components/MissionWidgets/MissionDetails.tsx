@@ -4,7 +4,11 @@ import { useCallback } from "react";
 import { Accordion, AccordionItem, Progress, Button } from "@nextui-org/react";
 import { MissionStatus } from "@/graphql/gql/graphql";
 
-import { useCloseMission, useGetMission } from "@/app-hooks/useMission";
+import {
+  useCloseMission,
+  useGetMission,
+  useIgnoreMission,
+} from "@/app-hooks/useMission";
 import { TaskSummary } from "../TaskWidgets/TaskSummary";
 import { TaskDetails } from "../TaskWidgets/TaskDetails";
 
@@ -16,6 +20,7 @@ export function MissionDetails({ missionId }: MissionDetailsProps) {
   const { mission, loading, error } = useGetMission(missionId);
 
   const closeMission = useCloseMission();
+  const ignoreMission = useIgnoreMission();
 
   const handleCloseMission = useCallback(() => {
     closeMission({
@@ -25,6 +30,14 @@ export function MissionDetails({ missionId }: MissionDetailsProps) {
       },
     });
   }, [closeMission, missionId]);
+
+  const handleIgnoreMission = useCallback(() => {
+    ignoreMission({
+      variables: {
+        id: missionId,
+      },
+    });
+  }, [ignoreMission, missionId]);
 
   const handleCloseForceMission = useCallback(() => {
     closeMission({
@@ -59,8 +72,9 @@ export function MissionDetails({ missionId }: MissionDetailsProps) {
             onClick={handleCloseMission}
             color="secondary"
             className="w-fit"
+            size="sm"
           >
-            Close Mission
+            Close
           </Button>
         ) : null}
 
@@ -69,8 +83,20 @@ export function MissionDetails({ missionId }: MissionDetailsProps) {
             onClick={handleCloseForceMission}
             color="danger"
             className="w-fit"
+            size="sm"
           >
-            Close Force Mission
+            Force Close
+          </Button>
+        ) : null}
+
+        {mission.status !== MissionStatus.Closed ? (
+          <Button
+            onClick={handleIgnoreMission}
+            color="warning"
+            className="w-fit"
+            size="sm"
+          >
+            Ignore
           </Button>
         ) : null}
       </div>

@@ -12,9 +12,10 @@ const colorsByMissionStatus: Record<
 > = {
   [MissionStatus.Created]: "danger",
   [MissionStatus.Opening]: "warning",
-  [MissionStatus.Opened]: "secondary",
+  [MissionStatus.Opened]: "primary",
   [MissionStatus.Closing]: "warning",
   [MissionStatus.Closed]: "default",
+  [MissionStatus.Ignored]: "secondary",
 };
 
 export type MissionSummaryProps = {
