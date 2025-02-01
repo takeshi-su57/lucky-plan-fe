@@ -16,7 +16,8 @@ import {
 import { FaPlus } from "react-icons/fa";
 
 import {
-  useWithdrawAll,
+  useWithdrawAllETH,
+  useWithdrawAllUSDC,
   useGenerateFollower,
   useGetAllFollowerDetails,
   useGetAllFollowers,
@@ -33,7 +34,8 @@ export default function Page() {
   const allFollowers = useGetAllFollowers();
   const allContracts = useGetAllContracts();
   const generateFollower = useGenerateFollower();
-  const withdrawAll = useWithdrawAll();
+  const withdrawAllETH = useWithdrawAllETH();
+  const withdrawAllUSDC = useWithdrawAllUSDC();
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
@@ -59,9 +61,9 @@ export default function Page() {
     }
   };
 
-  const handleWithdrawAll = useCallback(
+  const handleWithdrawAllETH = useCallback(
     (address: string, contractId: string) => {
-      withdrawAll({
+      withdrawAllETH({
         variables: {
           input: {
             address,
@@ -70,7 +72,21 @@ export default function Page() {
         },
       });
     },
-    [withdrawAll],
+    [withdrawAllETH],
+  );
+
+  const handleWithdrawAllUSDC = useCallback(
+    (address: string, contractId: string) => {
+      withdrawAllUSDC({
+        variables: {
+          input: {
+            address,
+            contractId: +contractId,
+          },
+        },
+      });
+    },
+    [withdrawAllUSDC],
   );
 
   const followers = useMemo(() => {
@@ -191,19 +207,33 @@ export default function Page() {
                       onOpen();
                       setFollowerAddress(follower.address);
                     }}
+                    size="sm"
                   >
                     Get Key
                   </Button>
 
                   <Button
                     onClick={() =>
-                      handleWithdrawAll(
+                      handleWithdrawAllETH(
                         follower.address,
                         `${follower.contractId}`,
                       )
                     }
+                    size="sm"
                   >
-                    Withdraw All
+                    Withdraw All ETH
+                  </Button>
+
+                  <Button
+                    onClick={() =>
+                      handleWithdrawAllUSDC(
+                        follower.address,
+                        `${follower.contractId}`,
+                      )
+                    }
+                    size="sm"
+                  >
+                    Withdraw All USDC
                   </Button>
                 </div>
 

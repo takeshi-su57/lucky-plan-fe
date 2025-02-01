@@ -232,6 +232,7 @@ enum MissionStatus {
   Closed
   Closing
   Created
+  Ignored
   Opened
   Opening
 }
@@ -261,6 +262,7 @@ type Mutation {
   deleteTag(tag: String!): Tag!
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
+  ignoreMission(id: Int!): MissionShallowDetails!
   initalizePnlSnapshot: Boolean!
   liveBot(id: Int!): BotDetails!
   pauseSystem: Boolean!
@@ -272,7 +274,8 @@ type Mutation {
   updateStrategyMetadata(input: UpdateStrategyMetadataInput!, key: String!): StrategyMetadata!
   upsertCategory(input: TagCategoryInput!): TagCategory!
   upsertTag(input: TagInput!): Tag!
-  withdrawAll(input: WithdrawAllInput!): Boolean!
+  withdrawAllETH(input: WithdrawAllInput!): Boolean!
+  withdrawAllUSDC(input: WithdrawAllInput!): Boolean!
 }
 
 type PageInfo {

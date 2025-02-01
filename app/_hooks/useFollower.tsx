@@ -64,9 +64,15 @@ export const GENERATE_NEW_FOLLOWER_DOCUMENT = graphql(`
   }
 `);
 
-export const WITHDRAW_ALL_DOCUMENT = graphql(`
-  mutation withdrawAll($input: WithdrawAllInput!) {
-    withdrawAll(input: $input)
+export const WITHDRAW_ALL_USDC_DOCUMENT = graphql(`
+  mutation withdrawAllUSDC($input: WithdrawAllInput!) {
+    withdrawAllUSDC(input: $input)
+  }
+`);
+
+export const WITHDRAW_ALL_ETH_DOCUMENT = graphql(`
+  mutation withdrawAllETH($input: WithdrawAllInput!) {
+    withdrawAllETH(input: $input)
   }
 `);
 
@@ -285,18 +291,38 @@ export function useGenerateFollower() {
   return generateFollower;
 }
 
-export function useWithdrawAll() {
-  const [withdrawAll, { data, error }] = useMutation(WITHDRAW_ALL_DOCUMENT);
+export function useWithdrawAllUSDC() {
+  const [withdrawAllUSDC, { data, error }] = useMutation(
+    WITHDRAW_ALL_USDC_DOCUMENT,
+  );
   const client = useApolloClient();
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     if (data && !error) {
-      enqueueSnackbar("Success at withdraw!", {
+      enqueueSnackbar("Success at withdraw USDC!", {
         variant: "success",
       });
     }
   }, [client.cache, error, enqueueSnackbar, data]);
 
-  return withdrawAll;
+  return withdrawAllUSDC;
+}
+
+export function useWithdrawAllETH() {
+  const [withdrawAllETH, { data, error }] = useMutation(
+    WITHDRAW_ALL_ETH_DOCUMENT,
+  );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      enqueueSnackbar("Success at withdraw ETH!", {
+        variant: "success",
+      });
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return withdrawAllETH;
 }

@@ -183,7 +183,8 @@ export function AutomationDetails({ botId }: AutomationDetailsProps) {
             .sort((a, b) => b.id - a.id)
             .filter((mission) =>
               hideClosedMissions
-                ? mission.status !== MissionStatus.Closed
+                ? mission.status !== MissionStatus.Closed &&
+                  mission.status !== MissionStatus.Ignored
                 : true,
             )
             .map((mission) => (
