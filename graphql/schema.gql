@@ -116,6 +116,9 @@ type Contract {
 }
 
 type ContractExecutionResult {
+  address: String!
+  contractId: Int!
+  index: Int!
   message: String!
   success: Boolean!
 }
@@ -193,6 +196,8 @@ type FollowerDetail {
 }
 
 type FollowerPendingOrder {
+  address: String!
+  index: Int!
   params: String!
 }
 

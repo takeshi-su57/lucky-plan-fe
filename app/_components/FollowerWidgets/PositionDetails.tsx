@@ -18,7 +18,7 @@ export function PositionDetails({
   contractId,
   params,
 }: PositionDetailsProps) {
-  const closeTradeMarket = useCloseTradeMarket();
+  const { closeTradeMarket, loading } = useCloseTradeMarket();
 
   const trade = JSON.parse(params);
 
@@ -53,6 +53,8 @@ export function PositionDetails({
           color="danger"
           className="w-fit"
           size="sm"
+          isDisabled={loading}
+          isLoading={loading}
         >
           Close Position
         </Button>

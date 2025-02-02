@@ -16,7 +16,7 @@ export function PendingOrderDetails({
   contractId,
   params,
 }: PendingOrderDetailsProps) {
-  const cancelOrderAfterTimeout = useCancelOrderAfterTimeout();
+  const { cancelOrderAfterTimeout, loading } = useCancelOrderAfterTimeout();
 
   const args = JSON.parse(params);
 
@@ -50,8 +50,10 @@ export function PendingOrderDetails({
           color="danger"
           className="w-fit"
           size="sm"
+          isLoading={loading}
+          isDisabled={loading}
         >
-          Close Position
+          Cancel Order
         </Button>
       </div>
 

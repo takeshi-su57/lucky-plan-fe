@@ -72,6 +72,8 @@ export const GET_PENDING_ORDERS_DOCUMENT = graphql(`
   query getPendingOrders($address: String!, $contractId: Int!) {
     getPendingOrders(address: $address, contractId: $contractId) {
       params
+      address
+      index
     }
   }
 `);
@@ -89,6 +91,9 @@ export const CLOSE_TRADE_MARKET_DOCUMENT = graphql(`
     closeTradeMarket(input: $input) {
       message
       success
+      address
+      contractId
+      index
     }
   }
 `);
@@ -98,6 +103,9 @@ export const CANCEL_ORDER_AFTER_TIMEOUT_DOCUMENT = graphql(`
     cancelOrderAfterTimeout(input: $input) {
       message
       success
+      address
+      contractId
+      index
     }
   }
 `);
@@ -383,7 +391,7 @@ export function useGenerateFollower() {
 }
 
 export function useCloseTradeMarket() {
-  const [closeTradeMarket, { data, error }] = useMutation(
+  const [closeTradeMarket, { data, error, loading }] = useMutation(
     CLOSE_TRADE_MARKET_DOCUMENT,
   );
   const client = useApolloClient();
@@ -395,6 +403,35 @@ export function useCloseTradeMarket() {
         enqueueSnackbar("Success at close trade market!", {
           variant: "success",
         });
+
+        const tradeIndex = data.closeTradeMarket.index;
+
+        client.cache.updateQuery(
+          {
+            query: GET_TRADED_ORDERS_DOCUMENT,
+            variables: {
+              address: data.closeTradeMarket.address,
+              contractId: data.closeTradeMarket.contractId,
+            },
+          },
+          (data) => {
+            if (data && data.getTrades.length > 0) {
+              return {
+                ...data,
+                getTrades: data.getTrades.filter(
+                  (item) =>
+                    tradeIndex !==
+                    getFragmentData(FOLLOWER_TRADE_INFO_FRAGMENT_DOCUMENT, item)
+                      .index,
+                ),
+              };
+            } else {
+              return {
+                getTrades: [],
+              };
+            }
+          },
+        );
       } else {
         enqueueSnackbar(data.closeTradeMarket.message, {
           variant: "error",
@@ -403,11 +440,11 @@ export function useCloseTradeMarket() {
     }
   }, [client.cache, error, enqueueSnackbar, data]);
 
-  return closeTradeMarket;
+  return { closeTradeMarket, loading };
 }
 
 export function useCancelOrderAfterTimeout() {
-  const [cancelOrderAfterTimeout, { data, error }] = useMutation(
+  const [cancelOrderAfterTimeout, { data, error, loading }] = useMutation(
     CANCEL_ORDER_AFTER_TIMEOUT_DOCUMENT,
   );
   const client = useApolloClient();
@@ -419,6 +456,32 @@ export function useCancelOrderAfterTimeout() {
         enqueueSnackbar("Success at cancel order after timeout!", {
           variant: "success",
         });
+
+        const tradeIndex = data.cancelOrderAfterTimeout.index;
+
+        client.cache.updateQuery(
+          {
+            query: GET_PENDING_ORDERS_DOCUMENT,
+            variables: {
+              address: data.cancelOrderAfterTimeout.address,
+              contractId: data.cancelOrderAfterTimeout.contractId,
+            },
+          },
+          (data) => {
+            if (data && data.getPendingOrders.length > 0) {
+              return {
+                ...data,
+                getPendingOrders: data.getPendingOrders.filter(
+                  (item) => tradeIndex !== item.index,
+                ),
+              };
+            } else {
+              return {
+                getPendingOrders: [],
+              };
+            }
+          },
+        );
       } else {
         enqueueSnackbar(data.cancelOrderAfterTimeout.message, {
           variant: "error",
@@ -427,7 +490,7 @@ export function useCancelOrderAfterTimeout() {
     }
   }, [client.cache, error, enqueueSnackbar, data]);
 
-  return cancelOrderAfterTimeout;
+  return { cancelOrderAfterTimeout, loading };
 }
 
 export function useWithdrawAllUSDC() {
