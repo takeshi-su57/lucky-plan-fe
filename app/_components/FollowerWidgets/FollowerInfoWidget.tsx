@@ -3,7 +3,11 @@
 import { Address } from "viem";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
-import { useGetAvailableFollowers } from "@/app/_hooks/useFollower";
+import {
+  useGetAvailableFollowers,
+  useGetTradedOrders,
+  useGetPendingOrders,
+} from "@/app/_hooks/useFollower";
 
 import { Chip, Skeleton } from "@nextui-org/react";
 import { PnlSnapshotKind } from "@/graphql/gql/graphql";
@@ -26,10 +30,16 @@ export function FollowerInfoWidget({
   kind,
 }: FollowerInfoWidgetProps) {
   const availableFollowers = useGetAvailableFollowers();
-  const { pnlSnapshots, loading } = useGetPnlSnapshotsByAddress(
+  const { pendingOrders, loading: pendingOrdersLoading } = useGetPendingOrders(
     follower.address,
     follower.contractId,
   );
+  const { trades, loading: tradedOrdersLoading } = useGetTradedOrders(
+    follower.address,
+    follower.contractId,
+  );
+  const { pnlSnapshots, loading: pnlSnapshotsLoading } =
+    useGetPnlSnapshotsByAddress(follower.address, follower.contractId);
 
   const items = [
     {
@@ -46,6 +56,8 @@ export function FollowerInfoWidget({
 
   const accUSDPnl =
     pnlSnapshots.find((item) => item.kind === kind)?.accUSDPnl || 0;
+  const tradesCount = trades.length || 0;
+  const pendingOrdersCount = pendingOrders.length || 0;
 
   return (
     <div className="flex flex-1 items-center justify-between gap-3">
@@ -60,15 +72,31 @@ export function FollowerInfoWidget({
           </div>
         ))}
 
-        {loading ? (
+        {pnlSnapshotsLoading ? (
           <Skeleton className="rounded-lg">
             <div className="h-8 w-[80px] rounded-full bg-default-300" />
           </Skeleton>
-        ) : (
+        ) : accUSDPnl !== 0 ? (
           <Chip color={accUSDPnl >= 0 ? "warning" : "danger"}>
             {accUSDPnl} USDC
           </Chip>
-        )}
+        ) : null}
+
+        {tradedOrdersLoading ? (
+          <Skeleton className="rounded-lg">
+            <div className="h-8 w-[80px] rounded-full bg-default-300" />
+          </Skeleton>
+        ) : tradesCount !== 0 ? (
+          <Chip color="success">{tradesCount} Trades</Chip>
+        ) : null}
+
+        {pendingOrdersLoading ? (
+          <Skeleton className="rounded-lg">
+            <div className="h-8 w-[80px] rounded-full bg-default-300" />
+          </Skeleton>
+        ) : pendingOrdersCount !== 0 ? (
+          <Chip color="secondary">{pendingOrdersCount} Pendings</Chip>
+        ) : null}
 
         {availableFollowers
           .map((item) => item.address)
