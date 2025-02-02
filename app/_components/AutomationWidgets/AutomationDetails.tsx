@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Accordion,
   AccordionItem,
@@ -34,9 +34,13 @@ type TabType = "chart" | "missions";
 
 export type AutomationDetailsProps = {
   botId: number;
+  isChatFirst: boolean;
 };
 
-export function AutomationDetails({ botId }: AutomationDetailsProps) {
+export function AutomationDetails({
+  botId,
+  isChatFirst,
+}: AutomationDetailsProps) {
   const { bot, loading, error } = useGetBot(botId);
 
   const liveBot = useLiveBot();
@@ -47,6 +51,14 @@ export function AutomationDetails({ botId }: AutomationDetailsProps) {
 
   const [selected, setSelected] = useState<TabType>("chart");
   const [hideClosedMissions, setHideClosedMissions] = useState(true);
+
+  useEffect(() => {
+    if (isChatFirst) {
+      setSelected("chart");
+    } else {
+      setSelected("missions");
+    }
+  }, [isChatFirst]);
 
   const handleDelete = useCallback(() => {
     deleteBot({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback, ChangeEventHandler } from "react";
+import { useMemo, useState, ChangeEventHandler } from "react";
 import { Address } from "viem";
 import {
   Button,
@@ -8,16 +8,17 @@ import {
   AutocompleteItem,
   Accordion,
   AccordionItem,
-  useDisclosure,
   Chip,
   Select,
   SelectItem,
+  Switch,
+  Card,
+  CardBody,
 } from "@nextui-org/react";
 import { FaPlus } from "react-icons/fa";
+import { Virtuoso } from "react-virtuoso";
 
 import {
-  useWithdrawAllETH,
-  useWithdrawAllUSDC,
   useGenerateFollower,
   useGetAllFollowerDetails,
   useGetAllFollowers,
@@ -26,23 +27,18 @@ import {
 import { useGetAllContracts } from "@/app-hooks/useContract";
 import { shrinkAddress } from "@/utils";
 import { FollowerInfoWidget } from "@/app-components/FollowerWidgets/FollowerInfoWidget";
-import { UserTradeHistory } from "@/app-components/UserWidgets/UserTradeHistory";
-import { ShowPrivateKeyModal } from "@/app-components/FollowerWidgets/ShowPrivateKeyModal";
+
 import { PnlSnapshotKind } from "@/graphql/gql/graphql";
+import { FollowerDetails } from "../_components/FollowerWidgets/FollowerDetails";
 
 export default function Page() {
   const allFollowers = useGetAllFollowers();
   const allContracts = useGetAllContracts();
   const generateFollower = useGenerateFollower();
-  const withdrawAllETH = useWithdrawAllETH();
-  const withdrawAllUSDC = useWithdrawAllUSDC();
-
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const [contractId, setContractId] = useState<string | null>(null);
   const [kind, setKind] = useState<PnlSnapshotKind>(PnlSnapshotKind.AllTime);
-
-  const [followerAddress, setFollowerAddress] = useState<string | null>(null);
+  const [isChatFirst, setIsChatFirst] = useState(true);
 
   const followerDetails = useGetAllFollowerDetails(contractId);
   useSubscribeFollowerDetailUpdated(contractId);
@@ -60,34 +56,6 @@ export default function Page() {
       setKind(value as PnlSnapshotKind);
     }
   };
-
-  const handleWithdrawAllETH = useCallback(
-    (address: string, contractId: string) => {
-      withdrawAllETH({
-        variables: {
-          input: {
-            address,
-            contractId: +contractId,
-          },
-        },
-      });
-    },
-    [withdrawAllETH],
-  );
-
-  const handleWithdrawAllUSDC = useCallback(
-    (address: string, contractId: string) => {
-      withdrawAllUSDC({
-        variables: {
-          input: {
-            address,
-            contractId: +contractId,
-          },
-        },
-      });
-    },
-    [withdrawAllUSDC],
-  );
 
   const followers = useMemo(() => {
     if (contractId === null) {
@@ -163,6 +131,14 @@ export default function Page() {
               <SelectItem key={item}>{item}</SelectItem>
             ))}
           </Select>
+
+          <Switch
+            isSelected={isChatFirst}
+            onValueChange={setIsChatFirst}
+            size="sm"
+          >
+            Chat First
+          </Switch>
         </div>
 
         <div className="flex items-center gap-4">
@@ -193,67 +169,28 @@ export default function Page() {
         </div>
       </div>
 
-      {contractId ? (
-        <Accordion isCompact variant="splitted">
-          {followers.map((follower) => (
-            <AccordionItem
-              key={follower.address}
-              title={<FollowerInfoWidget follower={follower} kind={kind} />}
-            >
-              <div className="flex flex-col gap-6">
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() => {
-                      onOpen();
-                      setFollowerAddress(follower.address);
-                    }}
-                    size="sm"
-                  >
-                    Get Key
-                  </Button>
-
-                  <Button
-                    onClick={() =>
-                      handleWithdrawAllETH(
-                        follower.address,
-                        `${follower.contractId}`,
-                      )
-                    }
-                    size="sm"
-                  >
-                    Withdraw All ETH
-                  </Button>
-
-                  <Button
-                    onClick={() =>
-                      handleWithdrawAllUSDC(
-                        follower.address,
-                        `${follower.contractId}`,
-                      )
-                    }
-                    size="sm"
-                  >
-                    Withdraw All USDC
-                  </Button>
-                </div>
-
-                <UserTradeHistory
-                  address={follower.address as Address}
-                  contractId={contractId}
-                />
-              </div>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      ) : null}
-
-      {followerAddress ? (
-        <ShowPrivateKeyModal
-          address={followerAddress as Address}
-          isOpen={isOpen}
-          onOpenChange={onOpenChange}
-        />
-      ) : null}
+      <Card>
+        <CardBody>
+          <Virtuoso
+            style={{ height: 700 }}
+            data={followers}
+            itemContent={(_, follower) => (
+              <Accordion
+                key={follower.address}
+                isCompact
+                variant="splitted"
+                className="!mb-2"
+              >
+                <AccordionItem
+                  title={<FollowerInfoWidget follower={follower} kind={kind} />}
+                >
+                  <FollowerDetails follower={follower} isChatFirst={false} />
+                </AccordionItem>
+              </Accordion>
+            )}
+          />
+        </CardBody>
+      </Card>
     </div>
   );
 }
