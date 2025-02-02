@@ -14,6 +14,7 @@ import { useSnackbar } from "notistack";
 import { useGetAllBots } from "./useAutomation";
 import { BotStatus } from "@/graphql/gql/graphql";
 import { useGetAllContracts } from "./useContract";
+import { MISSION_INFO_FRAGMENT_DOCUMENT } from "./useMission";
 
 export const FOLLOWER_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment FollowerInfo on Follower {
@@ -31,6 +32,17 @@ export const FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     ethBalance
     usdcBalance
     contractId
+  }
+`);
+
+export const FOLLOWER_TRADE_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment FollowerTradeInfo on FollowerTrade {
+    address
+    index
+    mission {
+      ...MissionInfo
+    }
+    params
   }
 `);
 
@@ -53,6 +65,40 @@ export const GET_ALL_FOLLOWER_DETAILS_DOCUMENT = graphql(`
 export const GET_FOLLOWER_PRIVATE_KEY_DOCUMENT = graphql(`
   query getFollowerPrivateKey($input: GetFollowerByAddressInput!) {
     getFollowerPrivateKey(input: $input)
+  }
+`);
+
+export const GET_PENDING_ORDERS_DOCUMENT = graphql(`
+  query getPendingOrders($address: String!, $contractId: Int!) {
+    getPendingOrders(address: $address, contractId: $contractId) {
+      params
+    }
+  }
+`);
+
+export const GET_TRADED_ORDERS_DOCUMENT = graphql(`
+  query getTradedOrders($address: String!, $contractId: Int!) {
+    getTrades(address: $address, contractId: $contractId) {
+      ...FollowerTradeInfo
+    }
+  }
+`);
+
+export const CLOSE_TRADE_MARKET_DOCUMENT = graphql(`
+  mutation closeTradeMarket($input: CloseTradeInput!) {
+    closeTradeMarket(input: $input) {
+      message
+      success
+    }
+  }
+`);
+
+export const CANCEL_ORDER_AFTER_TIMEOUT_DOCUMENT = graphql(`
+  mutation cancelOrderAfterTimeout($input: CancelOrderAfterTimeoutInput!) {
+    cancelOrderAfterTimeout(input: $input) {
+      message
+      success
+    }
   }
 `);
 
@@ -215,6 +261,51 @@ export function useSubscribeFollowerDetailUpdated(contractId: string | null) {
   }, [client.cache, data, error]);
 }
 
+export function useGetPendingOrders(address: string, contractId: number) {
+  const { data, loading } = useQuery(GET_PENDING_ORDERS_DOCUMENT, {
+    variables: {
+      address,
+      contractId: contractId,
+    },
+  });
+
+  return { pendingOrders: data?.getPendingOrders || [], loading };
+}
+
+export function useGetTradedOrders(address: string, contractId: number) {
+  const { data, loading } = useQuery(GET_TRADED_ORDERS_DOCUMENT, {
+    variables: {
+      address,
+      contractId: +contractId,
+    },
+  });
+
+  const trades = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return data.getTrades.map((trade) => {
+      const tradeData = getFragmentData(
+        FOLLOWER_TRADE_INFO_FRAGMENT_DOCUMENT,
+        trade,
+      );
+
+      const mission = getFragmentData(
+        MISSION_INFO_FRAGMENT_DOCUMENT,
+        tradeData.mission,
+      );
+
+      return {
+        ...tradeData,
+        mission: mission || null,
+      };
+    });
+  }, [data]);
+
+  return { trades, loading };
+}
+
 export function useGetFollowerPrivateKey() {
   const [getPrivateKey, { data, error }] = useLazyQuery(
     GET_FOLLOWER_PRIVATE_KEY_DOCUMENT,
@@ -289,6 +380,54 @@ export function useGenerateFollower() {
   }, [client.cache, newData, error, enqueueSnackbar, contracts]);
 
   return generateFollower;
+}
+
+export function useCloseTradeMarket() {
+  const [closeTradeMarket, { data, error }] = useMutation(
+    CLOSE_TRADE_MARKET_DOCUMENT,
+  );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      if (data.closeTradeMarket.success) {
+        enqueueSnackbar("Success at close trade market!", {
+          variant: "success",
+        });
+      } else {
+        enqueueSnackbar(data.closeTradeMarket.message, {
+          variant: "error",
+        });
+      }
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return closeTradeMarket;
+}
+
+export function useCancelOrderAfterTimeout() {
+  const [cancelOrderAfterTimeout, { data, error }] = useMutation(
+    CANCEL_ORDER_AFTER_TIMEOUT_DOCUMENT,
+  );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      if (data.cancelOrderAfterTimeout.success) {
+        enqueueSnackbar("Success at cancel order after timeout!", {
+          variant: "success",
+        });
+      } else {
+        enqueueSnackbar(data.cancelOrderAfterTimeout.message, {
+          variant: "error",
+        });
+      }
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return cancelOrderAfterTimeout;
 }
 
 export function useWithdrawAllUSDC() {

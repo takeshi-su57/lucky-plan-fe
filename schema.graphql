@@ -81,6 +81,12 @@ type BotWithMissions {
   strategyId: Int!
 }
 
+input CancelOrderAfterTimeoutInput {
+  address: String!
+  contractId: Int!
+  index: Int!
+}
+
 input ChangeContractStatusInput {
   id: Int!
   status: String!
@@ -96,12 +102,24 @@ input ChangeUserTagInput {
   tag: String!
 }
 
+input CloseTradeInput {
+  address: String!
+  contractId: Int!
+  index: Int!
+  pairIndex: Int!
+}
+
 type Contract {
   address: String!
   chainId: Int!
   description: String!
   id: Int!
   status: ContractStatus!
+}
+
+type ContractExecutionResult {
+  message: String!
+  success: Boolean!
 }
 
 enum ContractStatus {
@@ -174,6 +192,17 @@ type FollowerDetail {
   ethBalance: String
   publicKey: String!
   usdcBalance: String
+}
+
+type FollowerPendingOrder {
+  params: String!
+}
+
+type FollowerTrade {
+  address: String!
+  index: Int!
+  mission: Mission
+  params: String!
 }
 
 input GetFollowerByAddressInput {
@@ -251,9 +280,11 @@ type MissionWithTasks {
 type Mutation {
   addTagToUser(input: ChangeUserTagInput!): User!
   addUser(input: AddUserInput!): User!
+  cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
   changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changePassword(input: ChangePasswordInput!): Boolean!
   closeMission(id: Int!, isForce: Boolean!): MissionShallowDetails!
+  closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
   createBot(input: CreateBotInput!): BotDetails!
   createContract(input: CreateContractInput!): Contract!
   createStrategy(input: CreateStrategyInput!): Strategy!
@@ -365,10 +396,12 @@ type Query {
   getAllTasks: [TaskShallowDetails!]!
   getAllUsers: [User!]!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
+  getPendingOrders(address: String!, contractId: Int!): [FollowerPendingOrder!]!
   getPnlSnapshots(after: Int, contractId: Int!, first: Int!, kind: PnlSnapshotKind!): PnlSnapshotDetailsConnection!
   getPnlSnapshotsByAddress(address: String!, contractId: Int!): [PnlSnapshot!]!
   getTasksByStatus(status: TaskStatus!): [TaskShallowDetails!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
+  getTrades(address: String!, contractId: Int!): [FollowerTrade!]!
   getUserByAddress(input: GetUserByAddressInput!): User!
   systemStatus: Boolean!
 }
