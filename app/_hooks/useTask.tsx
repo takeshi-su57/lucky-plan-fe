@@ -9,6 +9,7 @@ import {
   useSubscription,
 } from "@apollo/client";
 import {
+  MissionStatus,
   TaskShallowDetails,
   TaskShallowDetailsInfoFragment,
   TaskStatus,
@@ -158,7 +159,10 @@ export function useGetAllTasks() {
   }, [data]);
 }
 
-export function useGetTasksByStatus(status: TaskStatus) {
+export function useGetTasksByStatus(
+  status: TaskStatus,
+  isHideAlertForClosedMissions: boolean,
+) {
   const { data } = useQuery(GET_TASKS_BY_STATUS_DOCUMENT, {
     variables: { status },
   });
@@ -178,6 +182,15 @@ export function useGetTasksByStatus(status: TaskStatus) {
 
       const botId = task.mission.botId;
       const missionId = task.missionId;
+      const missionStatus = task.mission.status;
+
+      if (
+        isHideAlertForClosedMissions &&
+        (missionStatus === MissionStatus.Closed ||
+          missionStatus === MissionStatus.Ignored)
+      ) {
+        return;
+      }
 
       const missionMap = taskMaps[botId];
 
@@ -198,7 +211,7 @@ export function useGetTasksByStatus(status: TaskStatus) {
       tasks: data.getTasksByStatus.map(getTaskFragment),
       satistic: taskMaps,
     };
-  }, [data]);
+  }, [data, isHideAlertForClosedMissions]);
 }
 
 export function useGetTask(taskId: number) {

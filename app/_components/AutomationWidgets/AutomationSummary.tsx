@@ -18,17 +18,29 @@ const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
 
 export type AutomationSummaryProps = {
   bot: BotDetails;
+  isHideAlertForClosedMissions: boolean;
 };
 
-export function AutomationSummary({ bot }: AutomationSummaryProps) {
+export function AutomationSummary({
+  bot,
+  isHideAlertForClosedMissions,
+}: AutomationSummaryProps) {
   const { satistic: createdStatistic } = useGetTasksByStatus(
     TaskStatus.Created,
+    isHideAlertForClosedMissions,
   );
-  const { satistic: awaitedStatistic } = useGetTasksByStatus(TaskStatus.Await);
+  const { satistic: awaitedStatistic } = useGetTasksByStatus(
+    TaskStatus.Await,
+    isHideAlertForClosedMissions,
+  );
   const { satistic: initiatedStatistic } = useGetTasksByStatus(
     TaskStatus.Initiated,
+    isHideAlertForClosedMissions,
   );
-  const { satistic: failedStatistic } = useGetTasksByStatus(TaskStatus.Failed);
+  const { satistic: failedStatistic } = useGetTasksByStatus(
+    TaskStatus.Failed,
+    isHideAlertForClosedMissions,
+  );
 
   const {
     leaderContract,

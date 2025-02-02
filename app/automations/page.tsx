@@ -27,6 +27,8 @@ export default function Page() {
 
   const [selected, setSelected] = useState<TabType>("all");
   const [isChatFirst, setIsChatFirst] = useState(true);
+  const [isHideAlertForClosedMissions, setIsHideAlertForClosedMissions] =
+    useState(true);
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
@@ -81,6 +83,14 @@ export default function Page() {
           >
             Chat First
           </Switch>
+
+          <Switch
+            isSelected={isHideAlertForClosedMissions}
+            onValueChange={setIsHideAlertForClosedMissions}
+            size="sm"
+          >
+            Hide Alert For Closed Missions
+          </Switch>
         </div>
 
         <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>
@@ -90,8 +100,20 @@ export default function Page() {
 
       <Accordion isCompact variant="splitted">
         {rows.map((bot) => (
-          <AccordionItem key={bot.id} title={<AutomationSummary bot={bot} />}>
-            <AutomationDetails botId={bot.id} isChatFirst={isChatFirst} />
+          <AccordionItem
+            key={bot.id}
+            title={
+              <AutomationSummary
+                bot={bot}
+                isHideAlertForClosedMissions={isHideAlertForClosedMissions}
+              />
+            }
+          >
+            <AutomationDetails
+              botId={bot.id}
+              isChatFirst={isChatFirst}
+              isHideAlertForClosedMissions={isHideAlertForClosedMissions}
+            />
           </AccordionItem>
         ))}
       </Accordion>
