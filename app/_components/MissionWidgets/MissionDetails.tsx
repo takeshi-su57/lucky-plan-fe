@@ -4,7 +4,11 @@ import { useCallback } from "react";
 import { Accordion, AccordionItem, Progress, Button } from "@nextui-org/react";
 import { MissionStatus } from "@/graphql/gql/graphql";
 
-import { useCloseMission, useGetMission } from "@/app-hooks/useMission";
+import {
+  useCloseMission,
+  useGetMission,
+  useIgnoreMission,
+} from "@/app-hooks/useMission";
 import { TaskSummary } from "../TaskWidgets/TaskSummary";
 import { TaskDetails } from "../TaskWidgets/TaskDetails";
 
@@ -16,11 +20,30 @@ export function MissionDetails({ missionId }: MissionDetailsProps) {
   const { mission, loading, error } = useGetMission(missionId);
 
   const closeMission = useCloseMission();
+  const ignoreMission = useIgnoreMission();
 
   const handleCloseMission = useCallback(() => {
     closeMission({
       variables: {
         id: missionId,
+        isForce: false,
+      },
+    });
+  }, [closeMission, missionId]);
+
+  const handleIgnoreMission = useCallback(() => {
+    ignoreMission({
+      variables: {
+        id: missionId,
+      },
+    });
+  }, [ignoreMission, missionId]);
+
+  const handleCloseForceMission = useCallback(() => {
+    closeMission({
+      variables: {
+        id: missionId,
+        isForce: true,
       },
     });
   }, [closeMission, missionId]);
@@ -43,24 +66,50 @@ export function MissionDetails({ missionId }: MissionDetailsProps) {
 
   return (
     <div className="flex flex-col gap-2 border-t border-t-neutral-400/20 py-6">
-      {mission.status === MissionStatus.Created ||
-      mission.status === MissionStatus.Opened ? (
-        <Button
-          onClick={handleCloseMission}
-          color="secondary"
-          className="w-fit"
-        >
-          Close Mission
-        </Button>
-      ) : null}
+      <div className="flex flex-row items-center gap-4">
+        {mission.status !== MissionStatus.Closed ? (
+          <Button
+            onClick={handleCloseMission}
+            color="secondary"
+            className="w-fit"
+            size="sm"
+          >
+            Close
+          </Button>
+        ) : null}
+
+        {mission.status !== MissionStatus.Closed ? (
+          <Button
+            onClick={handleCloseForceMission}
+            color="danger"
+            className="w-fit"
+            size="sm"
+          >
+            Force Close
+          </Button>
+        ) : null}
+
+        {mission.status !== MissionStatus.Closed ? (
+          <Button
+            onClick={handleIgnoreMission}
+            color="warning"
+            className="w-fit"
+            size="sm"
+          >
+            Ignore
+          </Button>
+        ) : null}
+      </div>
       <span className="px-2 text-base">Tasks</span>
 
       <Accordion isCompact variant="splitted">
-        {mission.tasks.map((task) => (
-          <AccordionItem key={task.id} title={<TaskSummary task={task} />}>
-            <TaskDetails taskId={task.id} missionStatus={mission.status} />
-          </AccordionItem>
-        ))}
+        {mission.tasks
+          .sort((a, b) => a.id - b.id)
+          .map((task) => (
+            <AccordionItem key={task.id} title={<TaskSummary task={task} />}>
+              <TaskDetails taskId={task.id} />
+            </AccordionItem>
+          ))}
       </Accordion>
     </div>
   );

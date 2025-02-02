@@ -81,6 +81,12 @@ type BotWithMissions {
   strategyId: Int!
 }
 
+input CancelOrderAfterTimeoutInput {
+  address: String!
+  contractId: Int!
+  index: Int!
+}
+
 input ChangeContractStatusInput {
   id: Int!
   status: String!
@@ -96,12 +102,27 @@ input ChangeUserTagInput {
   tag: String!
 }
 
+input CloseTradeInput {
+  address: String!
+  contractId: Int!
+  index: Int!
+  pairIndex: Int!
+}
+
 type Contract {
   address: String!
   chainId: Int!
   description: String!
   id: Int!
   status: ContractStatus!
+}
+
+type ContractExecutionResult {
+  address: String!
+  contractId: Int!
+  index: Int!
+  message: String!
+  success: Boolean!
 }
 
 enum ContractStatus {
@@ -128,10 +149,8 @@ input CreateContractInput {
 input CreateStrategyInput {
   collateralBaseline: Int!
   lifeTime: Float!
-  maxCapacity: Float!
   maxCollateral: Float!
   maxLeverage: Int!
-  minCapacity: Float!
   minCollateral: Float!
   minLeverage: Int!
   params: String!
@@ -176,6 +195,19 @@ type FollowerDetail {
   ethBalance: String
   publicKey: String!
   usdcBalance: String
+}
+
+type FollowerPendingOrder {
+  address: String!
+  index: Int!
+  params: String!
+}
+
+type FollowerTrade {
+  address: String!
+  index: Int!
+  mission: Mission
+  params: String!
 }
 
 input GetFollowerByAddressInput {
@@ -234,6 +266,7 @@ enum MissionStatus {
   Closed
   Closing
   Created
+  Ignored
   Opened
   Opening
 }
@@ -252,30 +285,46 @@ type MissionWithTasks {
 type Mutation {
   addTagToUser(input: ChangeUserTagInput!): User!
   addUser(input: AddUserInput!): User!
+  cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
   changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changePassword(input: ChangePasswordInput!): Boolean!
-  closeMission(id: Int!): MissionShallowDetails!
+  closeMission(id: Int!, isForce: Boolean!): MissionShallowDetails!
+  closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
   createBot(input: CreateBotInput!): BotDetails!
   createContract(input: CreateContractInput!): Contract!
   createStrategy(input: CreateStrategyInput!): Strategy!
   deleteBot(id: Int!): Int!
+  deleteCategory(id: Int!): TagCategory!
   deleteTag(tag: String!): Tag!
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
+  ignoreMission(id: Int!): MissionShallowDetails!
   initalizePnlSnapshot: Boolean!
   liveBot(id: Int!): BotDetails!
+  pauseSystem: Boolean!
   performTask(id: Int!): TaskShallowDetails!
   removeStrategy(id: Int!): Strategy!
   removeTagFromUser(input: ChangeUserTagInput!): User!
+  resumeSystem: Boolean!
   stopBot(id: Int!): BotDetails!
   updateStrategyMetadata(input: UpdateStrategyMetadataInput!, key: String!): StrategyMetadata!
+  upsertCategory(input: TagCategoryInput!): TagCategory!
   upsertTag(input: TagInput!): Tag!
-  withdrawAll(input: WithdrawAllInput!): Boolean!
+  withdrawAllETH(input: WithdrawAllInput!): Boolean!
+  withdrawAllUSDC(input: WithdrawAllInput!): Boolean!
 }
 
 type PageInfo {
   endCursor: Int
   hasNextPage: Boolean!
+}
+
+type PnlSnapshot {
+  accUSDPnl: Int!
+  address: String!
+  contractId: Int!
+  id: Int!
+  kind: PnlSnapshotKind!
 }
 
 type PnlSnapshotDetails {
@@ -340,6 +389,7 @@ type Query {
   findTask(id: Int!): TaskWithActions
   getAllActions: [Action!]!
   getAllBots: [BotDetails!]!
+  getAllCategories: [TagCategory!]!
   getAllContracts: [Contract!]!
   getAllFollowerActions: [FollowerAction!]!
   getAllFollowerDetails(contractId: Int!): [FollowerDetail!]!
@@ -351,19 +401,22 @@ type Query {
   getAllTasks: [TaskShallowDetails!]!
   getAllUsers: [User!]!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
+  getPendingOrders(address: String!, contractId: Int!): [FollowerPendingOrder!]!
   getPnlSnapshots(after: Int, contractId: Int!, first: Int!, kind: PnlSnapshotKind!): PnlSnapshotDetailsConnection!
+  getPnlSnapshotsByAddress(address: String!, contractId: Int!): [PnlSnapshot!]!
+  getTasksByStatus(status: TaskStatus!): [TaskShallowDetails!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
+  getTrades(address: String!, contractId: Int!): [FollowerTrade!]!
   getUserByAddress(input: GetUserByAddressInput!): User!
+  systemStatus: Boolean!
 }
 
 type Strategy {
   collateralBaseline: Int!
   id: Int!
   lifeTime: Int!
-  maxCapacity: Int!
   maxCollateral: Int!
   maxLeverage: Int!
-  minCapacity: Int!
   minCollateral: Int!
   minLeverage: Int!
   params: String!
@@ -388,12 +441,25 @@ type Subscription {
 }
 
 type Tag {
+  categoryId: Int
   color: String!
   description: String!
   tag: String!
 }
 
+type TagCategory {
+  category: String!
+  description: String!
+  id: Int!
+}
+
+input TagCategoryInput {
+  category: String!
+  description: String!
+}
+
 input TagInput {
+  categoryId: Int
   color: String!
   description: String!
   tag: String!

@@ -25,6 +25,12 @@ export const links = [
     id: "leaderboards",
     label: "Leaderboard",
     title: "",
+    showDivider: true,
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    title: "",
   },
 ];
 

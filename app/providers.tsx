@@ -78,6 +78,7 @@ const cache = new InMemoryCache({
         getPnlSnapshots: relayStylePagination(["contractId", "kind"]),
       },
     },
+    TagCategory: { keyFields: ["id"] },
     Tag: {
       keyFields: ["tag"],
     },

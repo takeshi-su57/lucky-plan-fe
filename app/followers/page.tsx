@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, ChangeEventHandler } from "react";
 import { Address } from "viem";
 import {
   Button,
@@ -8,11 +8,17 @@ import {
   AutocompleteItem,
   Accordion,
   AccordionItem,
-  useDisclosure,
+  Chip,
+  Select,
+  SelectItem,
+  Switch,
+  Card,
+  CardBody,
 } from "@nextui-org/react";
+import { FaPlus } from "react-icons/fa";
+import { Virtuoso } from "react-virtuoso";
 
 import {
-  useWithdrawAll,
   useGenerateFollower,
   useGetAllFollowerDetails,
   useGetAllFollowers,
@@ -21,19 +27,18 @@ import {
 import { useGetAllContracts } from "@/app-hooks/useContract";
 import { shrinkAddress } from "@/utils";
 import { FollowerInfoWidget } from "@/app-components/FollowerWidgets/FollowerInfoWidget";
-import { UserTradeHistory } from "@/app-components/UserWidgets/UserTradeHistory";
-import { ShowPrivateKeyModal } from "@/app-components/FollowerWidgets/ShowPrivateKeyModal";
+
+import { PnlSnapshotKind } from "@/graphql/gql/graphql";
+import { FollowerDetails } from "../_components/FollowerWidgets/FollowerDetails";
 
 export default function Page() {
   const allFollowers = useGetAllFollowers();
   const allContracts = useGetAllContracts();
   const generateFollower = useGenerateFollower();
-  const withdrawAll = useWithdrawAll();
-
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const [contractId, setContractId] = useState<string | null>(null);
-  const [followerAddress, setFollowerAddress] = useState<string | null>(null);
+  const [kind, setKind] = useState<PnlSnapshotKind>(PnlSnapshotKind.AllTime);
+  const [isChatFirst, setIsChatFirst] = useState(true);
 
   const followerDetails = useGetAllFollowerDetails(contractId);
   useSubscribeFollowerDetailUpdated(contractId);
@@ -44,19 +49,13 @@ export default function Page() {
     });
   };
 
-  const handleWithdrawAll = useCallback(
-    (address: string, contractId: string) => {
-      withdrawAll({
-        variables: {
-          input: {
-            address,
-            contractId: +contractId,
-          },
-        },
-      });
-    },
-    [withdrawAll],
-  );
+  const handleChangeKind: ChangeEventHandler<HTMLSelectElement> = (event) => {
+    const value = event.target.value;
+
+    if (value.trim() !== "") {
+      setKind(value as PnlSnapshotKind);
+    }
+  };
 
   const followers = useMemo(() => {
     if (contractId === null) {
@@ -93,88 +92,105 @@ export default function Page() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <Autocomplete
-          label="Follower Contract"
-          variant="underlined"
-          defaultItems={allContracts}
-          placeholder="Search contract"
-          selectedKey={contractId}
-          className="w-[400px]"
-          onSelectionChange={(key) => setContractId(key as string | null)}
-        >
-          {(item) => (
-            <AutocompleteItem
-              key={item.id}
-              className="font-mono"
-              textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
-            >
-              <div className="flex flex-col">
-                <span className="text-small">Chain: {item.chainId}</span>
-                <span className="text-small">Contract: {item.address}</span>
-                <span className="text-tiny text-default-400">
-                  {item.description}
-                </span>
-              </div>
-            </AutocompleteItem>
-          )}
-        </Autocomplete>
+        <div className="flex items-center gap-4">
+          <Autocomplete
+            label="Follower Contract"
+            variant="underlined"
+            defaultItems={allContracts}
+            placeholder="Search contract"
+            selectedKey={contractId}
+            className="w-[400px]"
+            onSelectionChange={(key) => setContractId(key as string | null)}
+          >
+            {(item) => (
+              <AutocompleteItem
+                key={item.id}
+                className="font-mono"
+                textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
+              >
+                <div className="flex flex-col">
+                  <span className="text-small">Chain: {item.chainId}</span>
+                  <span className="text-small">Contract: {item.address}</span>
+                  <span className="text-tiny text-default-400">
+                    {item.description}
+                  </span>
+                </div>
+              </AutocompleteItem>
+            )}
+          </Autocomplete>
 
-        <Button
-          color="primary"
-          variant="bordered"
-          onClick={handleGenerateFollower}
-        >
-          + New
-        </Button>
+          <Select
+            variant="underlined"
+            label="Before"
+            selectedKeys={kind ? [kind] : undefined}
+            onChange={handleChangeKind}
+            selectionMode="single"
+            className="w-[200px] font-mono"
+          >
+            {Object.values(PnlSnapshotKind).map((item) => (
+              <SelectItem key={item}>{item}</SelectItem>
+            ))}
+          </Select>
+
+          <Switch
+            isSelected={isChatFirst}
+            onValueChange={setIsChatFirst}
+            size="sm"
+          >
+            Chat First
+          </Switch>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <Chip>
+            {`${(
+              followers
+                .map((item) => item.ethBalance)
+                .reduce((acc, item) => acc + item, 0) / 1e18
+            ).toFixed(8)} ETH`}
+          </Chip>
+
+          <Chip>
+            {`${(
+              followers
+                .map((item) => item.usdcBalance)
+                .reduce((acc, item) => acc + item, 0) / 1e6
+            ).toFixed(2)} USDC`}
+          </Chip>
+
+          <Button
+            isIconOnly
+            color="primary"
+            variant="flat"
+            onClick={handleGenerateFollower}
+          >
+            <FaPlus />
+          </Button>
+        </div>
       </div>
 
-      {contractId ? (
-        <Accordion isCompact variant="splitted">
-          {followers.map((follower) => (
-            <AccordionItem
-              key={follower.address}
-              title={<FollowerInfoWidget follower={follower} />}
-            >
-              <div className="flex flex-col gap-6">
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() => {
-                      onOpen();
-                      setFollowerAddress(follower.address);
-                    }}
-                  >
-                    Get Key
-                  </Button>
-
-                  <Button
-                    onClick={() =>
-                      handleWithdrawAll(
-                        follower.address,
-                        `${follower.contractId}`,
-                      )
-                    }
-                  >
-                    Withdraw All
-                  </Button>
-                </div>
-
-                <UserTradeHistory
-                  address={follower.address as Address}
-                  contractId={contractId}
-                />
-              </div>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      ) : null}
-
-      {followerAddress ? (
-        <ShowPrivateKeyModal
-          address={followerAddress as Address}
-          isOpen={isOpen}
-          onOpenChange={onOpenChange}
-        />
-      ) : null}
+      <Card>
+        <CardBody>
+          <Virtuoso
+            style={{ height: 700 }}
+            data={followers}
+            itemContent={(_, follower) => (
+              <Accordion
+                key={follower.address}
+                isCompact
+                variant="splitted"
+                className="!mb-2"
+              >
+                <AccordionItem
+                  title={<FollowerInfoWidget follower={follower} kind={kind} />}
+                >
+                  <FollowerDetails follower={follower} isChatFirst={false} />
+                </AccordionItem>
+              </Accordion>
+            )}
+          />
+        </CardBody>
+      </Card>
     </div>
   );
 }

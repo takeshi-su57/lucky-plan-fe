@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Accordion,
   AccordionItem,
@@ -27,22 +27,38 @@ import {
 } from "@/app-hooks/useAutomation";
 import { MissionSummary } from "../MissionWidgets/MissionSummary";
 import { MissionDetails } from "../MissionWidgets/MissionDetails";
+import { FaCopy } from "react-icons/fa";
+import { useCloseMission } from "@/app/_hooks/useMission";
 
 type TabType = "chart" | "missions";
 
 export type AutomationDetailsProps = {
   botId: number;
+  isChatFirst: boolean;
 };
 
-export function AutomationDetails({ botId }: AutomationDetailsProps) {
+export function AutomationDetails({
+  botId,
+  isChatFirst,
+}: AutomationDetailsProps) {
   const { bot, loading, error } = useGetBot(botId);
 
   const liveBot = useLiveBot();
   const stopBot = useStopBot();
   const deleteBot = useDeleteBot();
 
+  const closeMission = useCloseMission();
+
   const [selected, setSelected] = useState<TabType>("chart");
   const [hideClosedMissions, setHideClosedMissions] = useState(true);
+
+  useEffect(() => {
+    if (isChatFirst) {
+      setSelected("chart");
+    } else {
+      setSelected("missions");
+    }
+  }, [isChatFirst]);
 
   const handleDelete = useCallback(() => {
     deleteBot({
@@ -67,6 +83,23 @@ export function AutomationDetails({ botId }: AutomationDetailsProps) {
       },
     });
   }, [botId, stopBot]);
+
+  const handleCloseAllMissions = useCallback(async () => {
+    const openedMissions = (bot?.missions || []).filter(
+      (item) => item.status !== MissionStatus.Closed,
+    );
+
+    const promise = openedMissions.map(async (mission) => {
+      await closeMission({
+        variables: {
+          id: mission.id,
+          isForce: false,
+        },
+      });
+    });
+
+    await Promise.all(promise);
+  }, [bot?.missions, closeMission]);
 
   if (loading) {
     return <Progress isIndeterminate className="w-full flex-1" size="sm" />;
@@ -127,9 +160,17 @@ export function AutomationDetails({ botId }: AutomationDetailsProps) {
           </div>
         ) : null}
 
-        {bot.status === BotStatus.Stop ? <Button disabled>Stop</Button> : null}
+        {bot.status === BotStatus.Stop ? (
+          <Button color="danger" onClick={handleCloseAllMissions}>
+            Close All Missions
+          </Button>
+        ) : null}
 
-        {bot.status === BotStatus.Dead ? <Button disabled>Copy</Button> : null}
+        {bot.status === BotStatus.Dead ? (
+          <Button isIconOnly disabled variant="flat">
+            <FaCopy />
+          </Button>
+        ) : null}
       </div>
 
       {selected === "chart" ? (
@@ -154,7 +195,8 @@ export function AutomationDetails({ botId }: AutomationDetailsProps) {
             .sort((a, b) => b.id - a.id)
             .filter((mission) =>
               hideClosedMissions
-                ? mission.status !== MissionStatus.Closed
+                ? mission.status !== MissionStatus.Closed &&
+                  mission.status !== MissionStatus.Ignored
                 : true,
             )
             .map((mission) => (

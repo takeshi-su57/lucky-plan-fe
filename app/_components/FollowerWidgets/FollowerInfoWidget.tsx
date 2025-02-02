@@ -1,9 +1,17 @@
+"use client";
+
 import { Address } from "viem";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
-import { useGetAvailableFollowers } from "@/app/_hooks/useFollower";
+import {
+  useGetAvailableFollowers,
+  useGetTradedOrders,
+  useGetPendingOrders,
+} from "@/app/_hooks/useFollower";
 
-import { Chip } from "@nextui-org/react";
+import { Chip, Skeleton } from "@nextui-org/react";
+import { PnlSnapshotKind } from "@/graphql/gql/graphql";
+import { useGetPnlSnapshotsByAddress } from "@/app/_hooks/useHistory";
 
 export type FollowerInfoWidgetProps = {
   follower: {
@@ -14,10 +22,24 @@ export type FollowerInfoWidgetProps = {
     usdcBalance: number;
     contractId: number;
   };
+  kind: PnlSnapshotKind;
 };
 
-export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
+export function FollowerInfoWidget({
+  follower,
+  kind,
+}: FollowerInfoWidgetProps) {
   const availableFollowers = useGetAvailableFollowers();
+  const { pendingOrders, loading: pendingOrdersLoading } = useGetPendingOrders(
+    follower.address,
+    follower.contractId,
+  );
+  const { trades, loading: tradedOrdersLoading } = useGetTradedOrders(
+    follower.address,
+    follower.contractId,
+  );
+  const { pnlSnapshots, loading: pnlSnapshotsLoading } =
+    useGetPnlSnapshotsByAddress(follower.address, follower.contractId);
 
   const items = [
     {
@@ -32,6 +54,11 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
     },
   ];
 
+  const accUSDPnl =
+    pnlSnapshots.find((item) => item.kind === kind)?.accUSDPnl || 0;
+  const tradesCount = trades.length || 0;
+  const pendingOrdersCount = pendingOrders.length || 0;
+
   return (
     <div className="flex flex-1 items-center justify-between gap-3">
       <div className="flex items-center gap-2">
@@ -45,10 +72,36 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
           </div>
         ))}
 
+        {pnlSnapshotsLoading ? (
+          <Skeleton className="rounded-lg">
+            <div className="h-8 w-[80px] rounded-full bg-default-300" />
+          </Skeleton>
+        ) : accUSDPnl !== 0 ? (
+          <Chip color={accUSDPnl >= 0 ? "warning" : "danger"}>
+            {accUSDPnl} USDC
+          </Chip>
+        ) : null}
+
+        {tradedOrdersLoading ? (
+          <Skeleton className="rounded-lg">
+            <div className="h-8 w-[80px] rounded-full bg-default-300" />
+          </Skeleton>
+        ) : tradesCount !== 0 ? (
+          <Chip color="success">{tradesCount} Trades</Chip>
+        ) : null}
+
+        {pendingOrdersLoading ? (
+          <Skeleton className="rounded-lg">
+            <div className="h-8 w-[80px] rounded-full bg-default-300" />
+          </Skeleton>
+        ) : pendingOrdersCount !== 0 ? (
+          <Chip color="secondary">{pendingOrdersCount} Pendings</Chip>
+        ) : null}
+
         {availableFollowers
           .map((item) => item.address)
           .includes(follower.address) ? (
-          <Chip color="primary">Available</Chip>
+          <Chip>Available</Chip>
         ) : null}
       </div>
     </div>

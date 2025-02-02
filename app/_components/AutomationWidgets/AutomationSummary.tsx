@@ -1,11 +1,12 @@
 "use client";
 
-import { Chip, Divider } from "@nextui-org/react";
+import { Badge, Chip, Divider } from "@nextui-org/react";
 import { Address } from "viem";
 import dayjs from "dayjs";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
-import { BotDetails, BotStatus } from "@/graphql/gql/graphql";
+import { BotDetails, BotStatus, TaskStatus } from "@/graphql/gql/graphql";
+import { useGetTasksByStatus } from "@/app/_hooks/useTask";
 
 const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
   {
@@ -20,7 +21,50 @@ export type AutomationSummaryProps = {
 };
 
 export function AutomationSummary({ bot }: AutomationSummaryProps) {
-  const { leaderContract, followerContract, strategy } = bot;
+  const { satistic: createdStatistic } = useGetTasksByStatus(
+    TaskStatus.Created,
+  );
+  const { satistic: awaitedStatistic } = useGetTasksByStatus(TaskStatus.Await);
+  const { satistic: initiatedStatistic } = useGetTasksByStatus(
+    TaskStatus.Initiated,
+  );
+  const { satistic: failedStatistic } = useGetTasksByStatus(TaskStatus.Failed);
+
+  const {
+    leaderContract,
+    followerContract,
+    strategy,
+    leaderAddress,
+    followerAddress,
+  } = bot;
+
+  const createdCount = createdStatistic[bot.id]
+    ? Object.values(createdStatistic[bot.id]).reduce(
+        (acc, item) => acc + item,
+        0,
+      )
+    : 0;
+
+  const awaitedCount = awaitedStatistic[bot.id]
+    ? Object.values(awaitedStatistic[bot.id]).reduce(
+        (acc, item) => acc + item,
+        0,
+      )
+    : 0;
+
+  const initiatedCount = initiatedStatistic[bot.id]
+    ? Object.values(initiatedStatistic[bot.id]).reduce(
+        (acc, item) => acc + item,
+        0,
+      )
+    : 0;
+
+  const failedCount = failedStatistic[bot.id]
+    ? Object.values(failedStatistic[bot.id]).reduce(
+        (acc, item) => acc + item,
+        0,
+      )
+    : 0;
 
   return (
     <div className="flex items-center justify-between gap-6 text-neutral-400">
@@ -32,7 +76,7 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
             <span className="text-xs">{`Chain:${leaderContract.chainId}`}</span>
             <Divider orientation="vertical" />
             <AddressWidget
-              address={leaderContract.address as Address}
+              address={leaderAddress as Address}
               className="text-xs"
             />
           </div>
@@ -42,7 +86,7 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
             </span>
             <Divider orientation="vertical" />
             <AddressWidget
-              address={followerContract.address as Address}
+              address={followerAddress as Address}
               className="text-xs"
             />
           </div>
@@ -63,10 +107,6 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
             Leverage:
             {`(${strategy.minLeverage / 1000} ~ ${strategy.maxLeverage / 1000}) x`}
           </span>
-          <span className="text-xs">
-            Capacity:
-            {`(${Number(strategy.maxCapacity)} ~ ${Number(strategy.minCapacity)}) USDC`}
-          </span>
         </div>
 
         <div className="flex flex-col font-mono">
@@ -82,6 +122,32 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
               ? dayjs(new Date(bot.endedAt)).format("YYYY/MM/DD hh:mm:ss")
               : "Not yet"}
           </span>
+        </div>
+
+        <div className="flex flex-row items-center gap-3 font-mono">
+          {createdCount > 0 ? (
+            <Badge color="secondary" content={createdCount}>
+              <Chip color="secondary">Created</Chip>
+            </Badge>
+          ) : null}
+
+          {awaitedCount > 0 ? (
+            <Badge color="warning" content={awaitedCount}>
+              <Chip color="warning">Await</Chip>
+            </Badge>
+          ) : null}
+
+          {initiatedCount > 0 ? (
+            <Badge color="success" content={initiatedCount}>
+              <Chip color="success">Initiated</Chip>
+            </Badge>
+          ) : null}
+
+          {failedCount > 0 ? (
+            <Badge color="danger" content={failedCount}>
+              <Chip color="danger">Failed</Chip>
+            </Badge>
+          ) : null}
         </div>
       </div>
 

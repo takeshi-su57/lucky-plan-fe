@@ -27,7 +27,7 @@ export function CreateAutomationModal({
 }: CreateAutomationModalProps) {
   const createBot = useCreateBot();
 
-  const allLeaders = useGetUsersByTags(["LEADER"]);
+  const allLeaders = useGetUsersByTags(["LEADER"], false);
   const allFollowers = useGetAvailableFollowers();
   const allContracts = useGetAllContracts();
   const allStrategies = useGetAllStrategy();
@@ -201,10 +201,6 @@ export function CreateAutomationModal({
                   <span className="text-small">
                     Leverage:
                     {`(${item.minLeverage / 1000} ~ ${item.maxLeverage / 1000}) x`}
-                  </span>
-                  <span className="text-small">
-                    Capacity:
-                    {`(${item.minCapacity} ~ ${item.maxCapacity}) USDC`}
                   </span>
                 </div>
               </AutocompleteItem>

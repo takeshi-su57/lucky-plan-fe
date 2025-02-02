@@ -19,6 +19,7 @@ import {
 } from "../_hooks/useStrategy";
 import { CreateStrategyModal } from "../_components/StrategyWidgets/CreateStrategyModal";
 import { convertMinToLifetimeItem } from "@/utils";
+import { FaPlus } from "react-icons/fa";
 
 const strategyColumns: TableColumnProps[] = [
   {
@@ -34,11 +35,6 @@ const strategyColumns: TableColumnProps[] = [
   {
     id: "ratio",
     component: "Ratio/Lifetime",
-    allowsSorting: true,
-  },
-  {
-    id: "capacity",
-    component: "Capacity",
     allowsSorting: true,
   },
   {
@@ -146,15 +142,6 @@ export default function Page() {
             </div>
           ),
         },
-        capacity: {
-          sortableAmount: strategy.maxCapacity,
-          component: (
-            <div className="flex flex-col gap-1">
-              <span>max: {Number(strategy.maxCapacity)} USDC</span>
-              <span>min: {Number(strategy.minCapacity)} USDC</span>
-            </div>
-          ),
-        },
         collateral: {
           sortableAmount: strategy.maxCollateral,
           component: (
@@ -201,8 +188,8 @@ export default function Page() {
         </Tabs>
 
         {selected === "strategy" && (
-          <Button color="primary" variant="bordered" onClick={onOpen}>
-            + new
+          <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>
+            <FaPlus />
           </Button>
         )}
       </div>

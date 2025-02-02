@@ -8,6 +8,7 @@ import {
   useDisclosure,
   Accordion,
   AccordionItem,
+  Switch,
 } from "@nextui-org/react";
 
 import { BotStatus } from "@/graphql/gql/graphql";
@@ -17,6 +18,7 @@ import { useGetAllBots } from "@/app-hooks/useAutomation";
 import { CreateAutomationModal } from "@/app-components/AutomationWidgets/CreateAutomationModal";
 import { AutomationSummary } from "@/app-components/AutomationWidgets/AutomationSummary";
 import { AutomationDetails } from "@/app-components/AutomationWidgets/AutomationDetails";
+import { FaPlus } from "react-icons/fa";
 
 type TabType = "all" | "created" | "live" | "stop" | "dead";
 
@@ -24,6 +26,7 @@ export default function Page() {
   const allBots = useGetAllBots();
 
   const [selected, setSelected] = useState<TabType>("all");
+  const [isChatFirst, setIsChatFirst] = useState(true);
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
@@ -56,27 +59,39 @@ export default function Page() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <Tabs
-          aria-label="users-table-tabs"
-          selectedKey={selected}
-          onSelectionChange={(value) => value && setSelected(value as TabType)}
-        >
-          <Tab key="all" title="All" />
-          <Tab key="created" title="Created" />
-          <Tab key="live" title="Live" />
-          <Tab key="stop" title="Stop" />
-          <Tab key="dead" title="Dead" />
-        </Tabs>
+        <div className="flex items-center gap-4">
+          <Tabs
+            aria-label="users-table-tabs"
+            selectedKey={selected}
+            onSelectionChange={(value) =>
+              value && setSelected(value as TabType)
+            }
+          >
+            <Tab key="all" title="All" />
+            <Tab key="created" title="Created" />
+            <Tab key="live" title="Live" />
+            <Tab key="stop" title="Stop" />
+            <Tab key="dead" title="Dead" />
+          </Tabs>
 
-        <Button color="primary" variant="bordered" onClick={onOpen}>
-          + New
+          <Switch
+            isSelected={isChatFirst}
+            onValueChange={setIsChatFirst}
+            size="sm"
+          >
+            Chat First
+          </Switch>
+        </div>
+
+        <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>
+          <FaPlus />
         </Button>
       </div>
 
       <Accordion isCompact variant="splitted">
         {rows.map((bot) => (
           <AccordionItem key={bot.id} title={<AutomationSummary bot={bot} />}>
-            <AutomationDetails botId={bot.id} />
+            <AutomationDetails botId={bot.id} isChatFirst={isChatFirst} />
           </AccordionItem>
         ))}
       </Accordion>

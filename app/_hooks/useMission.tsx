@@ -88,8 +88,16 @@ export const FIND_MISSION_DOCUMENT = graphql(`
 `);
 
 export const CLOSE_MISSION_DOCUMENT = graphql(`
-  mutation closeMission($id: Int!) {
-    closeMission(id: $id) {
+  mutation closeMission($id: Int!, $isForce: Boolean!) {
+    closeMission(id: $id, isForce: $isForce) {
+      ...MissionShallowDetailsInfo
+    }
+  }
+`);
+
+export const IGNORE_MISSION_DOCUMENT = graphql(`
+  mutation ignoreMission($id: Int!) {
+    ignoreMission(id: $id) {
       ...MissionShallowDetailsInfo
     }
   }
@@ -294,4 +302,49 @@ export function useCloseMission() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return closeMission;
+}
+
+export function useIgnoreMission() {
+  const [ignoreMission, { data: newData, error }] = useMutation(
+    IGNORE_MISSION_DOCUMENT,
+  );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      const missionInfo = getMissionFragment(newData.ignoreMission);
+
+      enqueueSnackbar("Success at ignoring mission!", {
+        variant: "success",
+      });
+
+      client.cache.updateQuery(
+        {
+          query: GET_ALL_MISSIONS_DOCUMENT,
+          variables: {},
+        },
+        (data) => {
+          if (data && data.getAllMissions.length > 0) {
+            return {
+              ...data,
+              getAllMissions: data.getAllMissions.map((mission) =>
+                missionInfo.id ===
+                getFragmentData(
+                  MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+                  mission,
+                ).id
+                  ? missionInfo
+                  : mission,
+              ),
+            };
+          } else {
+            return data;
+          }
+        },
+      );
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return ignoreMission;
 }
