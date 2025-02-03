@@ -193,6 +193,7 @@ type FollowerDetail {
   address: String!
   contractId: Int!
   ethBalance: String
+  pnlSnapshots: [PnlSnapshot!]!
   publicKey: String!
   usdcBalance: String
 }

@@ -75,6 +75,9 @@ export default function Page() {
           ethBalance: exist.ethBalance ? Number(exist.ethBalance) : 0,
           usdcBalance: exist.usdcBalance ? Number(exist.usdcBalance) : 0,
           contractId: exist.contractId,
+          accUSDPnl:
+            exist.pnlSnapshots.find((item) => item.kind === kind)?.accUSDPnl ||
+            0,
         };
       } else {
         return {
@@ -84,10 +87,26 @@ export default function Page() {
           usdcBalance: 0,
           ethBalance: 0,
           contractId: +contractId,
+          accUSDPnl: 0,
         };
       }
     });
-  }, [allFollowers, contractId, followerDetails]);
+  }, [allFollowers, contractId, followerDetails, kind]);
+
+  const { totalEarned, totalLost } = useMemo(() => {
+    return followerDetails.reduce(
+      (acc, item) => {
+        const accUSDPnl =
+          item.pnlSnapshots.find((item) => item.kind === kind)?.accUSDPnl || 0;
+
+        return {
+          totalEarned: acc.totalEarned + (accUSDPnl > 0 ? accUSDPnl : 0),
+          totalLost: acc.totalLost + (accUSDPnl < 0 ? accUSDPnl : 0),
+        };
+      },
+      { totalEarned: 0, totalLost: 0 },
+    );
+  }, [followerDetails, kind]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -158,6 +177,9 @@ export default function Page() {
             ).toFixed(2)} USDC`}
           </Chip>
 
+          <Chip color="warning">{`${totalEarned} USDC`}</Chip>
+          <Chip color="danger">{`${totalLost} USDC`}</Chip>
+
           <Button
             isIconOnly
             color="primary"
@@ -182,7 +204,7 @@ export default function Page() {
                 className="!mb-2"
               >
                 <AccordionItem
-                  title={<FollowerInfoWidget follower={follower} kind={kind} />}
+                  title={<FollowerInfoWidget follower={follower} />}
                 >
                   <FollowerDetails follower={follower} isChatFirst={false} />
                 </AccordionItem>

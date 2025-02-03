@@ -28,7 +28,7 @@ const documents = {
     "\n  mutation createContract($input: CreateContractInput!) {\n    createContract(input: $input) {\n      ...ContractInfo\n    }\n  }\n": types.CreateContractDocument,
     "\n  mutation changeContractStatus($input: ChangeContractStatusInput!) {\n    changeContractStatus(input: $input) {\n      ...ContractInfo\n    }\n  }\n": types.ChangeContractStatusDocument,
     "\n  fragment FollowerInfo on Follower {\n    address\n    accountIndex\n    publicKey\n  }\n": types.FollowerInfoFragmentDoc,
-    "\n  fragment FollowerDetailInfo on FollowerDetail {\n    address\n    accountIndex\n    publicKey\n    ethBalance\n    usdcBalance\n    contractId\n  }\n": types.FollowerDetailInfoFragmentDoc,
+    "\n  fragment FollowerDetailInfo on FollowerDetail {\n    address\n    accountIndex\n    publicKey\n    ethBalance\n    usdcBalance\n    contractId\n    pnlSnapshots {\n      ...PnlSnapshotInfo\n    }\n  }\n": types.FollowerDetailInfoFragmentDoc,
     "\n  fragment FollowerTradeInfo on FollowerTrade {\n    address\n    index\n    mission {\n      ...MissionInfo\n    }\n    params\n  }\n": types.FollowerTradeInfoFragmentDoc,
     "\n  query getAllFollowers {\n    getAllFollowers {\n      ...FollowerInfo\n    }\n  }\n": types.GetAllFollowersDocument,
     "\n  query getAllFollowerDetails($contractId: Int!) {\n    getAllFollowerDetails(contractId: $contractId) {\n      ...FollowerDetailInfo\n    }\n  }\n": types.GetAllFollowerDetailsDocument,
@@ -165,7 +165,7 @@ export function graphql(source: "\n  fragment FollowerInfo on Follower {\n    ad
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  fragment FollowerDetailInfo on FollowerDetail {\n    address\n    accountIndex\n    publicKey\n    ethBalance\n    usdcBalance\n    contractId\n  }\n"): (typeof documents)["\n  fragment FollowerDetailInfo on FollowerDetail {\n    address\n    accountIndex\n    publicKey\n    ethBalance\n    usdcBalance\n    contractId\n  }\n"];
+export function graphql(source: "\n  fragment FollowerDetailInfo on FollowerDetail {\n    address\n    accountIndex\n    publicKey\n    ethBalance\n    usdcBalance\n    contractId\n    pnlSnapshots {\n      ...PnlSnapshotInfo\n    }\n  }\n"): (typeof documents)["\n  fragment FollowerDetailInfo on FollowerDetail {\n    address\n    accountIndex\n    publicKey\n    ethBalance\n    usdcBalance\n    contractId\n    pnlSnapshots {\n      ...PnlSnapshotInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
