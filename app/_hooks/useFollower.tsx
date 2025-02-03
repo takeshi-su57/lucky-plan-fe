@@ -15,6 +15,7 @@ import { useGetAllBots } from "./useAutomation";
 import { BotStatus } from "@/graphql/gql/graphql";
 import { useGetAllContracts } from "./useContract";
 import { MISSION_INFO_FRAGMENT_DOCUMENT } from "./useMission";
+import { PNL_SNAPSHOT_INFO_FRAGMENT_DOCUMENT } from "./useHistory";
 
 export const FOLLOWER_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment FollowerInfo on Follower {
@@ -32,6 +33,9 @@ export const FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     ethBalance
     usdcBalance
     contractId
+    pnlSnapshots {
+      ...PnlSnapshotInfo
+    }
   }
 `);
 
@@ -180,9 +184,21 @@ export function useGetAllFollowerDetails(contractId: string | null) {
     }
 
     return data.getAllFollowerDetails
-      .map((follower) => ({
-        ...getFragmentData(FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT, follower),
-      }))
+      .map((follower) => {
+        const followerData = getFragmentData(
+          FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          follower,
+        );
+
+        const pnlSnapshots = followerData.pnlSnapshots.map((snapshot) =>
+          getFragmentData(PNL_SNAPSHOT_INFO_FRAGMENT_DOCUMENT, snapshot),
+        );
+
+        return {
+          ...followerData,
+          pnlSnapshots,
+        };
+      })
       .sort((a, b) => a.accountIndex - b.accountIndex);
   }, [data]);
 }

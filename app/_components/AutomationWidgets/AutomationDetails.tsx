@@ -35,11 +35,13 @@ type TabType = "chart" | "missions";
 export type AutomationDetailsProps = {
   botId: number;
   isChatFirst: boolean;
+  isHideAlertForClosedMissions: boolean;
 };
 
 export function AutomationDetails({
   botId,
   isChatFirst,
+  isHideAlertForClosedMissions,
 }: AutomationDetailsProps) {
   const { bot, loading, error } = useGetBot(botId);
 
@@ -202,7 +204,12 @@ export function AutomationDetails({
             .map((mission) => (
               <AccordionItem
                 key={mission.id}
-                title={<MissionSummary mission={mission} />}
+                title={
+                  <MissionSummary
+                    mission={mission}
+                    isHideAlertForClosedMissions={isHideAlertForClosedMissions}
+                  />
+                }
               >
                 <MissionDetails missionId={mission.id} />
               </AccordionItem>
