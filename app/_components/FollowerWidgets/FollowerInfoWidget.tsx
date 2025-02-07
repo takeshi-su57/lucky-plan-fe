@@ -63,9 +63,11 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
           </div>
         ))}
 
-        <Chip color={follower.accUSDPnl >= 0 ? "warning" : "danger"}>
-          {follower.accUSDPnl} USDC
-        </Chip>
+        {follower.accUSDPnl !== 0 ? (
+          <Chip color={follower.accUSDPnl > 0 ? "warning" : "danger"}>
+            {follower.accUSDPnl} USDC
+          </Chip>
+        ) : null}
 
         {tradedOrdersLoading ? (
           <Skeleton className="rounded-lg">

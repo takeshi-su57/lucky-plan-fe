@@ -98,7 +98,7 @@ export default function Page() {
         </Button>
       </div>
 
-      <Accordion isCompact variant="splitted">
+      <Accordion selectionMode="multiple" isCompact variant="splitted">
         {rows.map((bot) => (
           <AccordionItem
             key={bot.id}
