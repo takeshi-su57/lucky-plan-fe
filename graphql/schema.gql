@@ -514,6 +514,7 @@ type TradeHistory {
   id: Int!
   in: Int!
   out: Int!
+  pairIndex: Int
   pnl: Int!
   timestamp: DateTime!
 }
