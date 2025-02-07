@@ -24,6 +24,16 @@ export const GET_ALL_CONTRACT_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_ALL_TRADE_PAIRS_DOCUMENT = graphql(`
+  query getAllTradePairs($contractId: Int!) {
+    getTradePairs(contractId: $contractId) {
+      from
+      pairIndex
+      to
+    }
+  }
+`);
+
 export const CREATE_CONTRACT_DOCUMENT = graphql(`
   mutation createContract($input: CreateContractInput!) {
     createContract(input: $input) {
@@ -39,6 +49,14 @@ export const CHANGE_CONTRACT_STATUS_DOCUMENT = graphql(`
     }
   }
 `);
+
+export function useGetAllTradePairs(contractId: number) {
+  const { data } = useQuery(GET_ALL_TRADE_PAIRS_DOCUMENT, {
+    variables: { contractId },
+  });
+
+  return data?.getTradePairs || [];
+}
 
 export function useGetAllContracts() {
   const { data } = useQuery(GET_ALL_CONTRACT_DOCUMENT, {
