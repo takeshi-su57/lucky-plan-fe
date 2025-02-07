@@ -117,6 +117,7 @@ export function Leaderboard() {
                 address={snapshot.address as Address}
                 kind={kind}
                 histories={snapshot.histories}
+                contractId={snapshot.contractId}
               />
             )}
             endReached={() => hasMore && !loading && fetchMore()}

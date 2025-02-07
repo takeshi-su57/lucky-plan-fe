@@ -11,6 +11,7 @@ export const TRADEHISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
     address
     blockNumber
     contractId
+    pairIndex
     eventName
     id
     in

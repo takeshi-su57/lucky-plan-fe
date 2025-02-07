@@ -170,7 +170,8 @@ export function CreateAutomationModal({
           <Autocomplete
             label="Follower Contract"
             variant="underlined"
-            defaultItems={allContracts}
+            // hide ape contract as a follower contract
+            defaultItems={allContracts.filter((item) => item.chainId !== 33139)}
             placeholder="Search contract"
             selectedKey={followerContractId}
             onSelectionChange={(key) =>

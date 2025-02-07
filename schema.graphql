@@ -407,6 +407,7 @@ type Query {
   getPnlSnapshotsByAddress(address: String!, contractId: Int!): [PnlSnapshot!]!
   getTasksByStatus(status: TaskStatus!): [TaskShallowDetails!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
+  getTradePairs(contractId: Int!): [TradePair!]!
   getTrades(address: String!, contractId: Int!): [FollowerTrade!]!
   getUserByAddress(input: GetUserByAddressInput!): User!
   systemStatus: Boolean!
@@ -505,8 +506,15 @@ type TradeHistory {
   id: Int!
   in: Int!
   out: Int!
+  pairIndex: Int
   pnl: Int!
   timestamp: DateTime!
+}
+
+type TradePair {
+  from: String!
+  pairIndex: Int!
+  to: String!
 }
 
 input UpdateStrategyMetadataInput {
