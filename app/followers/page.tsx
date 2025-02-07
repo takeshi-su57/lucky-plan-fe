@@ -17,6 +17,7 @@ import {
 } from "@nextui-org/react";
 import { FaPlus } from "react-icons/fa";
 import { Virtuoso } from "react-virtuoso";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import {
   useGenerateFollower,
@@ -32,12 +33,19 @@ import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 import { FollowerDetails } from "../_components/FollowerWidgets/FollowerDetails";
 
 export default function Page() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const allFollowers = useGetAllFollowers();
   const allContracts = useGetAllContracts();
   const generateFollower = useGenerateFollower();
 
-  const [contractId, setContractId] = useState<string | null>(null);
-  const [kind, setKind] = useState<PnlSnapshotKind>(PnlSnapshotKind.AllTime);
+  const [contractId, setContractId] = useState<string | null>(
+    searchParams.get("contractId") || null,
+  );
+  const [kind, setKind] = useState<PnlSnapshotKind>(
+    (searchParams.get("kind") as PnlSnapshotKind) || PnlSnapshotKind.AllTime,
+  );
   const [isChatFirst, setIsChatFirst] = useState(true);
 
   const followerDetails = useGetAllFollowerDetails(contractId);
@@ -54,6 +62,12 @@ export default function Page() {
 
     if (value.trim() !== "") {
       setKind(value as PnlSnapshotKind);
+      const contractQuery = contractId ? `contractId=${contractId}` : null;
+      const kindQuery = value ? `kind=${value}` : null;
+
+      router.push(
+        `/followers?${contractQuery || ""}${contractQuery && kindQuery ? `&` : ""}${kindQuery || ""}`,
+      );
     }
   };
 
@@ -119,7 +133,16 @@ export default function Page() {
             placeholder="Search contract"
             selectedKey={contractId}
             className="w-[400px]"
-            onSelectionChange={(key) => setContractId(key as string | null)}
+            onSelectionChange={(key) => {
+              setContractId(key as string | null);
+
+              const contractQuery = key ? `contractId=${key}` : null;
+              const kindQuery = kind ? `kind=${kind}` : null;
+
+              router.push(
+                `/followers?${contractQuery || ""}${contractQuery && kindQuery ? `&` : ""}${kindQuery || ""}`,
+              );
+            }}
           >
             {(item) => (
               <AutocompleteItem

@@ -26,15 +26,23 @@ import { useGetAllContracts } from "@/app-hooks/useContract";
 import { shrinkAddress } from "@/utils";
 import { CreateUserModal } from "../_components/UserWidgets/CreateUserModal";
 import { FaPlus } from "react-icons/fa";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Page() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const allTags = useGetAllTags();
   const allContracts = useGetAllContracts();
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
-  const [contractId, setContractId] = useState<string | null>(null);
-  const [selectedTags, setSelectedTags] = useState<Selection>(new Set([]));
+  const [contractId, setContractId] = useState<string | null>(
+    searchParams.get("contractId") || null,
+  );
+  const [selectedTags, setSelectedTags] = useState<Selection>(
+    new Set((searchParams.get("tags") || "").split(",")),
+  );
   const [isAndOp, setIsAndOp] = useState(true);
 
   const selectedValue = useMemo(() => Array.from(selectedTags), [selectedTags]);
@@ -52,7 +60,18 @@ export default function Page() {
             placeholder="Search contract"
             selectedKey={contractId}
             className="w-[400px]"
-            onSelectionChange={(key) => setContractId(key as string | null)}
+            onSelectionChange={(key) => {
+              setContractId(key as string | null);
+
+              const contractQuery = key ? `contractId=${key}` : null;
+              const tagsQuery = selectedTags
+                ? `tags=${Array.from(selectedTags).join(",")}`
+                : null;
+
+              router.push(
+                `/users?${contractQuery || ""}${contractQuery && tagsQuery ? `&` : ""}${tagsQuery || ""}`,
+              );
+            }}
           >
             {(item) => (
               <AutocompleteItem
@@ -84,7 +103,22 @@ export default function Page() {
               selectedKeys={selectedTags}
               selectionMode="multiple"
               variant="flat"
-              onSelectionChange={setSelectedTags}
+              onSelectionChange={(value) => {
+                setSelectedTags(value);
+
+                const contractQuery = contractId
+                  ? `contractId=${contractId}`
+                  : null;
+                const tagsQuery = value
+                  ? `tags=${Array.from(value).join(",")}`
+                  : null;
+
+                router.push(
+                  `/users?${contractQuery || ""}${contractQuery && tagsQuery ? `&` : ""}${tagsQuery || ""}`,
+                );
+
+                value.toString();
+              }}
             >
               {allTags.map((tag) => (
                 <DropdownItem key={tag.tag}>

@@ -10,6 +10,7 @@ import {
   AccordionItem,
   Switch,
 } from "@nextui-org/react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { BotStatus } from "@/graphql/gql/graphql";
 
@@ -23,9 +24,14 @@ import { FaPlus } from "react-icons/fa";
 type TabType = "all" | "created" | "live" | "stop" | "dead";
 
 export default function Page() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const allBots = useGetAllBots();
 
-  const [selected, setSelected] = useState<TabType>("all");
+  const [selected, setSelected] = useState<TabType>(
+    (searchParams.get("status") as TabType) || "live",
+  );
   const [isChatFirst, setIsChatFirst] = useState(true);
   const [isHideAlertForClosedMissions, setIsHideAlertForClosedMissions] =
     useState(true);
@@ -65,9 +71,12 @@ export default function Page() {
           <Tabs
             aria-label="users-table-tabs"
             selectedKey={selected}
-            onSelectionChange={(value) =>
-              value && setSelected(value as TabType)
-            }
+            onSelectionChange={(value) => {
+              if (value) {
+                setSelected(value as TabType);
+                router.push(`/automations?status=${value}`);
+              }
+            }}
           >
             <Tab key="all" title="All" />
             <Tab key="created" title="Created" />

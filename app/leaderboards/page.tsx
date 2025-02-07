@@ -11,20 +11,28 @@ import {
   SelectItem,
 } from "@nextui-org/react";
 import { Virtuoso } from "react-virtuoso";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Address } from "viem";
 
 import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 
-import { Address } from "viem";
 import { useGetAllContracts } from "../_hooks/useContract";
 import { shrinkAddress } from "@/utils";
 import { useGetPnlSnapshots } from "../_hooks/useHistory";
 import { HistoriesWidget } from "../_components/LeaderboardWidgets/HistoriesWidget";
 
 export default function Page() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const allContracts = useGetAllContracts();
 
-  const [contractId, setContractId] = useState<string | null>(null);
-  const [kind, setKind] = useState<PnlSnapshotKind>(PnlSnapshotKind.AllTime);
+  const [contractId, setContractId] = useState<string | null>(
+    searchParams.get("contractId") || null,
+  );
+  const [kind, setKind] = useState<PnlSnapshotKind>(
+    (searchParams.get("kind") as PnlSnapshotKind) || PnlSnapshotKind.AllTime,
+  );
 
   const { pnlSnapshots, fetchMore, hasMore, loading } = useGetPnlSnapshots(
     contractId,
@@ -36,6 +44,13 @@ export default function Page() {
 
     if (value.trim() !== "") {
       setKind(value as PnlSnapshotKind);
+
+      const contractQuery = contractId ? `contractId=${contractId}` : null;
+      const kindQuery = value ? `kind=${value}` : null;
+
+      router.push(
+        `/leaderboards?${contractQuery || ""}${contractQuery && kindQuery ? `&` : ""}${kindQuery || ""}`,
+      );
     }
   };
 
@@ -62,7 +77,16 @@ export default function Page() {
           placeholder="Search contract"
           selectedKey={contractId}
           className="w-[400px]"
-          onSelectionChange={(key) => setContractId(key as string | null)}
+          onSelectionChange={(key) => {
+            setContractId(key as string | null);
+
+            const contractQuery = key ? `contractId=${key}` : null;
+            const kindQuery = kind ? `kind=${kind}` : null;
+
+            router.push(
+              `/leaderboards?${contractQuery || ""}${contractQuery && kindQuery ? `&` : ""}${kindQuery || ""}`,
+            );
+          }}
         >
           {(item) => (
             <AutocompleteItem
