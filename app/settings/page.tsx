@@ -10,7 +10,8 @@ import {
 export default function Page() {
   const pauseSystem = usePauseSystem();
   const resumeSystem = useResumeSystem();
-  const initalizePnlSnapshot = useInitalizePnlSnapshot();
+  const { initalizePnlSnapshot, loading: initalizePnlSnapshotLoading } =
+    useInitalizePnlSnapshot();
 
   return (
     <div className="flex flex-col gap-6">
@@ -23,7 +24,12 @@ export default function Page() {
         </Button>
       </div>
       <div className="flex flex-row gap-4">
-        <Button onClick={() => initalizePnlSnapshot()} color="primary">
+        <Button
+          onClick={() => initalizePnlSnapshot()}
+          isLoading={initalizePnlSnapshotLoading}
+          isDisabled={initalizePnlSnapshotLoading}
+          color="primary"
+        >
           Initialize PNL Snapshot
         </Button>
       </div>

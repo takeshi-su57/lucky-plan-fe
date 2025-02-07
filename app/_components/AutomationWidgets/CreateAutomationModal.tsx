@@ -1,18 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
 import { Address } from "viem";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 
 import { useGetAllContracts } from "@/app-hooks/useContract";
-import { useCreateBot } from "@/app/_hooks/useAutomation";
+import { useCreateBot, useGetAllBots } from "@/app/_hooks/useAutomation";
 import { useGetUsersByTags } from "@/app/_hooks/useUser";
 import { useGetAvailableFollowers } from "@/app/_hooks/useFollower";
 import { useGetAllStrategy } from "@/app/_hooks/useStrategy";
 import { shrinkAddress } from "@/utils";
 import { NumericInput } from "@/components/inputs/NumericInput";
+import { BotStatus } from "@/graphql/gql/graphql";
 
 export type CreateAutomationModalProps = {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export function CreateAutomationModal({
   const allFollowers = useGetAvailableFollowers();
   const allContracts = useGetAllContracts();
   const allStrategies = useGetAllStrategy();
+  const allBots = useGetAllBots();
 
   const [leaderAddress, setLeaderAddress] = useState<string | null>(null);
   const [followerAddress, setFollowerAddress] = useState<string | null>(null);
@@ -70,6 +72,23 @@ export function CreateAutomationModal({
     onClose();
   };
 
+  const updatedLeaders = useMemo(() => {
+    const countsMap = new Map<string, number>();
+
+    allBots.forEach((bot) => {
+      if (bot.status === BotStatus.Live) {
+        countsMap.set(
+          bot.leaderAddress,
+          (countsMap.get(bot.leaderAddress) || 0) + 1,
+        );
+      }
+    });
+    return allLeaders.map((item) => ({
+      ...item,
+      count: countsMap.get(item.address) || 0,
+    }));
+  }, [allBots, allLeaders]);
+
   return (
     <StandardModal isOpen={isOpen} onOpenChange={onOpenChange} backdrop="blur">
       <div className="flex flex-col gap-8">
@@ -81,7 +100,7 @@ export function CreateAutomationModal({
           <Autocomplete
             label="Leader"
             variant="underlined"
-            defaultItems={allLeaders}
+            defaultItems={updatedLeaders}
             placeholder="Search leader"
             selectedKey={leaderAddress}
             onSelectionChange={(key) => setLeaderAddress(key as string | null)}
@@ -92,7 +111,10 @@ export function CreateAutomationModal({
                 key={item.address}
                 textValue={item.address}
               >
-                {item.address}
+                <div className="flex items-center justify-between">
+                  <span>{item.address}</span>
+                  <span>{item.count}</span>
+                </div>
               </AutocompleteItem>
             )}
           </Autocomplete>
