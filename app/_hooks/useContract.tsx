@@ -11,6 +11,7 @@ export const CONTRACT_INFO_FRAGMENT_DOCUMENT = graphql(`
     id
     chainId
     address
+    backendUrl
     description
     status
   }
@@ -50,9 +51,9 @@ export const CHANGE_CONTRACT_STATUS_DOCUMENT = graphql(`
   }
 `);
 
-export function useGetAllTradePairs(contractId: number) {
+export function useGetAllTradePairs(contractId?: number) {
   const { data } = useQuery(GET_ALL_TRADE_PAIRS_DOCUMENT, {
-    variables: { contractId },
+    variables: contractId ? { contractId } : undefined,
   });
 
   return data?.getTradePairs || [];

@@ -43,8 +43,6 @@ export function TaskDetails({ taskId }: TaskDetailsProps) {
     return null;
   }
 
-  console.log("taskDetails ==>", task);
-
   return (
     <div className="flex flex-col gap-6 border-t border-t-neutral-400/20 py-6 text-neutral-400">
       {task.status !== TaskStatus.Await &&

@@ -109,6 +109,7 @@ input CloseTradeInput {
 
 type Contract {
   address: String!
+  backendUrl: String
   chainId: Int!
   description: String!
   id: Int!

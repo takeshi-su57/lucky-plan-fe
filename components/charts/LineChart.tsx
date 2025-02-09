@@ -1,11 +1,14 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import Chart from "chart.js/auto";
 import { twMerge } from "tailwind-merge";
 import dayjs from "dayjs";
+import { Checkbox } from "@nextui-org/react";
+import { CheckboxGroup } from "@nextui-org/react";
 
 export type LineChartProps = {
+  title?: string;
   data: {
     value: number;
     date: Date;
@@ -13,10 +16,12 @@ export type LineChartProps = {
   className?: string;
 };
 
-export default function LineChart({ data, className }: LineChartProps) {
+export default function LineChart({ title, data, className }: LineChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const ref = useRef<Chart>();
+
+  const [selected, setSelected] = useState<string[]>([]);
 
   const drawChart = useCallback(() => {
     if (ref.current) {
@@ -65,10 +70,10 @@ export default function LineChart({ data, className }: LineChartProps) {
         maintainAspectRatio: false,
         scales: {
           x: {
-            display: false,
+            display: selected.includes("x"),
           },
           y: {
-            display: false,
+            display: selected.includes("y"),
           },
         },
         plugins: {
@@ -78,7 +83,7 @@ export default function LineChart({ data, className }: LineChartProps) {
         },
       },
     });
-  }, [data]);
+  }, [data, selected]);
 
   useEffect(() => {
     if (!chartRef.current || !containerRef.current) {
@@ -100,14 +105,30 @@ export default function LineChart({ data, className }: LineChartProps) {
   }, [drawChart]);
 
   return (
-    <div
-      ref={containerRef}
-      className={twMerge(
-        "relative h-full w-full items-center justify-center gap-8 rounded-md p-3.5",
-        className,
-      )}
-    >
-      <canvas ref={chartRef} />
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-row justify-between">
+        <span className="text-sm font-bold">{title || ""}</span>
+
+        <CheckboxGroup
+          color="warning"
+          value={selected}
+          onValueChange={setSelected}
+          orientation="horizontal"
+        >
+          <Checkbox value="x">X Scale</Checkbox>
+          <Checkbox value="y">Y Scale</Checkbox>
+        </CheckboxGroup>
+      </div>
+
+      <div
+        ref={containerRef}
+        className={twMerge(
+          "relative h-full w-full items-center justify-center gap-8 rounded-md p-3.5",
+          className,
+        )}
+      >
+        <canvas ref={chartRef} />
+      </div>
     </div>
   );
 }
