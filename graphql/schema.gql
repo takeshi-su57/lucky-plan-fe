@@ -129,6 +129,15 @@ enum ContractStatus {
   Live
 }
 
+input CreateBotAndStrategyInput {
+  followerAddress: String!
+  followerContractId: Int!
+  leaderAddress: String!
+  leaderCollateralBaseline: Int!
+  leaderContractId: Int!
+  strategy: CreateStrategyInput!
+}
+
 input CreateBotInput {
   followerAddress: String!
   followerContractId: Int!
@@ -285,6 +294,7 @@ type MissionWithTasks {
 type Mutation {
   addTagToUser(input: ChangeUserTagInput!): User!
   addUser(input: AddUserInput!): User!
+  batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotDetails!]!
   cancelOrderAfterTimeout(
     input: CancelOrderAfterTimeoutInput!
   ): ContractExecutionResult!

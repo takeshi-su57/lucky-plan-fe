@@ -158,7 +158,7 @@ export function useGetAllFollowers() {
   }, [data]);
 }
 
-export function useGetAvailableFollowers() {
+export function useGetAvailableFollowers(limitedAddresses: string[] = []) {
   const allFollowers = useGetAllFollowers();
   const allBots = useGetAllBots();
 
@@ -168,9 +168,11 @@ export function useGetAvailableFollowers() {
       .map((bot) => bot.followerAddress);
 
     return allFollowers.filter(
-      (follower) => !botFollowers.includes(follower.address),
+      (follower) =>
+        !botFollowers.includes(follower.address) &&
+        !limitedAddresses.includes(follower.address),
     );
-  }, [allBots, allFollowers]);
+  }, [allBots, allFollowers, limitedAddresses]);
 }
 
 export function useGetAllFollowerDetails(contractId: string | null) {

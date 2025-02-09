@@ -1,3 +1,5 @@
+import { BotDetails, Contract } from "@/graphql/gql/graphql";
+
 export enum PendingOrderType {
   MARKET_OPEN,
   MARKET_CLOSE,
@@ -43,4 +45,35 @@ export type PersonalTradeHistory = {
   tradeId: number | null;
   tradeIndex: number;
   tx: string;
+};
+
+export type VirtualStrategy = {
+  collateralBaseline: number;
+  lifeTime: number;
+  maxCollateral: number;
+  maxLeverage: number;
+  minCollateral: number;
+  minLeverage: number;
+  ratio: number;
+  strategyKey: string;
+};
+
+export type VirtualBot = {
+  virtualId: string;
+  followerAddress: string;
+  followerContract: {
+    contractId: number;
+    chainId: number;
+    address: string;
+    backendUrl: string;
+  };
+  leaderAddress: string;
+  leaderContract: {
+    contractId: number;
+    chainId: number;
+    address: string;
+    backendUrl: string;
+  };
+  leaderCollateralBaseline: number;
+  strategy: VirtualStrategy;
 };

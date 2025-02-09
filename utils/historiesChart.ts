@@ -224,12 +224,21 @@ export function getHistoriesChartData(
 }
 
 export function getOpenMissionParams(
-  strategy: Strategy,
+  strategy: {
+    strategyKey: string;
+    ratio: number;
+    collateralBaseline: number;
+    maxCollateral: number;
+    minCollateral: number;
+    maxLeverage: number;
+    minLeverage: number;
+  },
   args: {
     leverage: number;
     collateralAmount: number;
     collateralPriceUsd: number;
   },
+
   leaderCollateralBaseline: number,
 ) {
   const collateralUSDAmount = args.collateralAmount * args.collateralPriceUsd;
@@ -271,7 +280,15 @@ export function getOpenMissionParams(
 export function transformHistories(
   histories: PersonalTradeHistory[],
   collateralBaseline: number,
-  strategy: Strategy,
+  strategy: {
+    strategyKey: string;
+    ratio: number;
+    collateralBaseline: number;
+    maxCollateral: number;
+    minCollateral: number;
+    maxLeverage: number;
+    minLeverage: number;
+  },
 ): PersonalTradeHistory[] {
   return histories.map((history) => {
     const originalUSDPositionSize =
@@ -292,6 +309,7 @@ export function transformHistories(
 
     return {
       ...history,
+      collateralPriceUsd: 1,
       pnl: history.pnl * (calculatedUSDPositionSize / originalUSDPositionSize),
       pnl_net:
         history.pnl_net * (calculatedUSDPositionSize / originalUSDPositionSize),

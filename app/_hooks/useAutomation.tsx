@@ -107,6 +107,14 @@ export const CREATE_BOT_DOCUMENT = graphql(`
   }
 `);
 
+export const BATCH_CREATE_BOTS_DOCUMENT = graphql(`
+  mutation batchCreateBots($input: [CreateBotAndStrategyInput!]!) {
+    batchCreateBots(input: $input) {
+      ...BotDetailsInfo
+    }
+  }
+`);
+
 export const DELETE_BOT_DOCUMENT = graphql(`
   mutation deleteBot($id: Int!) {
     deleteBot(id: $id)
@@ -243,6 +251,57 @@ export function useCreateBot() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return createBot;
+}
+
+export function useBatchCreateBots() {
+  const [createBots, { data: newData, error, loading }] = useMutation(
+    BATCH_CREATE_BOTS_DOCUMENT,
+  );
+  const client = useApolloClient();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      const botInfo = newData.batchCreateBots.map(getBotFragment);
+
+      enqueueSnackbar("Success at creating new bots!", {
+        variant: "success",
+      });
+
+      client.cache.updateQuery(
+        {
+          query: GET_ALL_BOTS_DOCUMENT,
+          variables: {},
+        },
+        (data) => {
+          if (data && data.getAllBots.length > 0) {
+            const newBots = botInfo.filter(
+              (bot) =>
+                !data.getAllBots.some(
+                  (existingBot) =>
+                    getFragmentData(
+                      BOTDETAILS_INFO_FRAGMENT_DOCUMENT,
+                      existingBot,
+                    ).id === bot.id,
+                ),
+            );
+
+            return {
+              ...data,
+              getAllBots: [...data.getAllBots, ...newBots],
+            };
+          } else {
+            return {
+              getAllBots: [...botInfo],
+            };
+          }
+        },
+      );
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return { createBots, loading };
 }
 
 export function useDeleteBot() {
