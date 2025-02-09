@@ -23,6 +23,7 @@ import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 
 import { TagsWidget } from "../TagWidgets/TagsWidget";
 import { PairChip } from "./PairChip";
+import { Virtuoso } from "react-virtuoso";
 
 export type HistoriesWidgetProps = {
   address: Address;
@@ -507,54 +508,59 @@ export function HistoriesWidget({
           </div>
 
           <div className="flex flex-1 flex-col items-center gap-6">
-            <div className="flex max-w-[800px] items-center gap-8 overflow-x-auto">
-              {Array.from(tradePairIndexsMap.entries()).map(
-                ([pairIndex, count]) => (
+            <Virtuoso
+              style={{ height: 50, width: 800, overflowY: "hidden" }}
+              data={Array.from(tradePairIndexsMap.entries())}
+              horizontalDirection
+              itemContent={(_, data) => (
+                <div className="mr-4">
                   <PairChip
-                    key={pairIndex}
+                    key={data[0]}
                     contractId={contractId}
-                    pairIndex={pairIndex}
-                    count={count}
+                    pairIndex={data[0]}
+                    count={data[1]}
                   />
-                ),
+                </div>
               )}
-            </div>
+            />
 
             <div className="flex w-full items-center gap-8">
               <div className="flex flex-1 flex-col gap-2">
-                <span>PNL</span>
                 <LineChart
+                  title="PNL"
                   data={pnlChartData}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
-                <span>Scale PNL</span>
+
                 <LineChart
+                  title="Scale PNL"
                   data={dayScalePnlChartData}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
               </div>
 
               <div className="flex flex-1 flex-col gap-2">
-                <span>In/Out</span>
                 <LineChart
+                  title="In/Out"
                   data={inOutChartData}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
-                <span>Scale In/Out</span>
+
                 <LineChart
+                  title="Scale In/Out"
                   data={dayScaleinOutChartData}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
               </div>
 
               <div className="flex flex-1 flex-col gap-2">
-                <span>In</span>
                 <LineChart
+                  title="In"
                   data={inChartData}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
-                <span>Out</span>
                 <LineChart
+                  title="Out"
                   data={outChartData}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />

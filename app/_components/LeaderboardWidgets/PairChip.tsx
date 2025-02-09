@@ -4,15 +4,21 @@ import PairIcon from "./PairIcon";
 export function PairChip({
   contractId,
   pairIndex,
+  pairName,
   count,
 }: {
   contractId: number;
-  pairIndex: number;
+  pairIndex?: number;
+  pairName?: string;
   count: number;
 }) {
   const pairs = useGetAllTradePairs(contractId);
 
-  const pair = pairs.find((pair) => pair.pairIndex === pairIndex);
+  const pair = pairs.find(
+    (pair) =>
+      pair.pairIndex === pairIndex ||
+      `${pair.from}/${pair.to}`.toLowerCase() === pairName?.toLowerCase(),
+  );
 
   if (!pair) {
     return null;

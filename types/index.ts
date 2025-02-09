@@ -10,3 +10,37 @@ export enum PendingOrderType {
   MARKET_PARTIAL_OPEN,
   MARKET_PARTIAL_CLOSE,
 }
+
+export enum TradeActionType {
+  TradeOpenedMarket = "TradeOpenedMarket",
+  TradeOpenedLimit = "TradeOpenedLimit",
+  TradeClosedMarket = "TradeClosedMarket",
+  TradeClosedLIQ = "TradeClosedLIQ",
+  TradeClosedSL = "TradeClosedSL",
+  TradeClosedTP = "TradeClosedTP",
+  TradeLeverageUpdate = "TradeLeverageUpdate",
+  TradePosSizeIncrease = "TradePosSizeIncrease",
+  TradePosSizeDecrease = "TradePosSizeDecrease",
+}
+
+export type PersonalTradeHistory = {
+  action: TradeActionType;
+  address: string;
+  block: number;
+  collateralDelta: number | null;
+  collateralIndex: number;
+  collateralPriceUsd: number;
+  date: string;
+  leverage: number;
+  leverageDelta: number | null;
+  long: number;
+  marketPrice: number | null;
+  pair: string;
+  pnl: number;
+  pnl_net: number;
+  price: number;
+  size: number;
+  tradeId: number | null;
+  tradeIndex: number;
+  tx: string;
+};

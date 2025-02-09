@@ -48,6 +48,11 @@ const strategyColumns: TableColumnProps[] = [
     allowsSorting: true,
   },
   {
+    id: "baseline",
+    component: "Baseline",
+    allowsSorting: true,
+  },
+  {
     id: "action",
     component: "",
     className: "flex-end",
@@ -159,6 +164,10 @@ export default function Page() {
               <span>min: {strategy.minLeverage / 1000} x</span>
             </div>
           ),
+        },
+        baseline: {
+          sortableAmount: strategy.collateralBaseline,
+          component: strategy.collateralBaseline,
         },
         action: {
           component: (

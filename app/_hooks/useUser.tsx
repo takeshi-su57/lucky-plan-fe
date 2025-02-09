@@ -184,8 +184,6 @@ export function useAddTagToUser() {
     if (newData && !error) {
       const userInfo = getUserFragment(newData.addTagToUser);
 
-      console.log(userInfo);
-
       enqueueSnackbar("Success at adding tag!", {
         variant: "success",
       });
