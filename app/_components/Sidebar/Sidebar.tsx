@@ -20,6 +20,7 @@ export const links = [
     title: "",
     showDivider: true,
   },
+  { id: "research", label: "Research", title: "" },
   { id: "users", label: "User", title: "" },
   {
     id: "leaderboards",

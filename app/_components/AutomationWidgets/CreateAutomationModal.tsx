@@ -41,7 +41,7 @@ export function CreateAutomationModal({
   const createBot = useCreateBot();
 
   const allLeaders = useGetUsersByTags(["LEADER"], false);
-  const allFollowers = useGetAvailableFollowers();
+  const allFollowers = useGetAvailableFollowers([]);
   const allContracts = useGetAllContracts();
   const allStrategies = useGetAllStrategy();
   const allBots = useGetAllBots();
@@ -382,7 +382,7 @@ export function CreateAutomationModal({
 
             {calculatedTradePairs.length > 0 && (
               <span className="text-xl font-bold">
-                Follower - {originalTradePairs.length} Pairs
+                Follower - {calculatedTradePairs.length} Pairs
               </span>
             )}
 

@@ -24,7 +24,7 @@ export type FollowerInfoWidgetProps = {
 };
 
 export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
-  const availableFollowers = useGetAvailableFollowers();
+  const availableFollowers = useGetAvailableFollowers([]);
   const { pendingOrders, loading: pendingOrdersLoading } = useGetPendingOrders(
     follower.address,
     follower.contractId,
