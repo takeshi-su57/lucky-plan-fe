@@ -142,7 +142,7 @@ export const STOP_BOT_DOCUMENT = graphql(`
   }
 `);
 
-function getBotFragment(
+export function getBotFragment(
   bot: {
     __typename?: "BotDetails";
   } & {
@@ -180,6 +180,7 @@ export function useGetBotsByStatus(status?: BotStatus) {
   const { data } = useQuery(GET_BOTS_BY_STATUS_DOCUMENT, {
     variables: status ? { status } : undefined,
   });
+
   return useMemo(() => {
     if (!data) {
       return [];
