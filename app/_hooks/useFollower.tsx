@@ -11,7 +11,7 @@ import {
 import { getFragmentData, graphql } from "@/gql/index";
 import { useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
-import { useGetAllBots } from "./useAutomation";
+import { useGetBotsByStatus } from "./useAutomation";
 import { BotStatus } from "@/graphql/gql/graphql";
 import { useGetAllContracts } from "./useContract";
 import { MISSION_INFO_FRAGMENT_DOCUMENT } from "./useMission";
@@ -160,10 +160,12 @@ export function useGetAllFollowers() {
 
 export function useGetAvailableFollowers(limitedAddresses: string[] = []) {
   const allFollowers = useGetAllFollowers();
-  const allBots = useGetAllBots();
+  const createdBots = useGetBotsByStatus(BotStatus.Created);
+  const liveBots = useGetBotsByStatus(BotStatus.Live);
+  const stopBots = useGetBotsByStatus(BotStatus.Stop);
 
   return useMemo(() => {
-    const botFollowers = allBots
+    const botFollowers = [...createdBots, ...liveBots, ...stopBots]
       .filter((bot) => bot.status !== BotStatus.Dead)
       .map((bot) => bot.followerAddress);
 
@@ -172,7 +174,7 @@ export function useGetAvailableFollowers(limitedAddresses: string[] = []) {
         !botFollowers.includes(follower.address) &&
         !limitedAddresses.includes(follower.address),
     );
-  }, [allBots, allFollowers, limitedAddresses]);
+  }, [createdBots, liveBots, stopBots, allFollowers, limitedAddresses]);
 }
 
 export function useGetAllFollowerDetails(contractId: string | null) {

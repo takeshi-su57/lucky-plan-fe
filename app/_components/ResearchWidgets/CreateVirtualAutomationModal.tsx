@@ -18,7 +18,7 @@ import {
   useGetAllContracts,
   useGetAllTradePairs,
 } from "@/app-hooks/useContract";
-import { useGetAllBots } from "@/app/_hooks/useAutomation";
+import { useGetBotsByStatus } from "@/app/_hooks/useAutomation";
 import { useGetUsersByTags } from "@/app/_hooks/useUser";
 import { useGetAvailableFollowers } from "@/app/_hooks/useFollower";
 import { useGetAllStrategyMetadata } from "@/app/_hooks/useStrategy";
@@ -57,12 +57,16 @@ export function CreateVirtualAutomationModal({
 
   const allFollowers = useGetAvailableFollowers(virtualFollowers);
   const allContracts = useGetAllContracts();
-  const allBots = useGetAllBots();
   const allStrategyMetadata = useGetAllStrategyMetadata();
+
+  const createBots = useGetBotsByStatus(BotStatus.Created);
+  const liveBots = useGetBotsByStatus(BotStatus.Live);
+  const stopBots = useGetBotsByStatus(BotStatus.Stop);
 
   const [leaderAddress, setLeaderAddress] = useState<string | null>(null);
   const [followerAddress, setFollowerAddress] = useState<string | null>(null);
   const [leaderContractId, setLeaderContractId] = useState<string | null>(null);
+
   const [followerContractId, setFollowerContractId] = useState<string | null>(
     null,
   );
@@ -306,19 +310,17 @@ export function CreateVirtualAutomationModal({
   const updatedLeaders = useMemo(() => {
     const countsMap = new Map<string, number>();
 
-    allBots.forEach((bot) => {
-      if (bot.status === BotStatus.Live) {
-        countsMap.set(
-          bot.leaderAddress,
-          (countsMap.get(bot.leaderAddress) || 0) + 1,
-        );
-      }
+    [...createBots, ...liveBots, ...stopBots].forEach((bot) => {
+      countsMap.set(
+        bot.leaderAddress,
+        (countsMap.get(bot.leaderAddress) || 0) + 1,
+      );
     });
     return allLeaders.map((item) => ({
       ...item,
       count: countsMap.get(item.address) || 0,
     }));
-  }, [allBots, allLeaders]);
+  }, [createBots, liveBots, stopBots, allLeaders]);
 
   const {
     tradePairs: originalTradePairs,

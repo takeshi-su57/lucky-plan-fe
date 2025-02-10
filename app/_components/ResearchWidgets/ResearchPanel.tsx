@@ -13,8 +13,7 @@ import { BotStatus } from "@/graphql/gql/graphql";
 
 import {
   useBatchCreateBots,
-  useCreateBot,
-  useGetAllBots,
+  useGetBotsByStatus,
 } from "@/app-hooks/useAutomation";
 
 import { AutomationRow } from "./AutomationRow";
@@ -28,7 +27,7 @@ import { VirtualAutomationRow } from "./VirtualAutomationRow";
 export function ResearchPanel() {
   const { createBots, loading: createBotsLoading } = useBatchCreateBots();
 
-  const bots = useGetAllBots();
+  const liveBots = useGetBotsByStatus(BotStatus.Live);
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
@@ -86,7 +85,7 @@ export function ResearchPanel() {
       [botId]: isSelected,
     }));
 
-    const bot = bots.find((bot) => bot.id === botId);
+    const bot = liveBots.find((bot) => bot.id === botId);
 
     if (isSelected && bot && !botsHistories[botId]) {
       const histories = transformHistories(
@@ -150,10 +149,6 @@ export function ResearchPanel() {
     setSelectedVirtualBot(null);
     onClose();
   };
-
-  const liveBots = useMemo(() => {
-    return bots.filter((bot) => bot.status === BotStatus.Live);
-  }, [bots]);
 
   return (
     <div className="flex w-full gap-8">
