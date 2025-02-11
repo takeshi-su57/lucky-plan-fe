@@ -108,6 +108,7 @@ export function useUpsertTag() {
           tag: tagInfo.tag,
         }),
         fragment: TAG_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "TagInfo",
         data: tagInfo,
       });
 
@@ -229,6 +230,7 @@ export function useUpsertCategory() {
           id: categoryInfo.id,
         }),
         fragment: TAG_CATEGORY_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "TagCategoryInfo",
         data: categoryInfo,
       });
 

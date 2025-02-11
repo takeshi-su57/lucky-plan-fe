@@ -28,6 +28,7 @@ type Bot {
   leaderContractId: Int!
   leaderEndedBlock: Int
   leaderStartedBlock: Int
+  planId: Int
   startedAt: DateTime
   status: BotStatus!
   strategyId: Int!
@@ -48,6 +49,7 @@ type BotDetails {
   leaderContractId: Int!
   leaderEndedBlock: Int
   leaderStartedBlock: Int
+  planId: Int
   startedAt: DateTime
   status: BotStatus!
   strategy: Strategy!
@@ -74,6 +76,7 @@ type BotWithMissions {
   leaderEndedBlock: Int
   leaderStartedBlock: Int
   missions: [Mission!]!
+  planId: Int
   startedAt: DateTime
   status: BotStatus!
   strategyId: Int!
@@ -135,6 +138,7 @@ input CreateBotAndStrategyInput {
   leaderAddress: String!
   leaderCollateralBaseline: Int!
   leaderContractId: Int!
+  planId: Int
   strategy: CreateStrategyInput!
 }
 
@@ -144,6 +148,7 @@ input CreateBotInput {
   leaderAddress: String!
   leaderCollateralBaseline: Int!
   leaderContractId: Int!
+  planId: Int
   strategyId: Int!
 }
 
@@ -152,6 +157,13 @@ input CreateContractInput {
   chainId: Int!
   description: String!
   lastBlockNumber: Int!
+}
+
+input CreatePlanInput {
+  description: String!
+  scheduledEnd: DateTime!
+  scheduledStart: DateTime!
+  title: String!
 }
 
 input CreateStrategyInput {
@@ -292,6 +304,7 @@ type MissionWithTasks {
 }
 
 type Mutation {
+  addBotsToPlan(botIds: [Int!]!, planId: Int!): PlanDetails!
   addTagToUser(input: ChangeUserTagInput!): User!
   addUser(input: AddUserInput!): User!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotDetails!]!
@@ -304,10 +317,12 @@ type Mutation {
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
   createBot(input: CreateBotInput!): BotDetails!
   createContract(input: CreateContractInput!): Contract!
+  createPlan(createPlanInput: CreatePlanInput!): PlanDetails!
   createStrategy(input: CreateStrategyInput!): Strategy!
   deleteBot(id: Int!): Int!
   deleteCategory(id: Int!): TagCategory!
   deleteTag(tag: String!): Tag!
+  endPlan(id: Int!): PlanDetails!
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
   ignoreMission(id: Int!): MissionShallowDetails!
@@ -318,7 +333,9 @@ type Mutation {
   removeStrategy(id: Int!): Strategy!
   removeTagFromUser(input: ChangeUserTagInput!): User!
   resumeSystem: Boolean!
+  startPlan(id: Int!): PlanDetails!
   stopBot(id: Int!): BotDetails!
+  updatePlan(updatePlanInput: UpdatePlanInput!): PlanDetails!
   updateStrategyMetadata(
     input: UpdateStrategyMetadataInput!
     key: String!
@@ -332,6 +349,25 @@ type Mutation {
 type PageInfo {
   endCursor: Int
   hasNextPage: Boolean!
+}
+
+type PlanDetails {
+  bots: [BotDetails!]!
+  description: String!
+  endedAt: DateTime
+  id: Int!
+  scheduledEnd: DateTime!
+  scheduledStart: DateTime!
+  startedAt: DateTime
+  status: PlanStatus!
+  title: String!
+}
+
+enum PlanStatus {
+  Created
+  Finished
+  Started
+  Stopped
 }
 
 type PnlSnapshot {
@@ -403,7 +439,6 @@ type Query {
   findStrategyMetadata(key: String!): StrategyMetadata!
   findTask(id: Int!): TaskWithActions
   getAllActions: [Action!]!
-  getAllBots: [BotDetails!]!
   getAllCategories: [TagCategory!]!
   getAllContracts: [Contract!]!
   getAllFollowerActions: [FollowerAction!]!
@@ -415,8 +450,11 @@ type Query {
   getAllTags: [Tag!]!
   getAllTasks: [TaskShallowDetails!]!
   getAllUsers: [User!]!
+  getBotsByStatus(status: BotStatus!): [BotDetails!]!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
   getPendingOrders(address: String!, contractId: Int!): [FollowerPendingOrder!]!
+  getPlanById(id: Int!): PlanDetails
+  getPlansByStatus(status: PlanStatus!): [PlanDetails!]!
   getPnlSnapshots(
     after: Int
     contractId: Int!
@@ -534,6 +572,15 @@ type TradePair {
   from: String!
   pairIndex: Int!
   to: String!
+}
+
+input UpdatePlanInput {
+  description: String
+  id: Int!
+  scheduledEnd: DateTime
+  scheduledStart: DateTime
+  status: PlanStatus!
+  title: String
 }
 
 input UpdateStrategyMetadataInput {

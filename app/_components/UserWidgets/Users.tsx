@@ -12,7 +12,6 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
-  Checkbox,
 } from "@nextui-org/react";
 import type { Selection } from "@nextui-org/react";
 import { Virtuoso } from "react-virtuoso";
@@ -43,11 +42,10 @@ export function Users() {
   const [selectedTags, setSelectedTags] = useState<Selection>(
     new Set((searchParams.get("tags") || "").split(",")),
   );
-  const [isAndOp, setIsAndOp] = useState(true);
 
   const selectedValue = useMemo(() => Array.from(selectedTags), [selectedTags]);
 
-  const allUsers = useGetUsersByTags(selectedValue as string[], isAndOp);
+  const allUsers = useGetUsersByTags(selectedValue as string[]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -94,10 +92,13 @@ export function Users() {
             <DropdownTrigger>
               <Button className="capitalize" variant="bordered">
                 {selectedValue.length > 0
-                  ? selectedValue.join(", ").replaceAll("_", " ")
+                  ? selectedValue
+                      .filter((item) => item.toString().trim() !== "")
+                      .join(", ")
                   : "Select Tags"}
               </Button>
             </DropdownTrigger>
+
             <DropdownMenu
               closeOnSelect={false}
               selectedKeys={selectedTags}
@@ -133,10 +134,6 @@ export function Users() {
               ))}
             </DropdownMenu>
           </Dropdown>
-
-          <Checkbox isSelected={isAndOp} onValueChange={setIsAndOp}>
-            {isAndOp ? "And" : "Or"}
-          </Checkbox>
         </div>
 
         <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>

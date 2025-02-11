@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import { Spinner } from "@nextui-org/react";
 
-import { ResearchPanel } from "@/app-components/ResearchWidgets/ResearchPanel";
+import { Plans } from "@/app-components/PlansWidget/Plans";
 
 export default function Page() {
   return (
     <Suspense fallback={<Spinner color="white" size="sm" />}>
-      <ResearchPanel />
+      <Plans />
     </Suspense>
   );
 }

@@ -7,7 +7,12 @@ import {
   Button,
   SelectItem,
   Select,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
 } from "@nextui-org/react";
+import type { Selection } from "@nextui-org/react";
 import { Address } from "viem";
 import { Virtuoso } from "react-virtuoso";
 import { nanoid } from "nanoid";
@@ -18,7 +23,7 @@ import {
   useGetAllContracts,
   useGetAllTradePairs,
 } from "@/app-hooks/useContract";
-import { useGetAllBots } from "@/app/_hooks/useAutomation";
+import { useGetBotsByStatus } from "@/app/_hooks/useAutomation";
 import { useGetUsersByTags } from "@/app/_hooks/useUser";
 import { useGetAvailableFollowers } from "@/app/_hooks/useFollower";
 import { useGetAllStrategyMetadata } from "@/app/_hooks/useStrategy";
@@ -35,6 +40,7 @@ import {
 import { PairChip } from "../LeaderboardWidgets/PairChip";
 
 import { VirtualBot } from "@/types";
+import { useGetAllTags } from "@/app/_hooks/useTag";
 
 export type CreateVirtualAutomationModalProps = {
   virtualFollowers: string[];
@@ -53,16 +59,26 @@ export function CreateVirtualAutomationModal({
   onOpenChange,
   onSave,
 }: CreateVirtualAutomationModalProps) {
-  const allLeaders = useGetUsersByTags(["LEADER"], false);
-
+  const allTags = useGetAllTags();
   const allFollowers = useGetAvailableFollowers(virtualFollowers);
   const allContracts = useGetAllContracts();
-  const allBots = useGetAllBots();
   const allStrategyMetadata = useGetAllStrategyMetadata();
+
+  const createBots = useGetBotsByStatus(BotStatus.Created);
+  const liveBots = useGetBotsByStatus(BotStatus.Live);
+  const stopBots = useGetBotsByStatus(BotStatus.Stop);
+
+  const [selectedTags, setSelectedTags] = useState<Selection>(
+    new Set(["LEADER"]),
+  );
+
+  const selectedValue = useMemo(() => Array.from(selectedTags), [selectedTags]);
+  const allLeaders = useGetUsersByTags(selectedValue as string[]);
 
   const [leaderAddress, setLeaderAddress] = useState<string | null>(null);
   const [followerAddress, setFollowerAddress] = useState<string | null>(null);
   const [leaderContractId, setLeaderContractId] = useState<string | null>(null);
+
   const [followerContractId, setFollowerContractId] = useState<string | null>(
     null,
   );
@@ -306,19 +322,17 @@ export function CreateVirtualAutomationModal({
   const updatedLeaders = useMemo(() => {
     const countsMap = new Map<string, number>();
 
-    allBots.forEach((bot) => {
-      if (bot.status === BotStatus.Live) {
-        countsMap.set(
-          bot.leaderAddress,
-          (countsMap.get(bot.leaderAddress) || 0) + 1,
-        );
-      }
+    [...createBots, ...liveBots, ...stopBots].forEach((bot) => {
+      countsMap.set(
+        bot.leaderAddress,
+        (countsMap.get(bot.leaderAddress) || 0) + 1,
+      );
     });
     return allLeaders.map((item) => ({
       ...item,
       count: countsMap.get(item.address) || 0,
     }));
-  }, [allBots, allLeaders]);
+  }, [createBots, liveBots, stopBots, allLeaders]);
 
   const {
     tradePairs: originalTradePairs,
@@ -398,25 +412,23 @@ export function CreateVirtualAutomationModal({
       ),
     );
 
-    console.log(
-      transformedHistories.filter((history) =>
-        availablePairNames.includes(history.pair.toLowerCase()),
-      ),
-    );
-
     return data;
   }, [
     collateralBaseline,
-    followerAvailableTradePairs,
     originalHistories,
     strategy,
     strategyHelper,
     ratioHelper,
     maxCollateralHelper,
     minCollateralHelper,
-    collateralBaselineHelper,
     maxLeverageHelper,
     minLeverageHelper,
+    ratio,
+    maxCollateral,
+    minCollateral,
+    maxLeverage,
+    minLeverage,
+    followerAvailableTradePairs,
   ]);
 
   return (
@@ -434,6 +446,48 @@ export function CreateVirtualAutomationModal({
         <div className="flex w-full gap-8">
           <div className="flex w-[200px] flex-col gap-8">
             <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex w-full items-center justify-between gap-2">
+                <span className="text-xs text-neutral-400">Filter:</span>
+
+                <div>
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <Button
+                        className="capitalize"
+                        size="sm"
+                        variant="bordered"
+                      >
+                        {selectedValue.length > 0
+                          ? selectedValue
+                              .filter((item) => item.toString().trim() !== "")
+                              .join(", ")
+                          : "Select Tags"}
+                      </Button>
+                    </DropdownTrigger>
+
+                    <DropdownMenu
+                      closeOnSelect={false}
+                      selectedKeys={selectedTags}
+                      selectionMode="multiple"
+                      variant="flat"
+                      onSelectionChange={setSelectedTags}
+                    >
+                      {allTags.map((tag) => (
+                        <DropdownItem key={tag.tag}>
+                          <div className="flex items-center gap-2">
+                            {tag.tag}
+                            <span
+                              className="h-5 w-10"
+                              style={{ background: tag.color }}
+                            />
+                          </div>
+                        </DropdownItem>
+                      ))}
+                    </DropdownMenu>
+                  </Dropdown>
+                </div>
+              </div>
+
               <Autocomplete
                 label="Leader"
                 variant="underlined"

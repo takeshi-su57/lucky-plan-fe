@@ -153,6 +153,7 @@ export function useChangeContractStatus() {
           id: contractInfo.id,
         }),
         fragment: CONTRACT_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "ContractInfo",
         data: contractInfo,
       });
     }

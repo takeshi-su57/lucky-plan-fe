@@ -1,4 +1,3 @@
-import { Strategy } from "@/graphql/gql/graphql";
 import { PersonalTradeHistory, TradeActionType } from "@/types";
 
 export function getHistoriesChartData(
@@ -310,11 +309,17 @@ export function transformHistories(
     return {
       ...history,
       collateralPriceUsd: 1,
-      pnl: history.pnl * (calculatedUSDPositionSize / originalUSDPositionSize),
+      pnl:
+        originalUSDPositionSize > 0
+          ? history.pnl * (calculatedUSDPositionSize / originalUSDPositionSize)
+          : 0,
       pnl_net:
-        history.pnl_net * (calculatedUSDPositionSize / originalUSDPositionSize),
+        originalUSDPositionSize > 0
+          ? history.pnl_net *
+            (calculatedUSDPositionSize / originalUSDPositionSize)
+          : 0,
       collateralDelta:
-        history.collateralDelta !== null
+        history.collateralDelta !== null && originalUSDPositionSize > 0
           ? history.collateralDelta *
             (calculatedUSDPositionSize / originalUSDPositionSize)
           : null,

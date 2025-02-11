@@ -7,7 +7,11 @@ import { useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
 import { CONTRACT_INFO_FRAGMENT_DOCUMENT } from "./useContract";
 import { STRATEGY_INFO_FRAGMENT_DOCUMENT } from "./useStrategy";
-import { BotDetails, BotDetailsInfoFragment } from "@/graphql/gql/graphql";
+import {
+  BotDetails,
+  BotDetailsInfoFragment,
+  BotStatus,
+} from "@/graphql/gql/graphql";
 import { FOLLOWER_INFO_FRAGMENT_DOCUMENT } from "./useFollower";
 import { MISSION_INFO_FRAGMENT_DOCUMENT } from "./useMission";
 
@@ -17,6 +21,7 @@ export const BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
     leaderAddress
     followerAddress
     strategyId
+    planId
     leaderContractId
     leaderCollateralBaseline
     leaderStartedBlock
@@ -83,9 +88,9 @@ export const BOTDETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   }
 `);
 
-export const GET_ALL_BOTS_DOCUMENT = graphql(`
-  query getAllBots {
-    getAllBots {
+export const GET_BOTS_BY_STATUS_DOCUMENT = graphql(`
+  query getBotsByStatus($status: BotStatus!) {
+    getBotsByStatus(status: $status) {
       ...BotDetailsInfo
     }
   }
@@ -137,7 +142,7 @@ export const STOP_BOT_DOCUMENT = graphql(`
   }
 `);
 
-function getBotFragment(
+export function getBotFragment(
   bot: {
     __typename?: "BotDetails";
   } & {
@@ -171,13 +176,16 @@ function getBotFragment(
   };
 }
 
-export function useGetAllBots() {
-  const { data } = useQuery(GET_ALL_BOTS_DOCUMENT, { variables: {} });
+export function useGetBotsByStatus(status?: BotStatus) {
+  const { data } = useQuery(GET_BOTS_BY_STATUS_DOCUMENT, {
+    variables: status ? { status } : undefined,
+  });
+
   return useMemo(() => {
     if (!data) {
       return [];
     }
-    return data.getAllBots.map(getBotFragment).sort((a, b) => a.id - b.id);
+    return data.getBotsByStatus.map(getBotFragment).sort((a, b) => a.id - b.id);
   }, [data]);
 }
 
@@ -221,12 +229,12 @@ export function useCreateBot() {
 
       client.cache.updateQuery(
         {
-          query: GET_ALL_BOTS_DOCUMENT,
-          variables: {},
+          query: GET_BOTS_BY_STATUS_DOCUMENT,
+          variables: { status: botInfo.status },
         },
         (data) => {
-          if (data && data.getAllBots.length > 0) {
-            const alreadyExists = data.getAllBots.filter(
+          if (data && data.getBotsByStatus.length > 0) {
+            const alreadyExists = data.getBotsByStatus.filter(
               (bot) =>
                 botInfo.id ===
                 getFragmentData(BOTDETAILS_INFO_FRAGMENT_DOCUMENT, bot).id,
@@ -238,11 +246,11 @@ export function useCreateBot() {
 
             return {
               ...data,
-              getAllBots: [...data.getAllBots, botInfo],
+              getBotsByStatus: [...data.getBotsByStatus, botInfo],
             };
           } else {
             return {
-              getAllBots: [botInfo],
+              getBotsByStatus: [botInfo],
             };
           }
         },
@@ -254,7 +262,7 @@ export function useCreateBot() {
 }
 
 export function useBatchCreateBots() {
-  const [createBots, { data: newData, error, loading }] = useMutation(
+  const [batchCreateBots, { data: newData, error, loading }] = useMutation(
     BATCH_CREATE_BOTS_DOCUMENT,
   );
   const client = useApolloClient();
@@ -269,39 +277,40 @@ export function useBatchCreateBots() {
         variant: "success",
       });
 
-      client.cache.updateQuery(
-        {
-          query: GET_ALL_BOTS_DOCUMENT,
-          variables: {},
-        },
-        (data) => {
-          if (data && data.getAllBots.length > 0) {
-            const newBots = botInfo.filter(
-              (bot) =>
-                !data.getAllBots.some(
-                  (existingBot) =>
-                    getFragmentData(
-                      BOTDETAILS_INFO_FRAGMENT_DOCUMENT,
-                      existingBot,
-                    ).id === bot.id,
-                ),
-            );
+      botInfo.forEach((bot) => {
+        client.cache.updateQuery(
+          {
+            query: GET_BOTS_BY_STATUS_DOCUMENT,
+            variables: { status: bot.status },
+          },
+          (data) => {
+            if (data && data.getBotsByStatus.length > 0) {
+              const alreadyExists = data.getBotsByStatus.filter(
+                (item) =>
+                  bot.id ===
+                  getFragmentData(BOTDETAILS_INFO_FRAGMENT_DOCUMENT, item).id,
+              );
 
-            return {
-              ...data,
-              getAllBots: [...data.getAllBots, ...newBots],
-            };
-          } else {
-            return {
-              getAllBots: [...botInfo],
-            };
-          }
-        },
-      );
+              if (alreadyExists.length > 0) {
+                return data;
+              }
+
+              return {
+                ...data,
+                getBotsByStatus: [...data.getBotsByStatus, bot],
+              };
+            } else {
+              return {
+                getBotsByStatus: [bot],
+              };
+            }
+          },
+        );
+      });
     }
   }, [client.cache, newData, error, enqueueSnackbar]);
 
-  return { createBots, loading };
+  return { batchCreateBots, loading };
 }
 
 export function useDeleteBot() {
@@ -319,14 +328,14 @@ export function useDeleteBot() {
 
       client.cache.updateQuery(
         {
-          query: GET_ALL_BOTS_DOCUMENT,
-          variables: {},
+          query: GET_BOTS_BY_STATUS_DOCUMENT,
+          variables: { status: BotStatus.Created },
         },
         (data) => {
-          if (data && data.getAllBots.length > 0) {
+          if (data && data.getBotsByStatus.length > 0) {
             return {
               ...data,
-              getAllBots: data.getAllBots.filter(
+              getBotsByStatus: data.getBotsByStatus.filter(
                 (bot) =>
                   deletedBotId !==
                   getFragmentData(BOTDETAILS_INFO_FRAGMENT_DOCUMENT, bot).id,
@@ -362,6 +371,7 @@ export function useLiveBot() {
           id: botInfo.id,
         }),
         fragment: BOTDETAILS_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "BotDetailsInfo",
         data: botInfo,
       });
     }
@@ -389,6 +399,7 @@ export function useStopBot() {
           id: botInfo.id,
         }),
         fragment: BOTDETAILS_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "BotDetailsInfo",
         data: botInfo,
       });
     }
