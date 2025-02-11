@@ -62,12 +62,12 @@ const documents = {
     "\n  subscription missionUpdated {\n    missionUpdated {\n      ...MissionShallowDetailsInfo\n    }\n  }\n": types.MissionUpdatedDocument,
     "\n  fragment PlanDetailsInfo on PlanDetails {\n    id\n    title\n    description\n    status\n    scheduledStart\n    scheduledEnd\n    startedAt\n    endedAt\n    bots {\n      ...BotDetailsInfo\n    }\n  }\n": types.PlanDetailsInfoFragmentDoc,
     "\n  query getPlansByStatus($status: PlanStatus!) {\n    getPlansByStatus(status: $status) {\n      ...PlanDetailsInfo\n    }\n  }\n": types.GetPlansByStatusDocument,
+    "\n  query getPlanById($id: Int!) {\n    getPlanById(id: $id) {\n      ...PlanDetailsInfo\n    }\n  }\n": types.GetPlanByIdDocument,
     "\n  mutation createPlan($createPlanInput: CreatePlanInput!) {\n    createPlan(createPlanInput: $createPlanInput) {\n      ...PlanDetailsInfo\n    }\n  }\n": types.CreatePlanDocument,
     "\n  mutation updatePlan($updatePlanInput: UpdatePlanInput!) {\n    updatePlan(updatePlanInput: $updatePlanInput) {\n      ...PlanDetailsInfo\n    }\n  }\n": types.UpdatePlanDocument,
     "\n  mutation startPlan($id: Int!) {\n    startPlan(id: $id) {\n      ...PlanDetailsInfo\n    }\n  }\n": types.StartPlanDocument,
     "\n  mutation endPlan($id: Int!) {\n    endPlan(id: $id) {\n      ...PlanDetailsInfo\n    }\n  }\n": types.EndPlanDocument,
-    "\n  mutation addBotToPlan($botId: Int!, $planId: Int!) {\n    addBotToPlan(botId: $botId, planId: $planId) {\n      ...PlanDetailsInfo\n    }\n  }\n": types.AddBotToPlanDocument,
-    "\n  mutation removeBotFromPlan($botId: Int!, $planId: Int!) {\n    removeBotFromPlan(botId: $botId, planId: $planId) {\n      ...PlanDetailsInfo\n    }\n  }\n": types.RemoveBotFromPlanDocument,
+    "\n  mutation addBotsToPlan($botIds: [Int!]!, $planId: Int!) {\n    addBotsToPlan(botIds: $botIds, planId: $planId) {\n      ...PlanDetailsInfo\n    }\n  }\n": types.AddBotsToPlanDocument,
     "\n  fragment StrategyMetadataInfo on StrategyMetadata {\n    key\n    title\n    description\n  }\n": types.StrategyMetadataInfoFragmentDoc,
     "\n  fragment StrategyInfo on Strategy {\n    id\n    lifeTime\n    maxCollateral\n    minCollateral\n    maxLeverage\n    minLeverage\n    collateralBaseline\n    params\n    ratio\n    strategyKey\n  }\n": types.StrategyInfoFragmentDoc,
     "\n  query getAllStrategyMetadata {\n    getAllStrategyMetadata {\n      ...StrategyMetadataInfo\n    }\n  }\n": types.GetAllStrategyMetadataDocument,
@@ -311,6 +311,10 @@ export function graphql(source: "\n  query getPlansByStatus($status: PlanStatus!
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  query getPlanById($id: Int!) {\n    getPlanById(id: $id) {\n      ...PlanDetailsInfo\n    }\n  }\n"): (typeof documents)["\n  query getPlanById($id: Int!) {\n    getPlanById(id: $id) {\n      ...PlanDetailsInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  mutation createPlan($createPlanInput: CreatePlanInput!) {\n    createPlan(createPlanInput: $createPlanInput) {\n      ...PlanDetailsInfo\n    }\n  }\n"): (typeof documents)["\n  mutation createPlan($createPlanInput: CreatePlanInput!) {\n    createPlan(createPlanInput: $createPlanInput) {\n      ...PlanDetailsInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -327,11 +331,7 @@ export function graphql(source: "\n  mutation endPlan($id: Int!) {\n    endPlan(
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation addBotToPlan($botId: Int!, $planId: Int!) {\n    addBotToPlan(botId: $botId, planId: $planId) {\n      ...PlanDetailsInfo\n    }\n  }\n"): (typeof documents)["\n  mutation addBotToPlan($botId: Int!, $planId: Int!) {\n    addBotToPlan(botId: $botId, planId: $planId) {\n      ...PlanDetailsInfo\n    }\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  mutation removeBotFromPlan($botId: Int!, $planId: Int!) {\n    removeBotFromPlan(botId: $botId, planId: $planId) {\n      ...PlanDetailsInfo\n    }\n  }\n"): (typeof documents)["\n  mutation removeBotFromPlan($botId: Int!, $planId: Int!) {\n    removeBotFromPlan(botId: $botId, planId: $planId) {\n      ...PlanDetailsInfo\n    }\n  }\n"];
+export function graphql(source: "\n  mutation addBotsToPlan($botIds: [Int!]!, $planId: Int!) {\n    addBotsToPlan(botIds: $botIds, planId: $planId) {\n      ...PlanDetailsInfo\n    }\n  }\n"): (typeof documents)["\n  mutation addBotsToPlan($botIds: [Int!]!, $planId: Int!) {\n    addBotsToPlan(botIds: $botIds, planId: $planId) {\n      ...PlanDetailsInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

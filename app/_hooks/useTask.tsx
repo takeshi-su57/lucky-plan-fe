@@ -272,6 +272,7 @@ export function useSubscribeTask() {
             id: taskInfo.id,
           }),
           fragment: TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          fragmentName: "TaskShallowDetailsInfo",
           data: taskInfo,
         });
       });
@@ -344,6 +345,7 @@ export function usePerformTask() {
           id: taskInfo.id,
         }),
         fragment: TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "TaskShallowDetailsInfo",
         data: taskInfo,
       });
     }

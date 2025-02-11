@@ -262,7 +262,7 @@ export function useCreateBot() {
 }
 
 export function useBatchCreateBots() {
-  const [createBots, { data: newData, error, loading }] = useMutation(
+  const [batchCreateBots, { data: newData, error, loading }] = useMutation(
     BATCH_CREATE_BOTS_DOCUMENT,
   );
   const client = useApolloClient();
@@ -310,7 +310,7 @@ export function useBatchCreateBots() {
     }
   }, [client.cache, newData, error, enqueueSnackbar]);
 
-  return { createBots, loading };
+  return { batchCreateBots, loading };
 }
 
 export function useDeleteBot() {
@@ -371,6 +371,7 @@ export function useLiveBot() {
           id: botInfo.id,
         }),
         fragment: BOTDETAILS_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "BotDetailsInfo",
         data: botInfo,
       });
     }
@@ -398,6 +399,7 @@ export function useStopBot() {
           id: botInfo.id,
         }),
         fragment: BOTDETAILS_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "BotDetailsInfo",
         data: botInfo,
       });
     }

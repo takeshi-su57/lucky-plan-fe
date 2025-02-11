@@ -238,12 +238,14 @@ export function useSubscribeFollowerDetailUpdated(contractId: string | null) {
         const fragment = client.cache.readFragment({
           id,
           fragment: FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          fragmentName: "FollowerDetailInfo",
         });
 
         if (fragment) {
           client.cache.writeFragment({
             id,
             fragment: FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT,
+            fragmentName: "FollowerDetailInfo",
             data: follower,
           });
         } else {

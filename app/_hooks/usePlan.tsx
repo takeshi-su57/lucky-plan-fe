@@ -36,6 +36,14 @@ export const GET_PLANS_BY_STATUS_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_PLAN_BY_ID_DOCUMENT = graphql(`
+  query getPlanById($id: Int!) {
+    getPlanById(id: $id) {
+      ...PlanDetailsInfo
+    }
+  }
+`);
+
 export const CREATE_PLAN_DOCUMENT = graphql(`
   mutation createPlan($createPlanInput: CreatePlanInput!) {
     createPlan(createPlanInput: $createPlanInput) {
@@ -68,17 +76,9 @@ export const END_PLAN_DOCUMENT = graphql(`
   }
 `);
 
-export const ADD_BOT_TO_PLAN_DOCUMENT = graphql(`
-  mutation addBotToPlan($botId: Int!, $planId: Int!) {
-    addBotToPlan(botId: $botId, planId: $planId) {
-      ...PlanDetailsInfo
-    }
-  }
-`);
-
-export const REMOVE_BOT_FROM_PLAN_DOCUMENT = graphql(`
-  mutation removeBotFromPlan($botId: Int!, $planId: Int!) {
-    removeBotFromPlan(botId: $botId, planId: $planId) {
+export const ADD_BOTS_TO_PLAN_DOCUMENT = graphql(`
+  mutation addBotsToPlan($botIds: [Int!]!, $planId: Int!) {
+    addBotsToPlan(botIds: $botIds, planId: $planId) {
       ...PlanDetailsInfo
     }
   }
@@ -113,6 +113,19 @@ export function useGetPlansByStatus(status?: PlanStatus) {
     return data.getPlansByStatus
       .map(getPlanFragment)
       .sort((a, b) => a.id - b.id);
+  }, [data]);
+}
+
+export function useGetPlanById(id: number) {
+  const { data } = useQuery(GET_PLAN_BY_ID_DOCUMENT, {
+    variables: { id },
+  });
+
+  return useMemo(() => {
+    if (!data?.getPlanById) {
+      return null;
+    }
+    return getPlanFragment(data.getPlanById);
   }, [data]);
 }
 
@@ -183,6 +196,7 @@ export function useStartPlan() {
           id: planInfo.id,
         }),
         fragment: PLAN_DETAILS_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "PlanDetailsInfo",
         data: planInfo,
       });
     }
@@ -212,6 +226,7 @@ export function useEndPlan() {
           id: planInfo.id,
         }),
         fragment: PLAN_DETAILS_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "PlanDetailsInfo",
         data: planInfo,
       });
     }
@@ -220,9 +235,9 @@ export function useEndPlan() {
   return { endPlan, loading };
 }
 
-export function useAddBotToPlan() {
-  const [addBotToPlan, { data: newData, error, loading }] = useMutation(
-    ADD_BOT_TO_PLAN_DOCUMENT,
+export function useAddBotsToPlan() {
+  const [addBotsToPlan, { data: newData, error, loading }] = useMutation(
+    ADD_BOTS_TO_PLAN_DOCUMENT,
   );
 
   const client = useApolloClient();
@@ -230,9 +245,9 @@ export function useAddBotToPlan() {
 
   useEffect(() => {
     if (newData && !error) {
-      const planInfo = getPlanFragment(newData.addBotToPlan);
+      const planInfo = getPlanFragment(newData.addBotsToPlan);
 
-      enqueueSnackbar("Success at adding bot to plan!", {
+      enqueueSnackbar("Success at adding bots to plan!", {
         variant: "success",
       });
 
@@ -242,40 +257,11 @@ export function useAddBotToPlan() {
           id: planInfo.id,
         }),
         fragment: PLAN_DETAILS_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "PlanDetailsInfo",
         data: planInfo,
       });
     }
   }, [client.cache, newData, error, enqueueSnackbar]);
 
-  return { addBotToPlan, loading };
-}
-
-export function useRemoveBotFromPlan() {
-  const [removeBotFromPlan, { data: newData, error, loading }] = useMutation(
-    REMOVE_BOT_FROM_PLAN_DOCUMENT,
-  );
-
-  const client = useApolloClient();
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (newData && !error) {
-      const planInfo = getPlanFragment(newData.removeBotFromPlan);
-
-      enqueueSnackbar("Success at removing bot from plan!", {
-        variant: "success",
-      });
-
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: planInfo.__typename,
-          id: planInfo.id,
-        }),
-        fragment: PLAN_DETAILS_INFO_FRAGMENT_DOCUMENT,
-        data: planInfo,
-      });
-    }
-  }, [client.cache, newData, error, enqueueSnackbar]);
-
-  return { removeBotFromPlan, loading };
+  return { addBotsToPlan, loading };
 }

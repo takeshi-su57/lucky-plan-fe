@@ -304,7 +304,7 @@ type MissionWithTasks {
 }
 
 type Mutation {
-  addBotToPlan(botId: Int!, planId: Int!): PlanDetails!
+  addBotsToPlan(botIds: [Int!]!, planId: Int!): PlanDetails!
   addTagToUser(input: ChangeUserTagInput!): User!
   addUser(input: AddUserInput!): User!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotDetails!]!
@@ -330,7 +330,6 @@ type Mutation {
   liveBot(id: Int!): BotDetails!
   pauseSystem: Boolean!
   performTask(id: Int!): TaskShallowDetails!
-  removeBotFromPlan(botId: Int!, planId: Int!): PlanDetails!
   removeStrategy(id: Int!): Strategy!
   removeTagFromUser(input: ChangeUserTagInput!): User!
   resumeSystem: Boolean!
@@ -454,6 +453,7 @@ type Query {
   getBotsByStatus(status: BotStatus!): [BotDetails!]!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
   getPendingOrders(address: String!, contractId: Int!): [FollowerPendingOrder!]!
+  getPlanById(id: Int!): PlanDetails
   getPlansByStatus(status: PlanStatus!): [PlanDetails!]!
   getPnlSnapshots(
     after: Int
