@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   Tab,
   Tabs,
@@ -59,7 +59,6 @@ export function Automations() {
               }
             }}
           >
-            <Tab key="all" title="All" />
             <Tab key="created" title="Created" />
             <Tab key="live" title="Live" />
             <Tab key="stop" title="Stop" />

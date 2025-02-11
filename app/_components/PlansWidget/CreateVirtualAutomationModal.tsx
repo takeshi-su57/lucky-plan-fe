@@ -1,8 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
+import { ChangeEventHandler, useEffect, useMemo, useState } from "react";
+import {
+  Autocomplete,
+  AutocompleteItem,
+  Button,
+  SelectItem,
+  Select,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@nextui-org/react";
+import type { Selection } from "@nextui-org/react";
 import { Address } from "viem";
+import { Virtuoso } from "react-virtuoso";
+import { nanoid } from "nanoid";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 
@@ -10,11 +23,11 @@ import {
   useGetAllContracts,
   useGetAllTradePairs,
 } from "@/app-hooks/useContract";
-import { useCreateBot, useGetBotsByStatus } from "@/app/_hooks/useAutomation";
+import { useGetBotsByStatus } from "@/app/_hooks/useAutomation";
 import { useGetUsersByTags } from "@/app/_hooks/useUser";
 import { useGetAvailableFollowers } from "@/app/_hooks/useFollower";
-import { useGetAllStrategy } from "@/app/_hooks/useStrategy";
-import { shrinkAddress } from "@/utils";
+import { useGetAllStrategyMetadata } from "@/app/_hooks/useStrategy";
+import { shrinkAddress, lifeTimeItems } from "@/utils";
 import { NumericInput } from "@/components/inputs/NumericInput";
 import { BotStatus } from "@/graphql/gql/graphql";
 import { useGetPersonalTradeHistories } from "@/app/_hooks/useGetPersonalTradeHistories";
@@ -25,38 +38,61 @@ import {
   transformHistories,
 } from "@/utils/historiesChart";
 import { PairChip } from "../LeaderboardWidgets/PairChip";
-import { Virtuoso } from "react-virtuoso";
 
-export type CreateAutomationModalProps = {
+import { VirtualBot } from "@/types";
+import { useGetAllTags } from "@/app/_hooks/useTag";
+
+export type CreateVirtualAutomationModalProps = {
+  virtualFollowers: string[];
+  virtualBot: VirtualBot | null;
+  onSave: (value: VirtualBot) => void;
   isOpen: boolean;
   onClose: () => void;
   onOpenChange: (value: boolean) => void;
 };
 
-export function CreateAutomationModal({
+export function CreateVirtualAutomationModal({
+  virtualFollowers,
+  virtualBot,
   isOpen,
   onClose,
   onOpenChange,
-}: CreateAutomationModalProps) {
-  const createBot = useCreateBot();
-
-  const allLeaders = useGetUsersByTags(["LEADER"]);
-  const allFollowers = useGetAvailableFollowers([]);
+  onSave,
+}: CreateVirtualAutomationModalProps) {
+  const allTags = useGetAllTags();
+  const allFollowers = useGetAvailableFollowers(virtualFollowers);
   const allContracts = useGetAllContracts();
-  const allStrategies = useGetAllStrategy();
+  const allStrategyMetadata = useGetAllStrategyMetadata();
 
-  const createdBots = useGetBotsByStatus(BotStatus.Created);
+  const createBots = useGetBotsByStatus(BotStatus.Created);
   const liveBots = useGetBotsByStatus(BotStatus.Live);
   const stopBots = useGetBotsByStatus(BotStatus.Stop);
+
+  const [selectedTags, setSelectedTags] = useState<Selection>(
+    new Set(["LEADER"]),
+  );
+
+  const selectedValue = useMemo(() => Array.from(selectedTags), [selectedTags]);
+  const allLeaders = useGetUsersByTags(selectedValue as string[]);
 
   const [leaderAddress, setLeaderAddress] = useState<string | null>(null);
   const [followerAddress, setFollowerAddress] = useState<string | null>(null);
   const [leaderContractId, setLeaderContractId] = useState<string | null>(null);
+
   const [followerContractId, setFollowerContractId] = useState<string | null>(
     null,
   );
-  const [strategyId, setStrategyId] = useState<string | null>(null);
-  const [collateralBaseline, setCollateralBaseline] = useState<string>("");
+  const [leaderCollateralBaseline, setLeaderCollateralBaseline] =
+    useState<string>("");
+
+  const [strategy, setStrategy] = useState<string>();
+  const [ratio, setRatio] = useState("100");
+  const [lifeTimeScale, setLifeTimeScale] = useState("1m");
+  const [maxCollateral, setMaxCollateral] = useState("");
+  const [minCollateral, setMinCollateral] = useState("");
+  const [collateralBaseline, setCollateralBaseline] = useState("");
+  const [maxLeverage, setMaxLeverage] = useState("200");
+  const [minLeverage, setMinLeverage] = useState("1.1");
 
   const followerAvailableTradePairs = useGetAllTradePairs(
     followerContractId ? +followerContractId : undefined,
@@ -71,31 +107,214 @@ export function CreateAutomationModal({
     leaderAddress || null,
   );
 
+  useEffect(() => {
+    if (virtualBot) {
+      setLeaderAddress(virtualBot.leaderAddress);
+      setFollowerAddress(virtualBot.followerAddress);
+      setLeaderContractId(virtualBot.leaderContract.contractId.toString());
+      setFollowerContractId(virtualBot.followerContract.contractId.toString());
+      setLeaderCollateralBaseline(
+        virtualBot.leaderCollateralBaseline.toString(),
+      );
+
+      setStrategy(virtualBot.strategy.strategyKey);
+      setRatio(virtualBot.strategy.ratio.toString());
+
+      const lifeTime = lifeTimeItems.find(
+        (item) => item.value === virtualBot.strategy.lifeTime,
+      );
+
+      if (lifeTime) {
+        setLifeTimeScale(lifeTime.id);
+      }
+
+      setCollateralBaseline(virtualBot.strategy.collateralBaseline.toString());
+
+      setMaxCollateral(virtualBot.strategy.maxCollateral.toString());
+      setMinCollateral(virtualBot.strategy.minCollateral.toString());
+      setMaxLeverage(virtualBot.strategy.maxLeverage.toString());
+      setMinLeverage(virtualBot.strategy.minLeverage.toString());
+    }
+  }, [virtualBot]);
+
+  const handleChangeStrategy: ChangeEventHandler<HTMLSelectElement> = (
+    event,
+  ) => {
+    const value = event.target.value;
+
+    if (value.trim() !== "") {
+      if (value === "equalCopy") {
+        setRatio("100");
+      }
+      setStrategy(value);
+    }
+  };
+
+  const handleChangeLifetime: ChangeEventHandler<HTMLSelectElement> = (
+    event,
+  ) => {
+    const value = event.target.value;
+
+    if (value.trim() !== "") {
+      setLifeTimeScale(value);
+    }
+  };
+
+  let strategyHelper = "";
+  let ratioHelper = "";
+  let maxCollateralHelper = "";
+  let minCollateralHelper = "";
+  let collateralBaselineHelper = "";
+  let maxLeverageHelper = "";
+  let minLeverageHelper = "";
+
+  if (!strategy) {
+    strategyHelper = "Please select strategy";
+  }
+
+  if (Number.isNaN(+ratio)) {
+    ratioHelper = "Invalid ratio";
+  } else {
+    if (+ratio <= 0) {
+      ratioHelper = "Invalid ratio";
+    }
+  }
+
+  if (Number.isNaN(+maxCollateral)) {
+    maxCollateralHelper = "Invalid max collateral";
+  } else {
+    if (+maxCollateral < 5) {
+      maxCollateralHelper = "Too small max collateral";
+    }
+  }
+
+  if (Number.isNaN(+minCollateral)) {
+    minCollateralHelper = "Invalid min collateral";
+  } else {
+    if (+minCollateral > +maxCollateral) {
+      minCollateralHelper = "Too big min collateral";
+    }
+
+    if (+minCollateral < 5) {
+      minCollateralHelper = "Too small min collateral";
+    }
+  }
+
+  if (Number.isNaN(+collateralBaseline)) {
+    collateralBaselineHelper = "Invalid collateral baseline";
+  } else {
+    if (+collateralBaseline > +maxCollateral) {
+      collateralBaselineHelper = "Too big collateral baseline";
+    }
+
+    if (+collateralBaseline < +minCollateral) {
+      collateralBaselineHelper = "Too small collateral baseline";
+    }
+  }
+
+  if (Number.isNaN(+maxLeverage)) {
+    maxLeverageHelper = "Invalid max leverage";
+  } else {
+    if (+maxLeverage > 200) {
+      maxLeverageHelper = "Too big max leverage";
+    }
+
+    if (+maxLeverage < 1.1) {
+      maxLeverageHelper = "Too small max leverage";
+    }
+  }
+
+  if (Number.isNaN(+minLeverage)) {
+    minLeverageHelper = "Invalid min leverage";
+  } else {
+    if (+minLeverage > +maxLeverage) {
+      minLeverageHelper = "Too big min leverage";
+    }
+
+    if (+minLeverage < 1.1) {
+      minLeverageHelper = "Too small min leverage";
+    }
+  }
+
   const isDisabled =
     !leaderAddress ||
     !followerAddress ||
     !leaderContractId ||
     !followerContractId ||
-    !collateralBaseline ||
-    !strategyId;
+    !collateralBaseline;
+
+  const isDisabledStrategy =
+    strategyHelper.trim() !== "" ||
+    (strategy === "ratioCopy" && ratioHelper.trim() !== "") ||
+    maxCollateralHelper.trim() !== "" ||
+    minCollateralHelper.trim() !== "" ||
+    maxLeverageHelper.trim() !== "" ||
+    minLeverageHelper.trim() !== "";
 
   const handleConfirm = () => {
     if (isDisabled) {
       return;
     }
 
-    createBot({
-      variables: {
-        input: {
-          leaderAddress,
-          followerAddress,
-          leaderContractId: +leaderContractId,
-          followerContractId: +followerContractId,
-          strategyId: +strategyId,
-          leaderCollateralBaseline: Math.floor(+collateralBaseline),
-        },
+    if (
+      !strategy ||
+      (strategy === "ratioCopty" && ratio.trim() === "") ||
+      lifeTimeScale.trim() === "" ||
+      maxCollateral.trim() === "" ||
+      minCollateral.trim() === "" ||
+      collateralBaseline.trim() === "" ||
+      maxLeverage.trim() === "" ||
+      minLeverage.trim() === ""
+    ) {
+      return;
+    }
+
+    const lifeTime = lifeTimeItems.find((item) => item.id === lifeTimeScale);
+
+    const followerContract = allContracts.find(
+      (item) => item.id === +followerContractId,
+    );
+
+    const leaderContract = allContracts.find(
+      (item) => item.id === +leaderContractId,
+    );
+
+    if (!lifeTime || !followerContract || !leaderContract) {
+      return;
+    }
+
+    onSave({
+      virtualId: virtualBot?.virtualId || nanoid(),
+      followerAddress,
+      followerContract: {
+        chainId: followerContract.chainId,
+        address: followerContract.address,
+        backendUrl: followerContract.backendUrl!,
+        contractId: followerContract.id,
+      },
+      leaderAddress,
+      leaderContract: {
+        chainId: leaderContract.chainId,
+        address: leaderContract.address,
+        backendUrl: leaderContract.backendUrl!,
+        contractId: leaderContract.id,
+      },
+      leaderCollateralBaseline: Math.floor(+leaderCollateralBaseline),
+      strategy: {
+        strategyKey: strategy,
+        ratio: +ratio,
+        collateralBaseline: +collateralBaseline,
+        lifeTime: lifeTime.value,
+        maxCollateral: +maxCollateral,
+        maxLeverage: +maxLeverage,
+        minCollateral: +minCollateral,
+        minLeverage: +minLeverage,
       },
     });
+
+    setLeaderAddress(null);
+    setFollowerAddress(null);
+    setLeaderCollateralBaseline("");
 
     onClose();
   };
@@ -103,7 +322,7 @@ export function CreateAutomationModal({
   const updatedLeaders = useMemo(() => {
     const countsMap = new Map<string, number>();
 
-    [...createdBots, ...liveBots, ...stopBots].forEach((bot) => {
+    [...createBots, ...liveBots, ...stopBots].forEach((bot) => {
       countsMap.set(
         bot.leaderAddress,
         (countsMap.get(bot.leaderAddress) || 0) + 1,
@@ -113,7 +332,7 @@ export function CreateAutomationModal({
       ...item,
       count: countsMap.get(item.address) || 0,
     }));
-  }, [createdBots, liveBots, stopBots, allLeaders]);
+  }, [createBots, liveBots, stopBots, allLeaders]);
 
   const {
     tradePairs: originalTradePairs,
@@ -145,11 +364,17 @@ export function CreateAutomationModal({
   } = useMemo(() => {
     const baseline = Math.floor(+collateralBaseline);
 
-    const strategy = strategyId
-      ? allStrategies.find((item) => item.id === +strategyId)
-      : null;
-
-    if (!originalHistories || Number.isNaN(baseline) || !strategy) {
+    if (
+      !originalHistories ||
+      Number.isNaN(baseline) ||
+      !strategy ||
+      strategyHelper.trim() !== "" ||
+      (strategy === "ratioCopy" && ratioHelper.trim() !== "") ||
+      maxCollateralHelper.trim() !== "" ||
+      minCollateralHelper.trim() !== "" ||
+      maxLeverageHelper.trim() !== "" ||
+      minLeverageHelper.trim() !== ""
+    ) {
       return {
         pnlChartData: [],
         inOutChartData: [],
@@ -166,24 +391,44 @@ export function CreateAutomationModal({
     const transformedHistories = transformHistories(
       originalHistories,
       baseline,
-      strategy,
+      {
+        strategyKey: strategy,
+        ratio: +ratio,
+        collateralBaseline: +collateralBaseline,
+        maxCollateral: +maxCollateral,
+        minCollateral: +minCollateral,
+        maxLeverage: +maxLeverage * 1000,
+        minLeverage: +minLeverage * 1000,
+      },
     );
 
     const availablePairNames = followerAvailableTradePairs.map((item) =>
       `${item.from}/${item.to}`.toLowerCase(),
     );
 
-    return getHistoriesChartData(
+    const data = getHistoriesChartData(
       transformedHistories.filter((history) =>
         availablePairNames.includes(history.pair.toLowerCase()),
       ),
     );
+
+    return data;
   }, [
-    allStrategies,
     collateralBaseline,
-    followerAvailableTradePairs,
     originalHistories,
-    strategyId,
+    strategy,
+    strategyHelper,
+    ratioHelper,
+    maxCollateralHelper,
+    minCollateralHelper,
+    maxLeverageHelper,
+    minLeverageHelper,
+    ratio,
+    maxCollateral,
+    minCollateral,
+    maxLeverage,
+    minLeverage,
+    followerAvailableTradePairs,
   ]);
 
   return (
@@ -201,6 +446,48 @@ export function CreateAutomationModal({
         <div className="flex w-full gap-8">
           <div className="flex w-[200px] flex-col gap-8">
             <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex w-full items-center justify-between gap-2">
+                <span className="text-xs text-neutral-400">Filter:</span>
+
+                <div>
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <Button
+                        className="capitalize"
+                        size="sm"
+                        variant="bordered"
+                      >
+                        {selectedValue.length > 0
+                          ? selectedValue
+                              .filter((item) => item.toString().trim() !== "")
+                              .join(", ")
+                          : "Select Tags"}
+                      </Button>
+                    </DropdownTrigger>
+
+                    <DropdownMenu
+                      closeOnSelect={false}
+                      selectedKeys={selectedTags}
+                      selectionMode="multiple"
+                      variant="flat"
+                      onSelectionChange={setSelectedTags}
+                    >
+                      {allTags.map((tag) => (
+                        <DropdownItem key={tag.tag}>
+                          <div className="flex items-center gap-2">
+                            {tag.tag}
+                            <span
+                              className="h-5 w-10"
+                              style={{ background: tag.color }}
+                            />
+                          </div>
+                        </DropdownItem>
+                      ))}
+                    </DropdownMenu>
+                  </Dropdown>
+                </div>
+              </div>
+
               <Autocomplete
                 label="Leader"
                 variant="underlined"
@@ -308,49 +595,102 @@ export function CreateAutomationModal({
               </Autocomplete>
 
               <NumericInput
+                amount={leaderCollateralBaseline}
+                onChange={setLeaderCollateralBaseline}
+                label="Leader Collateral Baseline"
+              />
+
+              <Select
+                variant="underlined"
+                label="Strategy"
+                selectedKeys={strategy ? [strategy] : undefined}
+                onChange={handleChangeStrategy}
+                selectionMode="single"
+                className="flex-1"
+                errorMessage={strategyHelper}
+                isInvalid={strategyHelper.trim() !== ""}
+              >
+                {allStrategyMetadata.map((metadata) => (
+                  <SelectItem key={metadata.key}>{metadata.title}</SelectItem>
+                ))}
+              </Select>
+
+              <NumericInput
+                amount={ratio}
+                onChange={setRatio}
+                isDisabled={strategy !== "ratioCopy"}
+                label="Ratio"
+                errorMessage={strategy === "ratioCopy" && ratioHelper}
+                isInvalid={
+                  strategy === "ratioCopy" && ratioHelper.trim() !== ""
+                }
+              />
+
+              <Select
+                variant="underlined"
+                label="Lifetime"
+                selectedKeys={lifeTimeScale ? [lifeTimeScale] : undefined}
+                onChange={handleChangeLifetime}
+                selectionMode="single"
+                className="flex-1"
+                isDisabled={
+                  strategy === "ratioCopy" && ratioHelper.trim() !== ""
+                }
+              >
+                {lifeTimeItems.map((item) => (
+                  <SelectItem key={item.id}>{item.label}</SelectItem>
+                ))}
+              </Select>
+
+              <NumericInput
+                amount={maxCollateral}
+                onChange={setMaxCollateral}
+                label="Max Collateral"
+                errorMessage={maxCollateralHelper}
+                isInvalid={maxCollateralHelper.trim() !== ""}
+              />
+
+              <NumericInput
+                amount={minCollateral}
+                onChange={setMinCollateral}
+                label="Min Collateral"
+                isDisabled={maxCollateralHelper.trim() !== ""}
+                errorMessage={minCollateralHelper}
+                isInvalid={minCollateralHelper.trim() !== ""}
+              />
+
+              <NumericInput
                 amount={collateralBaseline}
                 onChange={setCollateralBaseline}
                 label="Collateral Baseline"
+                isDisabled={minCollateralHelper.trim() !== ""}
+                errorMessage={collateralBaselineHelper}
+                isInvalid={collateralBaselineHelper.trim() !== ""}
               />
 
-              <Autocomplete
-                label="Strategy"
-                variant="underlined"
-                defaultItems={allStrategies}
-                placeholder="Search strategy"
-                selectedKey={strategyId}
-                onSelectionChange={(key) => setStrategyId(key as string | null)}
-              >
-                {(item) => (
-                  <AutocompleteItem
-                    key={item.id}
-                    className="font-mono"
-                    textValue={`${item.id}-${item.strategyKey}-${item.ratio}x`}
-                  >
-                    <div className="flex flex-col font-mono">
-                      <span className="text-small">{`${item.strategyKey}(${item.id}, ${item.ratio}%)`}</span>
-                      <span className="text-small">
-                        Collateral:
-                        {`(${Number(item.minCollateral)} ~ ${Number(item.maxCollateral)}) USDC`}
-                      </span>
-                      <span className="text-small">
-                        Baseline:
-                        {`${Number(item.collateralBaseline)} USDC`}
-                      </span>
-                      <span className="text-small">
-                        Leverage:
-                        {`(${item.minLeverage / 1000} ~ ${item.maxLeverage / 1000}) x`}
-                      </span>
-                    </div>
-                  </AutocompleteItem>
-                )}
-              </Autocomplete>
+              <NumericInput
+                amount={maxLeverage}
+                onChange={setMaxLeverage}
+                label="Max Leverage"
+                isDisabled={ratioHelper.trim() !== ""}
+                errorMessage={maxLeverageHelper}
+                isInvalid={maxLeverageHelper.trim() !== ""}
+              />
+
+              <NumericInput
+                amount={minLeverage}
+                onChange={setMinLeverage}
+                label="Min Leverage"
+                isDisabled={maxLeverageHelper.trim() !== ""}
+                errorMessage={minLeverageHelper}
+                isInvalid={minLeverageHelper.trim() !== ""}
+              />
             </div>
 
             <Button
               onClick={handleConfirm}
               color="primary"
-              isDisabled={isDisabled}
+              isDisabled={isDisabled || isDisabledStrategy}
             >
               Save
             </Button>

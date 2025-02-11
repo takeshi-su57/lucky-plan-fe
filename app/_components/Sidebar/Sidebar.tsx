@@ -10,6 +10,7 @@ import { usePathname } from "next/navigation";
 import { twMerge } from "tailwind-merge";
 
 export const links = [
+  { id: "plans", label: "Plan", title: "" },
   { id: "automations", label: "Automation", title: "", showDivider: true },
   { id: "strategies", label: "Strategy", title: "" },
   { id: "followers", label: "Follower", title: "", showDivider: true },
@@ -20,7 +21,6 @@ export const links = [
     title: "",
     showDivider: true,
   },
-  { id: "research", label: "Research", title: "" },
   { id: "users", label: "User", title: "" },
   {
     id: "leaderboards",
