@@ -170,7 +170,7 @@ export default function LineChart({ title, data, className }: LineChartProps) {
         },
       },
     });
-  }, [data, selected]);
+  }, [data]);
 
   useEffect(() => {
     if (!modalChartRef.current || !modalContainerRef.current || !isOpen) {
