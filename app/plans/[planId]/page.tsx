@@ -2,7 +2,11 @@
 
 import { PlanDetailPanel } from "@/app-components/PlansWidget/PlanDetailPanel";
 
-export default async function Page({ params }: { params: { planId: string } }) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ planId: string }>;
+}) {
   const planId = (await params).planId;
 
   if (!planId) {
