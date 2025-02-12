@@ -51,7 +51,7 @@ export function Automations() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Tabs
-            aria-label="users-table-tabs"
+            aria-label="automations-tabs"
             selectedKey={selected}
             onSelectionChange={(value) => {
               if (value) {

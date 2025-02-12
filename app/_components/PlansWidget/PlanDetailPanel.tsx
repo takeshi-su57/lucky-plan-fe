@@ -8,6 +8,8 @@ import {
   Card,
   Divider,
   Chip,
+  Tab,
+  Tabs,
 } from "@nextui-org/react";
 import { Virtuoso } from "react-virtuoso";
 import dayjs from "dayjs";
@@ -16,7 +18,12 @@ import {
   BOTDETAILS_INFO_FRAGMENT_DOCUMENT,
   useBatchCreateBots,
 } from "@/app-hooks/useAutomation";
-import { useAddBotsToPlan, useGetPlanById } from "@/app-hooks/usePlan";
+import {
+  useAddBotsToPlan,
+  useEndPlan,
+  useGetPlanById,
+  useStartPlan,
+} from "@/app-hooks/usePlan";
 
 import { PersonalTradeHistory, VirtualBot } from "@/types";
 import { transformHistories } from "@/utils/historiesChart";
@@ -29,10 +36,25 @@ import { VirtualAutomationRow } from "@/app/_components/PlansWidget/VirtualAutom
 import { CreateVirtualAutomationModal } from "./CreateVirtualAutomationModal";
 import { AutomationGridChart } from "./AutomationChart";
 import { getFragmentData } from "@/graphql/gql";
+import { chipColorsByPlanStatus } from "./PlanCard";
+import { PlanStatus } from "@/graphql/gql/graphql";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+
+type TabType = "backtesting" | "real" | "automations";
 
 export function PlanDetailPanel({ planId }: { planId: string }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const [selected, setSelected] = useState<TabType>(
+    (searchParams.get("tab") as TabType) || "backtesting",
+  );
+
   const { batchCreateBots, loading: createBotsLoading } = useBatchCreateBots();
   const { addBotsToPlan, loading: addBotsLoading } = useAddBotsToPlan();
+  const { startPlan, loading: startPlanLoading } = useStartPlan();
+  const { endPlan, loading: endPlanLoading } = useEndPlan();
 
   const plan = useGetPlanById(+planId);
 
@@ -101,6 +123,18 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
 
         setSelectedVirtualBotIds({});
       }
+    }
+  };
+
+  const handleStartPlan = () => {
+    if (plan?.status === PlanStatus.Created) {
+      startPlan({ variables: { id: +planId } });
+    }
+  };
+
+  const handleEndPlan = () => {
+    if (plan?.status === PlanStatus.Started) {
+      endPlan({ variables: { id: +planId } });
     }
   };
 
@@ -234,7 +268,52 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
                 </div>
               ),
           )}
+
+          {plan && (
+            <Chip color={chipColorsByPlanStatus[plan.status]} variant="flat">
+              {plan.status}
+            </Chip>
+          )}
+
+          {plan?.status === PlanStatus.Created && (
+            <Button
+              size="sm"
+              color="primary"
+              onClick={handleStartPlan}
+              isLoading={startPlanLoading}
+              isDisabled={startPlanLoading}
+            >
+              Start Plan
+            </Button>
+          )}
+
+          {plan?.status === PlanStatus.Started && (
+            <Button
+              size="sm"
+              color="warning"
+              onClick={handleEndPlan}
+              isLoading={endPlanLoading}
+              isDisabled={endPlanLoading}
+            >
+              End Plan
+            </Button>
+          )}
         </div>
+
+        <Tabs
+          aria-label="plans-tab-tabs"
+          selectedKey={selected}
+          onSelectionChange={(value) => {
+            if (value) {
+              setSelected(value as TabType);
+              router.push(`/plans/${planId}?tab=${value}`);
+            }
+          }}
+        >
+          <Tab key="backtesting" title="Backtesting" />
+          <Tab key="real" title="Real Results" />
+          <Tab key="automations" title="Automations" />
+        </Tabs>
       </div>
 
       <Card>
