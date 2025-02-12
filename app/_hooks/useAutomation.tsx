@@ -41,6 +41,7 @@ export const BOT_WITH_MISSIONS_INFO_FRAGMENT_DOCUMENT = graphql(`
     leaderAddress
     followerAddress
     strategyId
+    planId
     leaderContractId
     leaderCollateralBaseline
     leaderStartedBlock
@@ -63,6 +64,7 @@ export const BOTDETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     leaderAddress
     followerAddress
     strategyId
+    planId
     leaderContractId
     leaderCollateralBaseline
     leaderStartedBlock

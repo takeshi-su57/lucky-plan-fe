@@ -40,6 +40,7 @@ export function Automations() {
   const [isChatFirst, setIsChatFirst] = useState(true);
   const [isHideAlertForClosedMissions, setIsHideAlertForClosedMissions] =
     useState(true);
+  const [isHiddedPlanedBots, setIsHiddedPlanedBots] = useState(true);
 
   const bots = useGetBotsByStatus(botStatusByTabType[selected]);
 
@@ -80,6 +81,14 @@ export function Automations() {
           >
             Hide Alert For Closed Missions
           </Switch>
+
+          <Switch
+            isSelected={isHiddedPlanedBots}
+            onValueChange={setIsHiddedPlanedBots}
+            size="sm"
+          >
+            Hide Planed Automations
+          </Switch>
         </div>
 
         <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>
@@ -88,23 +97,25 @@ export function Automations() {
       </div>
 
       <Accordion selectionMode="multiple" isCompact variant="splitted">
-        {bots.map((bot) => (
-          <AccordionItem
-            key={bot.id}
-            title={
-              <AutomationSummary
-                bot={bot}
+        {bots
+          .filter((bot) => (isHiddedPlanedBots ? !bot.planId : true))
+          .map((bot) => (
+            <AccordionItem
+              key={bot.id}
+              title={
+                <AutomationSummary
+                  bot={bot}
+                  isHideAlertForClosedMissions={isHideAlertForClosedMissions}
+                />
+              }
+            >
+              <AutomationDetails
+                botId={bot.id}
+                isChatFirst={isChatFirst}
                 isHideAlertForClosedMissions={isHideAlertForClosedMissions}
               />
-            }
-          >
-            <AutomationDetails
-              botId={bot.id}
-              isChatFirst={isChatFirst}
-              isHideAlertForClosedMissions={isHideAlertForClosedMissions}
-            />
-          </AccordionItem>
-        ))}
+            </AccordionItem>
+          ))}
       </Accordion>
 
       <CreateAutomationModal
