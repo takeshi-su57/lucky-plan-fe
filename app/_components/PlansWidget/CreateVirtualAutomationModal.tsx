@@ -11,11 +11,15 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
+  DateRangePicker,
 } from "@nextui-org/react";
 import type { Selection } from "@nextui-org/react";
 import { Address } from "viem";
 import { Virtuoso } from "react-virtuoso";
 import { nanoid } from "nanoid";
+import type { RangeValue } from "@react-types/shared";
+import type { DateValue } from "@react-types/datepicker";
+import { now, getLocalTimeZone } from "@internationalized/date";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 
@@ -93,6 +97,11 @@ export function CreateVirtualAutomationModal({
   const [collateralBaseline, setCollateralBaseline] = useState("");
   const [maxLeverage, setMaxLeverage] = useState("200");
   const [minLeverage, setMinLeverage] = useState("1.1");
+
+  const [range, setRange] = useState<RangeValue<DateValue> | null>({
+    start: now(getLocalTimeZone()).subtract({ months: 3 }),
+    end: now(getLocalTimeZone()),
+  });
 
   const followerAvailableTradePairs = useGetAllTradePairs(
     followerContractId ? +followerContractId : undefined,
@@ -241,7 +250,7 @@ export function CreateVirtualAutomationModal({
     !followerAddress ||
     !leaderContractId ||
     !followerContractId ||
-    !collateralBaseline;
+    !leaderCollateralBaseline;
 
   const isDisabledStrategy =
     strategyHelper.trim() !== "" ||
@@ -346,8 +355,17 @@ export function CreateVirtualAutomationModal({
     sumIn: originalSumIn,
     countIn: originalCountIn,
   } = useMemo(
-    () => getHistoriesChartData(originalHistories || []),
-    [originalHistories],
+    () =>
+      getHistoriesChartData(
+        originalHistories || [],
+        range
+          ? {
+              from: range.start.toDate(getLocalTimeZone()),
+              to: range.end.toDate(getLocalTimeZone()),
+            }
+          : undefined,
+      ),
+    [originalHistories, range],
   );
 
   const {
@@ -410,6 +428,12 @@ export function CreateVirtualAutomationModal({
       transformedHistories.filter((history) =>
         availablePairNames.includes(history.pair.toLowerCase()),
       ),
+      range
+        ? {
+            from: range.start.toDate(getLocalTimeZone()),
+            to: range.end.toDate(getLocalTimeZone()),
+          }
+        : undefined,
     );
 
     return data;
@@ -429,7 +453,14 @@ export function CreateVirtualAutomationModal({
     maxLeverage,
     minLeverage,
     followerAvailableTradePairs,
+    range,
   ]);
+
+  let rangeHelper = "";
+
+  if (range === null) {
+    rangeHelper = "Please select a valid date range";
+  }
 
   return (
     <StandardModal
@@ -440,7 +471,7 @@ export function CreateVirtualAutomationModal({
     >
       <div className="flex w-full flex-col gap-8">
         <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
-          Create New Automation
+          Create New Virtual Automation
         </h1>
 
         <div className="flex w-full gap-8">
@@ -697,6 +728,16 @@ export function CreateVirtualAutomationModal({
           </div>
 
           <div className="flex flex-1 flex-col gap-6">
+            <DateRangePicker
+              label="Back Test Duration"
+              visibleMonths={2}
+              value={range}
+              onChange={setRange}
+              maxValue={now(getLocalTimeZone())}
+              errorMessage={rangeHelper}
+              className="w-fit"
+            />
+
             {originalTradePairs.length > 0 && (
               <span className="text-xl font-bold">
                 Leader - {originalTradePairs.length} Pairs

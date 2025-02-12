@@ -1,38 +1,53 @@
 "use client";
 
-import { useState } from "react";
-import {
-  useDisclosure,
-  Button,
-  CardBody,
-  Card,
-  Divider,
-  Chip,
-} from "@nextui-org/react";
-import { Virtuoso } from "react-virtuoso";
+import { useEffect, useState } from "react";
+import { useDisclosure, Button, Chip, Tab, Tabs } from "@nextui-org/react";
 import dayjs from "dayjs";
+import { useSearchParams, useRouter } from "next/navigation";
+import { getFragmentData } from "@/graphql/gql";
+import { PlanStatus } from "@/graphql/gql/graphql";
 
 import {
   BOTDETAILS_INFO_FRAGMENT_DOCUMENT,
   useBatchCreateBots,
 } from "@/app-hooks/useAutomation";
-import { useAddBotsToPlan, useGetPlanById } from "@/app-hooks/usePlan";
+import {
+  useAddBotsToPlan,
+  useEndPlan,
+  useGetPlanById,
+  useStartPlan,
+} from "@/app-hooks/usePlan";
 
 import { PersonalTradeHistory, VirtualBot } from "@/types";
-import { transformHistories } from "@/utils/historiesChart";
+import {
+  getSortedPartialHistories,
+  transformHistories,
+} from "@/utils/historiesChart";
 
 import { getPersonalTradeHistories } from "@/app-actions/getPersonalTradeHistories";
 
-import { AutomationRow } from "@/app/_components/PlansWidget/AutomationRow";
-import { VirtualAutomationRow } from "@/app/_components/PlansWidget/VirtualAutomationRow";
-
 import { CreateVirtualAutomationModal } from "./CreateVirtualAutomationModal";
-import { AutomationGridChart } from "./AutomationChart";
-import { getFragmentData } from "@/graphql/gql";
+
+import { chipColorsByPlanStatus } from "./PlanCard";
+
+import { PlanAutomations } from "./PlanAutomations";
+import { BackTestingView } from "./BackTestingView";
+import { RealResultView } from "./RealResultView";
+
+type TabType = "backtesting" | "real" | "automations";
 
 export function PlanDetailPanel({ planId }: { planId: string }) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const [selected, setSelected] = useState<TabType>(
+    (searchParams.get("tab") as TabType) || "backtesting",
+  );
+
   const { batchCreateBots, loading: createBotsLoading } = useBatchCreateBots();
   const { addBotsToPlan, loading: addBotsLoading } = useAddBotsToPlan();
+  const { startPlan, loading: startPlanLoading } = useStartPlan();
+  const { endPlan, loading: endPlanLoading } = useEndPlan();
 
   const plan = useGetPlanById(+planId);
 
@@ -52,9 +67,50 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
   const [selectedVirtualBot, setSelectedVirtualBot] =
     useState<VirtualBot | null>(null);
 
-  const [botsHistories, setBotsHistories] = useState<
+  const [leaderBotsHistories, setLeaderBotsHistories] = useState<
     Record<string, PersonalTradeHistory[]>
   >({});
+
+  const [followerBotsHistories, setFollowerBotsHistories] = useState<
+    Record<string, PersonalTradeHistory[]>
+  >({});
+
+  useEffect(() => {
+    if (plan?.bots) {
+      setSelectedBotIds(
+        plan.bots.reduce((acc, bot) => ({ ...acc, [bot.id]: true }), {}),
+      );
+
+      plan.bots.forEach((bot) => {
+        getPersonalTradeHistories(
+          bot.leaderContract.backendUrl!,
+          bot.leaderAddress,
+        ).then((histories) => {
+          setLeaderBotsHistories((prev) => ({
+            ...prev,
+            [bot.id]: transformHistories(
+              histories,
+              bot.leaderCollateralBaseline,
+              bot.strategy,
+            ),
+          }));
+        });
+
+        getPersonalTradeHistories(
+          bot.followerContract.backendUrl!,
+          bot.followerAddress,
+        ).then((histories) => {
+          setFollowerBotsHistories((prev) => ({
+            ...prev,
+            [bot.id]: getSortedPartialHistories(histories, {
+              from: bot.startedAt ? new Date(bot.startedAt) : new Date(),
+              to: bot.endedAt ? new Date(bot.endedAt) : new Date(),
+            }),
+          }));
+        });
+      });
+    }
+  }, [plan?.bots]);
 
   const handleSaveVirtualBots = async () => {
     if (virtualBots.length > 0) {
@@ -104,6 +160,18 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
     }
   };
 
+  const handleStartPlan = () => {
+    if (plan?.status === PlanStatus.Created) {
+      startPlan({ variables: { id: +planId } });
+    }
+  };
+
+  const handleEndPlan = () => {
+    if (plan?.status === PlanStatus.Started) {
+      endPlan({ variables: { id: +planId } });
+    }
+  };
+
   const handleBotSelection = async (botId: number, isSelected: boolean) => {
     setSelectedBotIds((prev) => ({
       ...prev,
@@ -112,7 +180,7 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
 
     const bot = plan?.bots.find((bot) => bot.id === botId);
 
-    if (isSelected && bot && !botsHistories[botId]) {
+    if (isSelected && bot && !leaderBotsHistories[botId]) {
       const histories = transformHistories(
         (await getPersonalTradeHistories(
           bot.leaderContract.backendUrl!,
@@ -121,7 +189,16 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
         bot.leaderCollateralBaseline,
         bot.strategy,
       );
-      setBotsHistories((prev) => ({ ...prev, [botId]: histories }));
+      setLeaderBotsHistories((prev) => ({ ...prev, [botId]: histories }));
+    }
+
+    if (isSelected && bot && !followerBotsHistories[botId]) {
+      const histories =
+        (await getPersonalTradeHistories(
+          bot.followerContract.backendUrl!,
+          bot.followerAddress,
+        )) || [];
+      setFollowerBotsHistories((prev) => ({ ...prev, [botId]: histories }));
     }
   };
 
@@ -140,6 +217,13 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
     onOpen();
   };
 
+  const handleChartToggle = (botId: number) => {
+    setShowBotChartIds((prev) => ({
+      ...prev,
+      [botId]: !prev[botId],
+    }));
+  };
+
   const handleSaveVirtualBot = async (virtualBot: VirtualBot) => {
     setVirtualBots((prev) => {
       const exists = prev.find(
@@ -154,7 +238,7 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
       return [...prev, virtualBot];
     });
 
-    const histories = transformHistories(
+    const leaderHistories = transformHistories(
       (await getPersonalTradeHistories(
         virtualBot.leaderContract.backendUrl!,
         virtualBot.leaderAddress,
@@ -166,9 +250,9 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
         minLeverage: virtualBot.strategy.minLeverage * 1000,
       },
     );
-    setBotsHistories((prev) => ({
+    setLeaderBotsHistories((prev) => ({
       ...prev,
-      [virtualBot.virtualId]: histories,
+      [virtualBot.virtualId]: leaderHistories,
     }));
 
     setSelectedVirtualBot(null);
@@ -234,160 +318,91 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
                 </div>
               ),
           )}
+
+          {plan && (
+            <Chip color={chipColorsByPlanStatus[plan.status]} variant="flat">
+              {plan.status}
+            </Chip>
+          )}
+
+          {plan?.status === PlanStatus.Created && (
+            <Button
+              size="sm"
+              color="primary"
+              onClick={handleStartPlan}
+              isLoading={startPlanLoading}
+              isDisabled={startPlanLoading}
+            >
+              Start Plan
+            </Button>
+          )}
+
+          {plan?.status === PlanStatus.Started && (
+            <Button
+              size="sm"
+              color="warning"
+              onClick={handleEndPlan}
+              isLoading={endPlanLoading}
+              isDisabled={endPlanLoading}
+            >
+              End Plan
+            </Button>
+          )}
         </div>
+
+        <Tabs
+          aria-label="plans-tab-tabs"
+          selectedKey={selected}
+          onSelectionChange={(value) => {
+            if (value) {
+              setSelected(value as TabType);
+              router.push(`/plans/${planId}?tab=${value}`);
+            }
+          }}
+        >
+          <Tab key="backtesting" title="Back Testing" />
+          <Tab key="real" title="Real Results" />
+          <Tab key="automations" title="Automations" />
+        </Tabs>
       </div>
 
-      <Card>
-        <CardBody>
-          <AutomationGridChart
-            histories={[
-              ...Object.keys(selectedBotIds).filter(
-                (botId) => selectedBotIds[Number(botId)],
-              ),
-              ...Object.keys(selectedVirtualBotIds).filter(
-                (virtualId) => selectedVirtualBotIds[virtualId],
-              ),
-            ]
-              .map((botId) => botsHistories[botId] || [])
-              .reduce((acc, item) => [...acc, ...item], [])}
-            title={`Grouped Result`}
-          />
-        </CardBody>
-      </Card>
+      {selected === "automations" && (
+        <PlanAutomations bots={plan?.bots || []} />
+      )}
 
-      <div className="flex w-full gap-4">
-        <div className="flex w-[370px] shrink-0 flex-col gap-4">
-          <Card>
-            <CardBody className="flex flex-col gap-4">
-              <span className="text-base font-bold text-neutral-400">Live</span>
+      {selected === "backtesting" && (
+        <BackTestingView
+          isSavingVirtualBots={createBotsLoading || addBotsLoading}
+          isDisabledSaveVirtualBots={
+            !Object.values(selectedVirtualBotIds).find((item) => item) ||
+            createBotsLoading ||
+            addBotsLoading
+          }
+          bots={plan?.bots || []}
+          selectedBotIds={selectedBotIds}
+          showBotChartIds={showBotChartIds}
+          botsHistories={leaderBotsHistories}
+          virtualBots={virtualBots}
+          selectedVirtualBotIds={selectedVirtualBotIds}
+          onClickSaveVirtualBots={handleSaveVirtualBots}
+          onOpenCreateVirtualBotModal={onOpen}
+          onChangeVirtualBotSelection={handleVirtualBotSelection}
+          onEditVirtualBot={handleEditVirtualBot}
+          onChangeBotSelection={handleBotSelection}
+          onToggleChart={handleChartToggle}
+        />
+      )}
 
-              <Divider />
-
-              <Virtuoso
-                style={{ height: 673 }}
-                data={plan?.bots || []}
-                itemContent={(_, bot) => (
-                  <div className="p-2">
-                    <AutomationRow
-                      bot={bot}
-                      isSelected={!!selectedBotIds[bot.id]}
-                      isShowChart={!!showBotChartIds[bot.id]}
-                      onChangeSelection={handleBotSelection}
-                      onToggleChart={(botId) => {
-                        setShowBotChartIds((prev) => ({
-                          ...prev,
-                          [botId]: !prev[botId],
-                        }));
-                      }}
-                    />
-                  </div>
-                )}
-              />
-            </CardBody>
-          </Card>
-        </div>
-
-        <div className="flex flex-1 flex-col gap-4">
-          <Card>
-            <CardBody>
-              <span className="text-xl font-bold text-neutral-400">
-                Live Automation Charts
-              </span>
-
-              <Divider />
-
-              <Virtuoso
-                style={{ height: 700 }}
-                data={Object.keys(selectedBotIds).filter(
-                  (botId) => selectedBotIds[Number(botId)],
-                )}
-                itemContent={(_, botId) => (
-                  <AutomationGridChart
-                    histories={botsHistories[botId] || []}
-                    title={`Automation ${botId}`}
-                  />
-                )}
-              />
-            </CardBody>
-          </Card>
-        </div>
-      </div>
-
-      <div className="flex w-full gap-4">
-        <div className="flex w-[370px] shrink-0 flex-col gap-4">
-          <Card>
-            <CardBody className="flex flex-col gap-4">
-              <span className="text-base font-bold text-neutral-400">
-                Virtual
-              </span>
-
-              <Divider />
-
-              <div className="flex flex-row items-center justify-end gap-2">
-                <Button size="sm" color="primary" onClick={onOpen}>
-                  Create Virtual Automation
-                </Button>
-
-                <Button
-                  size="sm"
-                  color="danger"
-                  isLoading={createBotsLoading || addBotsLoading}
-                  isDisabled={
-                    !Object.values(selectedVirtualBotIds).find(
-                      (item) => item,
-                    ) ||
-                    createBotsLoading ||
-                    addBotsLoading
-                  }
-                  onClick={handleSaveVirtualBots}
-                >
-                  Save as a real automation
-                </Button>
-              </div>
-
-              <Virtuoso
-                style={{ height: 625 }}
-                data={virtualBots}
-                itemContent={(_, bot) => (
-                  <div className="p-2">
-                    <VirtualAutomationRow
-                      bot={bot}
-                      isSelected={!!selectedVirtualBotIds[bot.virtualId]}
-                      onChangeSelection={handleVirtualBotSelection}
-                      onEditAutomation={handleEditVirtualBot}
-                    />
-                  </div>
-                )}
-              />
-            </CardBody>
-          </Card>
-        </div>
-
-        <div className="flex flex-1 flex-col gap-4">
-          <Card>
-            <CardBody>
-              <span className="text-xl font-bold text-neutral-400">
-                Virtual Automation Charts
-              </span>
-
-              <Divider />
-
-              <Virtuoso
-                style={{ height: 700 }}
-                data={Object.keys(selectedVirtualBotIds).filter(
-                  (virtualId) => selectedVirtualBotIds[virtualId],
-                )}
-                itemContent={(_, virtualId) => (
-                  <AutomationGridChart
-                    histories={botsHistories[virtualId] || []}
-                    title={`Virtual Automation ${virtualId}`}
-                  />
-                )}
-              />
-            </CardBody>
-          </Card>
-        </div>
-      </div>
+      {selected === "real" && (
+        <RealResultView
+          bots={plan?.bots || []}
+          selectedBotIds={selectedBotIds}
+          showBotChartIds={showBotChartIds}
+          botsHistories={followerBotsHistories}
+          onChangeBotSelection={handleBotSelection}
+          onToggleChart={handleChartToggle}
+        />
+      )}
 
       <CreateVirtualAutomationModal
         virtualBot={selectedVirtualBot}
