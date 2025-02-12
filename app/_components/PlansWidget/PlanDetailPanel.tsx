@@ -40,6 +40,7 @@ import { chipColorsByPlanStatus } from "./PlanCard";
 import { PlanStatus } from "@/graphql/gql/graphql";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { PlanAutomations } from "./PlanAutomations";
 
 type TabType = "backtesting" | "real" | "automations";
 
@@ -316,157 +317,165 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
         </Tabs>
       </div>
 
-      <Card>
-        <CardBody>
-          <AutomationGridChart
-            histories={[
-              ...Object.keys(selectedBotIds).filter(
-                (botId) => selectedBotIds[Number(botId)],
-              ),
-              ...Object.keys(selectedVirtualBotIds).filter(
-                (virtualId) => selectedVirtualBotIds[virtualId],
-              ),
-            ]
-              .map((botId) => botsHistories[botId] || [])
-              .reduce((acc, item) => [...acc, ...item], [])}
-            title={`Grouped Result`}
-          />
-        </CardBody>
-      </Card>
-
-      <div className="flex w-full gap-4">
-        <div className="flex w-[370px] shrink-0 flex-col gap-4">
-          <Card>
-            <CardBody className="flex flex-col gap-4">
-              <span className="text-base font-bold text-neutral-400">Live</span>
-
-              <Divider />
-
-              <Virtuoso
-                style={{ height: 673 }}
-                data={plan?.bots || []}
-                itemContent={(_, bot) => (
-                  <div className="p-2">
-                    <AutomationRow
-                      bot={bot}
-                      isSelected={!!selectedBotIds[bot.id]}
-                      isShowChart={!!showBotChartIds[bot.id]}
-                      onChangeSelection={handleBotSelection}
-                      onToggleChart={(botId) => {
-                        setShowBotChartIds((prev) => ({
-                          ...prev,
-                          [botId]: !prev[botId],
-                        }));
-                      }}
-                    />
-                  </div>
-                )}
-              />
-            </CardBody>
-          </Card>
-        </div>
-
-        <div className="flex flex-1 flex-col gap-4">
+      {selected === "automations" ? (
+        <PlanAutomations bots={plan?.bots || []} />
+      ) : (
+        <>
           <Card>
             <CardBody>
-              <span className="text-xl font-bold text-neutral-400">
-                Live Automation Charts
-              </span>
-
-              <Divider />
-
-              <Virtuoso
-                style={{ height: 700 }}
-                data={Object.keys(selectedBotIds).filter(
-                  (botId) => selectedBotIds[Number(botId)],
-                )}
-                itemContent={(_, botId) => (
-                  <AutomationGridChart
-                    histories={botsHistories[botId] || []}
-                    title={`Automation ${botId}`}
-                  />
-                )}
+              <AutomationGridChart
+                histories={[
+                  ...Object.keys(selectedBotIds).filter(
+                    (botId) => selectedBotIds[Number(botId)],
+                  ),
+                  ...Object.keys(selectedVirtualBotIds).filter(
+                    (virtualId) => selectedVirtualBotIds[virtualId],
+                  ),
+                ]
+                  .map((botId) => botsHistories[botId] || [])
+                  .reduce((acc, item) => [...acc, ...item], [])}
+                title={`Grouped Result`}
               />
             </CardBody>
           </Card>
-        </div>
-      </div>
 
-      <div className="flex w-full gap-4">
-        <div className="flex w-[370px] shrink-0 flex-col gap-4">
-          <Card>
-            <CardBody className="flex flex-col gap-4">
-              <span className="text-base font-bold text-neutral-400">
-                Virtual
-              </span>
+          <div className="flex w-full gap-4">
+            <div className="flex w-[370px] shrink-0 flex-col gap-4">
+              <Card>
+                <CardBody className="flex flex-col gap-4">
+                  <span className="text-base font-bold text-neutral-400">
+                    Live
+                  </span>
 
-              <Divider />
+                  <Divider />
 
-              <div className="flex flex-row items-center justify-end gap-2">
-                <Button size="sm" color="primary" onClick={onOpen}>
-                  Create Virtual Automation
-                </Button>
+                  <Virtuoso
+                    style={{ height: 673 }}
+                    data={plan?.bots || []}
+                    itemContent={(_, bot) => (
+                      <div className="p-2">
+                        <AutomationRow
+                          bot={bot}
+                          isSelected={!!selectedBotIds[bot.id]}
+                          isShowChart={!!showBotChartIds[bot.id]}
+                          onChangeSelection={handleBotSelection}
+                          onToggleChart={(botId) => {
+                            setShowBotChartIds((prev) => ({
+                              ...prev,
+                              [botId]: !prev[botId],
+                            }));
+                          }}
+                        />
+                      </div>
+                    )}
+                  />
+                </CardBody>
+              </Card>
+            </div>
 
-                <Button
-                  size="sm"
-                  color="danger"
-                  isLoading={createBotsLoading || addBotsLoading}
-                  isDisabled={
-                    !Object.values(selectedVirtualBotIds).find(
-                      (item) => item,
-                    ) ||
-                    createBotsLoading ||
-                    addBotsLoading
-                  }
-                  onClick={handleSaveVirtualBots}
-                >
-                  Save as a real automation
-                </Button>
-              </div>
+            <div className="flex flex-1 flex-col gap-4">
+              <Card>
+                <CardBody>
+                  <span className="text-xl font-bold text-neutral-400">
+                    Live Automation Charts
+                  </span>
 
-              <Virtuoso
-                style={{ height: 625 }}
-                data={virtualBots}
-                itemContent={(_, bot) => (
-                  <div className="p-2">
-                    <VirtualAutomationRow
-                      bot={bot}
-                      isSelected={!!selectedVirtualBotIds[bot.virtualId]}
-                      onChangeSelection={handleVirtualBotSelection}
-                      onEditAutomation={handleEditVirtualBot}
-                    />
+                  <Divider />
+
+                  <Virtuoso
+                    style={{ height: 700 }}
+                    data={Object.keys(selectedBotIds).filter(
+                      (botId) => selectedBotIds[Number(botId)],
+                    )}
+                    itemContent={(_, botId) => (
+                      <AutomationGridChart
+                        histories={botsHistories[botId] || []}
+                        title={`Automation ${botId}`}
+                      />
+                    )}
+                  />
+                </CardBody>
+              </Card>
+            </div>
+          </div>
+
+          <div className="flex w-full gap-4">
+            <div className="flex w-[370px] shrink-0 flex-col gap-4">
+              <Card>
+                <CardBody className="flex flex-col gap-4">
+                  <span className="text-base font-bold text-neutral-400">
+                    Virtual
+                  </span>
+
+                  <Divider />
+
+                  <div className="flex flex-row items-center justify-end gap-2">
+                    <Button size="sm" color="primary" onClick={onOpen}>
+                      Create Virtual Automation
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      color="danger"
+                      isLoading={createBotsLoading || addBotsLoading}
+                      isDisabled={
+                        !Object.values(selectedVirtualBotIds).find(
+                          (item) => item,
+                        ) ||
+                        createBotsLoading ||
+                        addBotsLoading
+                      }
+                      onClick={handleSaveVirtualBots}
+                    >
+                      Save as a real automation
+                    </Button>
                   </div>
-                )}
-              />
-            </CardBody>
-          </Card>
-        </div>
 
-        <div className="flex flex-1 flex-col gap-4">
-          <Card>
-            <CardBody>
-              <span className="text-xl font-bold text-neutral-400">
-                Virtual Automation Charts
-              </span>
-
-              <Divider />
-
-              <Virtuoso
-                style={{ height: 700 }}
-                data={Object.keys(selectedVirtualBotIds).filter(
-                  (virtualId) => selectedVirtualBotIds[virtualId],
-                )}
-                itemContent={(_, virtualId) => (
-                  <AutomationGridChart
-                    histories={botsHistories[virtualId] || []}
-                    title={`Virtual Automation ${virtualId}`}
+                  <Virtuoso
+                    style={{ height: 625 }}
+                    data={virtualBots}
+                    itemContent={(_, bot) => (
+                      <div className="p-2">
+                        <VirtualAutomationRow
+                          bot={bot}
+                          isSelected={!!selectedVirtualBotIds[bot.virtualId]}
+                          onChangeSelection={handleVirtualBotSelection}
+                          onEditAutomation={handleEditVirtualBot}
+                        />
+                      </div>
+                    )}
                   />
-                )}
-              />
-            </CardBody>
-          </Card>
-        </div>
-      </div>
+                </CardBody>
+              </Card>
+            </div>
+
+            <div className="flex flex-1 flex-col gap-4">
+              <Card>
+                <CardBody>
+                  <span className="text-xl font-bold text-neutral-400">
+                    Virtual Automation Charts
+                  </span>
+
+                  <Divider />
+
+                  <Virtuoso
+                    style={{ height: 700 }}
+                    data={Object.keys(selectedVirtualBotIds).filter(
+                      (virtualId) => selectedVirtualBotIds[virtualId],
+                    )}
+                    itemContent={(_, virtualId) => (
+                      <AutomationGridChart
+                        histories={botsHistories[virtualId] || []}
+                        title={`Virtual Automation ${virtualId}`}
+                      />
+                    )}
+                  />
+                </CardBody>
+              </Card>
+            </div>
+          </div>
+        </>
+      )}
 
       <CreateVirtualAutomationModal
         virtualBot={selectedVirtualBot}
