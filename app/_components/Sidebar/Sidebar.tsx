@@ -26,7 +26,6 @@ export const links = [
     id: "tags",
     label: "Tag",
     title: "",
-    showDivider: true,
   },
   {
     id: "settings",

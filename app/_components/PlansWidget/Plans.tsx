@@ -58,7 +58,7 @@ export function Plans() {
         </Button>
       </div>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-center gap-6">
         {plans.map((plan) => (
           <PlanCard key={plan.id} plan={plan} />
         ))}
