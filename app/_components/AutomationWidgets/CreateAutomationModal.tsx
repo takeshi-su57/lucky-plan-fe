@@ -11,9 +11,13 @@ import {
   DropdownItem,
   Select,
   SelectItem,
+  DateRangePicker,
 } from "@nextui-org/react";
 import type { Selection } from "@nextui-org/react";
 import { Address } from "viem";
+import type { RangeValue } from "@react-types/shared";
+import type { DateValue } from "@react-types/datepicker";
+import { now, getLocalTimeZone } from "@internationalized/date";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 
@@ -89,6 +93,11 @@ export function CreateAutomationModal({
   const [collateralBaseline, setCollateralBaseline] = useState("");
   const [maxLeverage, setMaxLeverage] = useState("200");
   const [minLeverage, setMinLeverage] = useState("1.1");
+
+  const [range, setRange] = useState<RangeValue<DateValue> | null>({
+    start: now(getLocalTimeZone()).subtract({ months: 3 }),
+    end: now(getLocalTimeZone()),
+  });
 
   const followerAvailableTradePairs = useGetAllTradePairs(
     followerContractId ? +followerContractId : undefined,
@@ -300,8 +309,17 @@ export function CreateAutomationModal({
     sumIn: originalSumIn,
     countIn: originalCountIn,
   } = useMemo(
-    () => getHistoriesChartData(originalHistories || []),
-    [originalHistories],
+    () =>
+      getHistoriesChartData(
+        originalHistories || [],
+        range
+          ? {
+              from: range.start.toDate(getLocalTimeZone()),
+              to: range.end.toDate(getLocalTimeZone()),
+            }
+          : undefined,
+      ),
+    [originalHistories, range],
   );
 
   const {
@@ -364,6 +382,12 @@ export function CreateAutomationModal({
       transformedHistories.filter((history) =>
         availablePairNames.includes(history.pair.toLowerCase()),
       ),
+      range
+        ? {
+            from: range.start.toDate(getLocalTimeZone()),
+            to: range.end.toDate(getLocalTimeZone()),
+          }
+        : undefined,
     );
   }, [
     collateralBaseline,
@@ -381,7 +405,14 @@ export function CreateAutomationModal({
     ratioHelper,
     strategy,
     strategyHelper,
+    range,
   ]);
+
+  let rangeHelper = "";
+
+  if (range === null) {
+    rangeHelper = "Please select a valid date range";
+  }
 
   return (
     <StandardModal
@@ -650,6 +681,16 @@ export function CreateAutomationModal({
           </div>
 
           <div className="flex flex-1 flex-col gap-6">
+            <DateRangePicker
+              label="Back Test Duration"
+              visibleMonths={2}
+              value={range}
+              onChange={setRange}
+              maxValue={now(getLocalTimeZone())}
+              errorMessage={rangeHelper}
+              className="w-fit"
+            />
+
             {originalTradePairs.length > 0 && (
               <span className="text-xl font-bold">
                 Leader - {originalTradePairs.length} Pairs

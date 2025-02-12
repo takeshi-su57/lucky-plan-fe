@@ -1,5 +1,56 @@
 import { PersonalTradeHistory, TradeActionType } from "@/types";
 
+export function getSortedPartialHistories(
+  histories: PersonalTradeHistory[],
+  range?: { from: Date; to: Date },
+) {
+  const sortedHistories = histories.sort((a, b) => {
+    const first = new Date(a.date);
+    const second = new Date(b.date);
+
+    if (first > second) {
+      return 1;
+    } else if (first < second) {
+      return -1;
+    } else {
+      return 0;
+    }
+  });
+
+  const skippedTradeIndexMap = new Map<number, boolean>();
+
+  sortedHistories.forEach((history) => {
+    if (
+      range &&
+      range.from > new Date(history.date) &&
+      history.tradeIndex !== null &&
+      history.tradeIndex !== undefined
+    ) {
+      skippedTradeIndexMap.set(history.tradeIndex, true);
+    }
+  });
+
+  return sortedHistories.filter((history) => {
+    if (
+      range &&
+      (range.from >= new Date(history.date) ||
+        range.to <= new Date(history.date))
+    ) {
+      return false;
+    }
+
+    if (
+      history.tradeIndex !== null &&
+      history.tradeIndex !== undefined &&
+      skippedTradeIndexMap.has(history.tradeIndex)
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
 export function getHistoriesChartData(
   histories: PersonalTradeHistory[],
   range?: {
@@ -36,30 +87,11 @@ export function getHistoriesChartData(
   let sumIn = 0;
   let countIn = 0;
 
-  const sortedHistories = histories.sort((a, b) => {
-    const first = new Date(a.date);
-    const second = new Date(b.date);
-
-    if (first > second) {
-      return 1;
-    } else if (first < second) {
-      return -1;
-    } else {
-      return 0;
-    }
-  });
+  const sortedHistories = getSortedPartialHistories(histories, range);
 
   if (sortedHistories.length > 0) {
     [...sortedHistories, sortedHistories[sortedHistories.length - 1]].forEach(
       (history) => {
-        if (
-          range &&
-          (range.from >= new Date(history.date) ||
-            range.to <= new Date(history.date))
-        ) {
-          return;
-        }
-
         tradePairIndexsMap.set(
           history.pair,
           (tradePairIndexsMap.get(history.pair) || 0) + 1,

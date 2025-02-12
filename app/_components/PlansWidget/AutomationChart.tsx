@@ -9,15 +9,20 @@ import LineChart from "@/components/charts/LineChart";
 export type AutomationChartProps = {
   title: string;
   histories: PersonalTradeHistory[];
+  range?: {
+    from: Date;
+    to: Date;
+  };
 };
 
 export function AutomationGridChart({
   histories,
   title,
+  range,
 }: AutomationChartProps) {
   const { pnlChartData, inOutChartData, inChartData, outChartData } = useMemo(
-    () => getHistoriesChartData(histories || []),
-    [histories],
+    () => getHistoriesChartData(histories || [], range),
+    [histories, range],
   );
 
   return (
