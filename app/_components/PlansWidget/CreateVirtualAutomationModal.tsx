@@ -241,7 +241,7 @@ export function CreateVirtualAutomationModal({
     !followerAddress ||
     !leaderContractId ||
     !followerContractId ||
-    !collateralBaseline;
+    !leaderCollateralBaseline;
 
   const isDisabledStrategy =
     strategyHelper.trim() !== "" ||
@@ -440,7 +440,7 @@ export function CreateVirtualAutomationModal({
     >
       <div className="flex w-full flex-col gap-8">
         <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
-          Create New Automation
+          Create New Virtual Automation
         </h1>
 
         <div className="flex w-full gap-8">
