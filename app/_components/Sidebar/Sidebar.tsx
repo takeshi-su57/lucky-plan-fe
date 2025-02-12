@@ -11,20 +11,20 @@ import { twMerge } from "tailwind-merge";
 
 export const links = [
   { id: "plans", label: "Plan", title: "" },
-  { id: "automations", label: "Automation", title: "", showDivider: true },
-  { id: "strategies", label: "Strategy", title: "" },
+  { id: "automations", label: "Automation", title: "" },
   { id: "followers", label: "Follower", title: "", showDivider: true },
-  { id: "contracts", label: "Contract", title: "" },
-  {
-    id: "tags",
-    label: "Tag",
-    title: "",
-    showDivider: true,
-  },
   { id: "users", label: "User", title: "" },
   {
     id: "leaderboards",
     label: "Leaderboard",
+    title: "",
+    showDivider: true,
+  },
+  { id: "strategies", label: "Strategy", title: "" },
+  { id: "contracts", label: "Contract", title: "" },
+  {
+    id: "tags",
+    label: "Tag",
     title: "",
     showDivider: true,
   },
