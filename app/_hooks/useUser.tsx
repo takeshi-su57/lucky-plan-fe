@@ -99,7 +99,9 @@ export function useGetUsersByTags(tags: string[]) {
     return users.filter((user) => {
       const userTags = user.tags.map((tag) => tag.tag);
 
-      return tags.every((tag) => userTags.includes(tag));
+      return tags
+        .filter((tag) => tag.trim() !== "")
+        .every((tag) => userTags.includes(tag));
     });
   }, [tags, users]);
 }
