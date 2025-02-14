@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { PlanDetails, PlanStatus, TaskStatus } from "@/graphql/gql/graphql";
 import { useGetTasksByStatus } from "@/app/_hooks/useTask";
+import { useGetUserTransactionCounts } from "@/app/_hooks/useHistory";
 
 export const chipColorsByPlanStatus: Record<PlanStatus, ChipProps["color"]> = {
   [PlanStatus.Created]: "primary",
@@ -33,6 +34,14 @@ export function PlanCard({
   isHideAlertForClosedMissions,
 }: PlanCardProps) {
   const router = useRouter();
+
+  const { data: transactionCounts } = useGetUserTransactionCounts(
+    plan.bots.map((bot) => ({
+      address: bot.leaderAddress,
+      contractId: bot.leaderContract.id,
+      startedAt: bot.startedAt || null,
+    })),
+  );
 
   const { satistic: createdStatistic } = useGetTasksByStatus(
     TaskStatus.Created,
@@ -99,6 +108,21 @@ export function PlanCard({
     )
     .reduce((acc, item) => acc + item, 0);
 
+  const transactions = transactionCounts?.getUserTransactionCounts
+    ? transactionCounts.getUserTransactionCounts.reduce(
+        (acc, item) => ({
+          daily: acc.daily + item.daily,
+          weekly: acc.weekly + item.weekly,
+          monthly: acc.monthly + item.monthly,
+        }),
+        { daily: 0, weekly: 0, monthly: 0 },
+      )
+    : {
+        daily: 0,
+        weekly: 0,
+        monthly: 0,
+      };
+
   const items = [
     {
       label: "Scheduled Start At",
@@ -155,6 +179,13 @@ export function PlanCard({
                 </div>
               ),
           )}
+
+          <div className="flex flex-row items-center gap-3 font-mono">
+            <Chip color="secondary">Monthly: {transactions.monthly}</Chip>
+            <Chip color="secondary">Weekly: {transactions.weekly}</Chip>
+            <Chip color="secondary">Daily: {transactions.daily}</Chip>
+          </div>
+
           <div className="flex flex-row items-center gap-3 font-mono">
             {createdCount > 0 ? (
               <Badge color="secondary" content={createdCount}>

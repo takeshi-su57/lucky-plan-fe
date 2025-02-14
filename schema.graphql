@@ -249,6 +249,12 @@ input GetUserByAddressInput {
   address: String!
 }
 
+input GetUserTransactionCountsInput {
+  address: String!
+  contractId: Int!
+  startedAt: DateTime
+}
+
 type Mission {
   achievePositionId: Int
   botId: Int!
@@ -457,8 +463,10 @@ type Query {
   getTasksByStatus(status: TaskStatus!): [TaskShallowDetails!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getTradePairs(contractId: Int!): [TradePair!]!
+  getTradeTransactionCounts(addresses: [String!]!, contractIds: [Int!]!): TradeTransactionCount!
   getTrades(address: String!, contractId: Int!): [FollowerTrade!]!
   getUserByAddress(input: GetUserByAddressInput!): User!
+  getUserTransactionCounts(inputs: [GetUserTransactionCountsInput!]!): [TradeTransactionCount!]!
   systemStatus: Boolean!
 }
 
@@ -564,6 +572,12 @@ type TradePair {
   from: String!
   pairIndex: Int!
   to: String!
+}
+
+type TradeTransactionCount {
+  daily: Int!
+  monthly: Int!
+  weekly: Int!
 }
 
 input UpdatePlanInput {

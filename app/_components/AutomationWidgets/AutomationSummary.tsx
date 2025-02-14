@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { BotDetails, BotStatus, TaskStatus } from "@/graphql/gql/graphql";
 import { useGetTasksByStatus } from "@/app/_hooks/useTask";
+import { useGetUserTransactionCounts } from "@/app/_hooks/useHistory";
 
 const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
   {
@@ -25,6 +26,14 @@ export function AutomationSummary({
   bot,
   isHideAlertForClosedMissions,
 }: AutomationSummaryProps) {
+  const { data: transactionCounts } = useGetUserTransactionCounts([
+    {
+      address: bot.leaderAddress,
+      contractId: bot.leaderContract.id,
+      startedAt: bot.startedAt || null,
+    },
+  ]);
+
   const { satistic: createdStatistic } = useGetTasksByStatus(
     TaskStatus.Created,
     isHideAlertForClosedMissions,
@@ -163,7 +172,16 @@ export function AutomationSummary({
         </div>
       </div>
 
-      <Chip color={colorsByBotsStatus[bot.status]}>{bot.status}</Chip>
+      <div className="flex flex-row items-center gap-3">
+        <Badge
+          color="secondary"
+          content={transactionCounts?.getUserTransactionCounts[0].daily || 0}
+        >
+          <Chip color="secondary">Today</Chip>
+        </Badge>
+
+        <Chip color={colorsByBotsStatus[bot.status]}>{bot.status}</Chip>
+      </div>
     </div>
   );
 }
