@@ -65,13 +65,16 @@ enum BotStatus {
 
 type BotWithMissions {
   endedAt: DateTime
+  follower: Follower!
   followerAddress: String!
+  followerContract: Contract!
   followerContractId: Int!
   followerEndedBlock: Int
   followerStartedBlock: Int
   id: Int!
   leaderAddress: String!
   leaderCollateralBaseline: Int!
+  leaderContract: Contract!
   leaderContractId: Int!
   leaderEndedBlock: Int
   leaderStartedBlock: Int
@@ -79,6 +82,7 @@ type BotWithMissions {
   planId: Int
   startedAt: DateTime
   status: BotStatus!
+  strategy: Strategy!
   strategyId: Int!
 }
 
