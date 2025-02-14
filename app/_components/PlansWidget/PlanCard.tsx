@@ -1,4 +1,5 @@
-import { PlanDetails, PlanStatus } from "@/graphql/gql/graphql";
+"use client";
+
 import {
   Button,
   Card,
@@ -8,9 +9,12 @@ import {
   Chip,
   ChipProps,
   Divider,
+  Badge,
 } from "@nextui-org/react";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
+import { PlanDetails, PlanStatus, TaskStatus } from "@/graphql/gql/graphql";
+import { useGetTasksByStatus } from "@/app/_hooks/useTask";
 
 export const chipColorsByPlanStatus: Record<PlanStatus, ChipProps["color"]> = {
   [PlanStatus.Created]: "primary",
@@ -21,14 +25,79 @@ export const chipColorsByPlanStatus: Record<PlanStatus, ChipProps["color"]> = {
 
 export type PlanCardProps = {
   plan: PlanDetails;
+  isHideAlertForClosedMissions: boolean;
 };
 
-export function PlanCard({ plan }: PlanCardProps) {
+export function PlanCard({
+  plan,
+  isHideAlertForClosedMissions,
+}: PlanCardProps) {
   const router = useRouter();
+
+  const { satistic: createdStatistic } = useGetTasksByStatus(
+    TaskStatus.Created,
+    isHideAlertForClosedMissions,
+  );
+  const { satistic: awaitedStatistic } = useGetTasksByStatus(
+    TaskStatus.Await,
+    isHideAlertForClosedMissions,
+  );
+  const { satistic: initiatedStatistic } = useGetTasksByStatus(
+    TaskStatus.Initiated,
+    isHideAlertForClosedMissions,
+  );
+  const { satistic: failedStatistic } = useGetTasksByStatus(
+    TaskStatus.Failed,
+    isHideAlertForClosedMissions,
+  );
 
   const handleGoToDetails = () => {
     router.push(`/plans/${plan.id}`);
   };
+
+  const createdCount = plan.bots
+    .map((bot) =>
+      createdStatistic[bot.id]
+        ? Object.values(createdStatistic[bot.id]).reduce(
+            (acc, item) => acc + item,
+            0,
+          )
+        : 0,
+    )
+    .reduce((acc, item) => acc + item, 0);
+
+  const awaitedCount = plan.bots
+    .map((bot) =>
+      awaitedStatistic[bot.id]
+        ? Object.values(awaitedStatistic[bot.id]).reduce(
+            (acc, item) => acc + item,
+            0,
+          )
+        : 0,
+    )
+    .reduce((acc, item) => acc + item, 0);
+
+  const initiatedCount = plan.bots
+    .map((bot) =>
+      initiatedStatistic[bot.id]
+        ? Object.values(initiatedStatistic[bot.id]).reduce(
+            (acc, item) => acc + item,
+            0,
+          )
+        : 0,
+    )
+    .reduce((acc, item) => acc + item, 0);
+
+  const failedCount = plan.bots
+    .map((bot) =>
+      failedStatistic[bot.id]
+        ? Object.values(failedStatistic[bot.id]).reduce(
+            (acc, item) => acc + item,
+            0,
+          )
+        : 0,
+    )
+    .reduce((acc, item) => acc + item, 0);
 
   const items = [
     {
@@ -56,7 +125,7 @@ export function PlanCard({ plan }: PlanCardProps) {
   ];
 
   return (
-    <Card classNames={{ base: "w-[350px]" }}>
+    <Card classNames={{ base: "w-[400px]" }}>
       <CardHeader className="flex flex-row items-start gap-2 p-3">
         <div className="flex flex-1 flex-col">
           <span className="text-base font-bold text-neutral-400">
@@ -86,6 +155,31 @@ export function PlanCard({ plan }: PlanCardProps) {
                 </div>
               ),
           )}
+          <div className="flex flex-row items-center gap-3 font-mono">
+            {createdCount > 0 ? (
+              <Badge color="secondary" content={createdCount}>
+                <Chip color="secondary">Created</Chip>
+              </Badge>
+            ) : null}
+
+            {awaitedCount > 0 ? (
+              <Badge color="warning" content={awaitedCount}>
+                <Chip color="warning">Await</Chip>
+              </Badge>
+            ) : null}
+
+            {initiatedCount > 0 ? (
+              <Badge color="success" content={initiatedCount}>
+                <Chip color="success">Initiated</Chip>
+              </Badge>
+            ) : null}
+
+            {failedCount > 0 ? (
+              <Badge color="danger" content={failedCount}>
+                <Chip color="danger">Failed</Chip>
+              </Badge>
+            ) : null}
+          </div>
         </div>
       </CardBody>
 

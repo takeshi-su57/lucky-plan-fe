@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Tab, Tabs, Button, useDisclosure } from "@nextui-org/react";
+import { Tab, Tabs, Button, useDisclosure, Switch } from "@nextui-org/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaPlus } from "react-icons/fa";
 
@@ -27,6 +27,8 @@ export function Plans() {
   const [selected, setSelected] = useState<TabType>(
     (searchParams.get("status") as TabType) || "started",
   );
+  const [isHideAlertForClosedMissions, setIsHideAlertForClosedMissions] =
+    useState(true);
 
   const plans = useGetPlansByStatus(planStatusByTabType[selected]);
 
@@ -51,6 +53,14 @@ export function Plans() {
             <Tab key="stopped" title="Stopped" />
             <Tab key="finished" title="Finished" />
           </Tabs>
+
+          <Switch
+            isSelected={isHideAlertForClosedMissions}
+            onValueChange={setIsHideAlertForClosedMissions}
+            size="sm"
+          >
+            Hide Alert For Closed Missions
+          </Switch>
         </div>
 
         <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>
@@ -60,7 +70,11 @@ export function Plans() {
 
       <div className="flex flex-wrap items-center gap-6">
         {plans.map((plan) => (
-          <PlanCard key={plan.id} plan={plan} />
+          <PlanCard
+            key={plan.id}
+            plan={plan}
+            isHideAlertForClosedMissions={isHideAlertForClosedMissions}
+          />
         ))}
       </div>
 
