@@ -55,6 +55,18 @@ export const BOT_WITH_MISSIONS_INFO_FRAGMENT_DOCUMENT = graphql(`
     missions {
       ...MissionInfo
     }
+    followerContract {
+      ...ContractInfo
+    }
+    leaderContract {
+      ...ContractInfo
+    }
+    follower {
+      ...FollowerInfo
+    }
+    strategy {
+      ...StrategyInfo
+    }
   }
 `);
 
@@ -208,6 +220,30 @@ export function useGetBot(botId: number) {
           missions: botInfo.missions.map((item) =>
             getFragmentData(MISSION_INFO_FRAGMENT_DOCUMENT, item),
           ),
+          follower: {
+            ...getFragmentData(
+              FOLLOWER_INFO_FRAGMENT_DOCUMENT,
+              botInfo.follower,
+            ),
+          },
+          leaderContract: {
+            ...getFragmentData(
+              CONTRACT_INFO_FRAGMENT_DOCUMENT,
+              botInfo.leaderContract,
+            ),
+          },
+          followerContract: {
+            ...getFragmentData(
+              CONTRACT_INFO_FRAGMENT_DOCUMENT,
+              botInfo.followerContract,
+            ),
+          },
+          strategy: {
+            ...getFragmentData(
+              STRATEGY_INFO_FRAGMENT_DOCUMENT,
+              botInfo.strategy,
+            ),
+          },
         }
       : undefined,
     loading,
