@@ -20,8 +20,6 @@ export const links = [
     title: "",
     showDivider: true,
   },
-  { id: "strategies", label: "Strategy", title: "" },
-  { id: "contracts", label: "Contract", title: "" },
   {
     id: "tags",
     label: "Tag",
