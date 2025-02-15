@@ -8,16 +8,25 @@ import { GetPnlSnapshotsQuery, PnlSnapshotKind } from "@/graphql/gql/graphql";
 
 export const TRADEHISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment TradeHistoryInfo on TradeHistory {
+    action
     address
-    blockNumber
+    block
+    collateralDelta
+    collateralIndex
+    collateralPriceUsd
     contractId
-    pairIndex
-    eventName
+    date
     id
-    in
-    out
+    leverage
+    leverageDelta
+    long
+    marketPrice
+    pair
     pnl
-    timestamp
+    price
+    size
+    tradeId
+    tradeIndex
   }
 `);
 
@@ -25,7 +34,7 @@ export const PNL_SNAPSHOT_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment PnlSnapshotInfo on PnlSnapshot {
     accUSDPnl
     address
-    contractId
+    dateStr
     id
     kind
   }
@@ -35,7 +44,7 @@ export const PNL_SNAPSHOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment PnlSnapshotDetailsInfo on PnlSnapshotDetails {
     accUSDPnl
     address
-    contractId
+    dateStr
     histories {
       ...TradeHistoryInfo
     }
@@ -81,12 +90,14 @@ export const GET_ALL_TRADEHISTORIES_DOCUMENT = graphql(`
 export const GET_PNL_SNAPSHOTS_DOCUMENT = graphql(`
   query getPnlSnapshots(
     $contractId: Int!
+    $dateStr: String!
     $kind: PnlSnapshotKind!
     $first: Int!
     $after: Int
   ) {
     getPnlSnapshots(
       contractId: $contractId
+      dateStr: $dateStr
       kind: $kind
       first: $first
       after: $after
@@ -106,16 +117,16 @@ export const GET_PNL_SNAPSHOTS_DOCUMENT = graphql(`
 `);
 
 export const GET_PNL_SNAPSHOTS_BY_ADDRESS_DOCUMENT = graphql(`
-  query getPnlSnapshotsByAddress($address: String!, $contractId: Int!) {
-    getPnlSnapshotsByAddress(address: $address, contractId: $contractId) {
+  query getPnlSnapshotsByAddress($address: String!, $dateStr: String!) {
+    getPnlSnapshotsByAddress(address: $address, dateStr: $dateStr) {
       ...PnlSnapshotInfo
     }
   }
 `);
 
-export const INITIALIZE_PNL_SNAPSHOT_DOCUMENT = graphql(`
-  mutation initalizePnlSnapshot {
-    initalizePnlSnapshot
+export const IS_PNL_SNAPSHOT_INITIALIZED_DOCUMENT = graphql(`
+  query isPnlSnapshotInitialized($dateStr: String!) {
+    isPnlSnapshotInitialized(dateStr: $dateStr)
   }
 `);
 
@@ -189,6 +200,7 @@ export function useGetAllTradeHistory(
 }
 
 export function useGetPnlSnapshots(
+  dateStr: string,
   contractId: string | null,
   kind: PnlSnapshotKind,
 ) {
@@ -200,13 +212,14 @@ export function useGetPnlSnapshots(
     if (contractId) {
       query({
         variables: {
+          dateStr,
           contractId: +contractId,
           kind,
           first: 20,
         },
       });
     }
-  }, [contractId, kind, query]);
+  }, [contractId, dateStr, kind, query]);
 
   const pnlSnapshots = useMemo(() => {
     if (!data) {
@@ -238,13 +251,10 @@ export function useGetPnlSnapshots(
   };
 }
 
-export function useGetPnlSnapshotsByAddress(
-  address: string,
-  contractId: number,
-) {
+export function useGetPnlSnapshotsByAddress(dateStr: string, address: string) {
   const { data, loading } = useQuery(GET_PNL_SNAPSHOTS_BY_ADDRESS_DOCUMENT, {
     variables: {
-      contractId: +contractId,
+      dateStr,
       address,
     },
   });
@@ -262,4 +272,10 @@ export function useGetPnlSnapshotsByAddress(
     pnlSnapshots,
     loading,
   };
+}
+
+export function useIsPnlSnapshotInitialized(dateStr: string) {
+  return useQuery(IS_PNL_SNAPSHOT_INITIALIZED_DOCUMENT, {
+    variables: { dateStr },
+  });
 }
