@@ -20,17 +20,29 @@ const colorsByMissionStatus: Record<
 
 export type MissionSummaryProps = {
   mission: Mission;
+  isHideAlertForClosedMissions: boolean;
 };
 
-export function MissionSummary({ mission }: MissionSummaryProps) {
+export function MissionSummary({
+  mission,
+  isHideAlertForClosedMissions,
+}: MissionSummaryProps) {
   const { satistic: createdStatistic } = useGetTasksByStatus(
     TaskStatus.Created,
+    isHideAlertForClosedMissions,
   );
-  const { satistic: awaitedStatistic } = useGetTasksByStatus(TaskStatus.Await);
+  const { satistic: awaitedStatistic } = useGetTasksByStatus(
+    TaskStatus.Await,
+    isHideAlertForClosedMissions,
+  );
   const { satistic: initiatedStatistic } = useGetTasksByStatus(
     TaskStatus.Initiated,
+    isHideAlertForClosedMissions,
   );
-  const { satistic: failedStatistic } = useGetTasksByStatus(TaskStatus.Failed);
+  const { satistic: failedStatistic } = useGetTasksByStatus(
+    TaskStatus.Failed,
+    isHideAlertForClosedMissions,
+  );
 
   const createdCount =
     (createdStatistic[mission.botId] &&

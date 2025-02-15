@@ -8,7 +8,6 @@ import { getFragmentData, graphql } from "@/gql/index";
 import { GetAllUsersQuery, TagInfoFragment } from "@/graphql/gql/graphql";
 
 import { TAG_INFO_FRAGMENT_DOCUMENT } from "./useTag";
-import { hasCommonItem, hasSameItems } from "@/utils";
 
 export const USER_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment UserInfo on User {
@@ -93,26 +92,18 @@ export function useGetAllUsers() {
   }, [data]);
 }
 
-export function useGetUsersByTags(tags: string[], isAndOp: boolean) {
+export function useGetUsersByTags(tags: string[]) {
   const { users } = useGetAllUsers();
 
   return useMemo(() => {
-    if (tags.length === 0) {
-      return users.filter((user) => user.tags.length === 0);
-    }
+    return users.filter((user) => {
+      const userTags = user.tags.map((tag) => tag.tag);
 
-    return users.filter((user) =>
-      isAndOp
-        ? hasSameItems(
-            user.tags.map((tag) => tag.tag),
-            tags,
-          )
-        : hasCommonItem(
-            user.tags.map((tag) => tag.tag),
-            tags,
-          ),
-    );
-  }, [isAndOp, tags, users]);
+      return tags
+        .filter((tag) => tag.trim() !== "")
+        .every((tag) => userTags.includes(tag));
+    });
+  }, [tags, users]);
 }
 
 export function useGetTagsByAddress(address: string) {
@@ -183,8 +174,6 @@ export function useAddTagToUser() {
   useEffect(() => {
     if (newData && !error) {
       const userInfo = getUserFragment(newData.addTagToUser);
-
-      console.log(userInfo);
 
       enqueueSnackbar("Success at adding tag!", {
         variant: "success",

@@ -22,17 +22,21 @@ import LineChart from "@/components/charts/LineChart";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 
 import { TagsWidget } from "../TagWidgets/TagsWidget";
+import { PairChip } from "./PairChip";
+import { Virtuoso } from "react-virtuoso";
 
 export type HistoriesWidgetProps = {
   address: Address;
   histories: TradeHistory[];
   kind: PnlSnapshotKind;
+  contractId: number;
 };
 
 export function HistoriesWidget({
   address,
   histories,
   kind,
+  contractId,
 }: HistoriesWidgetProps) {
   const [range, setRange] = useState<{
     from: number;
@@ -69,6 +73,8 @@ export function HistoriesWidget({
     date: Date;
   }[] = [];
 
+  const tradePairIndexsMap = new Map<number, number>();
+
   let pnlSum = 0;
   let inOutSum = 0;
 
@@ -98,9 +104,17 @@ export function HistoriesWidget({
         in: 0,
         out: 0,
         pnl: 0,
+        pairIndex: null,
         timestamp: Date.now(),
       },
     ].forEach((history, index) => {
+      if (history.pairIndex !== undefined && history.pairIndex !== null) {
+        tradePairIndexsMap.set(
+          history.pairIndex,
+          (tradePairIndexsMap.get(history.pairIndex) || 0) + 1,
+        );
+      }
+
       const gap = getDayGap(
         new Date(history.timestamp),
         new Date(sortedHistories[0].timestamp),
@@ -493,43 +507,65 @@ export function HistoriesWidget({
             <TagsWidget address={address} />
           </div>
 
-          <div className="flex flex-1 flex-col gap-2">
-            <span>PNL</span>
-            <LineChart
-              data={pnlChartData}
-              className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+          <div className="flex flex-1 flex-col items-center gap-6">
+            <Virtuoso
+              style={{ height: 50, width: 800, overflowY: "hidden" }}
+              data={Array.from(tradePairIndexsMap.entries())}
+              horizontalDirection
+              itemContent={(_, data) => (
+                <div className="mr-4">
+                  <PairChip
+                    key={data[0]}
+                    contractId={contractId}
+                    pairIndex={data[0]}
+                    count={data[1]}
+                  />
+                </div>
+              )}
             />
-            <span>Scale PNL</span>
-            <LineChart
-              data={dayScalePnlChartData}
-              className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
-            />
-          </div>
 
-          <div className="flex flex-1 flex-col gap-2">
-            <span>In/Out</span>
-            <LineChart
-              data={inOutChartData}
-              className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
-            />
-            <span>Scale In/Out</span>
-            <LineChart
-              data={dayScaleinOutChartData}
-              className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
-            />
-          </div>
+            <div className="flex w-full items-center gap-8">
+              <div className="flex flex-1 flex-col gap-2">
+                <LineChart
+                  title="PNL"
+                  data={pnlChartData}
+                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+                />
 
-          <div className="flex flex-1 flex-col gap-2">
-            <span>In</span>
-            <LineChart
-              data={inChartData}
-              className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
-            />
-            <span>Out</span>
-            <LineChart
-              data={outChartData}
-              className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
-            />
+                <LineChart
+                  title="Scale PNL"
+                  data={dayScalePnlChartData}
+                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+                />
+              </div>
+
+              <div className="flex flex-1 flex-col gap-2">
+                <LineChart
+                  title="In/Out"
+                  data={inOutChartData}
+                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+                />
+
+                <LineChart
+                  title="Scale In/Out"
+                  data={dayScaleinOutChartData}
+                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+                />
+              </div>
+
+              <div className="flex flex-1 flex-col gap-2">
+                <LineChart
+                  title="In"
+                  data={inChartData}
+                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+                />
+                <LineChart
+                  title="Out"
+                  data={outChartData}
+                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </CardBody>

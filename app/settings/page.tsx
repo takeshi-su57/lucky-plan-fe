@@ -1,32 +1,33 @@
 "use client";
 
-import { Button } from "@nextui-org/react";
-import {
-  useInitalizePnlSnapshot,
-  usePauseSystem,
-  useResumeSystem,
-} from "@/app-hooks/useSystem";
+import { useState } from "react";
+import { Tabs, Tab } from "@nextui-org/react";
+import { ControlPanel } from "../_components/SettingsWidget/ControlPanel";
+import { StrategyPanel } from "../_components/SettingsWidget/StrategyPanel";
+import { ContractPanel } from "../_components/SettingsWidget/ContractPanel";
+
+type TabType = "contracts" | "strategies" | "controls";
 
 export default function Page() {
-  const pauseSystem = usePauseSystem();
-  const resumeSystem = useResumeSystem();
-  const initalizePnlSnapshot = useInitalizePnlSnapshot();
+  const [selected, setSelected] = useState<TabType>("contracts");
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-row items-center gap-4">
-        <Button onClick={() => pauseSystem()} color="warning">
-          Pause System
-        </Button>
-        <Button onClick={() => resumeSystem()} color="danger">
-          Resume System
-        </Button>
+      <div className="flex items-center justify-between">
+        <Tabs
+          aria-label="users-table-tabs"
+          selectedKey={selected}
+          onSelectionChange={(value) => value && setSelected(value as TabType)}
+        >
+          <Tab key="contracts" title="Contracts" />
+          <Tab key="strategies" title="Strategies" />
+          <Tab key="controls" title="Controls" />
+        </Tabs>
       </div>
-      <div className="flex flex-row gap-4">
-        <Button onClick={() => initalizePnlSnapshot()} color="primary">
-          Initialize PNL Snapshot
-        </Button>
-      </div>
+
+      {selected === "contracts" && <ContractPanel />}
+      {selected === "strategies" && <StrategyPanel />}
+      {selected === "controls" && <ControlPanel />}
     </div>
   );
 }

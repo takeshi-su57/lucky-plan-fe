@@ -10,8 +10,6 @@ import {
 } from "@/app/_hooks/useFollower";
 
 import { Chip, Skeleton } from "@nextui-org/react";
-import { PnlSnapshotKind } from "@/graphql/gql/graphql";
-import { useGetPnlSnapshotsByAddress } from "@/app/_hooks/useHistory";
 
 export type FollowerInfoWidgetProps = {
   follower: {
@@ -21,15 +19,12 @@ export type FollowerInfoWidgetProps = {
     ethBalance: number;
     usdcBalance: number;
     contractId: number;
+    accUSDPnl: number;
   };
-  kind: PnlSnapshotKind;
 };
 
-export function FollowerInfoWidget({
-  follower,
-  kind,
-}: FollowerInfoWidgetProps) {
-  const availableFollowers = useGetAvailableFollowers();
+export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
+  const availableFollowers = useGetAvailableFollowers([]);
   const { pendingOrders, loading: pendingOrdersLoading } = useGetPendingOrders(
     follower.address,
     follower.contractId,
@@ -38,8 +33,6 @@ export function FollowerInfoWidget({
     follower.address,
     follower.contractId,
   );
-  const { pnlSnapshots, loading: pnlSnapshotsLoading } =
-    useGetPnlSnapshotsByAddress(follower.address, follower.contractId);
 
   const items = [
     {
@@ -54,8 +47,6 @@ export function FollowerInfoWidget({
     },
   ];
 
-  const accUSDPnl =
-    pnlSnapshots.find((item) => item.kind === kind)?.accUSDPnl || 0;
   const tradesCount = trades.length || 0;
   const pendingOrdersCount = pendingOrders.length || 0;
 
@@ -72,13 +63,9 @@ export function FollowerInfoWidget({
           </div>
         ))}
 
-        {pnlSnapshotsLoading ? (
-          <Skeleton className="rounded-lg">
-            <div className="h-8 w-[80px] rounded-full bg-default-300" />
-          </Skeleton>
-        ) : accUSDPnl !== 0 ? (
-          <Chip color={accUSDPnl >= 0 ? "warning" : "danger"}>
-            {accUSDPnl} USDC
+        {follower.accUSDPnl !== 0 ? (
+          <Chip color={follower.accUSDPnl > 0 ? "warning" : "danger"}>
+            {follower.accUSDPnl} USDC
           </Chip>
         ) : null}
 

@@ -100,7 +100,7 @@ export function useResumeSystem() {
 }
 
 export function useInitalizePnlSnapshot() {
-  const [initalizePnlSnapshot, { data, error }] = useMutation(
+  const [initalizePnlSnapshot, { data, error, loading }] = useMutation(
     INITALIZE_PNL_SNAPSHOT_DOCUMENT,
   );
 
@@ -114,7 +114,7 @@ export function useInitalizePnlSnapshot() {
     }
   }, [data, error, enqueueSnackbar]);
 
-  return initalizePnlSnapshot;
+  return { initalizePnlSnapshot, loading };
 }
 
 export function useGetSystemStatus() {

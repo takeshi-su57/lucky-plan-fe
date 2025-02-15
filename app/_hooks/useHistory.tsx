@@ -11,6 +11,7 @@ export const TRADEHISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
     address
     blockNumber
     contractId
+    pairIndex
     eventName
     id
     in
@@ -40,6 +41,32 @@ export const PNL_SNAPSHOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     }
     id
     kind
+  }
+`);
+
+export const GET_TRADE_TRANSACTION_COUNTS_DOCUMENT = graphql(`
+  query getTradeTransactionCounts(
+    $addresses: [String!]!
+    $contractIds: [Int!]!
+  ) {
+    getTradeTransactionCounts(
+      addresses: $addresses
+      contractIds: $contractIds
+    ) {
+      daily
+      weekly
+      monthly
+    }
+  }
+`);
+
+export const GET_USER_TRANSACTION_COUNTS_DOCUMENT = graphql(`
+  query getUserTransactionCounts($inputs: [GetUserTransactionCountsInput!]!) {
+    getUserTransactionCounts(inputs: $inputs) {
+      daily
+      weekly
+      monthly
+    }
   }
 `);
 
@@ -106,6 +133,32 @@ function getPnlSnapshotInfo(
       getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, history),
     ),
   };
+}
+
+export function useGetUserTransactionCounts(
+  inputs: {
+    address: string;
+    contractId: number;
+    startedAt: string | null;
+  }[],
+) {
+  return useQuery(GET_USER_TRANSACTION_COUNTS_DOCUMENT, {
+    variables: {
+      inputs,
+    },
+  });
+}
+
+export function useGetTradeTransactionCounts(
+  contractIds: number[],
+  addresses: string[],
+) {
+  return useQuery(GET_TRADE_TRANSACTION_COUNTS_DOCUMENT, {
+    variables: {
+      contractIds,
+      addresses,
+    },
+  });
 }
 
 export function useGetAllTradeHistory(

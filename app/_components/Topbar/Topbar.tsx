@@ -3,9 +3,20 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { twMerge } from "tailwind-merge";
 import { useGetSystemStatus } from "@/app-hooks/useSystem";
+import { useGetTradeTransactionCounts } from "@/app/_hooks/useHistory";
+import { useGetAllContracts } from "@/app/_hooks/useContract";
+import { Chip } from "@nextui-org/react";
+import { Badge } from "@nextui-org/react";
 
 export function Topbar() {
   const { data } = useGetSystemStatus();
+
+  const contracts = useGetAllContracts();
+
+  const { data: tradeTransactionCounts } = useGetTradeTransactionCounts(
+    contracts.map((item) => item.id),
+    [],
+  );
 
   return (
     <div className="sticky flex items-center justify-between">
@@ -35,13 +46,40 @@ export function Topbar() {
         </span>
       </div>
 
-      <ConnectButton
-        accountStatus={{
-          smallScreen: "avatar",
-          largeScreen: "full",
-        }}
-        chainStatus="icon"
-      />
+      <div className="flex items-center gap-10">
+        <Badge
+          color="secondary"
+          content={
+            tradeTransactionCounts?.getTradeTransactionCounts?.monthly || 0
+          }
+        >
+          <Chip color="secondary">This Month Trades</Chip>
+        </Badge>
+        <Badge
+          color="secondary"
+          content={
+            tradeTransactionCounts?.getTradeTransactionCounts?.weekly || 0
+          }
+        >
+          <Chip color="secondary">This Week Trades</Chip>
+        </Badge>
+        <Badge
+          color="secondary"
+          content={
+            tradeTransactionCounts?.getTradeTransactionCounts?.daily || 0
+          }
+        >
+          <Chip color="secondary">Today Trades</Chip>
+        </Badge>
+
+        <ConnectButton
+          accountStatus={{
+            smallScreen: "avatar",
+            largeScreen: "full",
+          }}
+          chainStatus="icon"
+        />
+      </div>
     </div>
   );
 }

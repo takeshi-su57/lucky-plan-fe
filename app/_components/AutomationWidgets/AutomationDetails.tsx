@@ -13,11 +13,8 @@ import {
   Tab,
   Tabs,
 } from "@nextui-org/react";
-import { Address } from "viem";
 
 import { BotStatus, MissionStatus } from "@/graphql/gql/graphql";
-
-import { UserTradeHistory } from "@/app-components/UserWidgets/UserTradeHistory";
 
 import {
   useDeleteBot,
@@ -29,17 +26,21 @@ import { MissionSummary } from "../MissionWidgets/MissionSummary";
 import { MissionDetails } from "../MissionWidgets/MissionDetails";
 import { FaCopy } from "react-icons/fa";
 import { useCloseMission } from "@/app/_hooks/useMission";
+import { AutomationGridChart } from "../PlansWidget/AutomationChart";
+import { useGetPersonalTradeHistories } from "@/app/_hooks/useGetPersonalTradeHistories";
 
 type TabType = "chart" | "missions";
 
 export type AutomationDetailsProps = {
   botId: number;
   isChatFirst: boolean;
+  isHideAlertForClosedMissions: boolean;
 };
 
 export function AutomationDetails({
   botId,
   isChatFirst,
+  isHideAlertForClosedMissions,
 }: AutomationDetailsProps) {
   const { bot, loading, error } = useGetBot(botId);
 
@@ -51,6 +52,18 @@ export function AutomationDetails({
 
   const [selected, setSelected] = useState<TabType>("chart");
   const [hideClosedMissions, setHideClosedMissions] = useState(true);
+  const [showOnlyAutomationHistory, setShowOnlyAutomationHistory] =
+    useState(true);
+
+  const { data: leaderHistories } = useGetPersonalTradeHistories(
+    bot?.leaderContract?.backendUrl || null,
+    bot?.leaderAddress || null,
+  );
+
+  const { data: followerHistories } = useGetPersonalTradeHistories(
+    bot?.followerContract?.backendUrl || null,
+    bot?.followerAddress || null,
+  );
 
   useEffect(() => {
     if (isChatFirst) {
@@ -139,6 +152,15 @@ export function AutomationDetails({
               Hide Closed Missions
             </Checkbox>
           ) : null}
+
+          {selected === "chart" ? (
+            <Checkbox
+              isSelected={showOnlyAutomationHistory}
+              onValueChange={setShowOnlyAutomationHistory}
+            >
+              Show Only Automation History
+            </Checkbox>
+          ) : null}
         </div>
 
         {bot.status === BotStatus.Created ? (
@@ -176,16 +198,32 @@ export function AutomationDetails({
       {selected === "chart" ? (
         <Card>
           <CardBody>
-            <UserTradeHistory
-              address={bot.leaderAddress as Address}
-              contractId={`${bot.leaderContractId}`}
+            <AutomationGridChart
+              histories={leaderHistories || []}
+              title="Leader Chart"
+              range={
+                showOnlyAutomationHistory
+                  ? {
+                      from: new Date(bot.startedAt) || new Date(),
+                      to: new Date(bot.endedAt) || new Date(),
+                    }
+                  : undefined
+              }
             />
 
             <Divider />
 
-            <UserTradeHistory
-              address={bot.followerAddress as Address}
-              contractId={`${bot.followerContractId}`}
+            <AutomationGridChart
+              histories={followerHistories || []}
+              title="Follower Chart"
+              range={
+                showOnlyAutomationHistory
+                  ? {
+                      from: new Date(bot.startedAt) || new Date(),
+                      to: new Date(bot.endedAt) || new Date(),
+                    }
+                  : undefined
+              }
             />
           </CardBody>
         </Card>
@@ -202,7 +240,12 @@ export function AutomationDetails({
             .map((mission) => (
               <AccordionItem
                 key={mission.id}
-                title={<MissionSummary mission={mission} />}
+                title={
+                  <MissionSummary
+                    mission={mission}
+                    isHideAlertForClosedMissions={isHideAlertForClosedMissions}
+                  />
+                }
               >
                 <MissionDetails missionId={mission.id} />
               </AccordionItem>

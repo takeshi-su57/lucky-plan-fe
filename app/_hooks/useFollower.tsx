@@ -11,10 +11,11 @@ import {
 import { getFragmentData, graphql } from "@/gql/index";
 import { useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
-import { useGetAllBots } from "./useAutomation";
+import { useGetBotsByStatus } from "./useAutomation";
 import { BotStatus } from "@/graphql/gql/graphql";
 import { useGetAllContracts } from "./useContract";
 import { MISSION_INFO_FRAGMENT_DOCUMENT } from "./useMission";
+import { PNL_SNAPSHOT_INFO_FRAGMENT_DOCUMENT } from "./useHistory";
 
 export const FOLLOWER_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment FollowerInfo on Follower {
@@ -32,6 +33,9 @@ export const FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     ethBalance
     usdcBalance
     contractId
+    pnlSnapshots {
+      ...PnlSnapshotInfo
+    }
   }
 `);
 
@@ -154,19 +158,23 @@ export function useGetAllFollowers() {
   }, [data]);
 }
 
-export function useGetAvailableFollowers() {
+export function useGetAvailableFollowers(limitedAddresses: string[] = []) {
   const allFollowers = useGetAllFollowers();
-  const allBots = useGetAllBots();
+  const createdBots = useGetBotsByStatus(BotStatus.Created);
+  const liveBots = useGetBotsByStatus(BotStatus.Live);
+  const stopBots = useGetBotsByStatus(BotStatus.Stop);
 
   return useMemo(() => {
-    const botFollowers = allBots
+    const botFollowers = [...createdBots, ...liveBots, ...stopBots]
       .filter((bot) => bot.status !== BotStatus.Dead)
       .map((bot) => bot.followerAddress);
 
     return allFollowers.filter(
-      (follower) => !botFollowers.includes(follower.address),
+      (follower) =>
+        !botFollowers.includes(follower.address) &&
+        !limitedAddresses.includes(follower.address),
     );
-  }, [allBots, allFollowers]);
+  }, [createdBots, liveBots, stopBots, allFollowers, limitedAddresses]);
 }
 
 export function useGetAllFollowerDetails(contractId: string | null) {
@@ -180,9 +188,21 @@ export function useGetAllFollowerDetails(contractId: string | null) {
     }
 
     return data.getAllFollowerDetails
-      .map((follower) => ({
-        ...getFragmentData(FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT, follower),
-      }))
+      .map((follower) => {
+        const followerData = getFragmentData(
+          FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          follower,
+        );
+
+        const pnlSnapshots = followerData.pnlSnapshots.map((snapshot) =>
+          getFragmentData(PNL_SNAPSHOT_INFO_FRAGMENT_DOCUMENT, snapshot),
+        );
+
+        return {
+          ...followerData,
+          pnlSnapshots,
+        };
+      })
       .sort((a, b) => a.accountIndex - b.accountIndex);
   }, [data]);
 }
@@ -218,12 +238,14 @@ export function useSubscribeFollowerDetailUpdated(contractId: string | null) {
         const fragment = client.cache.readFragment({
           id,
           fragment: FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          fragmentName: "FollowerDetailInfo",
         });
 
         if (fragment) {
           client.cache.writeFragment({
             id,
             fragment: FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT,
+            fragmentName: "FollowerDetailInfo",
             data: follower,
           });
         } else {

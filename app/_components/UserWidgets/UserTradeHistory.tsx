@@ -20,6 +20,7 @@ export function UserTradeHistory({
   return (
     <HistoriesWidget
       address={address}
+      contractId={+contractId}
       histories={allHistories}
       kind={PnlSnapshotKind.AllTime}
     />

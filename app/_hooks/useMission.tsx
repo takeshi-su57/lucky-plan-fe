@@ -208,6 +208,7 @@ export function useSubscribeMission() {
             id: missionInfo.id,
           }),
           fragment: MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          fragmentName: "MissionShallowDetailsInfo",
           data: missionInfo,
         });
       });

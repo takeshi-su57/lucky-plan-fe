@@ -11,6 +11,7 @@ export const CONTRACT_INFO_FRAGMENT_DOCUMENT = graphql(`
     id
     chainId
     address
+    backendUrl
     description
     status
   }
@@ -20,6 +21,16 @@ export const GET_ALL_CONTRACT_DOCUMENT = graphql(`
   query getAllContracts {
     getAllContracts {
       ...ContractInfo
+    }
+  }
+`);
+
+export const GET_ALL_TRADE_PAIRS_DOCUMENT = graphql(`
+  query getAllTradePairs($contractId: Int!) {
+    getTradePairs(contractId: $contractId) {
+      from
+      pairIndex
+      to
     }
   }
 `);
@@ -39,6 +50,14 @@ export const CHANGE_CONTRACT_STATUS_DOCUMENT = graphql(`
     }
   }
 `);
+
+export function useGetAllTradePairs(contractId?: number) {
+  const { data } = useQuery(GET_ALL_TRADE_PAIRS_DOCUMENT, {
+    variables: contractId ? { contractId } : undefined,
+  });
+
+  return data?.getTradePairs || [];
+}
 
 export function useGetAllContracts() {
   const { data } = useQuery(GET_ALL_CONTRACT_DOCUMENT, {
@@ -134,6 +153,7 @@ export function useChangeContractStatus() {
           id: contractInfo.id,
         }),
         fragment: CONTRACT_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "ContractInfo",
         data: contractInfo,
       });
     }
