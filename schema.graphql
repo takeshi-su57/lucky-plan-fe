@@ -405,6 +405,12 @@ type PnlSnapshotDetailsEdge {
   node: PnlSnapshotDetails!
 }
 
+type PnlSnapshotInitializedFlag {
+  dateStr: String!
+  id: Int!
+  isInit: Boolean!
+}
+
 enum PnlSnapshotKind {
   ALL_TIME
   DAY
@@ -461,6 +467,7 @@ type Query {
   getPendingOrders(address: String!, contractId: Int!): [FollowerPendingOrder!]!
   getPlanById(id: Int!): PlanDetails
   getPlansByStatus(status: PlanStatus!): [PlanDetails!]!
+  getPnlSnapshotInitializedFlag: [PnlSnapshotInitializedFlag!]!
   getPnlSnapshots(after: Int, contractId: Int!, dateStr: String!, first: Int!, kind: PnlSnapshotKind!): PnlSnapshotDetailsConnection!
   getPnlSnapshotsByAddress(address: String!, dateStr: String!): [PnlSnapshot!]!
   getTasksByStatus(status: TaskStatus!): [TaskShallowDetails!]!

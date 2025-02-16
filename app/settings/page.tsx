@@ -5,8 +5,9 @@ import { Tabs, Tab } from "@nextui-org/react";
 import { ControlPanel } from "../_components/SettingsWidget/ControlPanel";
 import { StrategyPanel } from "../_components/SettingsWidget/StrategyPanel";
 import { ContractPanel } from "../_components/SettingsWidget/ContractPanel";
+import { PnlSnapshotPanel } from "../_components/SettingsWidget/PnlSnapshotPanel";
 
-type TabType = "contracts" | "strategies" | "controls";
+type TabType = "contracts" | "strategies" | "pnlSnapshot" | "controls";
 
 export default function Page() {
   const [selected, setSelected] = useState<TabType>("contracts");
@@ -21,12 +22,14 @@ export default function Page() {
         >
           <Tab key="contracts" title="Contracts" />
           <Tab key="strategies" title="Strategies" />
+          <Tab key="pnlSnapshot" title="Pnl Snapshot" />
           <Tab key="controls" title="Controls" />
         </Tabs>
       </div>
 
       {selected === "contracts" && <ContractPanel />}
       {selected === "strategies" && <StrategyPanel />}
+      {selected === "pnlSnapshot" && <PnlSnapshotPanel />}
       {selected === "controls" && <ControlPanel />}
     </div>
   );

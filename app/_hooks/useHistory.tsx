@@ -129,6 +129,16 @@ export const GET_PNL_SNAPSHOTS_BY_ADDRESS_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_PNL_SNAPSHOT_INITIALIZED_FLAG_DOCUMENT = graphql(`
+  query getPnlSnapshotInitializedFlag {
+    getPnlSnapshotInitializedFlag {
+      id
+      dateStr
+      isInit
+    }
+  }
+`);
+
 export const IS_PNL_SNAPSHOT_INITIALIZED_DOCUMENT = graphql(`
   query isPnlSnapshotInitialized($dateStr: String!) {
     isPnlSnapshotInitialized(dateStr: $dateStr)
@@ -282,6 +292,10 @@ export function useGetPnlSnapshots(
     fetchMore: handleFetchMore,
     loading,
   };
+}
+
+export function useGetPnlSnapshotInitializedFlag() {
+  return useQuery(GET_PNL_SNAPSHOT_INITIALIZED_FLAG_DOCUMENT);
 }
 
 export function useGetPnlSnapshotsByAddress(dateStr: string, address: string) {
