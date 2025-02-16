@@ -251,6 +251,12 @@ export function getHistoriesChartData(
     maxIn,
     sumIn,
     countIn,
+    firstActivity:
+      sortedHistories.length > 0 ? new Date(sortedHistories[0].date) : null,
+    lastActivity:
+      sortedHistories.length > 0
+        ? new Date(sortedHistories[sortedHistories.length - 1].date)
+        : null,
   };
 }
 

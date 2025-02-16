@@ -1,5 +1,3 @@
-import { BotDetails, Contract } from "@/graphql/gql/graphql";
-
 export enum PendingOrderType {
   MARKET_OPEN,
   MARKET_CLOSE,

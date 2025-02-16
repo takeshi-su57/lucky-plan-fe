@@ -1,299 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
 import { Address } from "viem";
-import { Card, CardBody, Slider } from "@nextui-org/react";
-import { PnlSnapshotKind, TradeHistory } from "@/graphql/gql/graphql";
+import { Card, CardBody } from "@nextui-org/react";
+import { Virtuoso } from "react-virtuoso";
 import dayjs from "dayjs";
 
-import {
-  convertMillisToReadableTime,
-  getAllDaysBetween,
-  getAllHoursBetween,
-  getAllMinutesBetween,
-  getDateAfterDays,
-  getDayGap,
-  isSameDay,
-  isSameHour,
-  isSameMinute,
-} from "@/utils";
+import { convertMillisToReadableTime } from "@/utils";
+import { getHistoriesChartData } from "@/utils/historiesChart";
+import { PersonalTradeHistory } from "@/types";
 
-import LineChart from "@/components/charts/LineChart";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
-
+import { getPriceStr } from "@/utils/price";
 import { TagsWidget } from "../TagWidgets/TagsWidget";
 import { PairChip } from "./PairChip";
-import { Virtuoso } from "react-virtuoso";
+import { HistoryCharts } from "./HistoryCharts";
 
 export type HistoriesWidgetProps = {
   address: Address;
-  histories: TradeHistory[];
-  kind: PnlSnapshotKind;
+  histories: PersonalTradeHistory[];
   contractId: number;
+  range?: {
+    from: Date;
+    to: Date;
+  };
 };
 
 export function HistoriesWidget({
   address,
   histories,
-  kind,
   contractId,
+  range,
 }: HistoriesWidgetProps) {
-  const [range, setRange] = useState<{
-    from: number;
-    to: number;
-  } | null>(null);
-
-  const pnlChartData: {
-    value: number;
-    date: Date;
-  }[] = [];
-
-  const dayScalePnlChartData: {
-    value: number;
-    date: Date;
-  }[] = [];
-
-  const inOutChartData: {
-    value: number;
-    date: Date;
-  }[] = [];
-
-  const dayScaleinOutChartData: {
-    value: number;
-    date: Date;
-  }[] = [];
-
-  const inChartData: {
-    value: number;
-    date: Date;
-  }[] = [];
-
-  const outChartData: {
-    value: number;
-    date: Date;
-  }[] = [];
-
-  const tradePairIndexsMap = new Map<number, number>();
-
-  let pnlSum = 0;
-  let inOutSum = 0;
-
-  const sortedHistories = histories.sort((a, b) => {
-    const first = new Date(a.timestamp);
-    const second = new Date(b.timestamp);
-
-    if (first > second) {
-      return 1;
-    } else if (first < second) {
-      return -1;
-    } else {
-      return 0;
-    }
-  });
-
-  if (sortedHistories.length > 0) {
-    [
-      ...sortedHistories,
-      {
-        __typename: "TradeHistory",
-        address,
-        blockNumber: 0,
-        contractId: 0,
-        eventName: "",
-        id: 0,
-        in: 0,
-        out: 0,
-        pnl: 0,
-        pairIndex: null,
-        timestamp: Date.now(),
-      },
-    ].forEach((history, index) => {
-      if (history.pairIndex !== undefined && history.pairIndex !== null) {
-        tradePairIndexsMap.set(
-          history.pairIndex,
-          (tradePairIndexsMap.get(history.pairIndex) || 0) + 1,
-        );
-      }
-
-      const gap = getDayGap(
-        new Date(history.timestamp),
-        new Date(sortedHistories[0].timestamp),
-      );
-
-      if (range && (range.from > gap || range.to < gap)) {
-        return;
-      }
-
-      pnlSum += history.pnl;
-      inOutSum += history.in - history.out;
-
-      if (pnlChartData.length === 0) {
-        pnlChartData.push({
-          value: 0,
-          date: new Date(history.timestamp),
-        });
-      }
-
-      if (inOutChartData.length === 0) {
-        inOutChartData.push({
-          value: 0,
-          date: new Date(history.timestamp),
-        });
-      }
-
-      if (outChartData.length === 0) {
-        outChartData.push({
-          value: 0,
-          date: new Date(history.timestamp),
-        });
-      }
-
-      if (inChartData.length === 0) {
-        outChartData.push({
-          value: 0,
-          date: new Date(history.timestamp),
-        });
-      }
-
-      if (dayScalePnlChartData.length === 0) {
-        dayScalePnlChartData.push({
-          value: 0,
-          date: new Date(history.timestamp),
-        });
-      } else if (
-        kind === PnlSnapshotKind.Day &&
-        !isSameMinute(
-          new Date(history.timestamp),
-          new Date(sortedHistories[index - 1].timestamp),
-        )
-      ) {
-        const minutes = getAllMinutesBetween(
-          new Date(sortedHistories[index - 1].timestamp),
-          new Date(history.timestamp),
-        );
-
-        minutes.slice(1).forEach((minute) => {
-          dayScalePnlChartData.push({
-            value: pnlSum,
-            date: minute,
-          });
-        });
-      } else if (
-        kind === PnlSnapshotKind.Week &&
-        !isSameHour(
-          new Date(history.timestamp),
-          new Date(sortedHistories[index - 1].timestamp),
-        )
-      ) {
-        const hours = getAllHoursBetween(
-          new Date(sortedHistories[index - 1].timestamp),
-          new Date(history.timestamp),
-        );
-
-        hours.slice(1).forEach((hour) => {
-          dayScalePnlChartData.push({
-            value: pnlSum,
-            date: hour,
-          });
-        });
-      } else if (
-        !isSameDay(
-          new Date(history.timestamp),
-          new Date(sortedHistories[index - 1].timestamp),
-        )
-      ) {
-        const days = getAllDaysBetween(
-          new Date(sortedHistories[index - 1].timestamp),
-          new Date(history.timestamp),
-        );
-
-        days.slice(1).forEach((day) => {
-          dayScalePnlChartData.push({
-            value: pnlSum,
-            date: day,
-          });
-        });
-      }
-
-      if (dayScaleinOutChartData.length === 0) {
-        dayScaleinOutChartData.push({
-          value: 0,
-          date: new Date(history.timestamp),
-        });
-      } else if (
-        kind === PnlSnapshotKind.Day &&
-        !isSameMinute(
-          new Date(history.timestamp),
-          new Date(sortedHistories[index - 1].timestamp),
-        )
-      ) {
-        const minutes = getAllMinutesBetween(
-          new Date(sortedHistories[index - 1].timestamp),
-          new Date(history.timestamp),
-        );
-
-        minutes.slice(1).forEach((minute) => {
-          dayScaleinOutChartData.push({
-            value: inOutSum,
-            date: minute,
-          });
-        });
-      } else if (
-        kind === PnlSnapshotKind.Week &&
-        !isSameHour(
-          new Date(history.timestamp),
-          new Date(sortedHistories[index - 1].timestamp),
-        )
-      ) {
-        const hours = getAllHoursBetween(
-          new Date(sortedHistories[index - 1].timestamp),
-          new Date(history.timestamp),
-        );
-
-        hours.slice(1).forEach((hour) => {
-          dayScaleinOutChartData.push({
-            value: inOutSum,
-            date: hour,
-          });
-        });
-      } else if (
-        !isSameDay(
-          new Date(history.timestamp),
-          new Date(sortedHistories[index - 1].timestamp),
-        )
-      ) {
-        const days = getAllDaysBetween(
-          new Date(sortedHistories[index - 1].timestamp),
-          new Date(history.timestamp),
-        );
-
-        days.slice(1).forEach((day) => {
-          dayScaleinOutChartData.push({
-            value: inOutSum,
-            date: day,
-          });
-        });
-      }
-
-      pnlChartData.push({
-        value: pnlSum,
-        date: new Date(history.timestamp),
-      });
-      inOutChartData.push({
-        value: inOutSum,
-        date: new Date(history.timestamp),
-      });
-
-      inChartData.push({
-        value: history.in,
-        date: new Date(history.timestamp),
-      });
-      outChartData.push({
-        value: -history.out,
-        date: new Date(history.timestamp),
-      });
-    });
-  }
+  const {
+    pnlChartData,
+    inOutChartData,
+    inChartData,
+    outChartData,
+    tradePairs,
+    minIn,
+    maxIn,
+    sumIn,
+    countIn,
+    firstActivity,
+    lastActivity,
+  } = useMemo(
+    () => getHistoriesChartData(histories, range),
+    [histories, range],
+  );
 
   const items = [
     {
@@ -309,7 +63,10 @@ export function HistoriesWidget({
     {
       id: "pnl",
       label: "PNL",
-      value: pnlSum,
+      value:
+        pnlChartData.length > 0
+          ? getPriceStr(pnlChartData[pnlChartData.length - 1].value)
+          : 0,
     },
   ];
 
@@ -367,15 +124,27 @@ export function HistoriesWidget({
                 </div>
               ))}
 
+              <div className="flex flex-col gap-4 text-xs text-neutral-400">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="flex-1">Min In: {minIn.toFixed(2)}</span>
+                  <span className="flex-1">Max In: {maxIn.toFixed(2)}</span>
+                </div>
+
+                <div className="flex items-center justify-between gap-4">
+                  <span className="flex-1">
+                    Avg In: {(sumIn / countIn).toFixed(2)}
+                  </span>
+                  <span className="flex-1">Count In: {countIn}</span>
+                </div>
+              </div>
+
               <div className="flex items-center justify-between">
                 <span className="text-base text-neutral-400">
                   First Activity:
                 </span>
                 <span className="text-sm font-bold text-white">
-                  {sortedHistories.length > 0
-                    ? dayjs(new Date(sortedHistories[0].timestamp)).format(
-                        "YYYY/MM/DD",
-                      )
+                  {firstActivity
+                    ? dayjs(new Date(firstActivity)).format("YYYY/MM/DD")
                     : ""}
                 </span>
               </div>
@@ -385,12 +154,8 @@ export function HistoriesWidget({
                   Last Activity:
                 </span>
                 <span className="text-sm font-bold text-white">
-                  {sortedHistories.length > 0
-                    ? dayjs(
-                        new Date(
-                          sortedHistories[sortedHistories.length - 1].timestamp,
-                        ),
-                      ).format("YYYY/MM/DD")
+                  {lastActivity
+                    ? dayjs(new Date(lastActivity)).format("YYYY/MM/DD")
                     : ""}
                 </span>
               </div>
@@ -434,138 +199,32 @@ export function HistoriesWidget({
               )}
             </div>
 
-            <div className="flex w-full flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <span className="text-base text-neutral-400">From:</span>
-                <span className="text-sm font-bold text-white">
-                  {sortedHistories.length > 0
-                    ? dayjs(
-                        getDateAfterDays(
-                          new Date(sortedHistories[0].timestamp),
-                          range?.from || 0,
-                        ),
-                      ).format("YYYY/MM/DD")
-                    : ""}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-base text-neutral-400">To:</span>
-                <span className="text-sm font-bold text-white">
-                  {sortedHistories.length > 0
-                    ? dayjs(
-                        range
-                          ? getDateAfterDays(
-                              new Date(sortedHistories[0].timestamp),
-                              range.to,
-                            )
-                          : new Date(),
-                      ).format("YYYY/MM/DD")
-                    : ""}
-                </span>
-              </div>
-
-              <Slider
-                value={
-                  range
-                    ? [range.from, range.to]
-                    : [
-                        0,
-                        sortedHistories.length > 0
-                          ? getDayGap(
-                              new Date(sortedHistories[0].timestamp),
-                              new Date(),
-                            )
-                          : 0,
-                      ]
-                }
-                onChange={(value) => {
-                  if (Array.isArray(value)) {
-                    setRange({
-                      from: value[0],
-                      to: value[1],
-                    });
-                  }
-                }}
-                label="Date Range"
-                className="grow-0"
-                hideValue
-                size="sm"
-                maxValue={
-                  sortedHistories.length > 0
-                    ? getDayGap(
-                        new Date(sortedHistories[0].timestamp),
-                        new Date(),
-                      )
-                    : 0
-                }
-                minValue={0}
-                step={1}
-              />
-            </div>
-
             <TagsWidget address={address} />
           </div>
 
           <div className="flex flex-1 flex-col items-center gap-6">
             <Virtuoso
               style={{ height: 50, width: 800, overflowY: "hidden" }}
-              data={Array.from(tradePairIndexsMap.entries())}
+              data={tradePairs}
               horizontalDirection
               itemContent={(_, data) => (
                 <div className="mr-4">
                   <PairChip
                     key={data[0]}
                     contractId={contractId}
-                    pairIndex={data[0]}
+                    pairName={data[0]}
                     count={data[1]}
                   />
                 </div>
               )}
             />
 
-            <div className="flex w-full items-center gap-8">
-              <div className="flex flex-1 flex-col gap-2">
-                <LineChart
-                  title="PNL"
-                  data={pnlChartData}
-                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
-                />
-
-                <LineChart
-                  title="Scale PNL"
-                  data={dayScalePnlChartData}
-                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
-                />
-              </div>
-
-              <div className="flex flex-1 flex-col gap-2">
-                <LineChart
-                  title="In/Out"
-                  data={inOutChartData}
-                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
-                />
-
-                <LineChart
-                  title="Scale In/Out"
-                  data={dayScaleinOutChartData}
-                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
-                />
-              </div>
-
-              <div className="flex flex-1 flex-col gap-2">
-                <LineChart
-                  title="In"
-                  data={inChartData}
-                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
-                />
-                <LineChart
-                  title="Out"
-                  data={outChartData}
-                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
-                />
-              </div>
-            </div>
+            <HistoryCharts
+              pnlChartData={pnlChartData}
+              inOutChartData={inOutChartData}
+              inChartData={inChartData}
+              outChartData={outChartData}
+            />
           </div>
         </div>
       </CardBody>

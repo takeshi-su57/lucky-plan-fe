@@ -18,9 +18,9 @@ export const RESUME_SYSTEM_DOCUMENT = graphql(`
   }
 `);
 
-export const INITALIZE_PNL_SNAPSHOT_DOCUMENT = graphql(`
-  mutation initalizePnlSnapshot {
-    initalizePnlSnapshot
+export const BUILD_PNL_SNAPSHOTS_DOCUMENT = graphql(`
+  mutation buildPnlSnapshots($endDate: DateTime!) {
+    buildPnlSnapshots(endDate: $endDate)
   }
 `);
 
@@ -99,22 +99,22 @@ export function useResumeSystem() {
   return resumeSystem;
 }
 
-export function useInitalizePnlSnapshot() {
-  const [initalizePnlSnapshot, { data, error, loading }] = useMutation(
-    INITALIZE_PNL_SNAPSHOT_DOCUMENT,
+export function useBuildPnlSnapshots() {
+  const [buildPnlSnapshots, { data, error, loading }] = useMutation(
+    BUILD_PNL_SNAPSHOTS_DOCUMENT,
   );
 
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
-    if (data?.initalizePnlSnapshot && !error) {
-      enqueueSnackbar("Success at initializing PNL snapshot!", {
+    if (data?.buildPnlSnapshots && !error) {
+      enqueueSnackbar("Success at building PNL snapshots!", {
         variant: "success",
       });
     }
   }, [data, error, enqueueSnackbar]);
 
-  return { initalizePnlSnapshot, loading };
+  return { buildPnlSnapshots, loading };
 }
 
 export function useGetSystemStatus() {

@@ -29,6 +29,12 @@ export const links = [
     id: "settings",
     label: "Settings",
     title: "",
+    showDivider: true,
+  },
+  {
+    id: "backtesting",
+    label: "Back Testing",
+    title: "",
   },
 ];
 
