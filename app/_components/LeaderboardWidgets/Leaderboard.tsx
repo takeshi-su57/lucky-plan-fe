@@ -59,7 +59,7 @@ export function Leaderboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
         <Select
           variant="underlined"
           label="Before"
@@ -74,7 +74,7 @@ export function Leaderboard() {
         </Select>
 
         <Autocomplete
-          label="Follower Contract"
+          label="Contract"
           variant="underlined"
           defaultItems={allContracts}
           placeholder="Search contract"
@@ -98,7 +98,17 @@ export function Leaderboard() {
               textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
             >
               <div className="flex flex-col">
-                <span className="text-small">Chain: {item.chainId}</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-small">Chain: {item.chainId}</span>
+                    <span className="text-small">
+                      {item.isTestnet ? "(Testnet)" : ""}
+                    </span>
+                  </div>
+                  <span className="text-small">
+                    {item.isTestnet ? "(Testnet)" : ""}
+                  </span>
+                </div>
                 <span className="text-small">Contract: {item.address}</span>
                 <span className="text-tiny text-default-400">
                   {item.description}
@@ -111,21 +121,19 @@ export function Leaderboard() {
 
       <Card>
         <CardBody>
-          {contractId && (
-            <Virtuoso
-              style={{ height: 700 }}
-              data={pnlSnapshots}
-              itemContent={(_, snapshot) => (
-                <HistoriesWidget
-                  address={snapshot.address as Address}
-                  histories={snapshot.histories}
-                  contractId={+contractId}
-                />
-              )}
-              endReached={() => hasMore && !loading && fetchMore()}
-              components={{ Footer: () => <Spinner color="white" size="sm" /> }}
-            />
-          )}
+          <Virtuoso
+            style={{ height: 700 }}
+            data={pnlSnapshots}
+            itemContent={(_, snapshot) => (
+              <HistoriesWidget
+                address={snapshot.address as Address}
+                histories={snapshot.histories}
+                contractId={snapshot.contractId}
+              />
+            )}
+            endReached={() => hasMore && !loading && fetchMore()}
+            components={{ Footer: () => <Spinner color="white" size="sm" /> }}
+          />
         </CardBody>
       </Card>
     </div>

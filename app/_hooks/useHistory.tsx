@@ -39,6 +39,7 @@ export const PNL_SNAPSHOT_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment PnlSnapshotInfo on PnlSnapshot {
     accUSDPnl
     address
+    contractId
     dateStr
     id
     kind
@@ -49,6 +50,7 @@ export const PNL_SNAPSHOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment PnlSnapshotDetailsInfo on PnlSnapshotDetails {
     accUSDPnl
     address
+    contractId
     dateStr
     histories {
       ...TradeHistoryInfo
@@ -252,16 +254,14 @@ export function useGetPnlSnapshots(
   );
 
   useEffect(() => {
-    if (contractId) {
-      query({
-        variables: {
-          dateStr,
-          contractId: +contractId,
-          kind,
-          first: 20,
-        },
-      });
-    }
+    query({
+      variables: {
+        dateStr,
+        contractId: contractId ? +contractId : 0,
+        kind,
+        first: 20,
+      },
+    });
   }, [contractId, dateStr, kind, query]);
 
   const pnlSnapshots = useMemo(() => {

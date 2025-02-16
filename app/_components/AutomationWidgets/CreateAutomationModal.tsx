@@ -512,7 +512,14 @@ export function CreateAutomationModal({
                     textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
                   >
                     <div className="flex flex-col">
-                      <span className="text-small">Chain: {item.chainId}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-small">
+                          Chain: {item.chainId}
+                        </span>
+                        <span className="text-small">
+                          {item.isTestnet ? "(Testnet)" : ""}
+                        </span>
+                      </div>
                       <span className="text-small">
                         Contract: {shrinkAddress(item.address as Address)}
                       </span>
@@ -565,7 +572,14 @@ export function CreateAutomationModal({
                     textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
                   >
                     <div className="flex flex-col">
-                      <span className="text-small">Chain: {item.chainId}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-small">
+                          Chain: {item.chainId}
+                        </span>
+                        <span className="text-small">
+                          {item.isTestnet ? "(Testnet)" : ""}
+                        </span>
+                      </div>
                       <span className="text-small">
                         Contract: {shrinkAddress(item.address as Address)}
                       </span>

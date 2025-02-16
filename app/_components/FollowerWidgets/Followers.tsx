@@ -152,7 +152,12 @@ export function Followers() {
                 textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
               >
                 <div className="flex flex-col">
-                  <span className="text-small">Chain: {item.chainId}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-small">Chain: {item.chainId}</span>
+                    <span className="text-small">
+                      {item.isTestnet ? "(Testnet)" : ""}
+                    </span>
+                  </div>
                   <span className="text-small">Contract: {item.address}</span>
                   <span className="text-tiny text-default-400">
                     {item.description}

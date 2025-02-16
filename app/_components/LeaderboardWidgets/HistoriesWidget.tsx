@@ -203,21 +203,23 @@ export function HistoriesWidget({
           </div>
 
           <div className="flex flex-1 flex-col items-center gap-6">
-            <Virtuoso
-              style={{ height: 50, width: 800, overflowY: "hidden" }}
-              data={tradePairs}
-              horizontalDirection
-              itemContent={(_, data) => (
-                <div className="mr-4">
-                  <PairChip
-                    key={data[0]}
-                    contractId={contractId}
-                    pairName={data[0]}
-                    count={data[1]}
-                  />
-                </div>
-              )}
-            />
+            {contractId !== 0 ? (
+              <Virtuoso
+                style={{ height: 50, width: 800, overflowY: "hidden" }}
+                data={tradePairs}
+                horizontalDirection
+                itemContent={(_, data) => (
+                  <div className="mr-4">
+                    <PairChip
+                      key={data[0]}
+                      contractId={contractId}
+                      pairName={data[0]}
+                      count={data[1]}
+                    />
+                  </div>
+                )}
+              />
+            ) : null}
 
             <HistoryCharts
               pnlChartData={pnlChartData}

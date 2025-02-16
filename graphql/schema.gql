@@ -120,6 +120,7 @@ type Contract {
   chainId: Int!
   description: String!
   id: Int!
+  isTestnet: Boolean!
   status: ContractStatus!
 }
 
@@ -384,6 +385,7 @@ enum PlanStatus {
 type PnlSnapshot {
   accUSDPnl: Float!
   address: String!
+  contractId: Int!
   dateStr: String!
   id: Int!
   kind: PnlSnapshotKind!
@@ -392,6 +394,7 @@ type PnlSnapshot {
 type PnlSnapshotDetails {
   accUSDPnl: Float!
   address: String!
+  contractId: Int!
   dateStr: String!
   histories: [TradeHistory!]!
   id: Int!
