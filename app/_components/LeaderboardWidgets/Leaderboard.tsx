@@ -13,6 +13,7 @@ import {
 import { Virtuoso } from "react-virtuoso";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Address } from "viem";
+import dayjs from "dayjs";
 
 import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 
@@ -36,6 +37,7 @@ export function Leaderboard() {
   );
 
   const { pnlSnapshots, fetchMore, hasMore, loading } = useGetPnlSnapshots(
+    dayjs(new Date()).format("YYYY-MM-DD"),
     contractId,
     kind,
   );
@@ -109,20 +111,21 @@ export function Leaderboard() {
 
       <Card>
         <CardBody>
-          <Virtuoso
-            style={{ height: 700 }}
-            data={pnlSnapshots}
-            itemContent={(_, snapshot) => (
-              <HistoriesWidget
-                address={snapshot.address as Address}
-                kind={kind}
-                histories={snapshot.histories}
-                contractId={snapshot.contractId}
-              />
-            )}
-            endReached={() => hasMore && !loading && fetchMore()}
-            components={{ Footer: () => <Spinner color="white" size="sm" /> }}
-          />
+          {contractId && (
+            <Virtuoso
+              style={{ height: 700 }}
+              data={pnlSnapshots}
+              itemContent={(_, snapshot) => (
+                <HistoriesWidget
+                  address={snapshot.address as Address}
+                  histories={snapshot.histories}
+                  contractId={+contractId}
+                />
+              )}
+              endReached={() => hasMore && !loading && fetchMore()}
+              components={{ Footer: () => <Spinner color="white" size="sm" /> }}
+            />
+          )}
         </CardBody>
       </Card>
     </div>

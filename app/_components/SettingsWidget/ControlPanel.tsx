@@ -2,7 +2,7 @@
 
 import { Button } from "@nextui-org/react";
 import {
-  useInitalizePnlSnapshot,
+  useBuildPnlSnapshots,
   usePauseSystem,
   useResumeSystem,
 } from "@/app-hooks/useSystem";
@@ -10,8 +10,8 @@ import {
 export function ControlPanel() {
   const pauseSystem = usePauseSystem();
   const resumeSystem = useResumeSystem();
-  const { initalizePnlSnapshot, loading: initalizePnlSnapshotLoading } =
-    useInitalizePnlSnapshot();
+  const { buildPnlSnapshots, loading: buildPnlSnapshotsLoading } =
+    useBuildPnlSnapshots();
 
   return (
     <div className="flex flex-col gap-6">
@@ -25,12 +25,14 @@ export function ControlPanel() {
       </div>
       <div className="flex flex-row gap-4">
         <Button
-          onClick={() => initalizePnlSnapshot()}
-          isLoading={initalizePnlSnapshotLoading}
-          isDisabled={initalizePnlSnapshotLoading}
+          onClick={() =>
+            buildPnlSnapshots({ variables: { endDate: new Date() } })
+          }
+          isLoading={buildPnlSnapshotsLoading}
+          isDisabled={buildPnlSnapshotsLoading}
           color="primary"
         >
-          Initialize PNL Snapshot
+          Build PNL Snapshot
         </Button>
       </div>
     </div>

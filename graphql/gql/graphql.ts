@@ -276,6 +276,8 @@ export type GetUserByAddressInput = {
 };
 
 export type GetUserTransactionCountsInput = {
+  address: Scalars['String']['input'];
+  contractId: Scalars['Int']['input'];
   endedAt?: InputMaybe<Scalars['DateTime']['input']>;
   startedAt?: InputMaybe<Scalars['DateTime']['input']>;
 };
@@ -570,7 +572,7 @@ export enum PlanStatus {
 
 export type PnlSnapshot = {
   __typename?: 'PnlSnapshot';
-  accUSDPnl: Scalars['Int']['output'];
+  accUSDPnl: Scalars['Float']['output'];
   address: Scalars['String']['output'];
   dateStr: Scalars['String']['output'];
   id: Scalars['Int']['output'];
@@ -579,7 +581,7 @@ export type PnlSnapshot = {
 
 export type PnlSnapshotDetails = {
   __typename?: 'PnlSnapshotDetails';
-  accUSDPnl: Scalars['Int']['output'];
+  accUSDPnl: Scalars['Float']['output'];
   address: Scalars['String']['output'];
   dateStr: Scalars['String']['output'];
   histories: Array<TradeHistory>;

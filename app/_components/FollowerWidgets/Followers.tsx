@@ -31,6 +31,7 @@ import { FollowerInfoWidget } from "@/app-components/FollowerWidgets/FollowerInf
 
 import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 import { FollowerDetails } from "@/app-components/FollowerWidgets/FollowerDetails";
+import { getPriceStr } from "@/utils/price";
 
 export function Followers() {
   const searchParams = useSearchParams();
@@ -200,8 +201,8 @@ export function Followers() {
             ).toFixed(2)} USDC`}
           </Chip>
 
-          <Chip color="warning">{`${totalEarned} USDC`}</Chip>
-          <Chip color="danger">{`${totalLost} USDC`}</Chip>
+          <Chip color="warning">{`${getPriceStr(totalEarned)} USDC`}</Chip>
+          <Chip color="danger">{`${getPriceStr(totalLost)} USDC`}</Chip>
 
           <Button
             isIconOnly
@@ -229,7 +230,10 @@ export function Followers() {
                 <AccordionItem
                   title={<FollowerInfoWidget follower={follower} />}
                 >
-                  <FollowerDetails follower={follower} isChatFirst={false} />
+                  <FollowerDetails
+                    follower={follower}
+                    isChatFirst={isChatFirst}
+                  />
                 </AccordionItem>
               </Accordion>
             )}

@@ -4,7 +4,12 @@ import { useLazyQuery, useQuery } from "@apollo/client";
 
 import { getFragmentData, graphql } from "@/gql/index";
 import { useCallback, useEffect, useMemo } from "react";
-import { GetPnlSnapshotsQuery, PnlSnapshotKind } from "@/graphql/gql/graphql";
+import {
+  GetPnlSnapshotsQuery,
+  PnlSnapshotKind,
+  TradeHistory,
+} from "@/graphql/gql/graphql";
+import { PersonalTradeHistory, TradeActionType } from "@/types";
 
 export const TRADEHISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment TradeHistoryInfo on TradeHistory {
@@ -130,6 +135,30 @@ export const IS_PNL_SNAPSHOT_INITIALIZED_DOCUMENT = graphql(`
   }
 `);
 
+function getPersonalTradeHistory(history: TradeHistory): PersonalTradeHistory {
+  return {
+    action: history.action as unknown as TradeActionType,
+    address: history.address,
+    block: history.block,
+    collateralDelta: history.collateralDelta ? +history.collateralDelta : null,
+    collateralIndex: history.collateralIndex,
+    collateralPriceUsd: +history.collateralPriceUsd,
+    date: history.date,
+    leverage: history.leverage,
+    leverageDelta: history.leverageDelta || null,
+    long: history.long,
+    marketPrice: history.marketPrice ? +history.marketPrice : null,
+    pair: history.pair,
+    pnl: +history.pnl,
+    pnl_net: +history.pnl,
+    price: +history.price,
+    size: +history.size,
+    tradeId: history.tradeId ? +history.tradeId : null,
+    tradeIndex: history.tradeIndex,
+    tx: "",
+  };
+}
+
 function getPnlSnapshotInfo(
   snapshot: GetPnlSnapshotsQuery["getPnlSnapshots"]["edges"][number]["node"],
 ) {
@@ -141,7 +170,9 @@ function getPnlSnapshotInfo(
   return {
     ...snapshotInfo,
     histories: snapshotInfo.histories.map((history) =>
-      getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, history),
+      getPersonalTradeHistory(
+        getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, history),
+      ),
     ),
   };
 }
@@ -194,7 +225,9 @@ export function useGetAllTradeHistory(
       return [];
     }
     return data.getTradeHistories.map((history) =>
-      getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, history),
+      getPersonalTradeHistory(
+        getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, history),
+      ),
     );
   }, [data]);
 }

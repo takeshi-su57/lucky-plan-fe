@@ -3,7 +3,6 @@
 import { Address } from "viem";
 import { useGetAllTradeHistory } from "@/app/_hooks/useHistory";
 
-import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget";
 
 export type UserTradeHistoryProps = {
@@ -22,7 +21,6 @@ export function UserTradeHistory({
       address={address}
       contractId={+contractId}
       histories={allHistories}
-      kind={PnlSnapshotKind.AllTime}
     />
   );
 }
