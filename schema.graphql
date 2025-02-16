@@ -322,7 +322,7 @@ type Mutation {
   addTagToUser(input: ChangeUserTagInput!): User!
   addUser(input: AddUserInput!): User!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotDetails!]!
-  buildPnlSnapshots(endDate: DateTime!): Boolean!
+  buildPnlSnapshots(endDate: DateTime!): PnlSnapshotInitializedFlag
   cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
   changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changePassword(input: ChangePasswordInput!): Boolean!
@@ -480,7 +480,7 @@ type Query {
   getTrades(address: String!, contractId: Int!): [FollowerTrade!]!
   getUserByAddress(input: GetUserByAddressInput!): User!
   getUserTransactionCounts(inputs: [GetUserTransactionCountsInput!]!): [TradeTransactionCount!]!
-  isPnlSnapshotInitialized(dateStr: String!): Boolean!
+  isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
   systemStatus: Boolean!
 }
 

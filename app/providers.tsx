@@ -136,6 +136,9 @@ const cache = new InMemoryCache({
     PnlSnapshotDetailsEdge: {
       keyFields: ["cursor"],
     },
+    PnlSnapshotInitializedFlag: {
+      keyFields: ["id"],
+    },
     TradeHistory: {
       keyFields: ["id"],
     },

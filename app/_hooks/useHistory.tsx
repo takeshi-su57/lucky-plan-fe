@@ -1,14 +1,20 @@
 "use client";
 
-import { useLazyQuery, useQuery } from "@apollo/client";
-
-import { getFragmentData, graphql } from "@/gql/index";
 import { useCallback, useEffect, useMemo } from "react";
+import {
+  useApolloClient,
+  useLazyQuery,
+  useMutation,
+  useQuery,
+} from "@apollo/client";
+import { useSnackbar } from "notistack";
+import { getFragmentData, graphql } from "@/gql/index";
 import {
   GetPnlSnapshotsQuery,
   PnlSnapshotKind,
   TradeHistory,
 } from "@/graphql/gql/graphql";
+
 import { PersonalTradeHistory, TradeActionType } from "@/types";
 
 export const TRADEHISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
@@ -143,7 +149,21 @@ export const GET_PNL_SNAPSHOT_INITIALIZED_FLAG_DOCUMENT = graphql(`
 
 export const IS_PNL_SNAPSHOT_INITIALIZED_DOCUMENT = graphql(`
   query isPnlSnapshotInitialized($dateStr: String!) {
-    isPnlSnapshotInitialized(dateStr: $dateStr)
+    isPnlSnapshotInitialized(dateStr: $dateStr) {
+      id
+      dateStr
+      isInit
+    }
+  }
+`);
+
+export const BUILD_PNL_SNAPSHOTS_DOCUMENT = graphql(`
+  mutation buildPnlSnapshots($endDate: DateTime!) {
+    buildPnlSnapshots(endDate: $endDate) {
+      id
+      dateStr
+      isInit
+    }
   }
 `);
 
@@ -325,4 +345,84 @@ export function useIsPnlSnapshotInitialized(dateStr: string) {
   return useQuery(IS_PNL_SNAPSHOT_INITIALIZED_DOCUMENT, {
     variables: { dateStr },
   });
+}
+
+export function useBuildPnlSnapshots() {
+  const [buildPnlSnapshots, { data, error, loading }] = useMutation(
+    BUILD_PNL_SNAPSHOTS_DOCUMENT,
+  );
+
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data?.buildPnlSnapshots && !error) {
+      enqueueSnackbar("Success at building PNL snapshots!", {
+        variant: "success",
+      });
+
+      const pnlSnapshotInitializedFlag = data.buildPnlSnapshots;
+
+      client.cache.updateQuery(
+        {
+          query: IS_PNL_SNAPSHOT_INITIALIZED_DOCUMENT,
+          variables: {
+            dateStr: pnlSnapshotInitializedFlag.dateStr,
+          },
+        },
+        (data) => {
+          if (data && data.isPnlSnapshotInitialized) {
+            return {
+              ...data,
+              isPnlSnapshotInitialized: pnlSnapshotInitializedFlag,
+            };
+          } else {
+            return {
+              isPnlSnapshotInitialized: pnlSnapshotInitializedFlag,
+            };
+          }
+        },
+      );
+
+      client.cache.updateQuery(
+        {
+          query: GET_PNL_SNAPSHOT_INITIALIZED_FLAG_DOCUMENT,
+          variables: {},
+        },
+        (data) => {
+          if (data && data.getPnlSnapshotInitializedFlag) {
+            const exists = data.getPnlSnapshotInitializedFlag.find(
+              (item) => item.id === pnlSnapshotInitializedFlag.id,
+            );
+
+            if (exists) {
+              return {
+                ...data,
+                getPnlSnapshotInitializedFlag:
+                  data.getPnlSnapshotInitializedFlag.map((item) =>
+                    item.id === pnlSnapshotInitializedFlag.id
+                      ? pnlSnapshotInitializedFlag
+                      : item,
+                  ),
+              };
+            }
+
+            return {
+              ...data,
+              getPnlSnapshotInitializedFlag: [
+                ...data.getPnlSnapshotInitializedFlag,
+                pnlSnapshotInitializedFlag,
+              ],
+            };
+          } else {
+            return {
+              getPnlSnapshotInitializedFlag: [pnlSnapshotInitializedFlag],
+            };
+          }
+        },
+      );
+    }
+  }, [data, error, enqueueSnackbar, client]);
+
+  return { buildPnlSnapshots, loading };
 }
