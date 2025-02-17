@@ -160,40 +160,44 @@ export function getHistoriesChartData(
             break;
           }
           case TradeActionType.TradeClosedMarket: {
-            inOutSum += history.pnl * history.collateralPriceUsd;
+            inOutSum +=
+              (history.size + history.pnl) * history.collateralPriceUsd;
 
             outChartData.push({
-              value: history.pnl * history.collateralPriceUsd,
+              value: (history.size + history.pnl) * history.collateralPriceUsd,
               date: new Date(history.date),
             });
 
             break;
           }
           case TradeActionType.TradeClosedLIQ: {
-            inOutSum += history.pnl * history.collateralPriceUsd;
+            inOutSum +=
+              (history.size + history.pnl) * history.collateralPriceUsd;
 
             outChartData.push({
-              value: history.pnl * history.collateralPriceUsd,
+              value: (history.size + history.pnl) * history.collateralPriceUsd,
               date: new Date(history.date),
             });
 
             break;
           }
           case TradeActionType.TradeClosedSL: {
-            inOutSum += history.pnl * history.collateralPriceUsd;
+            inOutSum +=
+              (history.size + history.pnl) * history.collateralPriceUsd;
 
             outChartData.push({
-              value: history.pnl * history.collateralPriceUsd,
+              value: (history.size + history.pnl) * history.collateralPriceUsd,
               date: new Date(history.date),
             });
 
             break;
           }
           case TradeActionType.TradeClosedTP: {
-            inOutSum += history.pnl * history.collateralPriceUsd;
+            inOutSum +=
+              (history.size + history.pnl) * history.collateralPriceUsd;
 
             outChartData.push({
-              value: history.pnl * history.collateralPriceUsd,
+              value: (history.size + history.pnl) * history.collateralPriceUsd,
               date: new Date(history.date),
             });
 
@@ -205,6 +209,21 @@ export function getHistoriesChartData(
               history.collateralPriceUsd;
 
             inOutSum += delta;
+
+            if (history.collateralDelta && history.collateralDelta > 0) {
+              inChartData.push({
+                value: -history.collateralDelta * history.collateralPriceUsd,
+                date: new Date(history.date),
+              });
+            }
+
+            if (history.collateralDelta && history.collateralDelta < 0) {
+              outChartData.push({
+                value: -history.collateralDelta * history.collateralPriceUsd,
+                date: new Date(history.date),
+              });
+            }
+
             break;
           }
           case TradeActionType.TradePosSizeIncrease: {
@@ -213,6 +232,21 @@ export function getHistoriesChartData(
               history.collateralPriceUsd;
 
             inOutSum += delta;
+
+            if (history.collateralDelta && history.collateralDelta > 0) {
+              inChartData.push({
+                value: -history.collateralDelta * history.collateralPriceUsd,
+                date: new Date(history.date),
+              });
+            }
+
+            if (history.collateralDelta && history.collateralDelta < 0) {
+              outChartData.push({
+                value: -history.collateralDelta * history.collateralPriceUsd,
+                date: new Date(history.date),
+              });
+            }
+
             break;
           }
           case TradeActionType.TradePosSizeDecrease: {
@@ -221,6 +255,21 @@ export function getHistoriesChartData(
               history.collateralPriceUsd;
 
             inOutSum += delta;
+
+            if (history.collateralDelta && history.collateralDelta > 0) {
+              inChartData.push({
+                value: -history.collateralDelta * history.collateralPriceUsd,
+                date: new Date(history.date),
+              });
+            }
+
+            if (history.collateralDelta && history.collateralDelta < 0) {
+              outChartData.push({
+                value: -history.collateralDelta * history.collateralPriceUsd,
+                date: new Date(history.date),
+              });
+            }
+
             break;
           }
         }
