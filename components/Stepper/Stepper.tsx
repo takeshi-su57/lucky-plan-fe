@@ -16,7 +16,7 @@ export function Stepper({ steps, currentStep }: StepperProps) {
   return (
     <div className="flex w-full flex-col gap-2">
       {steps.map((step) => (
-        <div key={step.label} className="flex flex-col gap-2">
+        <div key={step.label} className="flex w-full flex-col gap-2">
           <div className="flex flex-row items-center gap-2">
             <div
               className={twMerge(
@@ -29,9 +29,9 @@ export function Stepper({ steps, currentStep }: StepperProps) {
             <div className="text-base font-bold">{step.label}</div>
           </div>
 
-          <div className="flex flex-row items-center gap-2">
+          <div className="flex w-full flex-row items-center gap-2">
             <div className="ml-3 w-[1px] self-stretch bg-white/40" />
-            <div className="flex flex-col gap-2">
+            <div className="flex w-full flex-col gap-2">
               <div className="text-sm text-neutral-400/80">
                 {step.description}
               </div>

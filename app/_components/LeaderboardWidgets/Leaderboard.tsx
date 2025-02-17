@@ -11,7 +11,6 @@ import {
   SelectItem,
 } from "@nextui-org/react";
 import { Virtuoso } from "react-virtuoso";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Address } from "viem";
 import dayjs from "dayjs";
 
@@ -23,21 +22,40 @@ import { useGetPnlSnapshots } from "@/app-hooks/useHistory";
 import { shrinkAddress } from "@/utils";
 import { HistoriesWidget } from "./HistoriesWidget";
 
-export function Leaderboard() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
+export type LeaderboardProps = {
+  selectionLabel?: string;
+  selectedAddresses?: { address: string; contractId: number }[];
+  onChangeSelection?: (
+    address: string,
+    contractId: number,
+    isSelected: boolean,
+  ) => void;
+  endDate: Date;
+  initialContractId: string | null;
+  initialKind: PnlSnapshotKind;
+  onChangeParams: (contractId: string | null, kind: PnlSnapshotKind) => void;
+  hideTags: boolean;
+};
 
+export function Leaderboard({
+  endDate,
+  initialContractId,
+  initialKind,
+  onChangeParams,
+  hideTags,
+  selectionLabel,
+  selectedAddresses,
+  onChangeSelection,
+}: LeaderboardProps) {
   const allContracts = useGetAllContracts();
 
   const [contractId, setContractId] = useState<string | null>(
-    searchParams.get("contractId") || null,
+    initialContractId,
   );
-  const [kind, setKind] = useState<PnlSnapshotKind>(
-    (searchParams.get("kind") as PnlSnapshotKind) || PnlSnapshotKind.AllTime,
-  );
+  const [kind, setKind] = useState<PnlSnapshotKind>(initialKind);
 
   const { pnlSnapshots, fetchMore, hasMore, loading } = useGetPnlSnapshots(
-    dayjs(new Date()).format("YYYY-MM-DD"),
+    dayjs(endDate).format("YYYY-MM-DD"),
     contractId,
     kind,
   );
@@ -48,18 +66,13 @@ export function Leaderboard() {
     if (value.trim() !== "") {
       setKind(value as PnlSnapshotKind);
 
-      const contractQuery = contractId ? `contractId=${contractId}` : null;
-      const kindQuery = value ? `kind=${value}` : null;
-
-      router.push(
-        `/leaderboards?${contractQuery || ""}${contractQuery && kindQuery ? `&` : ""}${kindQuery || ""}`,
-      );
+      onChangeParams(contractId, value as PnlSnapshotKind);
     }
   };
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
         <Select
           variant="underlined"
           label="Before"
@@ -74,7 +87,7 @@ export function Leaderboard() {
         </Select>
 
         <Autocomplete
-          label="Follower Contract"
+          label="Contract"
           variant="underlined"
           defaultItems={allContracts}
           placeholder="Search contract"
@@ -83,12 +96,7 @@ export function Leaderboard() {
           onSelectionChange={(key) => {
             setContractId(key as string | null);
 
-            const contractQuery = key ? `contractId=${key}` : null;
-            const kindQuery = kind ? `kind=${kind}` : null;
-
-            router.push(
-              `/leaderboards?${contractQuery || ""}${contractQuery && kindQuery ? `&` : ""}${kindQuery || ""}`,
-            );
+            onChangeParams(key as string | null, kind);
           }}
         >
           {(item) => (
@@ -98,7 +106,17 @@ export function Leaderboard() {
               textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
             >
               <div className="flex flex-col">
-                <span className="text-small">Chain: {item.chainId}</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-small">Chain: {item.chainId}</span>
+                    <span className="text-small">
+                      {item.isTestnet ? "(Testnet)" : ""}
+                    </span>
+                  </div>
+                  <span className="text-small">
+                    {item.isTestnet ? "(Testnet)" : ""}
+                  </span>
+                </div>
                 <span className="text-small">Contract: {item.address}</span>
                 <span className="text-tiny text-default-400">
                   {item.description}
@@ -111,21 +129,33 @@ export function Leaderboard() {
 
       <Card>
         <CardBody>
-          {contractId && (
-            <Virtuoso
-              style={{ height: 700 }}
-              data={pnlSnapshots}
-              itemContent={(_, snapshot) => (
-                <HistoriesWidget
-                  address={snapshot.address as Address}
-                  histories={snapshot.histories}
-                  contractId={+contractId}
-                />
-              )}
-              endReached={() => hasMore && !loading && fetchMore()}
-              components={{ Footer: () => <Spinner color="white" size="sm" /> }}
-            />
-          )}
+          <Virtuoso
+            style={{ height: 700 }}
+            data={contractId ? pnlSnapshots : []}
+            itemContent={(_, snapshot) => (
+              <HistoriesWidget
+                address={snapshot.address as Address}
+                histories={snapshot.histories}
+                contractId={snapshot.contractId}
+                hideTags={hideTags}
+                range={{ to: endDate }}
+                label={selectionLabel}
+                isSelected={
+                  selectedAddresses
+                    ? !!selectedAddresses.find(
+                        (item) =>
+                          item.contractId === snapshot.contractId &&
+                          item.address.toLowerCase() ===
+                            snapshot.address.toLowerCase(),
+                      )
+                    : undefined
+                }
+                onChangeSelection={onChangeSelection}
+              />
+            )}
+            endReached={() => hasMore && !loading && fetchMore()}
+            components={{ Footer: () => <Spinner color="white" size="sm" /> }}
+          />
         </CardBody>
       </Card>
     </div>
