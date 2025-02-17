@@ -18,7 +18,7 @@ export function InitializePnlSnapshotBoard({
 
   const handleBuildPnlSnapshots = () => {
     buildPnlSnapshots({
-      variables: { endDate: new Date(dayjs(endDate).format("YYYY-MM-DD")) },
+      variables: { dateStr: dayjs(endDate).format("YYYY-MM-DD") },
     });
   };
 
@@ -40,7 +40,11 @@ export function InitializePnlSnapshotBoard({
       {loading ? (
         <span className="text-xs">Loading...</span>
       ) : (
-        <span className="text-xs">Not ready PNL snapshots for Leaderboard</span>
+        <span className="text-xs">
+          {buildPnlSnapshotsLoading
+            ? "Average time: 5mins"
+            : "Not ready PNL snapshots for Leaderboard"}
+        </span>
       )}
 
       {loading || buildPnlSnapshotsLoading ? (

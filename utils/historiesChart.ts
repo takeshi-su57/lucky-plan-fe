@@ -2,7 +2,7 @@ import { PersonalTradeHistory, TradeActionType } from "@/types";
 
 export function getSortedPartialHistories(
   histories: PersonalTradeHistory[],
-  range?: { from: Date; to: Date },
+  range?: { from?: Date; to?: Date },
 ) {
   const sortedHistories = histories.sort((a, b) => {
     const first = new Date(a.date);
@@ -22,6 +22,7 @@ export function getSortedPartialHistories(
   sortedHistories.forEach((history) => {
     if (
       range &&
+      range.from &&
       range.from > new Date(history.date) &&
       history.tradeIndex !== null &&
       history.tradeIndex !== undefined
@@ -33,8 +34,8 @@ export function getSortedPartialHistories(
   return sortedHistories.filter((history) => {
     if (
       range &&
-      (range.from >= new Date(history.date) ||
-        range.to <= new Date(history.date))
+      ((range.from && range.from >= new Date(history.date)) ||
+        (range.to && range.to <= new Date(history.date)))
     ) {
       return false;
     }
@@ -54,8 +55,8 @@ export function getSortedPartialHistories(
 export function getHistoriesChartData(
   histories: PersonalTradeHistory[],
   range?: {
-    from: Date;
-    to: Date;
+    from?: Date;
+    to?: Date;
   },
 ) {
   const pnlChartData: {
@@ -159,44 +160,40 @@ export function getHistoriesChartData(
             break;
           }
           case TradeActionType.TradeClosedMarket: {
-            inOutSum +=
-              (history.size + history.pnl) * history.collateralPriceUsd;
+            inOutSum += history.pnl * history.collateralPriceUsd;
 
             outChartData.push({
-              value: (history.size + history.pnl) * history.collateralPriceUsd,
+              value: history.pnl * history.collateralPriceUsd,
               date: new Date(history.date),
             });
 
             break;
           }
           case TradeActionType.TradeClosedLIQ: {
-            inOutSum +=
-              (history.size + history.pnl) * history.collateralPriceUsd;
+            inOutSum += history.pnl * history.collateralPriceUsd;
 
             outChartData.push({
-              value: (history.size + history.pnl) * history.collateralPriceUsd,
+              value: history.pnl * history.collateralPriceUsd,
               date: new Date(history.date),
             });
 
             break;
           }
           case TradeActionType.TradeClosedSL: {
-            inOutSum +=
-              (history.size + history.pnl) * history.collateralPriceUsd;
+            inOutSum += history.pnl * history.collateralPriceUsd;
 
             outChartData.push({
-              value: (history.size + history.pnl) * history.collateralPriceUsd,
+              value: history.pnl * history.collateralPriceUsd,
               date: new Date(history.date),
             });
 
             break;
           }
           case TradeActionType.TradeClosedTP: {
-            inOutSum +=
-              (history.size + history.pnl) * history.collateralPriceUsd;
+            inOutSum += history.pnl * history.collateralPriceUsd;
 
             outChartData.push({
-              value: (history.size + history.pnl) * history.collateralPriceUsd,
+              value: history.pnl * history.collateralPriceUsd,
               date: new Date(history.date),
             });
 

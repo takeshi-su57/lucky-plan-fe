@@ -38,14 +38,14 @@ export function BacktestParametersForm({
   const [minLeverage, setMinLeverage] = useState("1.1");
   const [futureDate, setFutureDate] = useState<Date>(
     parseDate(dayjs(pastDate).format("YYYY-MM-DD"))
-      .add({ days: 1 })
+      .add({ days: 15 })
       .toDate(getLocalTimeZone()),
   );
 
   useEffect(() => {
     setFutureDate(
       parseDate(dayjs(pastDate).format("YYYY-MM-DD"))
-        .add({ days: 1 })
+        .add({ days: 15 })
         .toDate(getLocalTimeZone()),
     );
   }, [pastDate]);

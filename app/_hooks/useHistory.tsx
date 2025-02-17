@@ -158,8 +158,8 @@ export const IS_PNL_SNAPSHOT_INITIALIZED_DOCUMENT = graphql(`
 `);
 
 export const BUILD_PNL_SNAPSHOTS_DOCUMENT = graphql(`
-  mutation buildPnlSnapshots($endDate: DateTime!) {
-    buildPnlSnapshots(endDate: $endDate) {
+  mutation buildPnlSnapshots($dateStr: String!) {
+    buildPnlSnapshots(dateStr: $dateStr) {
       id
       dateStr
       isInit

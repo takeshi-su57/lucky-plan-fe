@@ -21,6 +21,7 @@ export function UserTradeHistory({
       address={address}
       contractId={+contractId}
       histories={allHistories}
+      hideTags={false}
     />
   );
 }

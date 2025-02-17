@@ -41,7 +41,11 @@ export function PnlSnapshotPanel() {
     }
 
     buildPnlSnapshots({
-      variables: { endDate: selectedDate.toDate(getLocalTimeZone()) },
+      variables: {
+        dateStr: dayjs(selectedDate.toDate(getLocalTimeZone())).format(
+          "YYYY-MM-DD",
+        ),
+      },
     });
   };
 

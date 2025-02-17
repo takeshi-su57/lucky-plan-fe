@@ -11,7 +11,6 @@ import {
   SelectItem,
 } from "@nextui-org/react";
 import { Virtuoso } from "react-virtuoso";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Address } from "viem";
 import dayjs from "dayjs";
 
@@ -23,21 +22,40 @@ import { useGetPnlSnapshots } from "@/app-hooks/useHistory";
 import { shrinkAddress } from "@/utils";
 import { HistoriesWidget } from "./HistoriesWidget";
 
-export function Leaderboard() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
+export type LeaderboardProps = {
+  selectionLabel?: string;
+  selectedAddresses?: { address: string; contractId: number }[];
+  onChangeSelection?: (
+    address: string,
+    contractId: number,
+    isSelected: boolean,
+  ) => void;
+  endDate: Date;
+  initialContractId: string | null;
+  initialKind: PnlSnapshotKind;
+  onChangeParams: (contractId: string | null, kind: PnlSnapshotKind) => void;
+  hideTags: boolean;
+};
 
+export function Leaderboard({
+  endDate,
+  initialContractId,
+  initialKind,
+  onChangeParams,
+  hideTags,
+  selectionLabel,
+  selectedAddresses,
+  onChangeSelection,
+}: LeaderboardProps) {
   const allContracts = useGetAllContracts();
 
   const [contractId, setContractId] = useState<string | null>(
-    searchParams.get("contractId") || null,
+    initialContractId,
   );
-  const [kind, setKind] = useState<PnlSnapshotKind>(
-    (searchParams.get("kind") as PnlSnapshotKind) || PnlSnapshotKind.AllTime,
-  );
+  const [kind, setKind] = useState<PnlSnapshotKind>(initialKind);
 
   const { pnlSnapshots, fetchMore, hasMore, loading } = useGetPnlSnapshots(
-    dayjs(new Date()).format("YYYY-MM-DD"),
+    dayjs(endDate).format("YYYY-MM-DD"),
     contractId,
     kind,
   );
@@ -48,12 +66,7 @@ export function Leaderboard() {
     if (value.trim() !== "") {
       setKind(value as PnlSnapshotKind);
 
-      const contractQuery = contractId ? `contractId=${contractId}` : null;
-      const kindQuery = value ? `kind=${value}` : null;
-
-      router.push(
-        `/leaderboards?${contractQuery || ""}${contractQuery && kindQuery ? `&` : ""}${kindQuery || ""}`,
-      );
+      onChangeParams(contractId, value as PnlSnapshotKind);
     }
   };
 
@@ -83,12 +96,7 @@ export function Leaderboard() {
           onSelectionChange={(key) => {
             setContractId(key as string | null);
 
-            const contractQuery = key ? `contractId=${key}` : null;
-            const kindQuery = kind ? `kind=${kind}` : null;
-
-            router.push(
-              `/leaderboards?${contractQuery || ""}${contractQuery && kindQuery ? `&` : ""}${kindQuery || ""}`,
-            );
+            onChangeParams(key as string | null, kind);
           }}
         >
           {(item) => (
@@ -123,12 +131,26 @@ export function Leaderboard() {
         <CardBody>
           <Virtuoso
             style={{ height: 700 }}
-            data={pnlSnapshots}
+            data={contractId ? pnlSnapshots : []}
             itemContent={(_, snapshot) => (
               <HistoriesWidget
                 address={snapshot.address as Address}
                 histories={snapshot.histories}
                 contractId={snapshot.contractId}
+                hideTags={hideTags}
+                range={{ to: endDate }}
+                label={selectionLabel}
+                isSelected={
+                  selectedAddresses
+                    ? !!selectedAddresses.find(
+                        (item) =>
+                          item.contractId === snapshot.contractId &&
+                          item.address.toLowerCase() ===
+                            snapshot.address.toLowerCase(),
+                      )
+                    : undefined
+                }
+                onChangeSelection={onChangeSelection}
               />
             )}
             endReached={() => hasMore && !loading && fetchMore()}

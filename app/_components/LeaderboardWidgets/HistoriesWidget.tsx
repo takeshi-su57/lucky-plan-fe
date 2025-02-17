@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { Address } from "viem";
-import { Card, CardBody } from "@nextui-org/react";
+import { Card, CardBody, Checkbox } from "@nextui-org/react";
 import { Virtuoso } from "react-virtuoso";
 import dayjs from "dayjs";
 
@@ -15,14 +15,23 @@ import { getPriceStr } from "@/utils/price";
 import { TagsWidget } from "../TagWidgets/TagsWidget";
 import { PairChip } from "./PairChip";
 import { HistoryCharts } from "./HistoryCharts";
+import { twMerge } from "tailwind-merge";
 
 export type HistoriesWidgetProps = {
   address: Address;
   histories: PersonalTradeHistory[];
   contractId: number;
+  hideTags: boolean;
+  label?: string;
+  isSelected?: boolean;
+  onChangeSelection?: (
+    address: string,
+    contractId: number,
+    isSelected: boolean,
+  ) => void;
   range?: {
-    from: Date;
-    to: Date;
+    from?: Date;
+    to?: Date;
   };
 };
 
@@ -30,6 +39,10 @@ export function HistoriesWidget({
   address,
   histories,
   contractId,
+  hideTags,
+  isSelected,
+  label,
+  onChangeSelection,
   range,
 }: HistoriesWidgetProps) {
   const {
@@ -105,7 +118,10 @@ export function HistoriesWidget({
   }
 
   return (
-    <Card className="mb-4" isBlurred>
+    <Card
+      className={twMerge("mb-4", isSelected ? "border border-primary-400" : "")}
+      isBlurred
+    >
       <CardBody>
         <div className="flex min-h-[500px] items-center gap-8 p-3">
           <div className="flex h-full w-[200px] flex-col justify-between gap-8">
@@ -199,7 +215,18 @@ export function HistoriesWidget({
               )}
             </div>
 
-            <TagsWidget address={address} />
+            {!hideTags ? <TagsWidget address={address} /> : null}
+
+            {isSelected !== undefined ? (
+              <Checkbox
+                isSelected={isSelected}
+                onValueChange={(value) =>
+                  onChangeSelection?.(address, contractId, value)
+                }
+              >
+                {label || ""}
+              </Checkbox>
+            ) : null}
           </div>
 
           <div className="flex flex-1 flex-col items-center gap-6">
