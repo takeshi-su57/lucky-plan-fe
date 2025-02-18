@@ -32,20 +32,7 @@ export function BacktestPanel() {
   const [parameters, setParameters] = useState<BacktestParameters | null>(null);
   const [leaders, setLeaders] = useState<
     { address: string; contractId: number }[]
-  >([
-    {
-      address: "0xef05b82c66ea2ddef154a7d5a1b5d0a7d523bef6",
-      contractId: 3,
-    },
-    {
-      address: "0x37c19d05cb62ed487b7c46e80e0d530f42004ea8",
-      contractId: 3,
-    },
-    {
-      address: "0x160dbddc299dd258e510f4cb5aa9b26cd98d6f5a",
-      contractId: 3,
-    },
-  ]);
+  >([]);
 
   const handleInitialize = () => {
     setCurrentStep(1);
