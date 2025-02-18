@@ -320,7 +320,10 @@ type Mutation {
   addTagToUser(input: ChangeUserTagInput!): User!
   addUser(input: AddUserInput!): User!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotDetails!]!
-  buildPnlSnapshots(dateStr: String!): PnlSnapshotInitializedFlag
+  buildPnlSnapshots(
+    dateStr: String!
+    isForceBuild: Boolean!
+  ): PnlSnapshotInitializedFlag
   cancelOrderAfterTimeout(
     input: CancelOrderAfterTimeoutInput!
   ): ContractExecutionResult!
