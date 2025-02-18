@@ -56,6 +56,11 @@ export function PnlSnapshotPanel() {
     }
 
     for (let i = 0; i < 60; i++) {
+      console.log(
+        "initializing =>",
+        i,
+        selectedDate.add({ days: i }).toDate(getLocalTimeZone()),
+      );
       await buildPnlSnapshots({
         variables: {
           dateStr: dayjs(
