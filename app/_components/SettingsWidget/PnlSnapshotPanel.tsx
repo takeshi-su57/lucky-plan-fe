@@ -49,6 +49,22 @@ export function PnlSnapshotPanel() {
     });
   };
 
+  const handleSequenceBuild = async () => {
+    if (!selectedDate) {
+      return;
+    }
+
+    for (let i = 0; i < 60; i++) {
+      await buildPnlSnapshots({
+        variables: {
+          dateStr: dayjs(
+            selectedDate.add({ days: i }).toDate(getLocalTimeZone()),
+          ).format("YYYY-MM-DD"),
+        },
+      });
+    }
+  };
+
   const exists = useMemo(() => {
     if (!data || !selectedDate) {
       return false;
@@ -104,6 +120,15 @@ export function PnlSnapshotPanel() {
             isDisabled={buildPnlSnapshotsLoading}
           >
             {exists ? "Re-Run" : "Build"}
+          </Button>
+
+          <Button
+            onClick={handleSequenceBuild}
+            isLoading={buildPnlSnapshotsLoading}
+            color="primary"
+            isDisabled={buildPnlSnapshotsLoading}
+          >
+            Sequence Build
           </Button>
         </div>
 

@@ -51,6 +51,7 @@ export function SelectLeaders({
   const [isLeaderChart, setIsLeaderChart] = useState(true);
 
   useEffect(() => {
+    console.log("initialized");
     setTempLeaders(leaders);
   }, [leaders]);
 
@@ -58,8 +59,6 @@ export function SelectLeaders({
     onChangeLeaders(tempLeaders);
     onNextStep();
   };
-
-  console.log(isPnlSnapshotInitialized);
 
   if (!isPnlSnapshotInitialized?.isPnlSnapshotInitialized) {
     return (
@@ -98,7 +97,7 @@ export function SelectLeaders({
       {selected === "leaderboard" ? (
         <Leaderboard
           selectionLabel="Pick as a Leader"
-          selectedAddresses={leaders}
+          selectedAddresses={tempLeaders}
           onChangeSelection={(address, contractId, isSelected) => {
             if (isSelected) {
               setTempLeaders((prev) => {
