@@ -53,7 +53,7 @@ const documents = {
     "\n  query getPnlSnapshotsByAddress($address: String!, $dateStr: String!) {\n    getPnlSnapshotsByAddress(address: $address, dateStr: $dateStr) {\n      ...PnlSnapshotInfo\n    }\n  }\n": types.GetPnlSnapshotsByAddressDocument,
     "\n  query getPnlSnapshotInitializedFlag {\n    getPnlSnapshotInitializedFlag {\n      id\n      dateStr\n      isInit\n    }\n  }\n": types.GetPnlSnapshotInitializedFlagDocument,
     "\n  query isPnlSnapshotInitialized($dateStr: String!) {\n    isPnlSnapshotInitialized(dateStr: $dateStr) {\n      id\n      dateStr\n      isInit\n    }\n  }\n": types.IsPnlSnapshotInitializedDocument,
-    "\n  mutation buildPnlSnapshots($dateStr: String!) {\n    buildPnlSnapshots(dateStr: $dateStr) {\n      id\n      dateStr\n      isInit\n    }\n  }\n": types.BuildPnlSnapshotsDocument,
+    "\n  mutation buildPnlSnapshots($dateStr: String!, $isForceBuild: Boolean!) {\n    buildPnlSnapshots(dateStr: $dateStr, isForceBuild: $isForceBuild) {\n      id\n      dateStr\n      isInit\n    }\n  }\n": types.BuildPnlSnapshotsDocument,
     "\n  fragment PositionInfo on Position {\n    id\n    contractId\n    address\n    index\n  }\n": types.PositionInfoFragmentDoc,
     "\n  fragment MissionInfo on Mission {\n    id\n    botId\n    targetPositionId\n    achievePositionId\n    status\n    createdAt\n    updatedAt\n  }\n": types.MissionInfoFragmentDoc,
     "\n  fragment MissionWithTasksInfo on MissionWithTasks {\n    id\n    botId\n    targetPositionId\n    achievePositionId\n    status\n    createdAt\n    updatedAt\n    tasks {\n      ...TaskShallowDetailsInfo\n    }\n  }\n": types.MissionWithTasksInfoFragmentDoc,
@@ -279,7 +279,7 @@ export function graphql(source: "\n  query isPnlSnapshotInitialized($dateStr: St
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation buildPnlSnapshots($dateStr: String!) {\n    buildPnlSnapshots(dateStr: $dateStr) {\n      id\n      dateStr\n      isInit\n    }\n  }\n"): (typeof documents)["\n  mutation buildPnlSnapshots($dateStr: String!) {\n    buildPnlSnapshots(dateStr: $dateStr) {\n      id\n      dateStr\n      isInit\n    }\n  }\n"];
+export function graphql(source: "\n  mutation buildPnlSnapshots($dateStr: String!, $isForceBuild: Boolean!) {\n    buildPnlSnapshots(dateStr: $dateStr, isForceBuild: $isForceBuild) {\n      id\n      dateStr\n      isInit\n    }\n  }\n"): (typeof documents)["\n  mutation buildPnlSnapshots($dateStr: String!, $isForceBuild: Boolean!) {\n    buildPnlSnapshots(dateStr: $dateStr, isForceBuild: $isForceBuild) {\n      id\n      dateStr\n      isInit\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

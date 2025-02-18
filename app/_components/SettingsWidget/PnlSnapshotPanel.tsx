@@ -35,7 +35,7 @@ export function PnlSnapshotPanel() {
     parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
   );
 
-  const handleBuildPnlSnapshots = () => {
+  const handleForceBuildPnlSnapshots = () => {
     if (!selectedDate) {
       return;
     }
@@ -45,6 +45,7 @@ export function PnlSnapshotPanel() {
         dateStr: dayjs(selectedDate.toDate(getLocalTimeZone())).format(
           "YYYY-MM-DD",
         ),
+        isForceBuild: true,
       },
     });
   };
@@ -60,6 +61,7 @@ export function PnlSnapshotPanel() {
           dateStr: dayjs(
             selectedDate.add({ days: i }).toDate(getLocalTimeZone()),
           ).format("YYYY-MM-DD"),
+          isForceBuild: false,
         },
       });
     }
@@ -114,7 +116,7 @@ export function PnlSnapshotPanel() {
           />
 
           <Button
-            onClick={handleBuildPnlSnapshots}
+            onClick={handleForceBuildPnlSnapshots}
             isLoading={buildPnlSnapshotsLoading}
             color="primary"
             isDisabled={buildPnlSnapshotsLoading}

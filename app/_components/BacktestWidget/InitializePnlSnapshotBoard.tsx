@@ -18,7 +18,10 @@ export function InitializePnlSnapshotBoard({
 
   const handleBuildPnlSnapshots = () => {
     buildPnlSnapshots({
-      variables: { dateStr: dayjs(endDate).format("YYYY-MM-DD") },
+      variables: {
+        dateStr: dayjs(endDate).format("YYYY-MM-DD"),
+        isForceBuild: true,
+      },
     });
   };
 
