@@ -59,16 +59,25 @@ export function SelectLeaders({
     onNextStep();
   };
 
-  if (!isPnlSnapshotInitialized?.isPnlSnapshotInitialized) {
-    <div className="flex flex-col gap-2">
-      <InitializePnlSnapshotBoard endDate={endDate} loading={loading} />
+  console.log(isPnlSnapshotInitialized);
 
-      <div className="flex flex-row items-center gap-2">
-        <Button variant="light" onClick={onPrevStep} color="primary" size="sm">
-          Back
-        </Button>
+  if (!isPnlSnapshotInitialized?.isPnlSnapshotInitialized) {
+    return (
+      <div className="flex flex-col gap-2">
+        <InitializePnlSnapshotBoard endDate={endDate} loading={loading} />
+
+        <div className="flex flex-row items-center gap-2">
+          <Button
+            variant="light"
+            onClick={onPrevStep}
+            color="primary"
+            size="sm"
+          >
+            Back
+          </Button>
+        </div>
       </div>
-    </div>;
+    );
   }
 
   return (
