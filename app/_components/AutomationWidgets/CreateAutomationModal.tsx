@@ -341,9 +341,7 @@ export function CreateAutomationModal({
       Number.isNaN(baseline) ||
       !strategy ||
       strategyHelper.trim() !== "" ||
-      (strategy === "ratioCopy" && ratioHelper.trim() !== "") ||
-      maxCollateralHelper.trim() !== "" ||
-      minCollateralHelper.trim() !== ""
+      (strategy === "ratioCopy" && ratioHelper.trim() !== "")
     ) {
       return {
         pnlChartData: [],
@@ -365,8 +363,6 @@ export function CreateAutomationModal({
         strategyKey: strategy,
         ratio: +ratio,
         collateralBaseline: +collateralBaseline,
-        maxCollateral: +maxCollateral,
-        minCollateral: +minCollateral,
       },
     );
 
@@ -388,10 +384,6 @@ export function CreateAutomationModal({
   }, [
     collateralBaseline,
     followerAvailableTradePairs,
-    maxCollateral,
-    maxCollateralHelper,
-    minCollateral,
-    minCollateralHelper,
     originalHistories,
     ratio,
     ratioHelper,

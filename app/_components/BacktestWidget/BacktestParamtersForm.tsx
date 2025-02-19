@@ -9,8 +9,6 @@ import { NumericInput } from "@/components/inputs/NumericInput";
 
 export type BacktestParameters = {
   futureDate: Date;
-  maxCollateral: number;
-  minCollateral: number;
   collateralBaseline: number;
 };
 
@@ -29,8 +27,6 @@ export function BacktestParametersForm({
   onNextStep,
   onPrevStep,
 }: BacktestParametersProps) {
-  const [maxCollateral, setMaxCollateral] = useState("200");
-  const [minCollateral, setMinCollateral] = useState("5");
   const [collateralBaseline, setCollateralBaseline] = useState("100");
   const [futureDate, setFutureDate] = useState<Date>(
     parseDate(dayjs(pastDate).format("YYYY-MM-DD"))
@@ -49,73 +45,26 @@ export function BacktestParametersForm({
   useEffect(() => {
     if (parameters) {
       setCollateralBaseline(parameters.collateralBaseline.toString());
-      setMaxCollateral(parameters.maxCollateral.toString());
-      setMinCollateral(parameters.minCollateral.toString());
       setFutureDate(parameters.futureDate);
     } else {
       setCollateralBaseline("100");
-      setMaxCollateral("200");
-      setMinCollateral("5");
     }
   }, [parameters]);
 
-  let maxCollateralHelper = "";
-  let minCollateralHelper = "";
   let collateralBaselineHelper = "";
 
-  if (Number.isNaN(+maxCollateral)) {
-    maxCollateralHelper = "Invalid max collateral";
-  } else {
-    if (+maxCollateral < 5) {
-      maxCollateralHelper = "Too small max collateral";
-    }
-  }
-
-  if (Number.isNaN(+minCollateral)) {
-    minCollateralHelper = "Invalid min collateral";
-  } else {
-    if (+minCollateral > +maxCollateral) {
-      minCollateralHelper = "Too big min collateral";
-    }
-
-    if (+minCollateral < 5) {
-      minCollateralHelper = "Too small min collateral";
-    }
-  }
-
-  if (Number.isNaN(+collateralBaseline)) {
-    collateralBaselineHelper = "Invalid collateral baseline";
-  } else {
-    if (+collateralBaseline > +maxCollateral) {
-      collateralBaselineHelper = "Too big collateral baseline";
-    }
-
-    if (+collateralBaseline < +minCollateral) {
-      collateralBaselineHelper = "Too small collateral baseline";
-    }
-  }
-
   const handleConfirm = () => {
-    if (
-      maxCollateral.trim() === "" ||
-      minCollateral.trim() === "" ||
-      collateralBaseline.trim() === ""
-    ) {
+    if (collateralBaseline.trim() === "") {
       return;
     }
 
     setParameters({
       futureDate: futureDate,
-      maxCollateral: +maxCollateral,
-      minCollateral: +minCollateral,
       collateralBaseline: +collateralBaseline,
     });
 
     onNextStep();
   };
-
-  const isDisabledStrategy =
-    maxCollateralHelper.trim() !== "" || minCollateralHelper.trim() !== "";
 
   return (
     <div className="flex flex-col gap-2">
@@ -129,34 +78,15 @@ export function BacktestParametersForm({
       />
 
       <NumericInput
-        amount={maxCollateral}
-        onChange={setMaxCollateral}
-        label="Max Collateral"
-        errorMessage={maxCollateralHelper}
-        isInvalid={maxCollateralHelper.trim() !== ""}
-      />
-
-      <NumericInput
-        amount={minCollateral}
-        onChange={setMinCollateral}
-        label="Min Collateral"
-        isDisabled={maxCollateralHelper.trim() !== ""}
-        errorMessage={minCollateralHelper}
-        isInvalid={minCollateralHelper.trim() !== ""}
-      />
-
-      <NumericInput
         amount={collateralBaseline}
         onChange={setCollateralBaseline}
         label="Collateral Baseline"
-        isDisabled={minCollateralHelper.trim() !== ""}
         errorMessage={collateralBaselineHelper}
         isInvalid={collateralBaselineHelper.trim() !== ""}
       />
 
       <div className="flex flex-row items-center gap-2">
         <Button
-          isDisabled={isDisabledStrategy}
           variant="solid"
           onClick={handleConfirm}
           color="primary"
