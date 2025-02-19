@@ -30,14 +30,14 @@ export function BacktestParametersForm({
   const [collateralBaseline, setCollateralBaseline] = useState("100");
   const [futureDate, setFutureDate] = useState<Date>(
     parseDate(dayjs(pastDate).format("YYYY-MM-DD"))
-      .add({ days: 3 })
+      .add({ days: 2 })
       .toDate(getLocalTimeZone()),
   );
 
   useEffect(() => {
     setFutureDate(
       parseDate(dayjs(pastDate).format("YYYY-MM-DD"))
-        .add({ days: 3 })
+        .add({ days: 2 })
         .toDate(getLocalTimeZone()),
     );
   }, [pastDate]);

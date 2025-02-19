@@ -102,200 +102,212 @@ export function getHistoriesChartData(
   const sortedHistories = getSortedPartialHistories(histories, range);
 
   if (sortedHistories.length > 0) {
-    [...sortedHistories, sortedHistories[sortedHistories.length - 1]].forEach(
-      (history) => {
-        tradePairIndexsMap.set(
-          history.pair,
-          (tradePairIndexsMap.get(history.pair) || 0) + 1,
-        );
-
-        if (pnlChartData.length === 0) {
-          pnlChartData.push({
-            value: 0,
-            date: new Date(history.date),
-          });
-        }
-
-        if (inOutChartData.length === 0) {
-          inOutChartData.push({
-            value: 0,
-            date: new Date(history.date),
-          });
-        }
-
-        if (outChartData.length === 0) {
-          outChartData.push({
-            value: 0,
-            date: new Date(history.date),
-          });
-        }
-
-        if (inChartData.length === 0) {
-          inChartData.push({
-            value: 0,
-            date: new Date(history.date),
-          });
-        }
-
-        pnlSum += history.pnl * history.collateralPriceUsd;
-
-        switch (history.action) {
-          case TradeActionType.TradeOpenedMarket: {
-            inOutSum -= history.size * history.collateralPriceUsd;
-
-            inChartData.push({
-              value: -history.size * history.collateralPriceUsd,
-              date: new Date(history.date),
-            });
-
-            minIn = Math.min(minIn, history.size * history.collateralPriceUsd);
-            maxIn = Math.max(maxIn, history.size * history.collateralPriceUsd);
-            sumIn += history.size * history.collateralPriceUsd;
-            countIn++;
-
-            break;
-          }
-          case TradeActionType.TradeOpenedLimit: {
-            inOutSum -= history.size * history.collateralPriceUsd;
-
-            inChartData.push({
-              value: -history.size * history.collateralPriceUsd,
-              date: new Date(history.date),
-            });
-
-            minIn = Math.min(minIn, history.size * history.collateralPriceUsd);
-            maxIn = Math.max(maxIn, history.size * history.collateralPriceUsd);
-            sumIn += history.size * history.collateralPriceUsd;
-            countIn++;
-
-            break;
-          }
-          case TradeActionType.TradeClosedMarket: {
-            inOutSum +=
-              (history.size + history.pnl) * history.collateralPriceUsd;
-
-            outChartData.push({
-              value: (history.size + history.pnl) * history.collateralPriceUsd,
-              date: new Date(history.date),
-            });
-
-            break;
-          }
-          case TradeActionType.TradeClosedLIQ: {
-            inOutSum +=
-              (history.size + history.pnl) * history.collateralPriceUsd;
-
-            outChartData.push({
-              value: (history.size + history.pnl) * history.collateralPriceUsd,
-              date: new Date(history.date),
-            });
-
-            break;
-          }
-          case TradeActionType.TradeClosedSL: {
-            inOutSum +=
-              (history.size + history.pnl) * history.collateralPriceUsd;
-
-            outChartData.push({
-              value: (history.size + history.pnl) * history.collateralPriceUsd,
-              date: new Date(history.date),
-            });
-
-            break;
-          }
-          case TradeActionType.TradeClosedTP: {
-            inOutSum +=
-              (history.size + history.pnl) * history.collateralPriceUsd;
-
-            outChartData.push({
-              value: (history.size + history.pnl) * history.collateralPriceUsd,
-              date: new Date(history.date),
-            });
-
-            break;
-          }
-          case TradeActionType.TradeLeverageUpdate: {
-            const delta =
-              (-(history.collateralDelta || 0) + history.pnl) *
-              history.collateralPriceUsd;
-
-            inOutSum += delta;
-
-            if (delta < 0) {
-              inChartData.push({
-                value: delta,
-                date: new Date(history.date),
-              });
-            }
-
-            if (delta > 0) {
-              outChartData.push({
-                value: delta,
-                date: new Date(history.date),
-              });
-            }
-
-            break;
-          }
-          case TradeActionType.TradePosSizeIncrease: {
-            const delta =
-              (-(history.collateralDelta || 0) + history.pnl) *
-              history.collateralPriceUsd;
-
-            inOutSum += delta;
-
-            if (delta < 0) {
-              inChartData.push({
-                value: delta,
-                date: new Date(history.date),
-              });
-            }
-
-            if (delta > 0) {
-              outChartData.push({
-                value: delta,
-                date: new Date(history.date),
-              });
-            }
-
-            break;
-          }
-          case TradeActionType.TradePosSizeDecrease: {
-            const delta =
-              (-(history.collateralDelta || 0) + history.pnl) *
-              history.collateralPriceUsd;
-
-            inOutSum += delta;
-
-            if (delta < 0) {
-              inChartData.push({
-                value: delta,
-                date: new Date(history.date),
-              });
-            }
-
-            if (delta > 0) {
-              outChartData.push({
-                value: delta,
-                date: new Date(history.date),
-              });
-            }
-
-            break;
-          }
-        }
-
-        pnlChartData.push({
-          value: pnlSum,
-          date: new Date(history.date),
-        });
-
-        inOutChartData.push({
-          value: inOutSum,
-          date: new Date(history.date),
-        });
+    [
+      ...sortedHistories,
+      {
+        ...sortedHistories[sortedHistories.length - 1],
+        action: TradeActionType.TradeOpenedMarket,
+        pnl: 0,
+        pnl_net: 0,
+        size: 0,
+        collateralDelta: 0,
       },
-    );
+      {
+        ...sortedHistories[sortedHistories.length - 1],
+        action: TradeActionType.TradeClosedMarket,
+        pnl: 0,
+        pnl_net: 0,
+        size: 0,
+        collateralDelta: 0,
+      },
+    ].forEach((history) => {
+      tradePairIndexsMap.set(
+        history.pair,
+        (tradePairIndexsMap.get(history.pair) || 0) + 1,
+      );
+
+      if (pnlChartData.length === 0) {
+        pnlChartData.push({
+          value: 0,
+          date: new Date(history.date),
+        });
+      }
+
+      if (inOutChartData.length === 0) {
+        inOutChartData.push({
+          value: 0,
+          date: new Date(history.date),
+        });
+      }
+
+      if (outChartData.length === 0) {
+        outChartData.push({
+          value: 0,
+          date: new Date(history.date),
+        });
+      }
+
+      if (inChartData.length === 0) {
+        inChartData.push({
+          value: 0,
+          date: new Date(history.date),
+        });
+      }
+
+      pnlSum += history.pnl * history.collateralPriceUsd;
+
+      switch (history.action) {
+        case TradeActionType.TradeOpenedMarket: {
+          inOutSum -= history.size * history.collateralPriceUsd;
+
+          inChartData.push({
+            value: -history.size * history.collateralPriceUsd,
+            date: new Date(history.date),
+          });
+
+          minIn = Math.min(minIn, history.size * history.collateralPriceUsd);
+          maxIn = Math.max(maxIn, history.size * history.collateralPriceUsd);
+          sumIn += history.size * history.collateralPriceUsd;
+          countIn++;
+
+          break;
+        }
+        case TradeActionType.TradeOpenedLimit: {
+          inOutSum -= history.size * history.collateralPriceUsd;
+
+          inChartData.push({
+            value: -history.size * history.collateralPriceUsd,
+            date: new Date(history.date),
+          });
+
+          minIn = Math.min(minIn, history.size * history.collateralPriceUsd);
+          maxIn = Math.max(maxIn, history.size * history.collateralPriceUsd);
+          sumIn += history.size * history.collateralPriceUsd;
+          countIn++;
+
+          break;
+        }
+        case TradeActionType.TradeClosedMarket: {
+          inOutSum += (history.size + history.pnl) * history.collateralPriceUsd;
+
+          outChartData.push({
+            value: (history.size + history.pnl) * history.collateralPriceUsd,
+            date: new Date(history.date),
+          });
+
+          break;
+        }
+        case TradeActionType.TradeClosedLIQ: {
+          inOutSum += (history.size + history.pnl) * history.collateralPriceUsd;
+
+          outChartData.push({
+            value: (history.size + history.pnl) * history.collateralPriceUsd,
+            date: new Date(history.date),
+          });
+
+          break;
+        }
+        case TradeActionType.TradeClosedSL: {
+          inOutSum += (history.size + history.pnl) * history.collateralPriceUsd;
+
+          outChartData.push({
+            value: (history.size + history.pnl) * history.collateralPriceUsd,
+            date: new Date(history.date),
+          });
+
+          break;
+        }
+        case TradeActionType.TradeClosedTP: {
+          inOutSum += (history.size + history.pnl) * history.collateralPriceUsd;
+
+          outChartData.push({
+            value: (history.size + history.pnl) * history.collateralPriceUsd,
+            date: new Date(history.date),
+          });
+
+          break;
+        }
+        case TradeActionType.TradeLeverageUpdate: {
+          const delta =
+            (-(history.collateralDelta || 0) + history.pnl) *
+            history.collateralPriceUsd;
+
+          inOutSum += delta;
+
+          if (delta < 0) {
+            inChartData.push({
+              value: delta,
+              date: new Date(history.date),
+            });
+          }
+
+          if (delta > 0) {
+            outChartData.push({
+              value: delta,
+              date: new Date(history.date),
+            });
+          }
+
+          break;
+        }
+        case TradeActionType.TradePosSizeIncrease: {
+          const delta =
+            (-(history.collateralDelta || 0) + history.pnl) *
+            history.collateralPriceUsd;
+
+          inOutSum += delta;
+
+          if (delta < 0) {
+            inChartData.push({
+              value: delta,
+              date: new Date(history.date),
+            });
+          }
+
+          if (delta > 0) {
+            outChartData.push({
+              value: delta,
+              date: new Date(history.date),
+            });
+          }
+
+          break;
+        }
+        case TradeActionType.TradePosSizeDecrease: {
+          const delta =
+            (-(history.collateralDelta || 0) + history.pnl) *
+            history.collateralPriceUsd;
+
+          inOutSum += delta;
+
+          if (delta < 0) {
+            inChartData.push({
+              value: delta,
+              date: new Date(history.date),
+            });
+          }
+
+          if (delta > 0) {
+            outChartData.push({
+              value: delta,
+              date: new Date(history.date),
+            });
+          }
+
+          break;
+        }
+      }
+
+      pnlChartData.push({
+        value: pnlSum,
+        date: new Date(history.date),
+      });
+
+      inOutChartData.push({
+        value: inOutSum,
+        date: new Date(history.date),
+      });
+    });
   }
 
   return {
