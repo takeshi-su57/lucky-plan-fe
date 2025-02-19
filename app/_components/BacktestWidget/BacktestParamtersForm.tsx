@@ -12,8 +12,6 @@ export type BacktestParameters = {
   maxCollateral: number;
   minCollateral: number;
   collateralBaseline: number;
-  maxLeverage: number;
-  minLeverage: number;
 };
 
 export type BacktestParametersProps = {
@@ -34,18 +32,16 @@ export function BacktestParametersForm({
   const [maxCollateral, setMaxCollateral] = useState("200");
   const [minCollateral, setMinCollateral] = useState("5");
   const [collateralBaseline, setCollateralBaseline] = useState("100");
-  const [maxLeverage, setMaxLeverage] = useState("200");
-  const [minLeverage, setMinLeverage] = useState("1.1");
   const [futureDate, setFutureDate] = useState<Date>(
     parseDate(dayjs(pastDate).format("YYYY-MM-DD"))
-      .add({ days: 15 })
+      .add({ days: 3 })
       .toDate(getLocalTimeZone()),
   );
 
   useEffect(() => {
     setFutureDate(
       parseDate(dayjs(pastDate).format("YYYY-MM-DD"))
-        .add({ days: 15 })
+        .add({ days: 3 })
         .toDate(getLocalTimeZone()),
     );
   }, [pastDate]);
@@ -55,22 +51,17 @@ export function BacktestParametersForm({
       setCollateralBaseline(parameters.collateralBaseline.toString());
       setMaxCollateral(parameters.maxCollateral.toString());
       setMinCollateral(parameters.minCollateral.toString());
-      setMaxLeverage(parameters.maxLeverage.toString());
-      setMinLeverage(parameters.minLeverage.toString());
+      setFutureDate(parameters.futureDate);
     } else {
       setCollateralBaseline("100");
       setMaxCollateral("200");
       setMinCollateral("5");
-      setMaxLeverage("200");
-      setMinLeverage("1.1");
     }
   }, [parameters]);
 
   let maxCollateralHelper = "";
   let minCollateralHelper = "";
   let collateralBaselineHelper = "";
-  let maxLeverageHelper = "";
-  let minLeverageHelper = "";
 
   if (Number.isNaN(+maxCollateral)) {
     maxCollateralHelper = "Invalid max collateral";
@@ -104,37 +95,11 @@ export function BacktestParametersForm({
     }
   }
 
-  if (Number.isNaN(+maxLeverage)) {
-    maxLeverageHelper = "Invalid max leverage";
-  } else {
-    if (+maxLeverage > 200) {
-      maxLeverageHelper = "Too big max leverage";
-    }
-
-    if (+maxLeverage < 1.1) {
-      maxLeverageHelper = "Too small max leverage";
-    }
-  }
-
-  if (Number.isNaN(+minLeverage)) {
-    minLeverageHelper = "Invalid min leverage";
-  } else {
-    if (+minLeverage > +maxLeverage) {
-      minLeverageHelper = "Too big min leverage";
-    }
-
-    if (+minLeverage < 1.1) {
-      minLeverageHelper = "Too small min leverage";
-    }
-  }
-
   const handleConfirm = () => {
     if (
       maxCollateral.trim() === "" ||
       minCollateral.trim() === "" ||
-      collateralBaseline.trim() === "" ||
-      maxLeverage.trim() === "" ||
-      minLeverage.trim() === ""
+      collateralBaseline.trim() === ""
     ) {
       return;
     }
@@ -144,18 +109,13 @@ export function BacktestParametersForm({
       maxCollateral: +maxCollateral,
       minCollateral: +minCollateral,
       collateralBaseline: +collateralBaseline,
-      maxLeverage: +maxLeverage,
-      minLeverage: +minLeverage,
     });
 
     onNextStep();
   };
 
   const isDisabledStrategy =
-    maxCollateralHelper.trim() !== "" ||
-    minCollateralHelper.trim() !== "" ||
-    maxLeverageHelper.trim() !== "" ||
-    minLeverageHelper.trim() !== "";
+    maxCollateralHelper.trim() !== "" || minCollateralHelper.trim() !== "";
 
   return (
     <div className="flex flex-col gap-2">
@@ -192,23 +152,6 @@ export function BacktestParametersForm({
         isDisabled={minCollateralHelper.trim() !== ""}
         errorMessage={collateralBaselineHelper}
         isInvalid={collateralBaselineHelper.trim() !== ""}
-      />
-
-      <NumericInput
-        amount={maxLeverage}
-        onChange={setMaxLeverage}
-        label="Max Leverage"
-        errorMessage={maxLeverageHelper}
-        isInvalid={maxLeverageHelper.trim() !== ""}
-      />
-
-      <NumericInput
-        amount={minLeverage}
-        onChange={setMinLeverage}
-        label="Min Leverage"
-        isDisabled={maxLeverageHelper.trim() !== ""}
-        errorMessage={minLeverageHelper}
-        isInvalid={minLeverageHelper.trim() !== ""}
       />
 
       <div className="flex flex-row items-center gap-2">

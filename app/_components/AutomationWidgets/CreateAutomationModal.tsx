@@ -343,9 +343,7 @@ export function CreateAutomationModal({
       strategyHelper.trim() !== "" ||
       (strategy === "ratioCopy" && ratioHelper.trim() !== "") ||
       maxCollateralHelper.trim() !== "" ||
-      minCollateralHelper.trim() !== "" ||
-      maxLeverageHelper.trim() !== "" ||
-      minLeverageHelper.trim() !== ""
+      minCollateralHelper.trim() !== ""
     ) {
       return {
         pnlChartData: [],
@@ -369,8 +367,6 @@ export function CreateAutomationModal({
         collateralBaseline: +collateralBaseline,
         maxCollateral: +maxCollateral,
         minCollateral: +minCollateral,
-        maxLeverage: +maxLeverage * 1000,
-        minLeverage: +minLeverage * 1000,
       },
     );
 
@@ -394,12 +390,8 @@ export function CreateAutomationModal({
     followerAvailableTradePairs,
     maxCollateral,
     maxCollateralHelper,
-    maxLeverage,
-    maxLeverageHelper,
     minCollateral,
     minCollateralHelper,
-    minLeverage,
-    minLeverageHelper,
     originalHistories,
     ratio,
     ratioHelper,

@@ -246,8 +246,6 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
       virtualBot.leaderCollateralBaseline,
       {
         ...virtualBot.strategy,
-        maxLeverage: virtualBot.strategy.maxLeverage * 1000,
-        minLeverage: virtualBot.strategy.minLeverage * 1000,
       },
     );
     setLeaderBotsHistories((prev) => ({

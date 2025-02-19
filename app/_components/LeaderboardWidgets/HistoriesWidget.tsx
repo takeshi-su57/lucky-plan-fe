@@ -27,6 +27,7 @@ export type HistoriesWidgetProps = {
   onChangeSelection?: (
     address: string,
     contractId: number,
+    leaderCollateral: number,
     isSelected: boolean,
   ) => void;
   range?: {
@@ -71,7 +72,7 @@ export function HistoriesWidget({
     {
       id: "tradeCount",
       label: "Trades",
-      value: histories.length,
+      value: pnlChartData.length,
     },
     {
       id: "pnl",
@@ -221,7 +222,12 @@ export function HistoriesWidget({
               <Checkbox
                 isSelected={isSelected}
                 onValueChange={(value) =>
-                  onChangeSelection?.(address, contractId, value)
+                  onChangeSelection?.(
+                    address,
+                    contractId,
+                    countIn > 0 ? sumIn / countIn : 0,
+                    value,
+                  )
                 }
               >
                 {label || ""}
