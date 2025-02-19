@@ -1,5 +1,10 @@
+"use client";
+
 import { Address } from "viem";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { Checkbox, Switch } from "@nextui-org/react";
+import { parseDate, getLocalTimeZone } from "@internationalized/date";
+import dayjs from "dayjs";
 
 import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHistories";
 import { useGetAllContracts } from "@/app-hooks/useContract";
@@ -16,17 +21,20 @@ export type PastChartProps = {
   endDate: Date;
   contractId: number;
   address: string;
-  isLeaderChart: boolean;
   parameters: BacktestParameters;
+  onChangeSelection: (value: boolean) => void;
 };
 
 export function PastChart({
   endDate,
   contractId,
   address,
-  isLeaderChart,
   parameters,
+  onChangeSelection,
 }: PastChartProps) {
+  const [isLeaderChart, setIsLeaderChart] = useState(true);
+  const [isAllTime, setIsAllTime] = useState(false);
+
   const allContracts = useGetAllContracts();
 
   const { data: allHistories } = useGetPersonalTradeHistories(
@@ -58,13 +66,40 @@ export function PastChart({
   }, [allHistories, endDate, isLeaderChart, parameters]);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex w-full flex-col gap-2">
+      <div className="flex w-full flex-row items-center justify-between gap-2">
+        <Checkbox isSelected={true} onValueChange={onChangeSelection}>
+          Selected
+        </Checkbox>
+
+        <div className="flex flex-row items-center gap-2">
+          <Switch
+            isSelected={isLeaderChart}
+            onValueChange={setIsLeaderChart}
+            size="sm"
+          >
+            {isLeaderChart ? "Leader Chart" : "Follower Chart"}
+          </Switch>
+
+          <Switch isSelected={isAllTime} onValueChange={setIsAllTime} size="sm">
+            {isAllTime ? "All Time" : "Past Week"}
+          </Switch>
+        </div>
+      </div>
+
       <HistoriesWidget
         address={address as Address}
         histories={histories}
         contractId={contractId}
         hideTags={true}
-        range={{ to: endDate }}
+        range={{
+          to: endDate,
+          from: isAllTime
+            ? undefined
+            : parseDate(dayjs(endDate).format("YYYY-MM-DD"))
+                .subtract({ days: 7 })
+                .toDate(getLocalTimeZone()),
+        }}
       />
     </div>
   );

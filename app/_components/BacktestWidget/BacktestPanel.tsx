@@ -7,6 +7,7 @@ import { AccordionItem, Accordion, Tab, Tabs } from "@nextui-org/react";
 import { Stepper } from "@/components/Stepper/Stepper";
 import { PastDatePicker } from "./PastDatePicker";
 import { SelectLeaders } from "./SelectLeaders";
+import { ConfirmLeaders } from "./ConfirmLeaders";
 import {
   BacktestParametersForm,
   BacktestParameters,
@@ -89,15 +90,16 @@ export function BacktestPanel() {
         />
       ) : null,
     },
-
     {
       step: 4,
-      label: "Run",
-      description: `Run the backtest to see the results of the system.`,
+      label: "Confirm Leaders",
+      description:
+        "Confirm the leaders that will be used to backtest the system.",
       content: parameters ? (
-        <BacktestResult
-          startDate={pastDate}
+        <ConfirmLeaders
           leaders={leaders}
+          onChangeLeaders={setLeaders}
+          endDate={pastDate}
           parameters={parameters}
           onNextStep={() => setCurrentStep(5)}
           onPrevStep={() => setCurrentStep(3)}
@@ -106,11 +108,25 @@ export function BacktestPanel() {
     },
     {
       step: 5,
+      label: "Run",
+      description: `Run the backtest to see the results of the system.`,
+      content: parameters ? (
+        <BacktestResult
+          startDate={pastDate}
+          leaders={leaders}
+          parameters={parameters}
+          onNextStep={() => setCurrentStep(6)}
+          onPrevStep={() => setCurrentStep(4)}
+        />
+      ) : null,
+    },
+    {
+      step: 6,
       label: "Save",
       description: `Save the backtest to your account.`,
       content: (
         <BacktestSave
-          onPrevStep={() => setCurrentStep(4)}
+          onPrevStep={() => setCurrentStep(5)}
           onReset={handleInitialize}
           onSave={handleSave}
         />

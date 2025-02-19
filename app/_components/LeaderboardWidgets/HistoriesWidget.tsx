@@ -52,7 +52,6 @@ export function HistoriesWidget({
     inChartData,
     outChartData,
     tradePairs,
-    minIn,
     maxIn,
     sumIn,
     countIn,
@@ -62,27 +61,6 @@ export function HistoriesWidget({
     () => getHistoriesChartData(histories, range),
     [histories, range],
   );
-
-  const items = [
-    {
-      id: "address",
-      label: "Address",
-      value: <AddressWidget address={address as Address} />,
-    },
-    {
-      id: "tradeCount",
-      label: "Trades",
-      value: pnlChartData.length,
-    },
-    {
-      id: "pnl",
-      label: "PNL",
-      value:
-        pnlChartData.length > 0
-          ? getPriceStr(pnlChartData[pnlChartData.length - 1].value)
-          : 0,
-    },
-  ];
 
   const openCyclcData = outChartData.filter((item) => item.value < 0);
 
@@ -118,6 +96,71 @@ export function HistoriesWidget({
     );
   }
 
+  const totalInvested = inOutChartData.reduce(
+    (acc, curr) => (acc > curr.value ? curr.value : acc),
+    0,
+  );
+  const totalPnl =
+    pnlChartData.length > 0 ? pnlChartData[pnlChartData.length - 1].value : 0;
+  const remainBalance = -totalInvested + totalPnl;
+
+  const items = [
+    {
+      id: "address",
+      label: "Address",
+      value: <AddressWidget address={address as Address} />,
+    },
+    {
+      id: "tradeCount",
+      label: "Trades",
+      value: pnlChartData.length,
+    },
+    {
+      id: "totalPnl",
+      label: "Total PnL",
+      value: getPriceStr(totalPnl),
+    },
+    {
+      id: "totalInvested",
+      label: "Total Invested",
+      value: getPriceStr(totalInvested),
+    },
+    {
+      id: "remainBalance",
+      label: "Remain Balance",
+      value: getPriceStr(remainBalance),
+    },
+    {
+      id: "maxInvested",
+      label: "Max Invested",
+      value: getPriceStr(maxIn),
+    },
+    {
+      id: "avgInvested",
+      label: "Avg Invested",
+      value: getPriceStr(sumIn / countIn),
+    },
+    {
+      id: "countInvested",
+      label: "Invested Count",
+      value: countIn,
+    },
+    {
+      id: "firstActivity",
+      label: "First Activity",
+      value: firstActivity
+        ? dayjs(new Date(firstActivity)).format("YYYY/MM/DD")
+        : "",
+    },
+    {
+      id: "lastActivity",
+      label: "Last Activity",
+      value: lastActivity
+        ? dayjs(new Date(lastActivity)).format("YYYY/MM/DD")
+        : "",
+    },
+  ];
+
   return (
     <Card
       className={twMerge("mb-4", isSelected ? "border border-primary-400" : "")}
@@ -132,7 +175,7 @@ export function HistoriesWidget({
                   className="flex w-full items-center justify-between gap-4"
                   key={item.id}
                 >
-                  <span className="text-base text-neutral-400">
+                  <span className="text-xs text-neutral-400">
                     {item.label}:
                   </span>
                   <span className="text-base font-bold text-white">
@@ -140,42 +183,6 @@ export function HistoriesWidget({
                   </span>
                 </div>
               ))}
-
-              <div className="flex flex-col gap-4 text-xs text-neutral-400">
-                <div className="flex items-center justify-between gap-4">
-                  <span className="flex-1">Min In: {minIn.toFixed(2)}</span>
-                  <span className="flex-1">Max In: {maxIn.toFixed(2)}</span>
-                </div>
-
-                <div className="flex items-center justify-between gap-4">
-                  <span className="flex-1">
-                    Avg In: {(sumIn / countIn).toFixed(2)}
-                  </span>
-                  <span className="flex-1">Count In: {countIn}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-base text-neutral-400">
-                  First Activity:
-                </span>
-                <span className="text-sm font-bold text-white">
-                  {firstActivity
-                    ? dayjs(new Date(firstActivity)).format("YYYY/MM/DD")
-                    : ""}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-base text-neutral-400">
-                  Last Activity:
-                </span>
-                <span className="text-sm font-bold text-white">
-                  {lastActivity
-                    ? dayjs(new Date(lastActivity)).format("YYYY/MM/DD")
-                    : ""}
-                </span>
-              </div>
             </div>
 
             <div className="flex w-full flex-col gap-2">

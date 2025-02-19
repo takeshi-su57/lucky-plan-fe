@@ -15,9 +15,10 @@ import { PersonalTradeHistory } from "@/types";
 import { getPersonalTradeHistories } from "@/app/_actions/getPersonalTradeHistories";
 import { useGetAllContracts } from "@/app/_hooks/useContract";
 import { transformHistories } from "@/utils/historiesChart";
-import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget";
+
 import { AutomationGridChart } from "../PlansWidget/AutomationChart";
 import { LeaderItem, LeaderParams } from "./LeaderItem";
+import { FutureChart } from "./FutureChart";
 
 type TabType = "overview" | "details";
 
@@ -91,14 +92,6 @@ export function BacktestResult({
 
   return (
     <div className="flex flex-col gap-2">
-      <Switch
-        isSelected={isLeaderChart}
-        onValueChange={setIsLeaderChart}
-        size="sm"
-      >
-        {isLeaderChart ? "Leader Chart" : "Follower Chart"}
-      </Switch>
-
       <Tabs
         aria-label="automations-tabs"
         selectedKey={selected}
@@ -113,13 +106,22 @@ export function BacktestResult({
       </Tabs>
 
       {selected === "overview" ? (
-        <AutomationGridChart
-          histories={
-            isLeaderChart ? totalLeaderHistories : totalFollowerHistories
-          }
-          title={`Total Result`}
-          range={{ from: startDate, to: parameters.futureDate }}
-        />
+        <>
+          <Switch
+            isSelected={isLeaderChart}
+            onValueChange={setIsLeaderChart}
+            size="sm"
+          >
+            {isLeaderChart ? "Leader Chart" : "Follower Chart"}
+          </Switch>
+          <AutomationGridChart
+            histories={
+              isLeaderChart ? totalLeaderHistories : totalFollowerHistories
+            }
+            title={`Total Result`}
+            range={{ from: startDate, to: parameters.futureDate }}
+          />
+        </>
       ) : null}
 
       {selected === "details" ? (
@@ -132,20 +134,21 @@ export function BacktestResult({
                     key={`${leader.address}-${leader.contractId}`}
                     title={<LeaderItem params={leader} />}
                   >
-                    <HistoriesWidget
-                      address={leader.address as Address}
-                      histories={
-                        isLeaderChart
-                          ? leaderHistories[
-                              `${leader.address}-${leader.contractId}`
-                            ] || []
-                          : followerHistories[
-                              `${leader.address}-${leader.contractId}`
-                            ] || []
-                      }
-                      range={{ from: startDate, to: parameters.futureDate }}
+                    <FutureChart
+                      startDate={startDate}
+                      endDate={parameters.futureDate}
                       contractId={leader.contractId}
-                      hideTags={true}
+                      address={leader.address as Address}
+                      leaderHistories={
+                        leaderHistories[
+                          `${leader.address}-${leader.contractId}`
+                        ] || []
+                      }
+                      followerHistories={
+                        followerHistories[
+                          `${leader.address}-${leader.contractId}`
+                        ] || []
+                      }
                     />
                   </AccordionItem>
                 ))}

@@ -192,9 +192,9 @@ export default function LineChart({ title, data, className }: LineChartProps) {
   }, [drawModalChart, isOpen]);
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-row items-center justify-between">
-        <div className="flex flex-row items-center gap-2">
+    <div className="relative flex flex-col gap-3">
+      <div className="absolute left-1/2 top-4 z-[1000] flex w-fit -translate-x-1/2 flex-row items-center justify-between gap-1">
+        <div className="flex flex-row items-center gap-1">
           <span className="text-sm font-bold">{title || ""}</span>
           <Button size="sm" variant="ghost" onPress={onOpen}>
             Details

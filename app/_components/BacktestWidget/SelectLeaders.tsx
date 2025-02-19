@@ -1,15 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  AccordionItem,
-  Accordion,
-  Button,
-  Card,
-  CardBody,
-  Switch,
-  Checkbox,
-} from "@nextui-org/react";
+import { Button } from "@nextui-org/react";
 import dayjs from "dayjs";
 
 import { useIsPnlSnapshotInitialized } from "@/app-hooks/useHistory";
@@ -17,9 +9,8 @@ import { useIsPnlSnapshotInitialized } from "@/app-hooks/useHistory";
 import { InitializePnlSnapshotBoard } from "./InitializePnlSnapshotBoard";
 import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 import { Leaderboard } from "../LeaderboardWidgets/Leaderboard";
-import { LeaderItem, LeaderParams } from "./LeaderItem";
+import { LeaderParams } from "./LeaderItem";
 import { BacktestParameters } from "./BacktestParamtersForm";
-import { PastChart } from "./PastChart";
 
 export type SelectLeadersProps = {
   leaders: LeaderParams[];
@@ -34,7 +25,6 @@ export function SelectLeaders({
   leaders,
   onChangeLeaders,
   endDate,
-  parameters,
   onNextStep,
   onPrevStep,
 }: SelectLeadersProps) {
@@ -42,12 +32,11 @@ export function SelectLeaders({
     useIsPnlSnapshotInitialized(dayjs(endDate).format("YYYY-MM-DD"));
 
   const [tempLeaders, setTempLeaders] = useState<LeaderParams[]>([]);
-  const [isLeaderChart, setIsLeaderChart] = useState(true);
   const [initialContractId, setInitialContractId] = useState<string | null>(
     null,
   );
   const [initialKind, setInitialKind] = useState<PnlSnapshotKind>(
-    PnlSnapshotKind.AllTime,
+    PnlSnapshotKind.Week,
   );
 
   useEffect(() => {
@@ -124,50 +113,6 @@ export function SelectLeaders({
         endDate={endDate}
         hideTags={true}
       />
-
-      <Card>
-        <CardBody>
-          <div className="flex h-[700px] w-full flex-col gap-2 overflow-y-auto">
-            <Switch
-              isSelected={isLeaderChart}
-              onValueChange={setIsLeaderChart}
-              size="sm"
-            >
-              {isLeaderChart ? "Leader Chart" : "Follower Chart"}
-            </Switch>
-
-            <Accordion isCompact variant="splitted">
-              {tempLeaders.map((leader) => (
-                <AccordionItem
-                  key={`${leader.address}-${leader.contractId}`}
-                  title={<LeaderItem params={leader} />}
-                >
-                  <Checkbox
-                    isSelected={true}
-                    onValueChange={(value) =>
-                      handleChangeSelection(
-                        leader.address,
-                        leader.contractId,
-                        leader.leaderCollateral,
-                        value,
-                      )
-                    }
-                  >
-                    Selected
-                  </Checkbox>
-                  <PastChart
-                    endDate={endDate}
-                    contractId={leader.contractId}
-                    address={leader.address}
-                    isLeaderChart={isLeaderChart}
-                    parameters={parameters}
-                  />
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
-        </CardBody>
-      </Card>
 
       <div className="flex flex-row items-center gap-2">
         <Button
