@@ -24,10 +24,15 @@ import { HistoriesWidget } from "./HistoriesWidget";
 
 export type LeaderboardProps = {
   selectionLabel?: string;
-  selectedAddresses?: { address: string; contractId: number }[];
+  selectedAddresses?: {
+    address: string;
+    contractId: number;
+    leaderCollateral: number;
+  }[];
   onChangeSelection?: (
     address: string,
     contractId: number,
+    leaderCollateral: number,
     isSelected: boolean,
   ) => void;
   endDate: Date;
@@ -59,6 +64,8 @@ export function Leaderboard({
     contractId,
     kind,
   );
+
+  console.log(endDate, loading);
 
   const handleChangeKind: ChangeEventHandler<HTMLSelectElement> = (event) => {
     const value = event.target.value;

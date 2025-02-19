@@ -7,25 +7,23 @@ import {
   Card,
   Tab,
   Tabs,
+  Switch,
 } from "@nextui-org/react";
 import { Address } from "viem";
 import { BacktestParameters } from "./BacktestParamtersForm";
 import { PersonalTradeHistory } from "@/types";
 import { getPersonalTradeHistories } from "@/app/_actions/getPersonalTradeHistories";
 import { useGetAllContracts } from "@/app/_hooks/useContract";
-import {
-  transformHistories,
-  getHistoriesChartData,
-} from "@/utils/historiesChart";
+import { transformHistories } from "@/utils/historiesChart";
 import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget";
 import { AutomationGridChart } from "../PlansWidget/AutomationChart";
-import { LeaderItem } from "./LeaderItem";
+import { LeaderItem, LeaderParams } from "./LeaderItem";
 
 type TabType = "overview" | "details";
 
 export type BacktestResultProps = {
   startDate: Date;
-  leaders: { address: string; contractId: number }[];
+  leaders: LeaderParams[];
   parameters: BacktestParameters;
   onNextStep: () => void;
   onPrevStep: () => void;
@@ -39,10 +37,20 @@ export function BacktestResult({
   onPrevStep,
 }: BacktestResultProps) {
   const [selected, setSelected] = useState<TabType>("overview");
+  const [isLeaderChart, setIsLeaderChart] = useState(true);
 
   const [leaderHistories, setLeaderHistories] = useState<
     Record<string, PersonalTradeHistory[]>
   >({});
+  const [followerHistories, setFollowerHistories] = useState<
+    Record<string, PersonalTradeHistory[]>
+  >({});
+  const [totalLeaderHistories, setTotalLeaderHistories] = useState<
+    PersonalTradeHistory[]
+  >([]);
+  const [totalFollowerHistories, setTotalFollowerHistories] = useState<
+    PersonalTradeHistory[]
+  >([]);
 
   const allContracts = useGetAllContracts();
 
@@ -54,22 +62,28 @@ export function BacktestResult({
             ?.backendUrl!,
           leader.address,
         ).then((histories) => {
-          const { sumIn, countIn } = getHistoriesChartData(histories || [], {
-            to: startDate,
-          });
+          const followerHistories = transformHistories(
+            histories || [],
+            leader.leaderCollateral,
+            {
+              ...parameters,
+              strategyKey: "scaleCopy",
+              ratio: 100,
+            },
+          );
 
           setLeaderHistories((prev) => ({
             ...prev,
-            [`${leader.address}-${leader.contractId}`]: transformHistories(
-              histories,
-              countIn > 0 ? sumIn / countIn : 0,
-              {
-                ...parameters,
-                strategyKey: "scaleCopy",
-                ratio: 100,
-              },
-            ),
+            [`${leader.address}-${leader.contractId}`]: histories,
           }));
+
+          setFollowerHistories((prev) => ({
+            ...prev,
+            [`${leader.address}-${leader.contractId}`]: followerHistories,
+          }));
+
+          setTotalLeaderHistories((prev) => [...prev, ...histories]);
+          setTotalFollowerHistories((prev) => [...prev, ...followerHistories]);
         });
       });
     }
@@ -77,6 +91,14 @@ export function BacktestResult({
 
   return (
     <div className="flex flex-col gap-2">
+      <Switch
+        isSelected={isLeaderChart}
+        onValueChange={setIsLeaderChart}
+        size="sm"
+      >
+        {isLeaderChart ? "Leader Chart" : "Follower Chart"}
+      </Switch>
+
       <Tabs
         aria-label="automations-tabs"
         selectedKey={selected}
@@ -92,14 +114,10 @@ export function BacktestResult({
 
       {selected === "overview" ? (
         <AutomationGridChart
-          histories={[
-            ...Object.keys(leaderHistories).filter(
-              (leaderId) => leaderHistories[leaderId],
-            ),
-          ]
-            .map((leaderId) => leaderHistories[leaderId] || [])
-            .reduce((acc, item) => [...acc, ...item], [])}
-          title={`Grouped Result`}
+          histories={
+            isLeaderChart ? totalLeaderHistories : totalFollowerHistories
+          }
+          title={`Total Result`}
           range={{ from: startDate, to: parameters.futureDate }}
         />
       ) : null}
@@ -112,23 +130,22 @@ export function BacktestResult({
                 {leaders.map((leader) => (
                   <AccordionItem
                     key={`${leader.address}-${leader.contractId}`}
-                    title={
-                      <LeaderItem
-                        contractId={leader.contractId}
-                        address={leader.address}
-                      />
-                    }
+                    title={<LeaderItem params={leader} />}
                   >
                     <HistoriesWidget
                       address={leader.address as Address}
                       histories={
-                        leaderHistories[
-                          `${leader.address}-${leader.contractId}`
-                        ] || []
+                        isLeaderChart
+                          ? leaderHistories[
+                              `${leader.address}-${leader.contractId}`
+                            ] || []
+                          : followerHistories[
+                              `${leader.address}-${leader.contractId}`
+                            ] || []
                       }
+                      range={{ from: startDate, to: parameters.futureDate }}
                       contractId={leader.contractId}
                       hideTags={true}
-                      range={{ from: startDate, to: parameters.futureDate }}
                     />
                   </AccordionItem>
                 ))}

@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { BacktestParameters } from "../_components/BacktestWidget/BacktestParamtersForm";
+import { LeaderParams } from "../_components/BacktestWidget/LeaderItem";
 
 export const GET_BACKTEST_HISTORIES = "GET_BACKTEST_HISTORIES";
 
@@ -34,7 +35,7 @@ export function useGetBacktestHistories() {
             },
           }) as {
             pastDate: Date;
-            leaders: { address: string; contractId: number }[];
+            leaders: LeaderParams[];
             parameters: BacktestParameters;
           },
       );
@@ -44,7 +45,7 @@ export function useGetBacktestHistories() {
   const handleSave = useCallback(
     (
       pastDate: Date,
-      leaders: { address: string; contractId: number }[],
+      leaders: LeaderParams[],
       parameters: BacktestParameters,
     ) => {
       localStorage.setItem(

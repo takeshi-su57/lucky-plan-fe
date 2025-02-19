@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { parseDate, getLocalTimeZone } from "@internationalized/date";
+import { AccordionItem, Accordion, Tab, Tabs } from "@nextui-org/react";
 
 import { Stepper } from "@/components/Stepper/Stepper";
 import { PastDatePicker } from "./PastDatePicker";
@@ -12,9 +13,9 @@ import {
 } from "./BacktestParamtersForm";
 import { BacktestResult } from "./BacktestResult";
 import { BacktestSave } from "./BacktestSave";
-import { useGetBacktestHistories } from "@/app/_hooks/useGetBacktestHistories";
-import { AccordionItem, Accordion, Tab } from "@nextui-org/react";
-import { Tabs } from "@nextui-org/react";
+import { LeaderParams } from "./LeaderItem";
+
+import { useGetBacktestHistories } from "@/app-hooks/useGetBacktestHistories";
 
 type TabType = "new" | "saved";
 
@@ -30,9 +31,7 @@ export function BacktestPanel() {
     parseDate("2024-12-01").toDate(getLocalTimeZone()),
   );
   const [parameters, setParameters] = useState<BacktestParameters | null>(null);
-  const [leaders, setLeaders] = useState<
-    { address: string; contractId: number }[]
-  >([]);
+  const [leaders, setLeaders] = useState<LeaderParams[]>([]);
 
   const handleInitialize = () => {
     setCurrentStep(1);

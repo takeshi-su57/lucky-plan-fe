@@ -13,39 +13,43 @@ export function getSortedPartialHistories(
     } else if (first < second) {
       return -1;
     } else {
-      return 0;
+      return a.block - b.block;
     }
   });
 
-  const skippedTradeIndexMap = new Map<number, boolean>();
-
-  sortedHistories.forEach((history) => {
-    if (
-      range &&
-      range.from &&
-      range.from > new Date(history.date) &&
-      history.tradeIndex !== null &&
-      history.tradeIndex !== undefined
-    ) {
-      skippedTradeIndexMap.set(history.tradeIndex, true);
-    }
-  });
+  const setupTradeIndexMap = new Map<number, boolean>();
 
   return sortedHistories.filter((history) => {
-    if (
-      range &&
-      ((range.from && range.from >= new Date(history.date)) ||
-        (range.to && range.to <= new Date(history.date)))
-    ) {
+    if (!range) {
+      return true;
+    }
+
+    if (range.from && range.from > new Date(history.date)) {
+      return false;
+    }
+
+    if (range.to && range.to < new Date(history.date)) {
       return false;
     }
 
     if (
-      history.tradeIndex !== null &&
-      history.tradeIndex !== undefined &&
-      skippedTradeIndexMap.has(history.tradeIndex)
+      history.action === TradeActionType.TradeOpenedMarket ||
+      history.action === TradeActionType.TradeOpenedLimit
     ) {
+      setupTradeIndexMap.set(history.tradeIndex, true);
+    }
+
+    if (!setupTradeIndexMap.get(history.tradeIndex)) {
       return false;
+    }
+
+    if (
+      history.action === TradeActionType.TradeClosedMarket ||
+      history.action === TradeActionType.TradeClosedLIQ ||
+      history.action === TradeActionType.TradeClosedSL ||
+      history.action === TradeActionType.TradeClosedTP
+    ) {
+      setupTradeIndexMap.set(history.tradeIndex, false);
     }
 
     return true;
@@ -210,16 +214,16 @@ export function getHistoriesChartData(
 
             inOutSum += delta;
 
-            if (history.collateralDelta && history.collateralDelta > 0) {
+            if (delta < 0) {
               inChartData.push({
-                value: -history.collateralDelta * history.collateralPriceUsd,
+                value: delta,
                 date: new Date(history.date),
               });
             }
 
-            if (history.collateralDelta && history.collateralDelta < 0) {
+            if (delta > 0) {
               outChartData.push({
-                value: -history.collateralDelta * history.collateralPriceUsd,
+                value: delta,
                 date: new Date(history.date),
               });
             }
@@ -233,16 +237,16 @@ export function getHistoriesChartData(
 
             inOutSum += delta;
 
-            if (history.collateralDelta && history.collateralDelta > 0) {
+            if (delta < 0) {
               inChartData.push({
-                value: -history.collateralDelta * history.collateralPriceUsd,
+                value: delta,
                 date: new Date(history.date),
               });
             }
 
-            if (history.collateralDelta && history.collateralDelta < 0) {
+            if (delta > 0) {
               outChartData.push({
-                value: -history.collateralDelta * history.collateralPriceUsd,
+                value: delta,
                 date: new Date(history.date),
               });
             }
@@ -256,16 +260,16 @@ export function getHistoriesChartData(
 
             inOutSum += delta;
 
-            if (history.collateralDelta && history.collateralDelta > 0) {
+            if (delta < 0) {
               inChartData.push({
-                value: -history.collateralDelta * history.collateralPriceUsd,
+                value: delta,
                 date: new Date(history.date),
               });
             }
 
-            if (history.collateralDelta && history.collateralDelta < 0) {
+            if (delta > 0) {
               outChartData.push({
-                value: -history.collateralDelta * history.collateralPriceUsd,
+                value: delta,
                 date: new Date(history.date),
               });
             }
@@ -313,11 +317,8 @@ export function getOpenMissionParams(
     collateralBaseline: number;
     maxCollateral: number;
     minCollateral: number;
-    maxLeverage: number;
-    minLeverage: number;
   },
   args: {
-    leverage: number;
     collateralAmount: number;
     collateralPriceUsd: number;
   },
@@ -352,10 +353,6 @@ export function getOpenMissionParams(
   ratioAmount = ratioAmount > minCollateral ? ratioAmount : minCollateral;
 
   return {
-    leverage: Math.max(
-      Math.min(args.leverage, strategy.maxLeverage / 1000),
-      strategy.minLeverage / 1000,
-    ),
     collateralAmount: ratioAmount,
   };
 }
@@ -369,46 +366,122 @@ export function transformHistories(
     collateralBaseline: number;
     maxCollateral: number;
     minCollateral: number;
-    maxLeverage: number;
-    minLeverage: number;
   },
 ): PersonalTradeHistory[] {
   return histories.map((history) => {
-    const originalUSDPositionSize =
-      history.size * history.leverage * history.collateralPriceUsd;
+    let collateralSize = 0;
+    let pnl = 0;
+    let collateralDelta = 0;
 
-    const calculatedParams = getOpenMissionParams(
-      strategy,
-      {
-        leverage: history.leverage,
-        collateralAmount: history.size,
-        collateralPriceUsd: history.collateralPriceUsd,
-      },
-      collateralBaseline,
-    );
+    if (
+      history.action === TradeActionType.TradeOpenedLimit ||
+      history.action === TradeActionType.TradeOpenedMarket
+    ) {
+      const calculatedParams = getOpenMissionParams(
+        strategy,
+        {
+          collateralAmount: history.size,
+          collateralPriceUsd: history.collateralPriceUsd,
+        },
+        collateralBaseline,
+      );
 
-    const calculatedUSDPositionSize =
-      calculatedParams.collateralAmount * calculatedParams.leverage;
+      collateralSize = calculatedParams.collateralAmount;
+      pnl = 0;
+      collateralDelta = 0;
+    }
+
+    if (
+      history.action === TradeActionType.TradeClosedMarket ||
+      history.action === TradeActionType.TradeClosedLIQ ||
+      history.action === TradeActionType.TradeClosedSL ||
+      history.action === TradeActionType.TradeClosedTP
+    ) {
+      const calculatedParams = getOpenMissionParams(
+        strategy,
+        {
+          collateralAmount: history.size,
+          collateralPriceUsd: history.collateralPriceUsd,
+        },
+        collateralBaseline,
+      );
+
+      collateralSize = calculatedParams.collateralAmount;
+      pnl = (collateralSize * history.pnl) / history.size;
+      collateralDelta = 0;
+    }
+
+    if (history.action === TradeActionType.TradeLeverageUpdate) {
+      const oldCollateralSize = history.size - (history.collateralDelta || 0);
+      const oldLeverage = (history.size * history.leverage) / oldCollateralSize;
+
+      const calculatedParams = getOpenMissionParams(
+        strategy,
+        {
+          collateralAmount: oldCollateralSize,
+          collateralPriceUsd: history.collateralPriceUsd,
+        },
+        collateralBaseline,
+      );
+
+      const delta =
+        (calculatedParams.collateralAmount * oldLeverage) / history.leverage -
+        calculatedParams.collateralAmount;
+
+      collateralSize = calculatedParams.collateralAmount + delta;
+      pnl = 0;
+      collateralDelta = delta;
+    }
+
+    if (history.action === TradeActionType.TradePosSizeIncrease) {
+      const oldCollateralSize = history.size - (history.collateralDelta || 0);
+
+      const calculatedParams = getOpenMissionParams(
+        strategy,
+        {
+          collateralAmount: oldCollateralSize,
+          collateralPriceUsd: history.collateralPriceUsd,
+        },
+        collateralBaseline,
+      );
+
+      const delta =
+        (calculatedParams.collateralAmount * (history.collateralDelta || 0)) /
+        oldCollateralSize;
+
+      collateralSize = calculatedParams.collateralAmount + delta;
+      pnl = (collateralSize * history.pnl) / history.size;
+      collateralDelta = delta;
+    }
+
+    if (history.action === TradeActionType.TradePosSizeDecrease) {
+      const oldCollateralSize = history.size - (history.collateralDelta || 0);
+
+      const calculatedParams = getOpenMissionParams(
+        strategy,
+        {
+          collateralAmount: oldCollateralSize,
+          collateralPriceUsd: history.collateralPriceUsd,
+        },
+        collateralBaseline,
+      );
+
+      const delta =
+        (calculatedParams.collateralAmount * (history.collateralDelta || 0)) /
+        oldCollateralSize;
+
+      collateralSize = calculatedParams.collateralAmount + delta;
+      pnl = (collateralSize * history.pnl) / history.size;
+      collateralDelta = delta;
+    }
 
     return {
       ...history,
       collateralPriceUsd: 1,
-      pnl:
-        originalUSDPositionSize > 0
-          ? history.pnl * (calculatedUSDPositionSize / originalUSDPositionSize)
-          : 0,
-      pnl_net:
-        originalUSDPositionSize > 0
-          ? history.pnl_net *
-            (calculatedUSDPositionSize / originalUSDPositionSize)
-          : 0,
-      collateralDelta:
-        history.collateralDelta !== null && originalUSDPositionSize > 0
-          ? history.collateralDelta *
-            (calculatedUSDPositionSize / originalUSDPositionSize)
-          : null,
-      size: calculatedParams.collateralAmount,
-      leverage: calculatedParams.leverage,
+      pnl: pnl,
+      pnl_net: pnl,
+      collateralDelta: collateralDelta,
+      size: collateralSize,
     };
   });
 }
