@@ -387,9 +387,7 @@ export function CreateVirtualAutomationModal({
       Number.isNaN(baseline) ||
       !strategy ||
       strategyHelper.trim() !== "" ||
-      (strategy === "ratioCopy" && ratioHelper.trim() !== "") ||
-      maxCollateralHelper.trim() !== "" ||
-      minCollateralHelper.trim() !== ""
+      (strategy === "ratioCopy" && ratioHelper.trim() !== "")
     ) {
       return {
         pnlChartData: [],
@@ -411,8 +409,6 @@ export function CreateVirtualAutomationModal({
         strategyKey: strategy,
         ratio: +ratio,
         collateralBaseline: +collateralBaseline,
-        maxCollateral: +maxCollateral,
-        minCollateral: +minCollateral,
       },
     );
 
@@ -439,11 +435,7 @@ export function CreateVirtualAutomationModal({
     strategy,
     strategyHelper,
     ratioHelper,
-    maxCollateralHelper,
-    minCollateralHelper,
     ratio,
-    maxCollateral,
-    minCollateral,
     followerAvailableTradePairs,
     range,
   ]);

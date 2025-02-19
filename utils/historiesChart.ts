@@ -4,56 +4,63 @@ export function getSortedPartialHistories(
   histories: PersonalTradeHistory[],
   range?: { from?: Date; to?: Date },
 ) {
-  const sortedHistories = histories.sort((a, b) => {
-    const first = new Date(a.date);
-    const second = new Date(b.date);
+  const inRangeHistories: PersonalTradeHistory[] = [];
 
-    if (first > second) {
-      return 1;
-    } else if (first < second) {
-      return -1;
-    } else {
-      return a.block - b.block;
-    }
-  });
-
-  const setupTradeIndexMap = new Map<number, boolean>();
-
-  return sortedHistories.filter((history) => {
+  histories.forEach((history) => {
     if (!range) {
-      return true;
-    }
+      inRangeHistories.push(history);
+    } else {
+      if (range.from && range.from > new Date(history.date)) {
+        return;
+      }
 
-    if (range.from && range.from > new Date(history.date)) {
-      return false;
-    }
+      if (range.to && range.to < new Date(history.date)) {
+        return;
+      }
 
-    if (range.to && range.to < new Date(history.date)) {
-      return false;
+      inRangeHistories.push(history);
     }
-
-    if (
-      history.action === TradeActionType.TradeOpenedMarket ||
-      history.action === TradeActionType.TradeOpenedLimit
-    ) {
-      setupTradeIndexMap.set(history.tradeIndex, true);
-    }
-
-    if (!setupTradeIndexMap.get(history.tradeIndex)) {
-      return false;
-    }
-
-    if (
-      history.action === TradeActionType.TradeClosedMarket ||
-      history.action === TradeActionType.TradeClosedLIQ ||
-      history.action === TradeActionType.TradeClosedSL ||
-      history.action === TradeActionType.TradeClosedTP
-    ) {
-      setupTradeIndexMap.set(history.tradeIndex, false);
-    }
-
-    return true;
   });
+
+  const historiesByTradeIndex: Record<number, PersonalTradeHistory[]> = {};
+
+  inRangeHistories.forEach((history) => {
+    if (!historiesByTradeIndex[history.tradeIndex]) {
+      historiesByTradeIndex[history.tradeIndex] = [];
+    }
+
+    historiesByTradeIndex[history.tradeIndex].push(history);
+  });
+
+  const validHistories = Object.values(historiesByTradeIndex).filter(
+    (histories) => {
+      const positionSetupAction = histories.find(
+        (history) =>
+          history.action === TradeActionType.TradeOpenedMarket ||
+          history.action === TradeActionType.TradeOpenedLimit,
+      );
+
+      if (!positionSetupAction) {
+        return false;
+      }
+
+      const positionCloseAction = histories.find(
+        (history) =>
+          history.action === TradeActionType.TradeClosedMarket ||
+          history.action === TradeActionType.TradeClosedLIQ ||
+          history.action === TradeActionType.TradeClosedSL ||
+          history.action === TradeActionType.TradeClosedTP,
+      );
+
+      if (!positionCloseAction) {
+        return false;
+      }
+
+      return true;
+    },
+  );
+
+  return validHistories.flat().sort((a, b) => a.block - b.block);
 }
 
 export function getHistoriesChartData(
@@ -315,8 +322,6 @@ export function getOpenMissionParams(
     strategyKey: string;
     ratio: number;
     collateralBaseline: number;
-    maxCollateral: number;
-    minCollateral: number;
   },
   args: {
     collateralAmount: number;
@@ -346,12 +351,6 @@ export function getOpenMissionParams(
     ratioAmount = strategy.collateralBaseline * collateralRatio;
   }
 
-  const maxCollateral = strategy.maxCollateral;
-  const minCollateral = strategy.minCollateral;
-
-  ratioAmount = ratioAmount < maxCollateral ? ratioAmount : maxCollateral;
-  ratioAmount = ratioAmount > minCollateral ? ratioAmount : minCollateral;
-
   return {
     collateralAmount: ratioAmount,
   };
@@ -364,8 +363,6 @@ export function transformHistories(
     strategyKey: string;
     ratio: number;
     collateralBaseline: number;
-    maxCollateral: number;
-    minCollateral: number;
   },
 ): PersonalTradeHistory[] {
   return histories.map((history) => {
