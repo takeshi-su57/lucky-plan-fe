@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Button, RangeValue, Input, DateRangePicker } from "@nextui-org/react";
-import { getLocalTimeZone, now } from "@internationalized/date";
+import { now } from "@internationalized/date";
 import type { DateValue } from "@react-types/datepicker";
+
+import { getServerTimezone } from "@/utils";
 
 export type PlanMetadata = {
   title: string;
@@ -24,8 +26,8 @@ export function PlanMetadataForm({
   const [description, setDescription] = useState<string>("");
   const [scheduleRange, setScheduleRange] =
     useState<RangeValue<DateValue> | null>({
-      start: now(getLocalTimeZone()),
-      end: now(getLocalTimeZone()).add({ days: 1 }),
+      start: now(getServerTimezone()),
+      end: now(getServerTimezone()).add({ days: 1 }),
     });
 
   useEffect(() => {
@@ -37,8 +39,8 @@ export function PlanMetadataForm({
       setTitle("");
       setDescription("");
       setScheduleRange({
-        start: now(getLocalTimeZone()),
-        end: now(getLocalTimeZone()).add({ days: 1 }),
+        start: now(getServerTimezone()),
+        end: now(getServerTimezone()).add({ days: 1 }),
       });
     }
   }, [planMetadata]);
@@ -102,7 +104,7 @@ export function PlanMetadataForm({
           visibleMonths={2}
           value={scheduleRange}
           onChange={setScheduleRange}
-          minValue={now(getLocalTimeZone()).subtract({ days: 1 })}
+          minValue={now(getServerTimezone()).subtract({ days: 1 })}
           timeInputProps={{}}
           errorMessage={scheduledEndHelper}
         />

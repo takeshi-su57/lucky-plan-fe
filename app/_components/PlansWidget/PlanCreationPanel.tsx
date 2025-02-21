@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { getLocalTimeZone } from "@internationalized/date";
 import { getFragmentData } from "@/graphql/gql/fragment-masking";
+
+import { getServerTimezone } from "@/utils";
 
 import { Stepper } from "@/components/Stepper/Stepper";
 import { PlanMetadata, PlanMetadataForm } from "./PlanMetadataForm";
@@ -53,9 +54,9 @@ export function PlanCreationPanel() {
             title: planMetadata!.title,
             description: planMetadata!.description,
             scheduledStart:
-              planMetadata!.scheduleRange.start.toDate(getLocalTimeZone()),
+              planMetadata!.scheduleRange.start.toDate(getServerTimezone()),
             scheduledEnd:
-              planMetadata!.scheduleRange.end.toDate(getLocalTimeZone()),
+              planMetadata!.scheduleRange.end.toDate(getServerTimezone()),
           },
         },
       });
@@ -153,9 +154,16 @@ export function PlanCreationPanel() {
   const { totalLeaderHistories, totalFollowerHistories } = useMemo(() => {
     const totalLeaderHistories = virtualBotParams
       .map((item) => leaderHistories[item.virtualId])
+      .filter((item) => item && item.length > 0)
       .reduce((acc, curr) => [...acc, ...curr], []);
 
     const totalFollowerHistories = virtualBotParams
+      .filter(
+        (item) =>
+          leaderHistories[item.virtualId] &&
+          leaderHistories[item.virtualId].length > 0 &&
+          item.strategy,
+      )
       .map((item) =>
         transformHistories(
           leaderHistories[item.virtualId],

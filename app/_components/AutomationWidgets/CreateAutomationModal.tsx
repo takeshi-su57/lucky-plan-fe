@@ -17,8 +17,9 @@ import type { Selection } from "@nextui-org/react";
 import { Address } from "viem";
 import type { RangeValue } from "@react-types/shared";
 import type { DateValue } from "@react-types/datepicker";
-import { now, getLocalTimeZone } from "@internationalized/date";
+import { now } from "@internationalized/date";
 
+import { getServerTimezone } from "@/utils";
 import { StandardModal } from "@/components/modals/StandardModal";
 
 import {
@@ -92,8 +93,8 @@ export function CreateAutomationModal({
   const [minLeverage, setMinLeverage] = useState("1.1");
 
   const [range, setRange] = useState<RangeValue<DateValue> | null>({
-    start: now(getLocalTimeZone()).subtract({ months: 3 }),
-    end: now(getLocalTimeZone()),
+    start: now(getServerTimezone()).subtract({ months: 3 }),
+    end: now(getServerTimezone()),
   });
 
   const followerAvailableTradePairs = useGetAllTradePairs(
@@ -308,8 +309,8 @@ export function CreateAutomationModal({
         originalHistories || [],
         range
           ? {
-              from: range.start.toDate(getLocalTimeZone()),
-              to: range.end.toDate(getLocalTimeZone()),
+              from: range.start.toDate(getServerTimezone()),
+              to: range.end.toDate(getServerTimezone()),
             }
           : undefined,
       ),
@@ -370,8 +371,8 @@ export function CreateAutomationModal({
       ),
       range
         ? {
-            from: range.start.toDate(getLocalTimeZone()),
-            to: range.end.toDate(getLocalTimeZone()),
+            from: range.start.toDate(getServerTimezone()),
+            to: range.end.toDate(getServerTimezone()),
           }
         : undefined,
     );
@@ -657,7 +658,7 @@ export function CreateAutomationModal({
               visibleMonths={2}
               value={range}
               onChange={setRange}
-              maxValue={now(getLocalTimeZone())}
+              maxValue={now(getServerTimezone())}
               errorMessage={rangeHelper}
               className="w-fit"
             />

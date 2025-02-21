@@ -81,6 +81,7 @@ const documents = {
     "\n  mutation pauseSystem {\n    pauseSystem\n  }\n": types.PauseSystemDocument,
     "\n  mutation resumeSystem {\n    resumeSystem\n  }\n": types.ResumeSystemDocument,
     "\n  query getSystemStatus {\n    systemStatus\n  }\n": types.GetSystemStatusDocument,
+    "\n  query getServerTime {\n    getServerTime {\n      timestamp\n      timezone\n    }\n  }\n": types.GetServerTimeDocument,
     "\n  fragment TagCategoryInfo on TagCategory {\n    id\n    category\n    description\n  }\n": types.TagCategoryInfoFragmentDoc,
     "\n  fragment TagInfo on Tag {\n    tag\n    description\n    color\n    categoryId\n  }\n": types.TagInfoFragmentDoc,
     "\n  query getAllTags {\n    getAllTags {\n      ...TagInfo\n    }\n  }\n": types.GetAllTagsDocument,
@@ -388,6 +389,10 @@ export function graphql(source: "\n  mutation resumeSystem {\n    resumeSystem\n
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query getSystemStatus {\n    systemStatus\n  }\n"): (typeof documents)["\n  query getSystemStatus {\n    systemStatus\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query getServerTime {\n    getServerTime {\n      timestamp\n      timezone\n    }\n  }\n"): (typeof documents)["\n  query getServerTime {\n    getServerTime {\n      timestamp\n      timezone\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

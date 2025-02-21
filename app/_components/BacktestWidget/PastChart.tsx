@@ -3,7 +3,7 @@
 import { Address } from "viem";
 import { useMemo, useState } from "react";
 import { Button, Switch } from "@nextui-org/react";
-import { parseDate, getLocalTimeZone } from "@internationalized/date";
+import { parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
 import { FaTrash } from "react-icons/fa";
 
@@ -17,6 +17,7 @@ import {
   getHistoriesChartData,
   transformHistories,
 } from "@/utils/historiesChart";
+import { getServerTimezone } from "@/utils";
 
 export type PastChartProps = {
   endDate: Date;
@@ -99,7 +100,7 @@ export function PastChart({
             ? undefined
             : parseDate(dayjs(endDate).format("YYYY-MM-DD"))
                 .subtract({ days: 7 })
-                .toDate(getLocalTimeZone()),
+                .toDate(getServerTimezone()),
         }}
       />
     </div>

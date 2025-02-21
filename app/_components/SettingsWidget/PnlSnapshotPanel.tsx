@@ -2,12 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { Button, Card, CardBody, Chip, DatePicker } from "@nextui-org/react";
-import {
-  DateValue,
-  parseDate,
-  getLocalTimeZone,
-} from "@internationalized/date";
+import { DateValue, parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
+
+import { getServerTimezone } from "@/utils";
 
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 import {
@@ -42,7 +40,7 @@ export function PnlSnapshotPanel() {
 
     buildPnlSnapshots({
       variables: {
-        dateStr: dayjs(selectedDate.toDate(getLocalTimeZone())).format(
+        dateStr: dayjs(selectedDate.toDate(getServerTimezone())).format(
           "YYYY-MM-DD",
         ),
         isForceBuild: true,
@@ -59,12 +57,12 @@ export function PnlSnapshotPanel() {
       console.log(
         "initializing =>",
         i,
-        selectedDate.add({ days: i }).toDate(getLocalTimeZone()),
+        selectedDate.add({ days: i }).toDate(getServerTimezone()),
       );
       await buildPnlSnapshots({
         variables: {
           dateStr: dayjs(
-            selectedDate.add({ days: i }).toDate(getLocalTimeZone()),
+            selectedDate.add({ days: i }).toDate(getServerTimezone()),
           ).format("YYYY-MM-DD"),
           isForceBuild: false,
         },
@@ -79,7 +77,7 @@ export function PnlSnapshotPanel() {
     return data.getPnlSnapshotInitializedFlag.some(
       (flag) =>
         flag.dateStr ===
-        dayjs(selectedDate.toDate(getLocalTimeZone())).format("YYYY-MM-DD"),
+        dayjs(selectedDate.toDate(getServerTimezone())).format("YYYY-MM-DD"),
     );
   }, [data, selectedDate]);
 

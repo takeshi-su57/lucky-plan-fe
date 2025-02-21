@@ -19,12 +19,14 @@ import { Virtuoso } from "react-virtuoso";
 import { nanoid } from "nanoid";
 import type { RangeValue } from "@react-types/shared";
 import type { DateValue } from "@react-types/datepicker";
-import { now, getLocalTimeZone } from "@internationalized/date";
+import { now } from "@internationalized/date";
 import { BotStatus } from "@/graphql/gql/graphql";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 import { NumericInput } from "@/components/inputs/NumericInput";
 import LineChart from "@/components/charts/LineChart";
+
+import { getServerTimezone } from "@/utils";
 
 import {
   useGetAllContracts,
@@ -96,8 +98,8 @@ export function CreateVirtualAutomationModal({
   const [minLeverage, setMinLeverage] = useState("1.1");
 
   const [range, setRange] = useState<RangeValue<DateValue> | null>({
-    start: now(getLocalTimeZone()).subtract({ months: 3 }),
-    end: now(getLocalTimeZone()),
+    start: now(getServerTimezone()).subtract({ months: 3 }),
+    end: now(getServerTimezone()),
   });
 
   const followerAvailableTradePairs = useGetAllTradePairs(
@@ -353,8 +355,8 @@ export function CreateVirtualAutomationModal({
         originalHistories || [],
         range
           ? {
-              from: range.start.toDate(getLocalTimeZone()),
-              to: range.end.toDate(getLocalTimeZone()),
+              from: range.start.toDate(getServerTimezone()),
+              to: range.end.toDate(getServerTimezone()),
             }
           : undefined,
       ),
@@ -415,8 +417,8 @@ export function CreateVirtualAutomationModal({
       ),
       range
         ? {
-            from: range.start.toDate(getLocalTimeZone()),
-            to: range.end.toDate(getLocalTimeZone()),
+            from: range.start.toDate(getServerTimezone()),
+            to: range.end.toDate(getServerTimezone()),
           }
         : undefined,
     );
@@ -689,7 +691,7 @@ export function CreateVirtualAutomationModal({
               visibleMonths={2}
               value={range}
               onChange={setRange}
-              maxValue={now(getLocalTimeZone())}
+              maxValue={now(getServerTimezone())}
               errorMessage={rangeHelper}
               className="w-fit"
             />

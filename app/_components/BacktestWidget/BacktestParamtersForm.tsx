@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Button, DatePicker } from "@nextui-org/react";
-import { parseDate, getLocalTimeZone, today } from "@internationalized/date";
+import { parseDate, today } from "@internationalized/date";
 import dayjs from "dayjs";
 
+import { getServerTimezone } from "@/utils";
 import { NumericInput } from "@/components/inputs/NumericInput";
 
 export type BacktestParameters = {
@@ -31,14 +32,14 @@ export function BacktestParametersForm({
   const [futureDate, setFutureDate] = useState<Date>(
     parseDate(dayjs(pastDate).format("YYYY-MM-DD"))
       .add({ days: 2 })
-      .toDate(getLocalTimeZone()),
+      .toDate(getServerTimezone()),
   );
 
   useEffect(() => {
     setFutureDate(
       parseDate(dayjs(pastDate).format("YYYY-MM-DD"))
         .add({ days: 2 })
-        .toDate(getLocalTimeZone()),
+        .toDate(getServerTimezone()),
     );
   }, [pastDate]);
 
@@ -72,9 +73,9 @@ export function BacktestParametersForm({
         className="max-w-[284px]"
         label="Pick a future of date"
         value={parseDate(dayjs(futureDate).format("YYYY-MM-DD"))}
-        onChange={(date) => setFutureDate(date.toDate(getLocalTimeZone()))}
+        onChange={(date) => setFutureDate(date.toDate(getServerTimezone()))}
         minValue={parseDate(dayjs(pastDate).format("YYYY-MM-DD"))}
-        maxValue={today(getLocalTimeZone()).subtract({ days: 15 })}
+        maxValue={today(getServerTimezone()).subtract({ days: 15 })}
       />
 
       <NumericInput

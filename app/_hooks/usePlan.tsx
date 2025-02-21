@@ -171,6 +171,12 @@ export function useCreatePlan() {
         },
       );
     }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at creating new plan!", {
+        variant: "error",
+      });
+    }
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return { createPlan, loading };
@@ -259,6 +265,12 @@ export function useAddBotsToPlan() {
         fragment: PLAN_DETAILS_INFO_FRAGMENT_DOCUMENT,
         fragmentName: "PlanDetailsInfo",
         data: planInfo,
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at adding bots to plan!", {
+        variant: "error",
       });
     }
   }, [client.cache, newData, error, enqueueSnackbar]);

@@ -483,6 +483,7 @@ type Query {
     kind: PnlSnapshotKind!
   ): PnlSnapshotDetailsConnection!
   getPnlSnapshotsByAddress(address: String!, dateStr: String!): [PnlSnapshot!]!
+  getServerTime: ServerTime!
   getTasksByStatus(status: TaskStatus!): [TaskShallowDetails!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getTradePairs(contractId: Int!): [TradePair!]!
@@ -497,6 +498,11 @@ type Query {
   ): [TradeTransactionCount!]!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
   systemStatus: Boolean!
+}
+
+type ServerTime {
+  timestamp: Float!
+  timezone: String!
 }
 
 type Strategy {

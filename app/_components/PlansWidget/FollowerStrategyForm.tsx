@@ -10,8 +10,10 @@ import {
 import { Address } from "viem";
 import type { RangeValue } from "@react-types/shared";
 import type { DateValue } from "@react-types/datepicker";
-import { now, getLocalTimeZone } from "@internationalized/date";
+import { now } from "@internationalized/date";
 import { FaTrash } from "react-icons/fa";
+
+import { getServerTimezone } from "@/utils";
 
 import { useGetAllContracts } from "@/app-hooks/useContract";
 import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHistories";
@@ -54,8 +56,8 @@ export function FollowerStrategyForm({
   const [minLeverage, setMinLeverage] = useState("1.1");
 
   const [range, setRange] = useState<RangeValue<DateValue> | null>({
-    start: now(getLocalTimeZone()).subtract({ months: 3 }),
-    end: now(getLocalTimeZone()),
+    start: now(getServerTimezone()).subtract({ months: 3 }),
+    end: now(getServerTimezone()),
   });
 
   const { data: originalHistories } = useGetPersonalTradeHistories(
@@ -192,7 +194,7 @@ export function FollowerStrategyForm({
         strategyKey: "scaleCopy",
         ratio: 100,
         collateralBaseline: +collateralBaseline,
-        lifeTime: 365 * 24 * 3600 * 1000, // 1 year lifetime
+        lifeTime: 365 * 24 * 60, // 1 year lifetime
         maxCollateral: +maxCollateral,
         maxLeverage: +maxLeverage,
         minCollateral: +minCollateral,
@@ -205,17 +207,22 @@ export function FollowerStrategyForm({
 
   const followerHistories = useMemo(() => {
     const baseline = Math.floor(+collateralBaseline);
+    const leaderBaseline = Math.floor(+leaderCollateralBaseline);
 
-    if (!originalHistories || Number.isNaN(baseline)) {
+    if (
+      !originalHistories ||
+      Number.isNaN(baseline) ||
+      Number.isNaN(leaderBaseline)
+    ) {
       return [];
     }
 
-    return transformHistories(originalHistories, baseline, {
+    return transformHistories(originalHistories, leaderBaseline, {
       strategyKey: "scaleCopy",
       ratio: 100,
-      collateralBaseline: +collateralBaseline,
+      collateralBaseline: baseline,
     });
-  }, [collateralBaseline, originalHistories]);
+  }, [collateralBaseline, leaderCollateralBaseline, originalHistories]);
 
   let rangeHelper = "";
 
@@ -225,14 +232,16 @@ export function FollowerStrategyForm({
 
   return (
     <div className="flex w-full flex-col gap-8">
-      <Button
-        size="sm"
-        variant="ghost"
-        color="danger"
-        onClick={() => onRemove(params.virtualId)}
-      >
-        <FaTrash /> Cancel Selection
-      </Button>
+      <div>
+        <Button
+          size="sm"
+          variant="ghost"
+          color="danger"
+          onClick={() => onRemove(params.virtualId)}
+        >
+          <FaTrash /> Cancel Selection
+        </Button>
+      </div>
 
       <div className="flex w-full gap-8">
         <div className="flex w-[200px] flex-col gap-8">
@@ -324,7 +333,7 @@ export function FollowerStrategyForm({
             color="primary"
             isDisabled={isDisabled || isDisabledStrategy}
           >
-            Save
+            Set Strategy
           </Button>
         </div>
 
@@ -334,20 +343,27 @@ export function FollowerStrategyForm({
             visibleMonths={2}
             value={range}
             onChange={setRange}
-            maxValue={now(getLocalTimeZone())}
+            maxValue={now(getServerTimezone())}
             errorMessage={rangeHelper}
             className="w-fit"
           />
 
-          {followerContractId && range && originalHistories && (
+          {range && originalHistories && (
             <FutureChart
-              startDate={range?.start?.toDate(getLocalTimeZone()) || new Date()}
-              endDate={range?.end?.toDate(getLocalTimeZone()) || new Date()}
+              startDate={
+                range?.start?.toDate(getServerTimezone()) || new Date()
+              }
+              endDate={range?.end?.toDate(getServerTimezone()) || new Date()}
               leaderContractId={params.leaderContract.contractId}
-              followerContractId={+followerContractId}
+              followerContractId={
+                followerContractId
+                  ? +followerContractId
+                  : +params.leaderContract.contractId
+              }
               address={params.leaderAddress}
               followerHistories={followerHistories}
               leaderHistories={originalHistories || []}
+              hideTags
             />
           )}
         </div>
