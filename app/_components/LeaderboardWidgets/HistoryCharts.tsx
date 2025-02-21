@@ -25,7 +25,7 @@ export function HistoryCharts({
           <LineChart
             title="PNL"
             data={pnlChartData}
-            className="h-[200px] rounded-2xl border border-neutral-800 bg-amber-950/5"
+            className="h-[250px] rounded-2xl border border-neutral-800 bg-amber-950/5"
           />
         </div>
 
@@ -33,7 +33,7 @@ export function HistoryCharts({
           <LineChart
             title="Out"
             data={outChartData}
-            className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+            className="h-[250px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
           />
         </div>
       </div>
@@ -43,7 +43,7 @@ export function HistoryCharts({
           <LineChart
             title="In/Out"
             data={inOutChartData}
-            className="h-[200px] rounded-2xl border border-neutral-800 bg-amber-950/5"
+            className="h-[250px] rounded-2xl border border-neutral-800 bg-amber-950/5"
           />
         </div>
 
@@ -51,7 +51,7 @@ export function HistoryCharts({
           <LineChart
             title="In"
             data={inChartData}
-            className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+            className="h-[250px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
           />
         </div>
       </div>

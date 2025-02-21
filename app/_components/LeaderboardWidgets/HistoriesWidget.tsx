@@ -6,7 +6,6 @@ import { Card, CardBody, Checkbox } from "@nextui-org/react";
 import { Virtuoso } from "react-virtuoso";
 import dayjs from "dayjs";
 
-import { convertMillisToReadableTime } from "@/utils";
 import { getHistoriesChartData } from "@/utils/historiesChart";
 import { PersonalTradeHistory } from "@/types";
 
@@ -47,6 +46,7 @@ export function HistoriesWidget({
   range,
 }: HistoriesWidgetProps) {
   const {
+    actionCounts,
     pnlChartData,
     inOutChartData,
     inChartData,
@@ -62,40 +62,6 @@ export function HistoriesWidget({
     [histories, range],
   );
 
-  const openCyclcData = outChartData.filter((item) => item.value < 0);
-
-  let minOpenCycle = Date.now();
-  let maxOpenCycle = 0;
-
-  for (let i = 0; i < openCyclcData.length - 1; i++) {
-    minOpenCycle = Math.min(
-      openCyclcData[i + 1].date.getTime() - openCyclcData[i].date.getTime(),
-      minOpenCycle,
-    );
-
-    maxOpenCycle = Math.max(
-      openCyclcData[i + 1].date.getTime() - openCyclcData[i].date.getTime(),
-      maxOpenCycle,
-    );
-  }
-
-  const closeCycleData = inChartData.filter((item) => item.value > 0);
-
-  let minCloseCycle = Date.now();
-  let maxCloseCycle = 0;
-
-  for (let i = 0; i < closeCycleData.length - 1; i++) {
-    minCloseCycle = Math.min(
-      closeCycleData[i + 1].date.getTime() - closeCycleData[i].date.getTime(),
-      minCloseCycle,
-    );
-
-    maxCloseCycle = Math.max(
-      closeCycleData[i + 1].date.getTime() - closeCycleData[i].date.getTime(),
-      maxCloseCycle,
-    );
-  }
-
   const totalInvested = inOutChartData.reduce(
     (acc, curr) => (acc > curr.value ? curr.value : acc),
     0,
@@ -110,6 +76,11 @@ export function HistoriesWidget({
       label: "Address",
       value: <AddressWidget address={address as Address} />,
     },
+    ...Object.entries(actionCounts).map(([action, count]) => ({
+      id: action,
+      label: action,
+      value: count,
+    })),
     {
       id: "tradeCount",
       label: "Trades",
@@ -118,27 +89,27 @@ export function HistoriesWidget({
     {
       id: "totalPnl",
       label: "Total PnL",
-      value: getPriceStr(totalPnl),
+      value: `$${getPriceStr(totalPnl)}`,
     },
     {
       id: "totalInvested",
       label: "Total Invested",
-      value: getPriceStr(totalInvested),
+      value: `$${getPriceStr(-totalInvested)}`,
     },
     {
       id: "remainBalance",
       label: "Remain Balance",
-      value: getPriceStr(remainBalance),
+      value: `$${getPriceStr(remainBalance)}`,
     },
     {
       id: "maxInvested",
       label: "Max Invested",
-      value: getPriceStr(maxIn),
+      value: `$${getPriceStr(maxIn)}`,
     },
     {
       id: "avgInvested",
       label: "Avg Invested",
-      value: getPriceStr(sumIn / countIn),
+      value: `$${getPriceStr(sumIn / countIn)}`,
     },
     {
       id: "countInvested",
@@ -183,44 +154,6 @@ export function HistoriesWidget({
                   </span>
                 </div>
               ))}
-            </div>
-
-            <div className="flex w-full flex-col gap-2">
-              <span className="text-base text-neutral-400">Open Cycle:</span>
-
-              {openCyclcData.length > 1 ? (
-                <div className="flex w-full items-center justify-between">
-                  <span className="text-sm font-bold text-white">
-                    {convertMillisToReadableTime(minOpenCycle)}
-                  </span>
-                  <span className="text-sm font-bold text-white">
-                    {convertMillisToReadableTime(maxOpenCycle)}
-                  </span>
-                </div>
-              ) : (
-                <span className="text-sm font-bold text-white">
-                  1 Time Cycle
-                </span>
-              )}
-            </div>
-
-            <div className="flex w-full flex-col gap-2">
-              <span className="text-base text-neutral-400">Close Cycle:</span>
-
-              {closeCycleData.length > 1 ? (
-                <div className="flex w-full items-center justify-between">
-                  <span className="text-sm font-bold text-white">
-                    {convertMillisToReadableTime(minCloseCycle)}
-                  </span>
-                  <span className="text-sm font-bold text-white">
-                    {convertMillisToReadableTime(maxCloseCycle)}
-                  </span>
-                </div>
-              ) : (
-                <span className="text-sm font-bold text-white">
-                  1 Time Cycle
-                </span>
-              )}
             </div>
 
             {!hideTags ? <TagsWidget address={address} /> : null}
