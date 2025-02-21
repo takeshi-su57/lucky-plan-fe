@@ -30,7 +30,6 @@ import {
   useGetBotsByStatus,
 } from "@/app-hooks/useAutomation";
 import { useGetUsersByTags } from "@/app-hooks/useUser";
-import { useGetAvailableFollowers } from "@/app-hooks/useFollower";
 import { useGetAllStrategyMetadata } from "@/app-hooks/useStrategy";
 import { useGetAllTags } from "@/app-hooks/useTag";
 import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHistories";
@@ -61,7 +60,6 @@ export function CreateAutomationModal({
   const { batchCreateBots, loading: createBotsLoading } = useBatchCreateBots();
 
   const allTags = useGetAllTags();
-  const allFollowers = useGetAvailableFollowers([]);
   const allContracts = useGetAllContracts();
   const allStrategyMetadata = useGetAllStrategyMetadata();
 
@@ -77,7 +75,6 @@ export function CreateAutomationModal({
   const allLeaders = useGetUsersByTags(selectedValue as string[]);
 
   const [leaderAddress, setLeaderAddress] = useState<string | null>(null);
-  const [followerAddress, setFollowerAddress] = useState<string | null>(null);
   const [leaderContractId, setLeaderContractId] = useState<string | null>(null);
   const [followerContractId, setFollowerContractId] = useState<string | null>(
     null,
@@ -213,7 +210,6 @@ export function CreateAutomationModal({
 
   const isDisabled =
     !leaderAddress ||
-    !followerAddress ||
     !leaderContractId ||
     !followerContractId ||
     !leaderCollateralBaseline;
@@ -255,7 +251,6 @@ export function CreateAutomationModal({
         input: [
           {
             leaderAddress,
-            followerAddress,
             leaderContractId: +leaderContractId,
             followerContractId: +followerContractId,
             leaderCollateralBaseline: Math.floor(+leaderCollateralBaseline),
@@ -276,7 +271,6 @@ export function CreateAutomationModal({
     });
 
     setLeaderAddress(null);
-    setFollowerAddress(null);
     setLeaderCollateralBaseline("");
 
     onClose();
@@ -516,27 +510,6 @@ export function CreateAutomationModal({
               </Autocomplete>
 
               <Autocomplete
-                label="Follower"
-                variant="underlined"
-                defaultItems={allFollowers}
-                placeholder="Search follower"
-                selectedKey={followerAddress}
-                onSelectionChange={(key) =>
-                  setFollowerAddress(key as string | null)
-                }
-              >
-                {(item) => (
-                  <AutocompleteItem
-                    className="font-mono"
-                    key={item.address}
-                    textValue={shrinkAddress(item.address as Address)}
-                  >
-                    {shrinkAddress(item.address as Address)}
-                  </AutocompleteItem>
-                )}
-              </Autocomplete>
-
-              <Autocomplete
                 label="Follower Contract"
                 variant="underlined"
                 // hide ape contract as a follower contract
@@ -753,7 +726,11 @@ export function CreateAutomationModal({
 
                   <div className="flex items-center justify-between gap-4">
                     <span className="flex-1">
-                      Avg In: {(originalSumIn / originalCountIn).toFixed(2)}
+                      Avg In:{" "}
+                      {(originalCountIn > 0
+                        ? originalSumIn / originalCountIn
+                        : 0
+                      ).toFixed(2)}
                     </span>
                     <span className="flex-1">Count In: {originalCountIn}</span>
                   </div>
@@ -796,7 +773,11 @@ export function CreateAutomationModal({
 
                   <div className="flex items-center justify-between gap-4">
                     <span className="flex-1">
-                      Avg In: {(calculatedSumIn / calculatedCountIn).toFixed(2)}
+                      Avg In:{" "}
+                      {(calculatedCountIn > 0
+                        ? calculatedSumIn / calculatedCountIn
+                        : 0
+                      ).toFixed(2)}
                     </span>
                     <span className="flex-1">
                       Count In: {calculatedCountIn}

@@ -20,23 +20,24 @@ import { nanoid } from "nanoid";
 import type { RangeValue } from "@react-types/shared";
 import type { DateValue } from "@react-types/datepicker";
 import { now, getLocalTimeZone } from "@internationalized/date";
+import { BotStatus } from "@/graphql/gql/graphql";
 
 import { StandardModal } from "@/components/modals/StandardModal";
+import { NumericInput } from "@/components/inputs/NumericInput";
+import LineChart from "@/components/charts/LineChart";
 
 import {
   useGetAllContracts,
   useGetAllTradePairs,
 } from "@/app-hooks/useContract";
-import { useGetBotsByStatus } from "@/app/_hooks/useAutomation";
-import { useGetUsersByTags } from "@/app/_hooks/useUser";
-import { useGetAvailableFollowers } from "@/app/_hooks/useFollower";
-import { useGetAllStrategyMetadata } from "@/app/_hooks/useStrategy";
-import { shrinkAddress, lifeTimeItems } from "@/utils";
-import { NumericInput } from "@/components/inputs/NumericInput";
-import { BotStatus } from "@/graphql/gql/graphql";
-import { useGetPersonalTradeHistories } from "@/app/_hooks/useGetPersonalTradeHistories";
+import { useGetBotsByStatus } from "@/app-hooks/useAutomation";
+import { useGetUsersByTags } from "@/app-hooks/useUser";
+import { useGetAllStrategyMetadata } from "@/app-hooks/useStrategy";
+import { useGetAllTags } from "@/app-hooks/useTag";
 
-import LineChart from "@/components/charts/LineChart";
+import { shrinkAddress, lifeTimeItems } from "@/utils";
+import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHistories";
+
 import {
   getHistoriesChartData,
   transformHistories,
@@ -44,10 +45,8 @@ import {
 import { PairChip } from "../LeaderboardWidgets/PairChip";
 
 import { VirtualBot } from "@/types";
-import { useGetAllTags } from "@/app/_hooks/useTag";
 
 export type CreateVirtualAutomationModalProps = {
-  virtualFollowers: string[];
   virtualBot: VirtualBot | null;
   onSave: (value: VirtualBot) => void;
   isOpen: boolean;
@@ -56,7 +55,6 @@ export type CreateVirtualAutomationModalProps = {
 };
 
 export function CreateVirtualAutomationModal({
-  virtualFollowers,
   virtualBot,
   isOpen,
   onClose,
@@ -64,7 +62,7 @@ export function CreateVirtualAutomationModal({
   onSave,
 }: CreateVirtualAutomationModalProps) {
   const allTags = useGetAllTags();
-  const allFollowers = useGetAvailableFollowers(virtualFollowers);
+
   const allContracts = useGetAllContracts();
   const allStrategyMetadata = useGetAllStrategyMetadata();
 
@@ -80,7 +78,6 @@ export function CreateVirtualAutomationModal({
   const allLeaders = useGetUsersByTags(selectedValue as string[]);
 
   const [leaderAddress, setLeaderAddress] = useState<string | null>(null);
-  const [followerAddress, setFollowerAddress] = useState<string | null>(null);
   const [leaderContractId, setLeaderContractId] = useState<string | null>(null);
 
   const [followerContractId, setFollowerContractId] = useState<string | null>(
@@ -119,7 +116,6 @@ export function CreateVirtualAutomationModal({
   useEffect(() => {
     if (virtualBot) {
       setLeaderAddress(virtualBot.leaderAddress);
-      setFollowerAddress(virtualBot.followerAddress);
       setLeaderContractId(virtualBot.leaderContract.contractId.toString());
       setFollowerContractId(virtualBot.followerContract.contractId.toString());
       setLeaderCollateralBaseline(
@@ -247,7 +243,6 @@ export function CreateVirtualAutomationModal({
 
   const isDisabled =
     !leaderAddress ||
-    !followerAddress ||
     !leaderContractId ||
     !followerContractId ||
     !leaderCollateralBaseline;
@@ -294,7 +289,6 @@ export function CreateVirtualAutomationModal({
 
     onSave({
       virtualId: virtualBot?.virtualId || nanoid(),
-      followerAddress,
       followerContract: {
         chainId: followerContract.chainId,
         address: followerContract.address,
@@ -322,7 +316,6 @@ export function CreateVirtualAutomationModal({
     });
 
     setLeaderAddress(null);
-    setFollowerAddress(null);
     setLeaderCollateralBaseline("");
 
     onClose();
@@ -557,27 +550,6 @@ export function CreateVirtualAutomationModal({
               </Autocomplete>
 
               <Autocomplete
-                label="Follower"
-                variant="underlined"
-                defaultItems={allFollowers}
-                placeholder="Search follower"
-                selectedKey={followerAddress}
-                onSelectionChange={(key) =>
-                  setFollowerAddress(key as string | null)
-                }
-              >
-                {(item) => (
-                  <AutocompleteItem
-                    className="font-mono"
-                    key={item.address}
-                    textValue={shrinkAddress(item.address as Address)}
-                  >
-                    {shrinkAddress(item.address as Address)}
-                  </AutocompleteItem>
-                )}
-              </Autocomplete>
-
-              <Autocomplete
                 label="Follower Contract"
                 variant="underlined"
                 // hide ape contract as a follower contract
@@ -786,7 +758,10 @@ export function CreateVirtualAutomationModal({
 
                   <div className="flex items-center justify-between gap-4">
                     <span className="flex-1">
-                      Avg In: {(originalSumIn / originalCountIn).toFixed(2)}
+                      Avg In:{" "}
+                      {originalCountIn > 0
+                        ? (originalSumIn / originalCountIn).toFixed(2)
+                        : 0}
                     </span>
                     <span className="flex-1">Count In: {originalCountIn}</span>
                   </div>
@@ -829,7 +804,10 @@ export function CreateVirtualAutomationModal({
 
                   <div className="flex items-center justify-between gap-4">
                     <span className="flex-1">
-                      Avg In: {(calculatedSumIn / calculatedCountIn).toFixed(2)}
+                      Avg In:{" "}
+                      {calculatedCountIn > 0
+                        ? (calculatedSumIn / calculatedCountIn).toFixed(2)
+                        : 0}
                     </span>
                     <span className="flex-1">
                       Count In: {calculatedCountIn}
