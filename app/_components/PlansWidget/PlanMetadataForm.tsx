@@ -27,7 +27,7 @@ export function PlanMetadataForm({
   const [scheduleRange, setScheduleRange] =
     useState<RangeValue<DateValue> | null>({
       start: now(getServerTimezone()),
-      end: now(getServerTimezone()).add({ days: 1 }),
+      end: now(getServerTimezone()).add({ days: 2 }),
     });
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export function PlanMetadataForm({
       setDescription("");
       setScheduleRange({
         start: now(getServerTimezone()),
-        end: now(getServerTimezone()).add({ days: 1 }),
+        end: now(getServerTimezone()).add({ days: 2 }),
       });
     }
   }, [planMetadata]);

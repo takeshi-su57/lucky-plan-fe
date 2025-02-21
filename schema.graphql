@@ -149,6 +149,7 @@ input CreateBotAndStrategyInput {
 }
 
 input CreateBotInput {
+  followerAddress: String!
   followerContractId: Int!
   leaderAddress: String!
   leaderCollateralBaseline: Int!
@@ -332,6 +333,7 @@ type Mutation {
   createStrategy(input: CreateStrategyInput!): Strategy!
   deleteBot(id: Int!): Int!
   deleteCategory(id: Int!): TagCategory!
+  deletePlan(id: Int!): Int!
   deleteTag(tag: String!): Tag!
   endPlan(id: Int!): PlanDetails!
   generateNewFollower: Follower!

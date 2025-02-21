@@ -69,6 +69,7 @@ const documents = {
     "\n  query getPlanById($id: Int!) {\n    getPlanById(id: $id) {\n      ...PlanDetailsInfo\n    }\n  }\n": types.GetPlanByIdDocument,
     "\n  mutation createPlan($createPlanInput: CreatePlanInput!) {\n    createPlan(createPlanInput: $createPlanInput) {\n      ...PlanDetailsInfo\n    }\n  }\n": types.CreatePlanDocument,
     "\n  mutation updatePlan($updatePlanInput: UpdatePlanInput!) {\n    updatePlan(updatePlanInput: $updatePlanInput) {\n      ...PlanDetailsInfo\n    }\n  }\n": types.UpdatePlanDocument,
+    "\n  mutation deletePlan($id: Int!) {\n    deletePlan(id: $id)\n  }\n": types.DeletePlanDocument,
     "\n  mutation startPlan($id: Int!) {\n    startPlan(id: $id) {\n      ...PlanDetailsInfo\n    }\n  }\n": types.StartPlanDocument,
     "\n  mutation endPlan($id: Int!) {\n    endPlan(id: $id) {\n      ...PlanDetailsInfo\n    }\n  }\n": types.EndPlanDocument,
     "\n  mutation addBotsToPlan($botIds: [Int!]!, $planId: Int!) {\n    addBotsToPlan(botIds: $botIds, planId: $planId) {\n      ...PlanDetailsInfo\n    }\n  }\n": types.AddBotsToPlanDocument,
@@ -341,6 +342,10 @@ export function graphql(source: "\n  mutation createPlan($createPlanInput: Creat
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation updatePlan($updatePlanInput: UpdatePlanInput!) {\n    updatePlan(updatePlanInput: $updatePlanInput) {\n      ...PlanDetailsInfo\n    }\n  }\n"): (typeof documents)["\n  mutation updatePlan($updatePlanInput: UpdatePlanInput!) {\n    updatePlan(updatePlanInput: $updatePlanInput) {\n      ...PlanDetailsInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation deletePlan($id: Int!) {\n    deletePlan(id: $id)\n  }\n"): (typeof documents)["\n  mutation deletePlan($id: Int!) {\n    deletePlan(id: $id)\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
