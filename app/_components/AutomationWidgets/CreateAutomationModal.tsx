@@ -48,12 +48,14 @@ import { PairChip } from "../LeaderboardWidgets/PairChip";
 import { Virtuoso } from "react-virtuoso";
 
 export type CreateAutomationModalProps = {
+  planId: number | null;
   isOpen: boolean;
   onClose: () => void;
   onOpenChange: (value: boolean) => void;
 };
 
 export function CreateAutomationModal({
+  planId,
   isOpen,
   onClose,
   onOpenChange,
@@ -252,6 +254,7 @@ export function CreateAutomationModal({
         input: [
           {
             leaderAddress,
+            planId,
             leaderContractId: +leaderContractId,
             followerContractId: +followerContractId,
             leaderCollateralBaseline: Math.floor(+leaderCollateralBaseline),

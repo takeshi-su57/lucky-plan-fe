@@ -4,48 +4,32 @@ import { useEffect, useState } from "react";
 import { useDisclosure, Button, Chip, Tab, Tabs } from "@nextui-org/react";
 import dayjs from "dayjs";
 import { useSearchParams, useRouter } from "next/navigation";
-import { getFragmentData } from "@/graphql/gql";
 import { PlanStatus } from "@/graphql/gql/graphql";
 
-import {
-  BOTDETAILS_INFO_FRAGMENT_DOCUMENT,
-  useBatchCreateBots,
-} from "@/app-hooks/useAutomation";
-import {
-  useAddBotsToPlan,
-  useEndPlan,
-  useGetPlanById,
-  useStartPlan,
-} from "@/app-hooks/usePlan";
+import { useEndPlan, useGetPlanById, useStartPlan } from "@/app-hooks/usePlan";
 
-import { PersonalTradeHistory, VirtualBot } from "@/types";
-import {
-  getSortedPartialHistories,
-  transformHistories,
-} from "@/utils/historiesChart";
+import { PersonalTradeHistory } from "@/types";
 
 import { getPersonalTradeHistories } from "@/app-actions/getPersonalTradeHistories";
-
-import { CreateVirtualAutomationModal } from "./CreateVirtualAutomationModal";
 
 import { chipColorsByPlanStatus } from "./PlanCard";
 
 import { PlanAutomations } from "./PlanAutomations";
-import { BackTestingView } from "./BackTestingView";
 import { RealResultView } from "./RealResultView";
+import { FaPlus } from "react-icons/fa";
+import { CreateAutomationModal } from "../AutomationWidgets/CreateAutomationModal";
+import { getSortedPartialHistories } from "@/utils/historiesChart";
 
-type TabType = "backtesting" | "real" | "automations";
+type TabType = "overview" | "automations";
 
 export function PlanDetailPanel({ planId }: { planId: string }) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const [selected, setSelected] = useState<TabType>(
-    (searchParams.get("tab") as TabType) || "backtesting",
+    (searchParams.get("tab") as TabType) || "past",
   );
 
-  const { batchCreateBots, loading: createBotsLoading } = useBatchCreateBots();
-  const { addBotsToPlan, loading: addBotsLoading } = useAddBotsToPlan();
   const { startPlan, loading: startPlanLoading } = useStartPlan();
   const { endPlan, loading: endPlanLoading } = useEndPlan();
 
@@ -60,17 +44,6 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
     Record<number, boolean>
   >({});
 
-  const [virtualBots, setVirtualBots] = useState<VirtualBot[]>([]);
-  const [selectedVirtualBotIds, setSelectedVirtualBotIds] = useState<
-    Record<string, boolean>
-  >({});
-  const [selectedVirtualBot, setSelectedVirtualBot] =
-    useState<VirtualBot | null>(null);
-
-  const [leaderBotsHistories, setLeaderBotsHistories] = useState<
-    Record<string, PersonalTradeHistory[]>
-  >({});
-
   const [followerBotsHistories, setFollowerBotsHistories] = useState<
     Record<string, PersonalTradeHistory[]>
   >({});
@@ -83,81 +56,20 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
 
       plan.bots.forEach((bot) => {
         getPersonalTradeHistories(
-          bot.leaderContract.backendUrl!,
-          bot.leaderAddress,
-        ).then((histories) => {
-          setLeaderBotsHistories((prev) => ({
-            ...prev,
-            [bot.id]: transformHistories(
-              histories,
-              bot.leaderCollateralBaseline,
-              bot.strategy,
-            ),
-          }));
-        });
-
-        getPersonalTradeHistories(
           bot.followerContract.backendUrl!,
           bot.followerAddress,
         ).then((histories) => {
           setFollowerBotsHistories((prev) => ({
             ...prev,
             [bot.id]: getSortedPartialHistories(histories, {
-              from: bot.startedAt ? new Date(bot.startedAt) : new Date(),
-              to: bot.endedAt ? new Date(bot.endedAt) : new Date(),
+              from: new Date(bot.startedAt),
+              to: new Date(bot.endedAt),
             }),
           }));
         });
       });
     }
   }, [plan?.bots]);
-
-  const handleSaveVirtualBots = async () => {
-    if (virtualBots.length > 0) {
-      const { data } = await batchCreateBots({
-        variables: {
-          input: virtualBots
-            .filter((item) => selectedVirtualBotIds[item.virtualId])
-            .map((item) => ({
-              followerContractId: item.followerContract.contractId,
-              leaderAddress: item.leaderAddress,
-              leaderCollateralBaseline: item.leaderCollateralBaseline,
-              leaderContractId: item.leaderContract.contractId,
-              strategy: {
-                strategyKey: item.strategy.strategyKey,
-                ratio: item.strategy.ratio,
-                lifeTime: item.strategy.lifeTime,
-                maxCollateral: item.strategy.maxCollateral,
-                minCollateral: item.strategy.minCollateral,
-                collateralBaseline: item.strategy.collateralBaseline,
-                maxLeverage: Math.floor(+item.strategy.maxLeverage * 1000),
-                minLeverage: Math.floor(+item.strategy.minLeverage * 1000),
-                params: "{}",
-              },
-            })),
-        },
-      });
-
-      const newBotIds = data?.batchCreateBots?.map(
-        (bot) => getFragmentData(BOTDETAILS_INFO_FRAGMENT_DOCUMENT, bot).id,
-      );
-
-      if (newBotIds) {
-        await addBotsToPlan({
-          variables: {
-            botIds: newBotIds,
-            planId: +planId,
-          },
-        });
-
-        setVirtualBots((prev) =>
-          prev.filter((item) => !selectedVirtualBotIds[item.virtualId]),
-        );
-
-        setSelectedVirtualBotIds({});
-      }
-    }
-  };
 
   const handleStartPlan = () => {
     if (plan?.status === PlanStatus.Created) {
@@ -179,18 +91,6 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
 
     const bot = plan?.bots.find((bot) => bot.id === botId);
 
-    if (isSelected && bot && !leaderBotsHistories[botId]) {
-      const histories = transformHistories(
-        (await getPersonalTradeHistories(
-          bot.leaderContract.backendUrl!,
-          bot.leaderAddress,
-        )) || [],
-        bot.leaderCollateralBaseline,
-        bot.strategy,
-      );
-      setLeaderBotsHistories((prev) => ({ ...prev, [botId]: histories }));
-    }
-
     if (isSelected && bot && !followerBotsHistories[botId]) {
       const histories =
         (await getPersonalTradeHistories(
@@ -201,59 +101,11 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
     }
   };
 
-  const handleVirtualBotSelection = async (
-    virtualBot: VirtualBot,
-    isSelected: boolean,
-  ) => {
-    setSelectedVirtualBotIds((prev) => ({
-      ...prev,
-      [virtualBot.virtualId]: isSelected,
-    }));
-  };
-
-  const handleEditVirtualBot = (virtualBot: VirtualBot) => {
-    setSelectedVirtualBot(virtualBot);
-    onOpen();
-  };
-
   const handleChartToggle = (botId: number) => {
     setShowBotChartIds((prev) => ({
       ...prev,
       [botId]: !prev[botId],
     }));
-  };
-
-  const handleSaveVirtualBot = async (virtualBot: VirtualBot) => {
-    setVirtualBots((prev) => {
-      const exists = prev.find(
-        (item) => item.virtualId === virtualBot.virtualId,
-      );
-
-      if (exists) {
-        return prev.map((item) =>
-          item.virtualId === virtualBot.virtualId ? virtualBot : item,
-        );
-      }
-      return [...prev, virtualBot];
-    });
-
-    const leaderHistories = transformHistories(
-      (await getPersonalTradeHistories(
-        virtualBot.leaderContract.backendUrl!,
-        virtualBot.leaderAddress,
-      )) || [],
-      virtualBot.leaderCollateralBaseline,
-      {
-        ...virtualBot.strategy,
-      },
-    );
-    setLeaderBotsHistories((prev) => ({
-      ...prev,
-      [virtualBot.virtualId]: leaderHistories,
-    }));
-
-    setSelectedVirtualBot(null);
-    onClose();
   };
 
   const items = plan
@@ -347,50 +199,32 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
           )}
         </div>
 
-        <Tabs
-          aria-label="plans-tab-tabs"
-          selectedKey={selected}
-          onSelectionChange={(value) => {
-            if (value) {
-              setSelected(value as TabType);
-              router.push(`/plans/${planId}?tab=${value}`);
-            }
-          }}
-        >
-          <Tab key="backtesting" title="Back Testing" />
-          <Tab key="real" title="Real Results" />
-          <Tab key="automations" title="Automations" />
-        </Tabs>
+        <div className="flex items-center justify-between gap-2">
+          <Tabs
+            aria-label="plans-tab-tabs"
+            selectedKey={selected}
+            onSelectionChange={(value) => {
+              if (value) {
+                setSelected(value as TabType);
+                router.push(`/plans/${planId}?tab=${value}`);
+              }
+            }}
+          >
+            <Tab key="overview" title="Overview" />
+            <Tab key="automations" title="Automations" />
+          </Tabs>
+
+          <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>
+            <FaPlus />
+          </Button>
+        </div>
       </div>
 
       {selected === "automations" && (
         <PlanAutomations bots={plan?.bots || []} />
       )}
 
-      {selected === "backtesting" && (
-        <BackTestingView
-          isSavingVirtualBots={createBotsLoading || addBotsLoading}
-          isDisabledSaveVirtualBots={
-            !Object.values(selectedVirtualBotIds).find((item) => item) ||
-            createBotsLoading ||
-            addBotsLoading
-          }
-          bots={plan?.bots || []}
-          selectedBotIds={selectedBotIds}
-          showBotChartIds={showBotChartIds}
-          botsHistories={leaderBotsHistories}
-          virtualBots={virtualBots}
-          selectedVirtualBotIds={selectedVirtualBotIds}
-          onClickSaveVirtualBots={handleSaveVirtualBots}
-          onOpenCreateVirtualBotModal={onOpen}
-          onChangeVirtualBotSelection={handleVirtualBotSelection}
-          onEditVirtualBot={handleEditVirtualBot}
-          onChangeBotSelection={handleBotSelection}
-          onToggleChart={handleChartToggle}
-        />
-      )}
-
-      {selected === "real" && (
+      {selected === "overview" && (
         <RealResultView
           bots={plan?.bots || []}
           selectedBotIds={selectedBotIds}
@@ -401,12 +235,11 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
         />
       )}
 
-      <CreateVirtualAutomationModal
-        virtualBot={selectedVirtualBot}
+      <CreateAutomationModal
+        planId={null}
         isOpen={isOpen}
         onClose={onClose}
         onOpenChange={onOpenChange}
-        onSave={handleSaveVirtualBot}
       />
     </div>
   );
