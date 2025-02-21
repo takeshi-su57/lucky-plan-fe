@@ -13,15 +13,18 @@ import {
   BacktestParameters,
 } from "./BacktestParamtersForm";
 import { BacktestResult } from "./BacktestResult";
-import { BacktestSave } from "./BacktestSave";
+import { SaveStep } from "./SaveStep";
 import { LeaderParams } from "./LeaderItem";
 
 import { useGetBacktestHistories } from "@/app-hooks/useGetBacktestHistories";
+import { useSnackbar } from "notistack";
 
 type TabType = "new" | "saved";
 
 export function BacktestPanel() {
   const [currentStep, setCurrentStep] = useState(1);
+
+  const { enqueueSnackbar } = useSnackbar();
 
   const { data: savedBacktests, handleSave: handleSaveBacktest } =
     useGetBacktestHistories();
@@ -44,6 +47,9 @@ export function BacktestPanel() {
   const handleSave = () => {
     if (parameters) {
       handleSaveBacktest(pastDate, leaders, parameters);
+      enqueueSnackbar("Backtest saved successfully", {
+        variant: "success",
+      });
     }
   };
 
@@ -84,7 +90,6 @@ export function BacktestPanel() {
           leaders={leaders}
           onChangeLeaders={setLeaders}
           endDate={pastDate}
-          parameters={parameters}
           onNextStep={() => setCurrentStep(4)}
           onPrevStep={() => setCurrentStep(2)}
         />
@@ -125,7 +130,8 @@ export function BacktestPanel() {
       label: "Save",
       description: `Save the backtest to your account.`,
       content: (
-        <BacktestSave
+        <SaveStep
+          loading={false}
           onPrevStep={() => setCurrentStep(5)}
           onReset={handleInitialize}
           onSave={handleSave}

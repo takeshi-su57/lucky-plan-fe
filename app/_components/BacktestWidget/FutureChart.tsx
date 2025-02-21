@@ -11,7 +11,8 @@ import { PersonalTradeHistory } from "@/types/index";
 export type FutureChartProps = {
   startDate: Date;
   endDate: Date;
-  contractId: number;
+  leaderContractId: number;
+  followerContractId: number;
   address: string;
   leaderHistories: PersonalTradeHistory[];
   followerHistories: PersonalTradeHistory[];
@@ -20,7 +21,8 @@ export type FutureChartProps = {
 export function FutureChart({
   startDate,
   endDate,
-  contractId,
+  leaderContractId,
+  followerContractId,
   address,
   leaderHistories,
   followerHistories,
@@ -47,7 +49,7 @@ export function FutureChart({
       <HistoriesWidget
         address={address as Address}
         histories={isLeaderChart ? leaderHistories : followerHistories}
-        contractId={contractId}
+        contractId={isLeaderChart ? leaderContractId : followerContractId}
         hideTags={true}
         range={{
           to: endDate,
