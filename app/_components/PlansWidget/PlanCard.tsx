@@ -10,12 +10,13 @@ import {
   ChipProps,
   Divider,
   Badge,
+  Link,
 } from "@nextui-org/react";
 import dayjs from "dayjs";
-import { useRouter } from "next/navigation";
 import { PlanDetails, PlanStatus, TaskStatus } from "@/graphql/gql/graphql";
-import { useGetTasksByStatus } from "@/app/_hooks/useTask";
-import { useGetUserTransactionCounts } from "@/app/_hooks/useHistory";
+
+import { useGetTasksByStatus } from "@/app-hooks/useTask";
+import { useGetUserTransactionCounts } from "@/app-hooks/useHistory";
 
 export const chipColorsByPlanStatus: Record<PlanStatus, ChipProps["color"]> = {
   [PlanStatus.Created]: "primary",
@@ -33,8 +34,6 @@ export function PlanCard({
   plan,
   isHideAlertForClosedMissions,
 }: PlanCardProps) {
-  const router = useRouter();
-
   const { data: transactionCounts } = useGetUserTransactionCounts(
     plan.bots.map((bot) => ({
       address: bot.leaderAddress,
@@ -59,10 +58,6 @@ export function PlanCard({
     TaskStatus.Failed,
     isHideAlertForClosedMissions,
   );
-
-  const handleGoToDetails = () => {
-    router.push(`/plans/${plan.id}`);
-  };
 
   const createdCount = plan.bots
     .map((bot) =>
@@ -221,14 +216,11 @@ export function PlanCard({
           {plan.status}
         </Chip>
 
-        <Button
-          size="sm"
-          variant="flat"
-          color="primary"
-          onClick={handleGoToDetails}
-        >
-          Show Details
-        </Button>
+        <Link href={`/plans/${plan.id}`}>
+          <Button size="sm" variant="flat" color="primary">
+            Show Details
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );

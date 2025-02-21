@@ -1,14 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import { Tab, Tabs, Button, useDisclosure, Switch } from "@nextui-org/react";
+import { Tab, Tabs, Button, Switch } from "@nextui-org/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaPlus } from "react-icons/fa";
 
 import { PlanStatus } from "@/graphql/gql/graphql";
 
-import { useGetPlansByStatus } from "@/app/_hooks/usePlan";
-import { CreatePlanModal } from "./CreatePlanModal";
+import { useGetPlansByStatus } from "@/app-hooks/usePlan";
 import { PlanCard } from "./PlanCard";
 
 type TabType = "created" | "started" | "stopped" | "finished";
@@ -31,8 +31,6 @@ export function Plans() {
     useState(true);
 
   const plans = useGetPlansByStatus(planStatusByTabType[selected]);
-
-  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   return (
     <div className="flex flex-col gap-6">
@@ -63,9 +61,11 @@ export function Plans() {
           </Switch>
         </div>
 
-        <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>
-          <FaPlus />
-        </Button>
+        <Link href="/plans/create">
+          <Button isIconOnly color="primary" variant="flat">
+            <FaPlus />
+          </Button>
+        </Link>
       </div>
 
       <div className="flex flex-wrap items-center gap-6">
@@ -77,12 +77,6 @@ export function Plans() {
           />
         ))}
       </div>
-
-      <CreatePlanModal
-        isOpen={isOpen}
-        onClose={onClose}
-        onOpenChange={onOpenChange}
-      />
     </div>
   );
 }

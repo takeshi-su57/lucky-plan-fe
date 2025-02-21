@@ -119,7 +119,6 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
           input: virtualBots
             .filter((item) => selectedVirtualBotIds[item.virtualId])
             .map((item) => ({
-              followerAddress: item.followerAddress,
               followerContractId: item.followerContract.contractId,
               leaderAddress: item.leaderAddress,
               leaderCollateralBaseline: item.leaderCollateralBaseline,
@@ -404,7 +403,6 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
 
       <CreateVirtualAutomationModal
         virtualBot={selectedVirtualBot}
-        virtualFollowers={virtualBots.map((bot) => bot.followerAddress)}
         isOpen={isOpen}
         onClose={onClose}
         onOpenChange={onOpenChange}
