@@ -160,7 +160,6 @@ export enum ContractStatus {
 }
 
 export type CreateBotAndStrategyInput = {
-  followerAddress: Scalars['String']['input'];
   followerContractId: Scalars['Int']['input'];
   leaderAddress: Scalars['String']['input'];
   leaderCollateralBaseline: Scalars['Int']['input'];
@@ -170,7 +169,6 @@ export type CreateBotAndStrategyInput = {
 };
 
 export type CreateBotInput = {
-  followerAddress: Scalars['String']['input'];
   followerContractId: Scalars['Int']['input'];
   leaderAddress: Scalars['String']['input'];
   leaderCollateralBaseline: Scalars['Int']['input'];
