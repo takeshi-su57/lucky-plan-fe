@@ -56,22 +56,25 @@ export type VirtualStrategy = {
   strategyKey: string;
 };
 
+export type ContractItem = {
+  contractId: number;
+  chainId: number;
+  address: string;
+  backendUrl: string;
+};
+
 export type VirtualBot = {
   virtualId: string;
-  followerAddress: string;
-  followerContract: {
-    contractId: number;
-    chainId: number;
-    address: string;
-    backendUrl: string;
-  };
+  followerContract: ContractItem;
   leaderAddress: string;
-  leaderContract: {
-    contractId: number;
-    chainId: number;
-    address: string;
-    backendUrl: string;
-  };
+  leaderContract: ContractItem;
   leaderCollateralBaseline: number;
   strategy: VirtualStrategy;
+};
+
+export type VirtualBotParams = Partial<VirtualBot> & {
+  virtualId: string;
+  leaderAddress: string;
+  leaderContract: ContractItem;
+  leaderCollateralBaseline: number;
 };
