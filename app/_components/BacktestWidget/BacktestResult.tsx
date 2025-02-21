@@ -59,8 +59,9 @@ export function BacktestResult({
     if (allContracts) {
       leaders.forEach((leader) => {
         getPersonalTradeHistories(
-          allContracts.find((contract) => contract.id === leader.contractId)
-            ?.backendUrl!,
+          allContracts.find(
+            (contract) => contract.id === leader.contract.contractId,
+          )?.backendUrl!,
           leader.address,
         ).then((histories) => {
           const followerHistories = transformHistories(
@@ -75,12 +76,12 @@ export function BacktestResult({
 
           setLeaderHistories((prev) => ({
             ...prev,
-            [`${leader.address}-${leader.contractId}`]: histories,
+            [leader.virtualId]: histories,
           }));
 
           setFollowerHistories((prev) => ({
             ...prev,
-            [`${leader.address}-${leader.contractId}`]: followerHistories,
+            [leader.virtualId]: followerHistories,
           }));
 
           setTotalLeaderHistories((prev) => [...prev, ...histories]);
@@ -131,23 +132,18 @@ export function BacktestResult({
               <Accordion isCompact variant="splitted">
                 {leaders.map((leader) => (
                   <AccordionItem
-                    key={`${leader.address}-${leader.contractId}`}
+                    key={leader.virtualId}
                     title={<LeaderItem params={leader} />}
                   >
                     <FutureChart
                       startDate={startDate}
                       endDate={parameters.futureDate}
-                      contractId={leader.contractId}
+                      leaderContractId={leader.contract.contractId}
+                      followerContractId={leader.contract.contractId}
                       address={leader.address as Address}
-                      leaderHistories={
-                        leaderHistories[
-                          `${leader.address}-${leader.contractId}`
-                        ] || []
-                      }
+                      leaderHistories={leaderHistories[leader.virtualId] || []}
                       followerHistories={
-                        followerHistories[
-                          `${leader.address}-${leader.contractId}`
-                        ] || []
+                        followerHistories[leader.virtualId] || []
                       }
                     />
                   </AccordionItem>

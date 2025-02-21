@@ -98,6 +98,7 @@ export function getHistoriesChartData(
   let maxIn = 0;
   let sumIn = 0;
   let countIn = 0;
+  const actionCounts: Record<string, number> = {};
 
   const sortedHistories = getSortedPartialHistories(histories, range);
 
@@ -125,6 +126,8 @@ export function getHistoriesChartData(
         history.pair,
         (tradePairIndexsMap.get(history.pair) || 0) + 1,
       );
+
+      actionCounts[history.action] = (actionCounts[history.action] || 0) + 1;
 
       if (pnlChartData.length === 0) {
         pnlChartData.push({
@@ -316,6 +319,7 @@ export function getHistoriesChartData(
     inChartData,
     outChartData,
     tradePairs: Array.from(tradePairIndexsMap.entries()),
+    actionCounts,
     minIn,
     maxIn,
     sumIn,

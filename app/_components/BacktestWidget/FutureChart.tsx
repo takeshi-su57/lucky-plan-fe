@@ -7,26 +7,31 @@ import { Switch } from "@nextui-org/react";
 import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget";
 
 import { PersonalTradeHistory } from "@/types/index";
+import dayjs from "dayjs";
 
 export type FutureChartProps = {
   startDate: Date;
   endDate: Date;
-  contractId: number;
+  leaderContractId: number;
+  followerContractId: number;
   address: string;
   leaderHistories: PersonalTradeHistory[];
   followerHistories: PersonalTradeHistory[];
+  hideTags?: boolean;
 };
 
 export function FutureChart({
   startDate,
   endDate,
-  contractId,
+  leaderContractId,
+  followerContractId,
   address,
   leaderHistories,
   followerHistories,
+  hideTags = false,
 }: FutureChartProps) {
   const [isLeaderChart, setIsLeaderChart] = useState(true);
-  const [isAllTime, setIsAllTime] = useState(false);
+  const [isPastWeek, setIsPastWeek] = useState(false);
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -39,19 +44,21 @@ export function FutureChart({
           {isLeaderChart ? "Leader Chart" : "Follower Chart"}
         </Switch>
 
-        <Switch isSelected={isAllTime} onValueChange={setIsAllTime} size="sm">
-          {isAllTime ? "All Time" : "Past Week"}
+        <Switch isSelected={isPastWeek} onValueChange={setIsPastWeek} size="sm">
+          {isPastWeek ? "Past Week" : "All Time"}
         </Switch>
       </div>
 
       <HistoriesWidget
         address={address as Address}
         histories={isLeaderChart ? leaderHistories : followerHistories}
-        contractId={contractId}
-        hideTags={true}
+        contractId={isLeaderChart ? leaderContractId : followerContractId}
+        hideTags={hideTags}
         range={{
           to: endDate,
-          from: isAllTime ? undefined : startDate,
+          from: isPastWeek
+            ? dayjs(endDate).subtract(7, "day").toDate()
+            : startDate,
         }}
       />
     </div>

@@ -24,6 +24,15 @@ export const GET_SYSTEM_STATUS_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_SERVER_TIME_DOCUMENT = graphql(`
+  query getServerTime {
+    getServerTime {
+      timestamp
+      timezone
+    }
+  }
+`);
+
 export function usePauseSystem() {
   const [pauseSystem, { data, error }] = useMutation(PAUSE_SYSTEM_DOCUMENT);
 

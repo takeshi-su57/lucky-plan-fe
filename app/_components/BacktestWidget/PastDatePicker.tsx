@@ -1,6 +1,7 @@
 import { DatePicker, Button } from "@nextui-org/react";
-import { parseDate, getLocalTimeZone, today } from "@internationalized/date";
+import { parseDate, today } from "@internationalized/date";
 import dayjs from "dayjs";
+import { getServerTimezone } from "@/utils";
 
 export type PastDatePickerProps = {
   pastDate: Date;
@@ -19,9 +20,9 @@ export function PastDatePicker({
         className="max-w-[284px]"
         label="Pick a past date"
         value={parseDate(dayjs(pastDate).format("YYYY-MM-DD"))}
-        onChange={(date) => setPastDate(date.toDate(getLocalTimeZone()))}
+        onChange={(date) => setPastDate(date.toDate(getServerTimezone()))}
         minValue={parseDate("2024-12-01")}
-        maxValue={today(getLocalTimeZone()).subtract({ days: 15 })}
+        maxValue={today(getServerTimezone()).subtract({ days: 15 })}
       />
 
       <div className="flex flex-row items-center gap-2">

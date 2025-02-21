@@ -65,8 +65,6 @@ export function Leaderboard({
     kind,
   );
 
-  console.log(endDate, loading);
-
   const handleChangeKind: ChangeEventHandler<HTMLSelectElement> = (event) => {
     const value = event.target.value;
 

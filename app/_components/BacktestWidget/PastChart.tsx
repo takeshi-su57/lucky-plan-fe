@@ -2,9 +2,10 @@
 
 import { Address } from "viem";
 import { useMemo, useState } from "react";
-import { Checkbox, Switch } from "@nextui-org/react";
-import { parseDate, getLocalTimeZone } from "@internationalized/date";
+import { Button, Switch } from "@nextui-org/react";
+import { parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
+import { FaTrash } from "react-icons/fa";
 
 import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHistories";
 import { useGetAllContracts } from "@/app-hooks/useContract";
@@ -16,13 +17,14 @@ import {
   getHistoriesChartData,
   transformHistories,
 } from "@/utils/historiesChart";
+import { getServerTimezone } from "@/utils";
 
 export type PastChartProps = {
   endDate: Date;
   contractId: number;
   address: string;
   parameters: BacktestParameters;
-  onChangeSelection: (value: boolean) => void;
+  onRemove: () => void;
 };
 
 export function PastChart({
@@ -30,7 +32,7 @@ export function PastChart({
   contractId,
   address,
   parameters,
-  onChangeSelection,
+  onRemove,
 }: PastChartProps) {
   const [isLeaderChart, setIsLeaderChart] = useState(true);
   const [isAllTime, setIsAllTime] = useState(false);
@@ -68,9 +70,9 @@ export function PastChart({
   return (
     <div className="flex w-full flex-col gap-2">
       <div className="flex w-full flex-row items-center justify-between gap-2">
-        <Checkbox isSelected={true} onValueChange={onChangeSelection}>
-          Selected
-        </Checkbox>
+        <Button size="sm" variant="ghost" color="danger" onClick={onRemove}>
+          <FaTrash /> Cancel Selection
+        </Button>
 
         <div className="flex flex-row items-center gap-2">
           <Switch
@@ -98,7 +100,7 @@ export function PastChart({
             ? undefined
             : parseDate(dayjs(endDate).format("YYYY-MM-DD"))
                 .subtract({ days: 7 })
-                .toDate(getLocalTimeZone()),
+                .toDate(getServerTimezone()),
         }}
       />
     </div>

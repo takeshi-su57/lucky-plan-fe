@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { Divider, DateRangePicker } from "@nextui-org/react";
 import { Card, CardBody } from "@nextui-org/react";
-import { now, getLocalTimeZone } from "@internationalized/date";
+import { now } from "@internationalized/date";
 import type { RangeValue } from "@react-types/shared";
 import type { DateValue } from "@react-types/datepicker";
+
+import { getServerTimezone } from "@/utils";
 
 import { AutomationRow } from "./AutomationRow";
 import { AutomationGridChart } from "./AutomationChart";
@@ -31,8 +33,8 @@ export function RealResultView({
   onToggleChart,
 }: RealResultViewProps) {
   const [range, setRange] = useState<RangeValue<DateValue> | null>({
-    start: now(getLocalTimeZone()).subtract({ months: 3 }),
-    end: now(getLocalTimeZone()),
+    start: now(getServerTimezone()).subtract({ months: 3 }),
+    end: now(getServerTimezone()),
   });
 
   let rangeHelper = "";
@@ -43,8 +45,8 @@ export function RealResultView({
 
   const dateRange = range
     ? {
-        from: range.start.toDate(getLocalTimeZone()),
-        to: range.end.toDate(getLocalTimeZone()),
+        from: range.start.toDate(getServerTimezone()),
+        to: range.end.toDate(getServerTimezone()),
       }
     : undefined;
 
@@ -55,7 +57,7 @@ export function RealResultView({
         visibleMonths={2}
         value={range}
         onChange={setRange}
-        maxValue={now(getLocalTimeZone())}
+        maxValue={now(getServerTimezone())}
         errorMessage={rangeHelper}
         className="w-fit"
       />

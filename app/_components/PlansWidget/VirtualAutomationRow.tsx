@@ -42,10 +42,7 @@ export function VirtualAutomationRow({
 
           <div className="flex items-center gap-1">
             <Chip className="text-xs">
-              Contract: {bot.followerContract.chainId}
-            </Chip>
-            <Chip className="text-xs">
-              Follower: {shrinkAddress(bot.followerAddress as Address)}
+              Follower Contract: {bot.followerContract.chainId}
             </Chip>
           </div>
 

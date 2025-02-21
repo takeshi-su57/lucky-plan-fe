@@ -406,3 +406,7 @@ export function convertMillisToReadableTime(milliseconds: number): string {
     return `${days} day${days === 1 ? "" : "s"}`;
   }
 }
+
+export function getServerTimezone() {
+  return process.env.NEXT_PUBLIC_SERVER_TIME_ZONE;
+}

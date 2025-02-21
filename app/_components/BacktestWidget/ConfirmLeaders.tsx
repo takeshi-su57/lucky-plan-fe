@@ -29,33 +29,8 @@ export function ConfirmLeaders({
   onNextStep,
   onPrevStep,
 }: ConfirmLeadersProps) {
-  const handleChangeSelection = (
-    address: string,
-    contractId: number,
-    leaderCollateral: number,
-    isSelected: boolean,
-  ) => {
-    if (isSelected) {
-      const exists = leaders.find(
-        (item) =>
-          item.contractId === contractId &&
-          item.address.toLowerCase() === address.toLowerCase(),
-      );
-
-      if (exists) {
-        return;
-      }
-
-      onChangeLeaders([...leaders, { address, contractId, leaderCollateral }]);
-    } else {
-      onChangeLeaders(
-        leaders.filter(
-          (item) =>
-            item.contractId !== contractId ||
-            item.address.toLowerCase() !== address.toLowerCase(),
-        ),
-      );
-    }
+  const handleRemoveSelection = (id: string) => {
+    onChangeLeaders(leaders.filter((item) => item.virtualId !== id));
   };
 
   return (
@@ -66,22 +41,15 @@ export function ConfirmLeaders({
             <Accordion isCompact variant="splitted">
               {leaders.map((leader) => (
                 <AccordionItem
-                  key={`${leader.address}-${leader.contractId}`}
+                  key={leader.virtualId}
                   title={<LeaderItem params={leader} />}
                 >
                   <PastChart
                     endDate={endDate}
-                    contractId={leader.contractId}
+                    contractId={leader.contract.contractId}
                     address={leader.address}
                     parameters={parameters}
-                    onChangeSelection={(value) =>
-                      handleChangeSelection(
-                        leader.address,
-                        leader.contractId,
-                        leader.leaderCollateral,
-                        value,
-                      )
-                    }
+                    onRemove={() => handleRemoveSelection(leader.virtualId)}
                   />
                 </AccordionItem>
               ))}

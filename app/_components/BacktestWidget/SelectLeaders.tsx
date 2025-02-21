@@ -10,13 +10,12 @@ import { InitializePnlSnapshotBoard } from "./InitializePnlSnapshotBoard";
 import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 import { Leaderboard } from "../LeaderboardWidgets/Leaderboard";
 import { LeaderParams } from "./LeaderItem";
-import { BacktestParameters } from "./BacktestParamtersForm";
-
+import { nanoid } from "nanoid";
+import { useGetAllContracts } from "@/app/_hooks/useContract";
 export type SelectLeadersProps = {
   leaders: LeaderParams[];
   onChangeLeaders: (leaders: LeaderParams[]) => void;
   endDate: Date;
-  parameters: BacktestParameters;
   onNextStep: () => void;
   onPrevStep: () => void;
 };
@@ -30,6 +29,8 @@ export function SelectLeaders({
 }: SelectLeadersProps) {
   const { data: isPnlSnapshotInitialized, loading } =
     useIsPnlSnapshotInitialized(dayjs(endDate).format("YYYY-MM-DD"));
+
+  const allContracts = useGetAllContracts();
 
   const [tempLeaders, setTempLeaders] = useState<LeaderParams[]>([]);
   const [initialContractId, setInitialContractId] = useState<string | null>(
@@ -58,7 +59,7 @@ export function SelectLeaders({
       setTempLeaders((prev) => {
         const exists = prev.find(
           (item) =>
-            item.contractId === contractId &&
+            item.contract.contractId === contractId &&
             item.address.toLowerCase() === address.toLowerCase(),
         );
 
@@ -66,13 +67,32 @@ export function SelectLeaders({
           return prev;
         }
 
-        return [...prev, { address, contractId, leaderCollateral }];
+        const contract = allContracts.find((item) => item.id === contractId);
+
+        if (!contract) {
+          return prev;
+        }
+
+        return [
+          ...prev,
+          {
+            virtualId: nanoid(),
+            address,
+            leaderCollateral,
+            contract: {
+              contractId: contract.id,
+              chainId: contract.chainId,
+              address: contract.address,
+              backendUrl: contract.backendUrl!,
+            },
+          },
+        ];
       });
     } else {
       setTempLeaders((prev) => {
         return prev.filter(
           (item) =>
-            item.contractId !== contractId ||
+            item.contract.contractId !== contractId ||
             item.address.toLowerCase() !== address.toLowerCase(),
         );
       });
@@ -102,7 +122,11 @@ export function SelectLeaders({
     <div className="flex flex-col gap-2">
       <Leaderboard
         selectionLabel="Pick as a Leader"
-        selectedAddresses={tempLeaders}
+        selectedAddresses={tempLeaders.map((leader) => ({
+          address: leader.address,
+          contractId: leader.contract.contractId,
+          leaderCollateral: leader.leaderCollateral,
+        }))}
         initialContractId={initialContractId}
         initialKind={initialKind}
         onChangeParams={(contractId, kind) => {
@@ -119,7 +143,6 @@ export function SelectLeaders({
           variant="solid"
           onClick={handleConfirm}
           color="primary"
-          isDisabled={tempLeaders.length === 0}
           size="sm"
         >
           Continue

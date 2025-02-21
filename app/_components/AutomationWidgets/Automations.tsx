@@ -119,6 +119,7 @@ export function Automations() {
       </Accordion>
 
       <CreateAutomationModal
+        planId={null}
         isOpen={isOpen}
         onClose={onClose}
         onOpenChange={onOpenChange}

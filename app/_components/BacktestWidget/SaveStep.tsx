@@ -1,24 +1,39 @@
 import { Button } from "@nextui-org/react";
 
-export type BacktestSaveProps = {
+export type SaveStepProps = {
+  loading: boolean;
   onPrevStep: () => void;
   onReset: () => void;
   onSave: () => void;
 };
 
-export function BacktestSave({
+export function SaveStep({
+  loading,
   onPrevStep,
   onReset,
   onSave,
-}: BacktestSaveProps) {
+}: SaveStepProps) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-row items-center gap-2">
-        <Button variant="solid" onClick={onSave} color="primary" size="sm">
+        <Button
+          variant="solid"
+          isLoading={loading}
+          isDisabled={loading}
+          onClick={onSave}
+          color="primary"
+          size="sm"
+        >
           Save
         </Button>
 
-        <Button variant="light" onClick={onPrevStep} color="primary" size="sm">
+        <Button
+          variant="light"
+          onClick={onPrevStep}
+          isDisabled={loading}
+          color="primary"
+          size="sm"
+        >
           Back
         </Button>
 
@@ -28,6 +43,7 @@ export function BacktestSave({
           className="ml-[200px]"
           color="danger"
           size="sm"
+          isDisabled={loading}
         >
           Reset
         </Button>

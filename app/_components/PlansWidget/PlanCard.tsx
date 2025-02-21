@@ -10,12 +10,14 @@ import {
   ChipProps,
   Divider,
   Badge,
+  Link,
 } from "@nextui-org/react";
 import dayjs from "dayjs";
-import { useRouter } from "next/navigation";
 import { PlanDetails, PlanStatus, TaskStatus } from "@/graphql/gql/graphql";
-import { useGetTasksByStatus } from "@/app/_hooks/useTask";
-import { useGetUserTransactionCounts } from "@/app/_hooks/useHistory";
+
+import { useGetTasksByStatus } from "@/app-hooks/useTask";
+import { useGetUserTransactionCounts } from "@/app-hooks/useHistory";
+import { useDeletePlan } from "@/app/_hooks/usePlan";
 
 export const chipColorsByPlanStatus: Record<PlanStatus, ChipProps["color"]> = {
   [PlanStatus.Created]: "primary",
@@ -33,7 +35,7 @@ export function PlanCard({
   plan,
   isHideAlertForClosedMissions,
 }: PlanCardProps) {
-  const router = useRouter();
+  const { deletePlan, loading } = useDeletePlan();
 
   const { data: transactionCounts } = useGetUserTransactionCounts(
     plan.bots.map((bot) => ({
@@ -60,8 +62,12 @@ export function PlanCard({
     isHideAlertForClosedMissions,
   );
 
-  const handleGoToDetails = () => {
-    router.push(`/plans/${plan.id}`);
+  const handleDelete = () => {
+    deletePlan({
+      variables: {
+        id: plan.id,
+      },
+    });
   };
 
   const createdCount = plan.bots
@@ -217,18 +223,30 @@ export function PlanCard({
       <Divider />
 
       <CardFooter className="justify-between rounded-large p-3">
-        <Chip color={chipColorsByPlanStatus[plan.status]} variant="flat">
-          {plan.status}
-        </Chip>
+        <div className="flex flex-row items-center gap-2">
+          <Chip color={chipColorsByPlanStatus[plan.status]} variant="flat">
+            {plan.status}
+          </Chip>
 
-        <Button
-          size="sm"
-          variant="flat"
-          color="primary"
-          onClick={handleGoToDetails}
-        >
-          Show Details
-        </Button>
+          {plan.status === PlanStatus.Created ? (
+            <Button
+              size="sm"
+              variant="flat"
+              color="danger"
+              isDisabled={loading}
+              isLoading={loading}
+              onClick={handleDelete}
+            >
+              Delete
+            </Button>
+          ) : null}
+        </div>
+
+        <Link href={`/plans/${plan.id}`}>
+          <Button size="sm" variant="flat" color="primary">
+            Show Details
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );

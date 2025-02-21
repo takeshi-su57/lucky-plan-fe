@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { parseDate, getLocalTimeZone } from "@internationalized/date";
+import { parseDate } from "@internationalized/date";
 import { AccordionItem, Accordion, Tab, Tabs } from "@nextui-org/react";
 
+import { getServerTimezone } from "@/utils";
 import { Stepper } from "@/components/Stepper/Stepper";
 import { PastDatePicker } from "./PastDatePicker";
 import { SelectLeaders } from "./SelectLeaders";
@@ -13,15 +14,18 @@ import {
   BacktestParameters,
 } from "./BacktestParamtersForm";
 import { BacktestResult } from "./BacktestResult";
-import { BacktestSave } from "./BacktestSave";
+import { SaveStep } from "./SaveStep";
 import { LeaderParams } from "./LeaderItem";
 
 import { useGetBacktestHistories } from "@/app-hooks/useGetBacktestHistories";
+import { useSnackbar } from "notistack";
 
 type TabType = "new" | "saved";
 
 export function BacktestPanel() {
   const [currentStep, setCurrentStep] = useState(1);
+
+  const { enqueueSnackbar } = useSnackbar();
 
   const { data: savedBacktests, handleSave: handleSaveBacktest } =
     useGetBacktestHistories();
@@ -29,14 +33,14 @@ export function BacktestPanel() {
   const [selected, setSelected] = useState<TabType>("new");
 
   const [pastDate, setPastDate] = useState<Date>(
-    parseDate("2024-12-01").toDate(getLocalTimeZone()),
+    parseDate("2024-12-01").toDate(getServerTimezone()),
   );
   const [parameters, setParameters] = useState<BacktestParameters | null>(null);
   const [leaders, setLeaders] = useState<LeaderParams[]>([]);
 
   const handleInitialize = () => {
     setCurrentStep(1);
-    setPastDate(parseDate("2024-12-01").toDate(getLocalTimeZone()));
+    setPastDate(parseDate("2024-12-01").toDate(getServerTimezone()));
     setParameters(null);
     setLeaders([]);
   };
@@ -44,6 +48,9 @@ export function BacktestPanel() {
   const handleSave = () => {
     if (parameters) {
       handleSaveBacktest(pastDate, leaders, parameters);
+      enqueueSnackbar("Backtest saved successfully", {
+        variant: "success",
+      });
     }
   };
 
@@ -84,7 +91,6 @@ export function BacktestPanel() {
           leaders={leaders}
           onChangeLeaders={setLeaders}
           endDate={pastDate}
-          parameters={parameters}
           onNextStep={() => setCurrentStep(4)}
           onPrevStep={() => setCurrentStep(2)}
         />
@@ -125,7 +131,8 @@ export function BacktestPanel() {
       label: "Save",
       description: `Save the backtest to your account.`,
       content: (
-        <BacktestSave
+        <SaveStep
+          loading={false}
           onPrevStep={() => setCurrentStep(5)}
           onReset={handleInitialize}
           onSave={handleSave}
