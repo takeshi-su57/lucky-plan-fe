@@ -91,6 +91,7 @@ export function BacktestPanel() {
           leaders={leaders}
           onChangeLeaders={setLeaders}
           endDate={pastDate}
+          hideTags={true}
           onNextStep={() => setCurrentStep(4)}
           onPrevStep={() => setCurrentStep(2)}
         />

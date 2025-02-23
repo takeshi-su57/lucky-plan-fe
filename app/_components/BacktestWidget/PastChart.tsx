@@ -11,7 +11,10 @@ import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHis
 import { useGetAllContracts } from "@/app-hooks/useContract";
 
 import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget";
-import { BacktestParameters } from "./BacktestParamtersForm";
+import {
+  BacktestParameters,
+  getFollowerCollateralBaseline,
+} from "./BacktestParamtersForm";
 
 import {
   getHistoriesChartData,
@@ -56,13 +59,19 @@ export function PastChart({
       to: endDate,
     });
 
+    const leaderCollateralBaseline = countIn > 0 ? sumIn / countIn : 0;
+    const followerCollateralBaseline = getFollowerCollateralBaseline(
+      parameters.collateralBaselines,
+      leaderCollateralBaseline,
+    );
+
     const transformed = transformHistories(
       allHistories || [],
-      countIn > 0 ? sumIn / countIn : 0,
+      leaderCollateralBaseline,
       {
-        ...parameters,
         strategyKey: "scaleCopy",
         ratio: 100,
+        collateralBaseline: followerCollateralBaseline,
       },
     );
 

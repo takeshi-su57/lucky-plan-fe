@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { nanoid } from "nanoid";
 
 import { BacktestParameters } from "../_components/BacktestWidget/BacktestParamtersForm";
 import { LeaderParams } from "../_components/BacktestWidget/LeaderItem";
@@ -34,6 +35,7 @@ export function useGetBacktestHistories() {
               futureDate: new Date(item.parameters.futureDate),
             },
           }) as {
+            virtualId: string;
             pastDate: Date;
             leaders: LeaderParams[];
             parameters: BacktestParameters;
@@ -52,7 +54,7 @@ export function useGetBacktestHistories() {
         "BACKTEST_HISTORIES",
         JSON.stringify([
           ...(data ? data : []),
-          { pastDate, leaders, parameters },
+          { pastDate, leaders, parameters, virtualId: nanoid() },
         ]),
       );
 

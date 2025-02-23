@@ -16,6 +16,7 @@ export type SelectLeadersProps = {
   leaders: LeaderParams[];
   onChangeLeaders: (leaders: LeaderParams[]) => void;
   endDate: Date;
+  hideTags: boolean;
   onNextStep: () => void;
   onPrevStep: () => void;
 };
@@ -24,6 +25,7 @@ export function SelectLeaders({
   leaders,
   onChangeLeaders,
   endDate,
+  hideTags,
   onNextStep,
   onPrevStep,
 }: SelectLeadersProps) {
@@ -85,6 +87,7 @@ export function SelectLeaders({
               address: contract.address,
               backendUrl: contract.backendUrl!,
             },
+            isConfirmed: false,
           },
         ];
       });
@@ -135,7 +138,7 @@ export function SelectLeaders({
         }}
         onChangeSelection={handleChangeSelection}
         endDate={endDate}
-        hideTags={true}
+        hideTags={hideTags}
       />
 
       <div className="flex flex-row items-center gap-2">

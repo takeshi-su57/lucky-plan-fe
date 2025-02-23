@@ -10,7 +10,10 @@ import {
   Switch,
 } from "@nextui-org/react";
 import { Address } from "viem";
-import { BacktestParameters } from "./BacktestParamtersForm";
+import {
+  BacktestParameters,
+  getFollowerCollateralBaseline,
+} from "./BacktestParamtersForm";
 import { PersonalTradeHistory } from "@/types";
 import { getPersonalTradeHistories } from "@/app/_actions/getPersonalTradeHistories";
 import { useGetAllContracts } from "@/app/_hooks/useContract";
@@ -68,7 +71,10 @@ export function BacktestResult({
             histories || [],
             leader.leaderCollateral,
             {
-              ...parameters,
+              collateralBaseline: getFollowerCollateralBaseline(
+                parameters.collateralBaselines,
+                leader.leaderCollateral,
+              ),
               strategyKey: "scaleCopy",
               ratio: 100,
             },
