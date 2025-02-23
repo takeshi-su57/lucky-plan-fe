@@ -25,6 +25,7 @@ export type PastChartProps = {
   address: string;
   parameters: BacktestParameters;
   onRemove: () => void;
+  onConfirm: () => void;
 };
 
 export function PastChart({
@@ -33,6 +34,7 @@ export function PastChart({
   address,
   parameters,
   onRemove,
+  onConfirm,
 }: PastChartProps) {
   const [isLeaderChart, setIsLeaderChart] = useState(true);
   const [isAllTime, setIsAllTime] = useState(false);
@@ -70,9 +72,15 @@ export function PastChart({
   return (
     <div className="flex w-full flex-col gap-2">
       <div className="flex w-full flex-row items-center justify-between gap-2">
-        <Button size="sm" variant="ghost" color="danger" onClick={onRemove}>
-          <FaTrash /> Cancel Selection
-        </Button>
+        <div className="flex flex-row gap-2">
+          <Button size="sm" variant="flat" color="danger" onClick={onRemove}>
+            <FaTrash /> Cancel Selection
+          </Button>
+
+          <Button size="sm" variant="flat" color="success" onClick={onConfirm}>
+            <FaTrash /> Confirm Selection
+          </Button>
+        </div>
 
         <div className="flex flex-row items-center gap-2">
           <Switch
