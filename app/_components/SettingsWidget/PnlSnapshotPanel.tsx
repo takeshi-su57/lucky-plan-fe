@@ -43,31 +43,8 @@ export function PnlSnapshotPanel() {
         dateStr: dayjs(selectedDate.toDate(getServerTimezone())).format(
           "YYYY-MM-DD",
         ),
-        isForceBuild: true,
       },
     });
-  };
-
-  const handleSequenceBuild = async () => {
-    if (!selectedDate) {
-      return;
-    }
-
-    for (let i = 0; i < 60; i++) {
-      console.log(
-        "initializing =>",
-        i,
-        selectedDate.add({ days: i }).toDate(getServerTimezone()),
-      );
-      await buildPnlSnapshots({
-        variables: {
-          dateStr: dayjs(
-            selectedDate.add({ days: i }).toDate(getServerTimezone()),
-          ).format("YYYY-MM-DD"),
-          isForceBuild: false,
-        },
-      });
-    }
   };
 
   const exists = useMemo(() => {
@@ -125,15 +102,6 @@ export function PnlSnapshotPanel() {
             isDisabled={buildPnlSnapshotsLoading}
           >
             {exists ? "Re-Run" : "Build"}
-          </Button>
-
-          <Button
-            onClick={handleSequenceBuild}
-            isLoading={buildPnlSnapshotsLoading}
-            color="primary"
-            isDisabled={buildPnlSnapshotsLoading}
-          >
-            Sequence Build
           </Button>
         </div>
 
