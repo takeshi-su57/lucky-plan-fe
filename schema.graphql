@@ -349,6 +349,7 @@ type Mutation {
   resumeSystem: Boolean!
   startPlan(id: Int!): PlanDetails!
   stopBot(id: Int!): BotDetails!
+  stopTask(id: Int!): TaskShallowDetails
   updatePlan(updatePlanInput: UpdatePlanInput!): PlanDetails!
   updateStrategyMetadata(input: UpdateStrategyMetadataInput!, key: String!): StrategyMetadata!
   upsertCategory(input: TagCategoryInput!): TagCategory!

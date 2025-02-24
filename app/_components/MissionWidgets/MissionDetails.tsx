@@ -107,7 +107,7 @@ export function MissionDetails({ missionId }: MissionDetailsProps) {
           .sort((a, b) => a.id - b.id)
           .map((task) => (
             <AccordionItem key={task.id} title={<TaskSummary task={task} />}>
-              <TaskDetails taskId={task.id} />
+              <TaskDetails taskId={task.id} missionStatus={mission.status} />
             </AccordionItem>
           ))}
       </Accordion>
