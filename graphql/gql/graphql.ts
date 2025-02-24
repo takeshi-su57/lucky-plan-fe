@@ -362,10 +362,12 @@ export type Mutation = {
   deleteCategory: TagCategory;
   deletePlan: Scalars['Int']['output'];
   deleteTag: Tag;
+  dynamicSnapshotBuild?: Maybe<PnlSnapshotInitializedFlag>;
   endPlan: PlanDetails;
   generateNewFollower: Follower;
   getToken: GetTokenResponse;
   ignoreMission: MissionShallowDetails;
+  initializePnlSnapshot: Scalars['Boolean']['output'];
   liveBot: BotDetails;
   pauseSystem: Scalars['Boolean']['output'];
   performTask: TaskShallowDetails;
@@ -473,6 +475,11 @@ export type MutationDeletePlanArgs = {
 
 export type MutationDeleteTagArgs = {
   tag: Scalars['String']['input'];
+};
+
+
+export type MutationDynamicSnapshotBuildArgs = {
+  dateStr: Scalars['String']['input'];
 };
 
 

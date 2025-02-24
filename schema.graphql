@@ -335,10 +335,12 @@ type Mutation {
   deleteCategory(id: Int!): TagCategory!
   deletePlan(id: Int!): Int!
   deleteTag(tag: String!): Tag!
+  dynamicSnapshotBuild(dateStr: String!): PnlSnapshotInitializedFlag
   endPlan(id: Int!): PlanDetails!
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
   ignoreMission(id: Int!): MissionShallowDetails!
+  initializePnlSnapshot: Boolean!
   liveBot(id: Int!): BotDetails!
   pauseSystem: Boolean!
   performTask(id: Int!): TaskShallowDetails!
