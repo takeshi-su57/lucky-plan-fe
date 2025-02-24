@@ -4,10 +4,20 @@ import { nanoid } from "nanoid";
 
 import { BacktestParameters } from "../_components/BacktestWidget/BacktestParamtersForm";
 import { LeaderParams } from "../_components/BacktestWidget/LeaderItem";
+import { useSnackbar } from "notistack";
+
+export type BacktestHistory = {
+  virtualId: string;
+  pastDate: Date;
+  leaders: LeaderParams[];
+  parameters: BacktestParameters;
+};
 
 export const GET_BACKTEST_HISTORIES = "GET_BACKTEST_HISTORIES";
 
 export function useGetBacktestHistories() {
+  const { enqueueSnackbar } = useSnackbar();
+
   const { data, refetch } = useQuery({
     queryKey: [GET_BACKTEST_HISTORIES],
     queryFn: () => {
@@ -19,13 +29,7 @@ export function useGetBacktestHistories() {
 
       const jsonData = JSON.parse(str);
 
-      return (
-        jsonData as {
-          pastDate: Date;
-          leaders: { address: string; contractId: number }[];
-          parameters: BacktestParameters;
-        }[]
-      ).map(
+      return (jsonData as BacktestHistory[]).map(
         (item: any) =>
           ({
             virtualId: item.virtualId,
@@ -35,15 +39,38 @@ export function useGetBacktestHistories() {
               ...item.parameters,
               futureDate: new Date(item.parameters.futureDate),
             },
-          }) as {
-            virtualId: string;
-            pastDate: Date;
-            leaders: LeaderParams[];
-            parameters: BacktestParameters;
-          },
+          }) as BacktestHistory,
       );
     },
   });
+
+  const handleMerge = useCallback(
+    (backtests: BacktestHistory[]) => {
+      const mergedBacktests = [...(data ? data : [])];
+
+      backtests.forEach((backtest) => {
+        const existingBacktest = mergedBacktests.find(
+          (item) => item.virtualId === backtest.virtualId,
+        );
+
+        if (!existingBacktest) {
+          mergedBacktests.push(backtest);
+        }
+      });
+
+      localStorage.setItem(
+        "BACKTEST_HISTORIES",
+        JSON.stringify(mergedBacktests),
+      );
+
+      enqueueSnackbar("Backtest histories merged", {
+        variant: "success",
+      });
+
+      refetch();
+    },
+    [data, enqueueSnackbar, refetch],
+  );
 
   const handleSave = useCallback(
     (
@@ -59,9 +86,13 @@ export function useGetBacktestHistories() {
         ]),
       );
 
+      enqueueSnackbar("Backtest history saved", {
+        variant: "success",
+      });
+
       refetch();
     },
-    [data, refetch],
+    [data, enqueueSnackbar, refetch],
   );
 
   const handleRemove = useCallback(
@@ -73,10 +104,14 @@ export function useGetBacktestHistories() {
         ]),
       );
 
+      enqueueSnackbar("Backtest history removed", {
+        variant: "success",
+      });
+
       refetch();
     },
-    [data, refetch],
+    [data, enqueueSnackbar, refetch],
   );
 
-  return { data: data || [], handleSave, handleRemove };
+  return { data: data || [], handleSave, handleRemove, handleMerge };
 }

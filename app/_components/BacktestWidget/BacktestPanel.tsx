@@ -17,7 +17,8 @@ import {
 import { BacktestResult } from "./BacktestResult";
 import { SaveStep } from "./SaveStep";
 import { LeaderParams } from "./LeaderItem";
-
+import { DownloadBacktestResultButton } from "./DownloadBacktestResultButton";
+import { UploadBacktestResultButton } from "./UploadBacktestResultButton";
 import { useGetBacktestHistories } from "@/app-hooks/useGetBacktestHistories";
 import { SavedBacktestView } from "./SavedBacktestView";
 
@@ -163,10 +164,21 @@ export function BacktestPanel() {
       ) : null}
 
       <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-end gap-2">
+          <UploadBacktestResultButton />
+          <DownloadBacktestResultButton />
+        </div>
+
         {selected === "saved"
-          ? savedBacktests.map((backtest, index) => (
-              <SavedBacktestView key={index} backtest={backtest} />
-            ))
+          ? savedBacktests
+              .sort(
+                (a, b) =>
+                  new Date(a.pastDate).getTime() -
+                  new Date(b.pastDate).getTime(),
+              )
+              .map((backtest, index) => (
+                <SavedBacktestView key={index} backtest={backtest} />
+              ))
           : null}
       </div>
     </div>
