@@ -1,16 +1,19 @@
 "use client";
 
 import { Address } from "viem";
+import { twMerge } from "tailwind-merge";
+import { Chip, Skeleton } from "@nextui-org/react";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import {
   useGetAvailableFollowers,
   useGetTradedOrders,
   useGetPendingOrders,
-} from "@/app/_hooks/useFollower";
+} from "@/app-hooks/useFollower";
+import { useGetPrices } from "@/app-hooks/useGetPrices";
 
-import { Chip, Skeleton } from "@nextui-org/react";
 import { getPriceStr } from "@/utils/price";
+import { getPNLPercentage } from "@/utils";
 
 export type FollowerInfoWidgetProps = {
   follower: {
@@ -34,6 +37,7 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
     follower.address,
     follower.contractId,
   );
+  const prices = useGetPrices();
 
   const items = [
     {
@@ -48,7 +52,39 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
     },
   ];
 
-  const tradesCount = trades.length || 0;
+  const counts = trades.length || 0;
+  const summary = trades
+    .map((trade) => {
+      const data = JSON.parse(trade.params);
+
+      const currentPrice = prices?.[data?.pairIndex || 0] || 0;
+      const openPrice = data?.openPrice ? Number(data.openPrice) / 1e10 : 0;
+      const collateralAmount = data?.collateralAmount
+        ? Number(data.collateralAmount) / 1e6
+        : 0;
+
+      const pnlPercentage = getPNLPercentage({
+        closePrice: currentPrice,
+        openPrice,
+        leverage: data.leverage / 1000,
+        long: data.long,
+      });
+
+      return {
+        pnls: (collateralAmount * pnlPercentage) / 100,
+        size: collateralAmount,
+      };
+    })
+    .reduce(
+      (acc, item) => {
+        return {
+          pnls: acc.pnls + item.pnls,
+          size: acc.size + item.size,
+        };
+      },
+      { pnls: 0, size: 0 },
+    );
+
   const pendingOrdersCount = pendingOrders.length || 0;
 
   return (
@@ -74,8 +110,8 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
           <Skeleton className="rounded-lg">
             <div className="h-8 w-[80px] rounded-full bg-default-300" />
           </Skeleton>
-        ) : tradesCount !== 0 ? (
-          <Chip color="success">{tradesCount} Trades</Chip>
+        ) : counts !== 0 ? (
+          <Chip color="success">{counts} Trades</Chip>
         ) : null}
 
         {pendingOrdersLoading ? (
@@ -91,6 +127,33 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
           .includes(follower.address) ? (
           <Chip>Available</Chip>
         ) : null}
+      </div>
+
+      <div className="flex items-center gap-4">
+        {counts > 0 && (
+          <div className="flex flex-row items-center gap-2 text-neutral-400">
+            <span className="text-xs">Unrealized PNL:</span>
+            <span
+              className={twMerge(
+                "text-base font-bold",
+                summary.pnls > 0 && "text-green-700",
+                summary.pnls < 0 && "text-red-700",
+                summary.pnls === 0 && "text-neutral-400",
+              )}
+            >
+              {`$${getPriceStr(summary.pnls)}`}
+            </span>
+          </div>
+        )}
+
+        {counts > 0 && (
+          <div className="flex flex-row items-center gap-2 text-neutral-400">
+            <span className="text-xs">Size:</span>
+            <span className={twMerge("text-base font-bold")}>
+              {`$${getPriceStr(summary.size)}`}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
