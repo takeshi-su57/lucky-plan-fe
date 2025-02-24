@@ -346,6 +346,12 @@ export function useBatchCreateBots() {
         );
       });
     }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at creating new bots!", {
+        variant: "error",
+      });
+    }
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return { batchCreateBots, loading };

@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Divider, DateRangePicker } from "@nextui-org/react";
+import { Divider, DateRangePicker, Switch } from "@nextui-org/react";
 import { Card, CardBody } from "@nextui-org/react";
-import { now, getLocalTimeZone } from "@internationalized/date";
+import { now } from "@internationalized/date";
 import type { RangeValue } from "@react-types/shared";
 import type { DateValue } from "@react-types/datepicker";
+
+import { getServerTimezone } from "@/utils";
 
 import { AutomationRow } from "./AutomationRow";
 import { AutomationGridChart } from "./AutomationChart";
@@ -30,9 +32,11 @@ export function RealResultView({
   onChangeBotSelection,
   onToggleChart,
 }: RealResultViewProps) {
+  const [showAllActivity, setShowAllActivity] = useState(false);
+
   const [range, setRange] = useState<RangeValue<DateValue> | null>({
-    start: now(getLocalTimeZone()).subtract({ months: 3 }),
-    end: now(getLocalTimeZone()),
+    start: now(getServerTimezone()).subtract({ months: 3 }),
+    end: now(getServerTimezone()),
   });
 
   let rangeHelper = "";
@@ -43,22 +47,32 @@ export function RealResultView({
 
   const dateRange = range
     ? {
-        from: range.start.toDate(getLocalTimeZone()),
-        to: range.end.toDate(getLocalTimeZone()),
+        from: range.start.toDate(getServerTimezone()),
+        to: range.end.toDate(getServerTimezone()),
       }
     : undefined;
 
   return (
     <div className="flex flex-col gap-6">
-      <DateRangePicker
-        label="Plan Duration"
-        visibleMonths={2}
-        value={range}
-        onChange={setRange}
-        maxValue={now(getLocalTimeZone())}
-        errorMessage={rangeHelper}
-        className="w-fit"
-      />
+      <div className="flex items-center gap-2">
+        <DateRangePicker
+          label="Plan Duration"
+          visibleMonths={2}
+          value={range}
+          onChange={setRange}
+          maxValue={now(getServerTimezone())}
+          errorMessage={rangeHelper}
+          className="w-fit"
+        />
+
+        <Switch
+          isSelected={showAllActivity}
+          onValueChange={setShowAllActivity}
+          size="sm"
+        >
+          {showAllActivity ? "Show All Activities" : "Show Valid Activities"}
+        </Switch>
+      </div>
 
       <Card>
         <CardBody>
@@ -72,6 +86,9 @@ export function RealResultView({
               .reduce((acc, item) => [...acc, ...item], [])}
             title={`Grouped Result`}
             range={dateRange}
+            mode={
+              showAllActivity ? "show_all_activity" : "show_only_valid_activity"
+            }
           />
         </CardBody>
       </Card>
@@ -119,6 +136,11 @@ export function RealResultView({
                 )}
                 itemContent={(_, botId) => (
                   <AutomationGridChart
+                    mode={
+                      showAllActivity
+                        ? "show_all_activity"
+                        : "show_only_valid_activity"
+                    }
                     histories={botsHistories[botId] || []}
                     title={`Automation ${botId}`}
                     range={dateRange}

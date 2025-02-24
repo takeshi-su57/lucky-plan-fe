@@ -18,15 +18,18 @@ export const RESUME_SYSTEM_DOCUMENT = graphql(`
   }
 `);
 
-export const INITALIZE_PNL_SNAPSHOT_DOCUMENT = graphql(`
-  mutation initalizePnlSnapshot {
-    initalizePnlSnapshot
-  }
-`);
-
 export const GET_SYSTEM_STATUS_DOCUMENT = graphql(`
   query getSystemStatus {
     systemStatus
+  }
+`);
+
+export const GET_SERVER_TIME_DOCUMENT = graphql(`
+  query getServerTime {
+    getServerTime {
+      timestamp
+      timezone
+    }
   }
 `);
 
@@ -97,24 +100,6 @@ export function useResumeSystem() {
   }, [data, error, enqueueSnackbar, client.cache]);
 
   return resumeSystem;
-}
-
-export function useInitalizePnlSnapshot() {
-  const [initalizePnlSnapshot, { data, error, loading }] = useMutation(
-    INITALIZE_PNL_SNAPSHOT_DOCUMENT,
-  );
-
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (data?.initalizePnlSnapshot && !error) {
-      enqueueSnackbar("Success at initializing PNL snapshot!", {
-        variant: "success",
-      });
-    }
-  }, [data, error, enqueueSnackbar]);
-
-  return { initalizePnlSnapshot, loading };
 }
 
 export function useGetSystemStatus() {

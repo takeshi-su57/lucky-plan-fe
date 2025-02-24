@@ -120,6 +120,7 @@ type Contract {
   chainId: Int!
   description: String!
   id: Int!
+  isTestnet: Boolean!
   status: ContractStatus!
 }
 
@@ -137,7 +138,6 @@ enum ContractStatus {
 }
 
 input CreateBotAndStrategyInput {
-  followerAddress: String!
   followerContractId: Int!
   leaderAddress: String!
   leaderCollateralBaseline: Int!
@@ -254,6 +254,7 @@ input GetUserByAddressInput {
 input GetUserTransactionCountsInput {
   address: String!
   contractId: Int!
+  endedAt: DateTime
   startedAt: DateTime
 }
 
@@ -318,6 +319,10 @@ type Mutation {
   addTagToUser(input: ChangeUserTagInput!): User!
   addUser(input: AddUserInput!): User!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotDetails!]!
+  buildPnlSnapshots(
+    dateStr: String!
+    isForceBuild: Boolean!
+  ): PnlSnapshotInitializedFlag
   cancelOrderAfterTimeout(
     input: CancelOrderAfterTimeoutInput!
   ): ContractExecutionResult!
@@ -331,12 +336,12 @@ type Mutation {
   createStrategy(input: CreateStrategyInput!): Strategy!
   deleteBot(id: Int!): Int!
   deleteCategory(id: Int!): TagCategory!
+  deletePlan(id: Int!): Int!
   deleteTag(tag: String!): Tag!
   endPlan(id: Int!): PlanDetails!
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
   ignoreMission(id: Int!): MissionShallowDetails!
-  initalizePnlSnapshot: Boolean!
   liveBot(id: Int!): BotDetails!
   pauseSystem: Boolean!
   performTask(id: Int!): TaskShallowDetails!
@@ -381,17 +386,19 @@ enum PlanStatus {
 }
 
 type PnlSnapshot {
-  accUSDPnl: Int!
+  accUSDPnl: Float!
   address: String!
   contractId: Int!
+  dateStr: String!
   id: Int!
   kind: PnlSnapshotKind!
 }
 
 type PnlSnapshotDetails {
-  accUSDPnl: Int!
+  accUSDPnl: Float!
   address: String!
   contractId: Int!
+  dateStr: String!
   histories: [TradeHistory!]!
   id: Int!
   kind: PnlSnapshotKind!
@@ -407,6 +414,12 @@ type PnlSnapshotDetailsEdge {
   node: PnlSnapshotDetails!
 }
 
+type PnlSnapshotInitializedFlag {
+  dateStr: String!
+  id: Int!
+  isInit: Boolean!
+}
+
 enum PnlSnapshotKind {
   ALL_TIME
   DAY
@@ -415,9 +428,7 @@ enum PnlSnapshotKind {
   THREE_DAY
   THREE_MONTH
   TWO_DAY
-  TWO_MONTH
   TWO_WEEK
-  TWO_YEAR
   WEEK
   YEAR
 }
@@ -465,13 +476,16 @@ type Query {
   getPendingOrders(address: String!, contractId: Int!): [FollowerPendingOrder!]!
   getPlanById(id: Int!): PlanDetails
   getPlansByStatus(status: PlanStatus!): [PlanDetails!]!
+  getPnlSnapshotInitializedFlag: [PnlSnapshotInitializedFlag!]!
   getPnlSnapshots(
     after: Int
     contractId: Int!
+    dateStr: String!
     first: Int!
     kind: PnlSnapshotKind!
   ): PnlSnapshotDetailsConnection!
-  getPnlSnapshotsByAddress(address: String!, contractId: Int!): [PnlSnapshot!]!
+  getPnlSnapshotsByAddress(address: String!, dateStr: String!): [PnlSnapshot!]!
+  getServerTime: ServerTime!
   getTasksByStatus(status: TaskStatus!): [TaskShallowDetails!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getTradePairs(contractId: Int!): [TradePair!]!
@@ -484,7 +498,13 @@ type Query {
   getUserTransactionCounts(
     inputs: [GetUserTransactionCountsInput!]!
   ): [TradeTransactionCount!]!
+  isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
   systemStatus: Boolean!
+}
+
+type ServerTime {
+  timestamp: Float!
+  timezone: String!
 }
 
 type Strategy {
@@ -572,17 +592,38 @@ type TaskWithActions {
   status: TaskStatus!
 }
 
+enum TradeActionType {
+  TradeClosedLIQ
+  TradeClosedMarket
+  TradeClosedSL
+  TradeClosedTP
+  TradeLeverageUpdate
+  TradeOpenedLimit
+  TradeOpenedMarket
+  TradePosSizeDecrease
+  TradePosSizeIncrease
+}
+
 type TradeHistory {
+  action: TradeActionType!
   address: String!
-  blockNumber: Int!
+  block: Int!
+  collateralDelta: String
+  collateralIndex: Int!
+  collateralPriceUsd: String!
   contractId: Int!
-  eventName: String!
+  date: DateTime!
   id: Int!
-  in: Int!
-  out: Int!
-  pairIndex: Int
-  pnl: Int!
-  timestamp: DateTime!
+  leverage: Int!
+  leverageDelta: Int
+  long: Int!
+  marketPrice: String
+  pair: String!
+  pnl: String!
+  price: String!
+  size: String!
+  tradeId: String
+  tradeIndex: Int!
 }
 
 type TradePair {

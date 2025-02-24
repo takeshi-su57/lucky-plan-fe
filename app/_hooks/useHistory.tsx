@@ -1,23 +1,43 @@
 "use client";
 
-import { useLazyQuery, useQuery } from "@apollo/client";
-
-import { getFragmentData, graphql } from "@/gql/index";
 import { useCallback, useEffect, useMemo } from "react";
-import { GetPnlSnapshotsQuery, PnlSnapshotKind } from "@/graphql/gql/graphql";
+import {
+  useApolloClient,
+  useLazyQuery,
+  useMutation,
+  useQuery,
+} from "@apollo/client";
+import { useSnackbar } from "notistack";
+import { getFragmentData, graphql } from "@/gql/index";
+import {
+  GetPnlSnapshotsQuery,
+  PnlSnapshotKind,
+  TradeHistory,
+} from "@/graphql/gql/graphql";
+
+import { PersonalTradeHistory, TradeActionType } from "@/types";
 
 export const TRADEHISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment TradeHistoryInfo on TradeHistory {
+    action
     address
-    blockNumber
+    block
+    collateralDelta
+    collateralIndex
+    collateralPriceUsd
     contractId
-    pairIndex
-    eventName
+    date
     id
-    in
-    out
+    leverage
+    leverageDelta
+    long
+    marketPrice
+    pair
     pnl
-    timestamp
+    price
+    size
+    tradeId
+    tradeIndex
   }
 `);
 
@@ -26,6 +46,7 @@ export const PNL_SNAPSHOT_INFO_FRAGMENT_DOCUMENT = graphql(`
     accUSDPnl
     address
     contractId
+    dateStr
     id
     kind
   }
@@ -36,6 +57,7 @@ export const PNL_SNAPSHOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     accUSDPnl
     address
     contractId
+    dateStr
     histories {
       ...TradeHistoryInfo
     }
@@ -81,12 +103,14 @@ export const GET_ALL_TRADEHISTORIES_DOCUMENT = graphql(`
 export const GET_PNL_SNAPSHOTS_DOCUMENT = graphql(`
   query getPnlSnapshots(
     $contractId: Int!
+    $dateStr: String!
     $kind: PnlSnapshotKind!
     $first: Int!
     $after: Int
   ) {
     getPnlSnapshots(
       contractId: $contractId
+      dateStr: $dateStr
       kind: $kind
       first: $first
       after: $after
@@ -106,18 +130,66 @@ export const GET_PNL_SNAPSHOTS_DOCUMENT = graphql(`
 `);
 
 export const GET_PNL_SNAPSHOTS_BY_ADDRESS_DOCUMENT = graphql(`
-  query getPnlSnapshotsByAddress($address: String!, $contractId: Int!) {
-    getPnlSnapshotsByAddress(address: $address, contractId: $contractId) {
+  query getPnlSnapshotsByAddress($address: String!, $dateStr: String!) {
+    getPnlSnapshotsByAddress(address: $address, dateStr: $dateStr) {
       ...PnlSnapshotInfo
     }
   }
 `);
 
-export const INITIALIZE_PNL_SNAPSHOT_DOCUMENT = graphql(`
-  mutation initalizePnlSnapshot {
-    initalizePnlSnapshot
+export const GET_PNL_SNAPSHOT_INITIALIZED_FLAG_DOCUMENT = graphql(`
+  query getPnlSnapshotInitializedFlag {
+    getPnlSnapshotInitializedFlag {
+      id
+      dateStr
+      isInit
+    }
   }
 `);
+
+export const IS_PNL_SNAPSHOT_INITIALIZED_DOCUMENT = graphql(`
+  query isPnlSnapshotInitialized($dateStr: String!) {
+    isPnlSnapshotInitialized(dateStr: $dateStr) {
+      id
+      dateStr
+      isInit
+    }
+  }
+`);
+
+export const BUILD_PNL_SNAPSHOTS_DOCUMENT = graphql(`
+  mutation buildPnlSnapshots($dateStr: String!, $isForceBuild: Boolean!) {
+    buildPnlSnapshots(dateStr: $dateStr, isForceBuild: $isForceBuild) {
+      id
+      dateStr
+      isInit
+    }
+  }
+`);
+
+function getPersonalTradeHistory(history: TradeHistory): PersonalTradeHistory {
+  return {
+    action: history.action as unknown as TradeActionType,
+    address: history.address,
+    block: history.block,
+    collateralDelta: history.collateralDelta ? +history.collateralDelta : null,
+    collateralIndex: history.collateralIndex,
+    collateralPriceUsd: +history.collateralPriceUsd,
+    date: history.date,
+    leverage: history.leverage,
+    leverageDelta: history.leverageDelta || null,
+    long: history.long,
+    marketPrice: history.marketPrice ? +history.marketPrice : null,
+    pair: history.pair,
+    pnl: +history.pnl,
+    pnl_net: +history.pnl,
+    price: +history.price,
+    size: +history.size,
+    tradeId: history.tradeId ? +history.tradeId : null,
+    tradeIndex: history.tradeIndex,
+    tx: "",
+  };
+}
 
 function getPnlSnapshotInfo(
   snapshot: GetPnlSnapshotsQuery["getPnlSnapshots"]["edges"][number]["node"],
@@ -130,7 +202,9 @@ function getPnlSnapshotInfo(
   return {
     ...snapshotInfo,
     histories: snapshotInfo.histories.map((history) =>
-      getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, history),
+      getPersonalTradeHistory(
+        getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, history),
+      ),
     ),
   };
 }
@@ -183,12 +257,15 @@ export function useGetAllTradeHistory(
       return [];
     }
     return data.getTradeHistories.map((history) =>
-      getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, history),
+      getPersonalTradeHistory(
+        getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, history),
+      ),
     );
   }, [data]);
 }
 
 export function useGetPnlSnapshots(
+  dateStr: string,
   contractId: string | null,
   kind: PnlSnapshotKind,
 ) {
@@ -197,16 +274,15 @@ export function useGetPnlSnapshots(
   );
 
   useEffect(() => {
-    if (contractId) {
-      query({
-        variables: {
-          contractId: +contractId,
-          kind,
-          first: 20,
-        },
-      });
-    }
-  }, [contractId, kind, query]);
+    query({
+      variables: {
+        dateStr,
+        contractId: contractId ? +contractId : 0,
+        kind,
+        first: 20,
+      },
+    });
+  }, [contractId, dateStr, kind, query]);
 
   const pnlSnapshots = useMemo(() => {
     if (!data) {
@@ -238,13 +314,14 @@ export function useGetPnlSnapshots(
   };
 }
 
-export function useGetPnlSnapshotsByAddress(
-  address: string,
-  contractId: number,
-) {
+export function useGetPnlSnapshotInitializedFlag() {
+  return useQuery(GET_PNL_SNAPSHOT_INITIALIZED_FLAG_DOCUMENT);
+}
+
+export function useGetPnlSnapshotsByAddress(dateStr: string, address: string) {
   const { data, loading } = useQuery(GET_PNL_SNAPSHOTS_BY_ADDRESS_DOCUMENT, {
     variables: {
-      contractId: +contractId,
+      dateStr,
       address,
     },
   });
@@ -262,4 +339,90 @@ export function useGetPnlSnapshotsByAddress(
     pnlSnapshots,
     loading,
   };
+}
+
+export function useIsPnlSnapshotInitialized(dateStr: string) {
+  return useQuery(IS_PNL_SNAPSHOT_INITIALIZED_DOCUMENT, {
+    variables: { dateStr },
+  });
+}
+
+export function useBuildPnlSnapshots() {
+  const [buildPnlSnapshots, { data, error, loading }] = useMutation(
+    BUILD_PNL_SNAPSHOTS_DOCUMENT,
+  );
+
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data?.buildPnlSnapshots && !error) {
+      enqueueSnackbar("Success at building PNL snapshots!", {
+        variant: "success",
+      });
+
+      const pnlSnapshotInitializedFlag = data.buildPnlSnapshots;
+
+      client.cache.updateQuery(
+        {
+          query: IS_PNL_SNAPSHOT_INITIALIZED_DOCUMENT,
+          variables: {
+            dateStr: pnlSnapshotInitializedFlag.dateStr,
+          },
+        },
+        (data) => {
+          if (data && data.isPnlSnapshotInitialized) {
+            return {
+              ...data,
+              isPnlSnapshotInitialized: pnlSnapshotInitializedFlag,
+            };
+          } else {
+            return {
+              isPnlSnapshotInitialized: pnlSnapshotInitializedFlag,
+            };
+          }
+        },
+      );
+
+      client.cache.updateQuery(
+        {
+          query: GET_PNL_SNAPSHOT_INITIALIZED_FLAG_DOCUMENT,
+          variables: {},
+        },
+        (data) => {
+          if (data && data.getPnlSnapshotInitializedFlag) {
+            const exists = data.getPnlSnapshotInitializedFlag.find(
+              (item) => item.id === pnlSnapshotInitializedFlag.id,
+            );
+
+            if (exists) {
+              return {
+                ...data,
+                getPnlSnapshotInitializedFlag:
+                  data.getPnlSnapshotInitializedFlag.map((item) =>
+                    item.id === pnlSnapshotInitializedFlag.id
+                      ? pnlSnapshotInitializedFlag
+                      : item,
+                  ),
+              };
+            }
+
+            return {
+              ...data,
+              getPnlSnapshotInitializedFlag: [
+                ...data.getPnlSnapshotInitializedFlag,
+                pnlSnapshotInitializedFlag,
+              ],
+            };
+          } else {
+            return {
+              getPnlSnapshotInitializedFlag: [pnlSnapshotInitializedFlag],
+            };
+          }
+        },
+      );
+    }
+  }, [data, error, enqueueSnackbar, client]);
+
+  return { buildPnlSnapshots, loading };
 }

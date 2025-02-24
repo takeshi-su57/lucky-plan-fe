@@ -31,6 +31,7 @@ import { FollowerInfoWidget } from "@/app-components/FollowerWidgets/FollowerInf
 
 import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 import { FollowerDetails } from "@/app-components/FollowerWidgets/FollowerDetails";
+import { getPriceStr } from "@/utils/price";
 
 export function Followers() {
   const searchParams = useSearchParams();
@@ -47,6 +48,7 @@ export function Followers() {
     (searchParams.get("kind") as PnlSnapshotKind) || PnlSnapshotKind.AllTime,
   );
   const [isChatFirst, setIsChatFirst] = useState(true);
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
   const followerDetails = useGetAllFollowerDetails(contractId);
   useSubscribeFollowerDetailUpdated(contractId);
@@ -151,7 +153,12 @@ export function Followers() {
                 textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
               >
                 <div className="flex flex-col">
-                  <span className="text-small">Chain: {item.chainId}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-small">Chain: {item.chainId}</span>
+                    <span className="text-small">
+                      {item.isTestnet ? "(Testnet)" : ""}
+                    </span>
+                  </div>
                   <span className="text-small">Contract: {item.address}</span>
                   <span className="text-tiny text-default-400">
                     {item.description}
@@ -181,6 +188,14 @@ export function Followers() {
           >
             Chat First
           </Switch>
+
+          <Switch
+            isSelected={showAllActivity}
+            onValueChange={setShowAllActivity}
+            size="sm"
+          >
+            {showAllActivity ? "Show All Activities" : "Show Valid Activities"}
+          </Switch>
         </div>
 
         <div className="flex items-center gap-4">
@@ -200,8 +215,8 @@ export function Followers() {
             ).toFixed(2)} USDC`}
           </Chip>
 
-          <Chip color="warning">{`${totalEarned} USDC`}</Chip>
-          <Chip color="danger">{`${totalLost} USDC`}</Chip>
+          <Chip color="warning">{`${getPriceStr(totalEarned)} USDC`}</Chip>
+          <Chip color="danger">{`${getPriceStr(totalLost)} USDC`}</Chip>
 
           <Button
             isIconOnly
@@ -229,7 +244,15 @@ export function Followers() {
                 <AccordionItem
                   title={<FollowerInfoWidget follower={follower} />}
                 >
-                  <FollowerDetails follower={follower} isChatFirst={false} />
+                  <FollowerDetails
+                    follower={follower}
+                    isChatFirst={isChatFirst}
+                    mode={
+                      showAllActivity
+                        ? "show_all_activity"
+                        : "show_only_valid_activity"
+                    }
+                  />
                 </AccordionItem>
               </Accordion>
             )}

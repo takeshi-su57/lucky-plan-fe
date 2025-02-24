@@ -192,15 +192,15 @@ export default function LineChart({ title, data, className }: LineChartProps) {
   }, [drawModalChart, isOpen]);
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-row items-center justify-between">
-        <div className="flex flex-row items-center gap-2">
-          <span className="text-sm font-bold">{title || ""}</span>
-          <Button size="sm" variant="ghost" onPress={onOpen}>
-            Details
-          </Button>
-        </div>
+    <div className="relative flex flex-col gap-3">
+      <div className="absolute left-4 top-3 z-[1000] flex flex-row items-center gap-1">
+        <span className="text-sm font-bold">{title || ""}</span>
+        <Button size="sm" variant="ghost" onPress={onOpen}>
+          Details
+        </Button>
+      </div>
 
+      <div className="absolute bottom-4 right-4 z-[1000] flex flex-row items-center justify-between gap-0">
         <CheckboxGroup
           color="warning"
           value={selected}

@@ -10,6 +10,7 @@ import {
 } from "@/app/_hooks/useFollower";
 
 import { Chip, Skeleton } from "@nextui-org/react";
+import { getPriceStr } from "@/utils/price";
 
 export type FollowerInfoWidgetProps = {
   follower: {
@@ -65,7 +66,7 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
 
         {follower.accUSDPnl !== 0 ? (
           <Chip color={follower.accUSDPnl > 0 ? "warning" : "danger"}>
-            {follower.accUSDPnl} USDC
+            {getPriceStr(follower.accUSDPnl)} USDC
           </Chip>
         ) : null}
 

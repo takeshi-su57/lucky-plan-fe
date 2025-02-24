@@ -12,13 +12,15 @@ import {
   Select,
   SelectItem,
   DateRangePicker,
+  Switch,
 } from "@nextui-org/react";
 import type { Selection } from "@nextui-org/react";
 import { Address } from "viem";
 import type { RangeValue } from "@react-types/shared";
 import type { DateValue } from "@react-types/datepicker";
-import { now, getLocalTimeZone } from "@internationalized/date";
+import { now } from "@internationalized/date";
 
+import { getServerTimezone } from "@/utils";
 import { StandardModal } from "@/components/modals/StandardModal";
 
 import {
@@ -30,7 +32,6 @@ import {
   useGetBotsByStatus,
 } from "@/app-hooks/useAutomation";
 import { useGetUsersByTags } from "@/app-hooks/useUser";
-import { useGetAvailableFollowers } from "@/app-hooks/useFollower";
 import { useGetAllStrategyMetadata } from "@/app-hooks/useStrategy";
 import { useGetAllTags } from "@/app-hooks/useTag";
 import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHistories";
@@ -48,12 +49,14 @@ import { PairChip } from "../LeaderboardWidgets/PairChip";
 import { Virtuoso } from "react-virtuoso";
 
 export type CreateAutomationModalProps = {
+  planId: number | null;
   isOpen: boolean;
   onClose: () => void;
   onOpenChange: (value: boolean) => void;
 };
 
 export function CreateAutomationModal({
+  planId,
   isOpen,
   onClose,
   onOpenChange,
@@ -61,7 +64,6 @@ export function CreateAutomationModal({
   const { batchCreateBots, loading: createBotsLoading } = useBatchCreateBots();
 
   const allTags = useGetAllTags();
-  const allFollowers = useGetAvailableFollowers([]);
   const allContracts = useGetAllContracts();
   const allStrategyMetadata = useGetAllStrategyMetadata();
 
@@ -72,12 +74,12 @@ export function CreateAutomationModal({
   const [selectedTags, setSelectedTags] = useState<Selection>(
     new Set(["LEADER"]),
   );
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
   const selectedValue = useMemo(() => Array.from(selectedTags), [selectedTags]);
   const allLeaders = useGetUsersByTags(selectedValue as string[]);
 
   const [leaderAddress, setLeaderAddress] = useState<string | null>(null);
-  const [followerAddress, setFollowerAddress] = useState<string | null>(null);
   const [leaderContractId, setLeaderContractId] = useState<string | null>(null);
   const [followerContractId, setFollowerContractId] = useState<string | null>(
     null,
@@ -95,8 +97,8 @@ export function CreateAutomationModal({
   const [minLeverage, setMinLeverage] = useState("1.1");
 
   const [range, setRange] = useState<RangeValue<DateValue> | null>({
-    start: now(getLocalTimeZone()).subtract({ months: 3 }),
-    end: now(getLocalTimeZone()),
+    start: now(getServerTimezone()).subtract({ months: 3 }),
+    end: now(getServerTimezone()),
   });
 
   const followerAvailableTradePairs = useGetAllTradePairs(
@@ -213,7 +215,6 @@ export function CreateAutomationModal({
 
   const isDisabled =
     !leaderAddress ||
-    !followerAddress ||
     !leaderContractId ||
     !followerContractId ||
     !leaderCollateralBaseline;
@@ -255,7 +256,7 @@ export function CreateAutomationModal({
         input: [
           {
             leaderAddress,
-            followerAddress,
+            planId,
             leaderContractId: +leaderContractId,
             followerContractId: +followerContractId,
             leaderCollateralBaseline: Math.floor(+leaderCollateralBaseline),
@@ -276,7 +277,6 @@ export function CreateAutomationModal({
     });
 
     setLeaderAddress(null);
-    setFollowerAddress(null);
     setLeaderCollateralBaseline("");
 
     onClose();
@@ -312,14 +312,15 @@ export function CreateAutomationModal({
     () =>
       getHistoriesChartData(
         originalHistories || [],
+        showAllActivity ? "show_all_activity" : "show_only_valid_activity",
         range
           ? {
-              from: range.start.toDate(getLocalTimeZone()),
-              to: range.end.toDate(getLocalTimeZone()),
+              from: range.start.toDate(getServerTimezone()),
+              to: range.end.toDate(getServerTimezone()),
             }
           : undefined,
       ),
-    [originalHistories, range],
+    [originalHistories, range, showAllActivity],
   );
 
   const {
@@ -341,11 +342,7 @@ export function CreateAutomationModal({
       Number.isNaN(baseline) ||
       !strategy ||
       strategyHelper.trim() !== "" ||
-      (strategy === "ratioCopy" && ratioHelper.trim() !== "") ||
-      maxCollateralHelper.trim() !== "" ||
-      minCollateralHelper.trim() !== "" ||
-      maxLeverageHelper.trim() !== "" ||
-      minLeverageHelper.trim() !== ""
+      (strategy === "ratioCopy" && ratioHelper.trim() !== "")
     ) {
       return {
         pnlChartData: [],
@@ -367,10 +364,6 @@ export function CreateAutomationModal({
         strategyKey: strategy,
         ratio: +ratio,
         collateralBaseline: +collateralBaseline,
-        maxCollateral: +maxCollateral,
-        minCollateral: +minCollateral,
-        maxLeverage: +maxLeverage * 1000,
-        minLeverage: +minLeverage * 1000,
       },
     );
 
@@ -382,29 +375,23 @@ export function CreateAutomationModal({
       transformedHistories.filter((history) =>
         availablePairNames.includes(history.pair.toLowerCase()),
       ),
+      showAllActivity ? "show_all_activity" : "show_only_valid_activity",
       range
         ? {
-            from: range.start.toDate(getLocalTimeZone()),
-            to: range.end.toDate(getLocalTimeZone()),
+            from: range.start.toDate(getServerTimezone()),
+            to: range.end.toDate(getServerTimezone()),
           }
         : undefined,
     );
   }, [
     collateralBaseline,
-    followerAvailableTradePairs,
-    maxCollateral,
-    maxCollateralHelper,
-    maxLeverage,
-    maxLeverageHelper,
-    minCollateral,
-    minCollateralHelper,
-    minLeverage,
-    minLeverageHelper,
     originalHistories,
-    ratio,
-    ratioHelper,
     strategy,
     strategyHelper,
+    ratioHelper,
+    ratio,
+    followerAvailableTradePairs,
+    showAllActivity,
     range,
   ]);
 
@@ -512,7 +499,14 @@ export function CreateAutomationModal({
                     textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
                   >
                     <div className="flex flex-col">
-                      <span className="text-small">Chain: {item.chainId}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-small">
+                          Chain: {item.chainId}
+                        </span>
+                        <span className="text-small">
+                          {item.isTestnet ? "(Testnet)" : ""}
+                        </span>
+                      </div>
                       <span className="text-small">
                         Contract: {shrinkAddress(item.address as Address)}
                       </span>
@@ -520,27 +514,6 @@ export function CreateAutomationModal({
                         {item.description}
                       </span>
                     </div>
-                  </AutocompleteItem>
-                )}
-              </Autocomplete>
-
-              <Autocomplete
-                label="Follower"
-                variant="underlined"
-                defaultItems={allFollowers}
-                placeholder="Search follower"
-                selectedKey={followerAddress}
-                onSelectionChange={(key) =>
-                  setFollowerAddress(key as string | null)
-                }
-              >
-                {(item) => (
-                  <AutocompleteItem
-                    className="font-mono"
-                    key={item.address}
-                    textValue={shrinkAddress(item.address as Address)}
-                  >
-                    {shrinkAddress(item.address as Address)}
                   </AutocompleteItem>
                 )}
               </Autocomplete>
@@ -565,7 +538,14 @@ export function CreateAutomationModal({
                     textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
                   >
                     <div className="flex flex-col">
-                      <span className="text-small">Chain: {item.chainId}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-small">
+                          Chain: {item.chainId}
+                        </span>
+                        <span className="text-small">
+                          {item.isTestnet ? "(Testnet)" : ""}
+                        </span>
+                      </div>
                       <span className="text-small">
                         Contract: {shrinkAddress(item.address as Address)}
                       </span>
@@ -681,15 +661,27 @@ export function CreateAutomationModal({
           </div>
 
           <div className="flex flex-1 flex-col gap-6">
-            <DateRangePicker
-              label="Back Test Duration"
-              visibleMonths={2}
-              value={range}
-              onChange={setRange}
-              maxValue={now(getLocalTimeZone())}
-              errorMessage={rangeHelper}
-              className="w-fit"
-            />
+            <div className="flex items-center justify-between">
+              <DateRangePicker
+                label="Back Test Duration"
+                visibleMonths={2}
+                value={range}
+                onChange={setRange}
+                maxValue={now(getServerTimezone())}
+                errorMessage={rangeHelper}
+                className="w-fit"
+              />
+
+              <Switch
+                isSelected={showAllActivity}
+                onValueChange={setShowAllActivity}
+                size="sm"
+              >
+                {showAllActivity
+                  ? "Show All Activities"
+                  : "Show Valid Activities"}
+              </Switch>
+            </div>
 
             {originalTradePairs.length > 0 && (
               <span className="text-xl font-bold">
@@ -755,7 +747,11 @@ export function CreateAutomationModal({
 
                   <div className="flex items-center justify-between gap-4">
                     <span className="flex-1">
-                      Avg In: {(originalSumIn / originalCountIn).toFixed(2)}
+                      Avg In:{" "}
+                      {(originalCountIn > 0
+                        ? originalSumIn / originalCountIn
+                        : 0
+                      ).toFixed(2)}
                     </span>
                     <span className="flex-1">Count In: {originalCountIn}</span>
                   </div>
@@ -798,7 +794,11 @@ export function CreateAutomationModal({
 
                   <div className="flex items-center justify-between gap-4">
                     <span className="flex-1">
-                      Avg In: {(calculatedSumIn / calculatedCountIn).toFixed(2)}
+                      Avg In:{" "}
+                      {(calculatedCountIn > 0
+                        ? calculatedSumIn / calculatedCountIn
+                        : 0
+                      ).toFixed(2)}
                     </span>
                     <span className="flex-1">
                       Count In: {calculatedCountIn}

@@ -49,11 +49,11 @@ export function ContractPanel() {
       data: {
         id: {
           sortableAmount: contract.id,
-          component: contract.id,
+          component: `${contract.id}`,
         },
         chainId: {
           sortableAmount: contract.chainId,
-          component: contract.chainId,
+          component: `${contract.chainId} ${contract.isTestnet ? "(Testnet)" : ""}`,
         },
         address: {
           sortableAmount: contract.address,

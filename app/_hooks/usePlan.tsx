@@ -60,6 +60,12 @@ export const UPDATE_PLAN_DOCUMENT = graphql(`
   }
 `);
 
+export const DELETE_PLAN_DOCUMENT = graphql(`
+  mutation deletePlan($id: Int!) {
+    deletePlan(id: $id)
+  }
+`);
+
 export const START_PLAN_DOCUMENT = graphql(`
   mutation startPlan($id: Int!) {
     startPlan(id: $id) {
@@ -171,9 +177,62 @@ export function useCreatePlan() {
         },
       );
     }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at creating new plan!", {
+        variant: "error",
+      });
+    }
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return { createPlan, loading };
+}
+
+export function useDeletePlan() {
+  const [deletePlan, { data: newData, error, loading }] =
+    useMutation(DELETE_PLAN_DOCUMENT);
+  const client = useApolloClient();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      enqueueSnackbar("Success at deleting plan!", {
+        variant: "success",
+      });
+
+      client.cache.updateQuery(
+        {
+          query: GET_PLANS_BY_STATUS_DOCUMENT,
+          variables: { status: PlanStatus.Created },
+        },
+        (data) => {
+          if (data && data.getPlansByStatus.length > 0) {
+            return {
+              ...data,
+              getPlansByStatus: data.getPlansByStatus.filter(
+                (plan) =>
+                  getFragmentData(PLAN_DETAILS_INFO_FRAGMENT_DOCUMENT, plan)
+                    .id !== newData.deletePlan,
+              ),
+            };
+          } else {
+            return {
+              getPlansByStatus: [],
+            };
+          }
+        },
+      );
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at creating new plan!", {
+        variant: "error",
+      });
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return { deletePlan, loading };
 }
 
 export function useStartPlan() {
@@ -259,6 +318,12 @@ export function useAddBotsToPlan() {
         fragment: PLAN_DETAILS_INFO_FRAGMENT_DOCUMENT,
         fragmentName: "PlanDetailsInfo",
         data: planInfo,
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at adding bots to plan!", {
+        variant: "error",
       });
     }
   }, [client.cache, newData, error, enqueueSnackbar]);

@@ -9,10 +9,11 @@ import {
   Spinner,
   Select,
   SelectItem,
+  Switch,
 } from "@nextui-org/react";
 import { Virtuoso } from "react-virtuoso";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Address } from "viem";
+import dayjs from "dayjs";
 
 import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 
@@ -22,20 +23,47 @@ import { useGetPnlSnapshots } from "@/app-hooks/useHistory";
 import { shrinkAddress } from "@/utils";
 import { HistoriesWidget } from "./HistoriesWidget";
 
-export function Leaderboard() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
+export type LeaderboardProps = {
+  selectionLabel?: string;
+  selectedAddresses?: {
+    address: string;
+    contractId: number;
+    leaderCollateral: number;
+  }[];
+  onChangeSelection?: (
+    address: string,
+    contractId: number,
+    leaderCollateral: number,
+    isSelected: boolean,
+  ) => void;
+  endDate: Date;
+  initialContractId: string | null;
+  initialKind: PnlSnapshotKind;
+  onChangeParams: (contractId: string | null, kind: PnlSnapshotKind) => void;
+  hideTags: boolean;
+};
 
+export function Leaderboard({
+  endDate,
+  initialContractId,
+  initialKind,
+  onChangeParams,
+  hideTags,
+  selectionLabel,
+  selectedAddresses,
+  onChangeSelection,
+}: LeaderboardProps) {
   const allContracts = useGetAllContracts();
 
   const [contractId, setContractId] = useState<string | null>(
-    searchParams.get("contractId") || null,
+    initialContractId,
   );
-  const [kind, setKind] = useState<PnlSnapshotKind>(
-    (searchParams.get("kind") as PnlSnapshotKind) || PnlSnapshotKind.AllTime,
-  );
+  const [kind, setKind] = useState<PnlSnapshotKind>(initialKind);
+  const [showAllActivity, setShowAllActivity] = useState(true);
+  const [showAllTraders, setShowAllTraders] = useState(true);
 
   const { pnlSnapshots, fetchMore, hasMore, loading } = useGetPnlSnapshots(
+    dayjs(endDate).format("YYYY-MM-DD"),
     contractId,
     kind,
   );
@@ -46,78 +74,119 @@ export function Leaderboard() {
     if (value.trim() !== "") {
       setKind(value as PnlSnapshotKind);
 
-      const contractQuery = contractId ? `contractId=${contractId}` : null;
-      const kindQuery = value ? `kind=${value}` : null;
-
-      router.push(
-        `/leaderboards?${contractQuery || ""}${contractQuery && kindQuery ? `&` : ""}${kindQuery || ""}`,
-      );
+      onChangeParams(contractId, value as PnlSnapshotKind);
     }
   };
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <Select
-          variant="underlined"
-          label="Before"
-          selectedKeys={kind ? [kind] : undefined}
-          onChange={handleChangeKind}
-          selectionMode="single"
-          className="w-[200px] font-mono"
-        >
-          {Object.values(PnlSnapshotKind).map((item) => (
-            <SelectItem key={item}>{item}</SelectItem>
-          ))}
-        </Select>
+        <div className="flex items-center gap-4">
+          <Select
+            variant="underlined"
+            label="Before"
+            selectedKeys={kind ? [kind] : undefined}
+            onChange={handleChangeKind}
+            selectionMode="single"
+            className="w-[200px] font-mono"
+          >
+            {Object.values(PnlSnapshotKind).map((item) => (
+              <SelectItem key={item}>{item}</SelectItem>
+            ))}
+          </Select>
 
-        <Autocomplete
-          label="Follower Contract"
-          variant="underlined"
-          defaultItems={allContracts}
-          placeholder="Search contract"
-          selectedKey={contractId}
-          className="w-[400px]"
-          onSelectionChange={(key) => {
-            setContractId(key as string | null);
+          <Autocomplete
+            label="Contract"
+            variant="underlined"
+            defaultItems={allContracts}
+            placeholder="Search contract"
+            selectedKey={contractId}
+            className="w-[400px]"
+            onSelectionChange={(key) => {
+              setContractId(key as string | null);
 
-            const contractQuery = key ? `contractId=${key}` : null;
-            const kindQuery = kind ? `kind=${kind}` : null;
+              onChangeParams(key as string | null, kind);
+            }}
+          >
+            {(item) => (
+              <AutocompleteItem
+                key={item.id}
+                className="font-mono"
+                textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
+              >
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-small">Chain: {item.chainId}</span>
+                      <span className="text-small">
+                        {item.isTestnet ? "(Testnet)" : ""}
+                      </span>
+                    </div>
+                    <span className="text-small">
+                      {item.isTestnet ? "(Testnet)" : ""}
+                    </span>
+                  </div>
+                  <span className="text-small">Contract: {item.address}</span>
+                  <span className="text-tiny text-default-400">
+                    {item.description}
+                  </span>
+                </div>
+              </AutocompleteItem>
+            )}
+          </Autocomplete>
+        </div>
 
-            router.push(
-              `/leaderboards?${contractQuery || ""}${contractQuery && kindQuery ? `&` : ""}${kindQuery || ""}`,
-            );
-          }}
-        >
-          {(item) => (
-            <AutocompleteItem
-              key={item.id}
-              className="font-mono"
-              textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
-            >
-              <div className="flex flex-col">
-                <span className="text-small">Chain: {item.chainId}</span>
-                <span className="text-small">Contract: {item.address}</span>
-                <span className="text-tiny text-default-400">
-                  {item.description}
-                </span>
-              </div>
-            </AutocompleteItem>
-          )}
-        </Autocomplete>
+        <div className="flex items-center gap-8">
+          <Switch
+            isSelected={showAllActivity}
+            onValueChange={setShowAllActivity}
+            size="sm"
+          >
+            {showAllActivity ? "Show All Activities" : "Show Valid Activities"}
+          </Switch>
+
+          <Switch
+            isSelected={showAllTraders}
+            onValueChange={setShowAllTraders}
+            size="sm"
+          >
+            {showAllTraders
+              ? "Show All Traders"
+              : "Show Last 2 Days Active Traders"}
+          </Switch>
+        </div>
       </div>
 
       <Card>
         <CardBody>
           <Virtuoso
             style={{ height: 700 }}
-            data={pnlSnapshots}
+            data={contractId ? pnlSnapshots : []}
             itemContent={(_, snapshot) => (
               <HistoriesWidget
                 address={snapshot.address as Address}
-                kind={kind}
                 histories={snapshot.histories}
                 contractId={snapshot.contractId}
+                hideTags={hideTags}
+                range={{ to: endDate }}
+                label={selectionLabel}
+                isSelected={
+                  selectedAddresses
+                    ? !!selectedAddresses.find(
+                        (item) =>
+                          item.contractId === snapshot.contractId &&
+                          item.address.toLowerCase() ===
+                            snapshot.address.toLowerCase(),
+                      )
+                    : undefined
+                }
+                mode={
+                  showAllActivity
+                    ? "show_all_activity"
+                    : "show_only_valid_activity"
+                }
+                showLastTwoDaysTraders={!showAllTraders}
+                onChangeSelection={onChangeSelection}
               />
             )}
             endReached={() => hasMore && !loading && fetchMore()}
