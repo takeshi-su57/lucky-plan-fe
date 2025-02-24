@@ -107,6 +107,14 @@ export const PERFORM_TASK_DOCUMENT = graphql(`
   }
 `);
 
+export const STOP_TASK_DOCUMENT = graphql(`
+  mutation stopTask($id: Int!) {
+    stopTask(id: $id) {
+      ...TaskShallowDetailsInfo
+    }
+  }
+`);
+
 export const TASK_ADDED_SUBSCRIPTION_DOCUMENT = graphql(`
   subscription taskAdded {
     taskAdded {
@@ -352,4 +360,32 @@ export function usePerformTask() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return performTask;
+}
+
+export function useStopTask() {
+  const [stopTask, { data: newData, error }] = useMutation(STOP_TASK_DOCUMENT);
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData?.stopTask && !error) {
+      const taskInfo = getTaskFragment(newData.stopTask);
+
+      enqueueSnackbar("Success at stop task!", {
+        variant: "success",
+      });
+
+      client.cache.writeFragment({
+        id: client.cache.identify({
+          __typename: taskInfo.__typename,
+          id: taskInfo.id,
+        }),
+        fragment: TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "TaskShallowDetailsInfo",
+        data: taskInfo,
+      });
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return stopTask;
 }

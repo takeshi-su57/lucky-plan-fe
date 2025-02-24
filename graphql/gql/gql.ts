@@ -100,6 +100,7 @@ const documents = {
     "\n  query getTasksByStatus($status: TaskStatus!) {\n    getTasksByStatus(status: $status) {\n      ...TaskShallowDetailsInfo\n    }\n  }\n": types.GetTasksByStatusDocument,
     "\n  query findTask($id: Int!) {\n    findTask(id: $id) {\n      ...TaskWithActionsInfo\n    }\n  }\n": types.FindTaskDocument,
     "\n  mutation performTask($id: Int!) {\n    performTask(id: $id) {\n      ...TaskShallowDetailsInfo\n    }\n  }\n": types.PerformTaskDocument,
+    "\n  mutation stopTask($id: Int!) {\n    stopTask(id: $id) {\n      ...TaskShallowDetailsInfo\n    }\n  }\n": types.StopTaskDocument,
     "\n  subscription taskAdded {\n    taskAdded {\n      ...TaskShallowDetailsInfo\n    }\n  }\n": types.TaskAddedDocument,
     "\n  subscription taskUpdated {\n    taskUpdated {\n      ...TaskShallowDetailsInfo\n    }\n  }\n": types.TaskUpdatedDocument,
     "\n  fragment UserInfo on User {\n    address\n    tags {\n      ...TagInfo\n    }\n  }\n": types.UserInfoFragmentDoc,
@@ -467,6 +468,10 @@ export function graphql(source: "\n  query findTask($id: Int!) {\n    findTask(i
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation performTask($id: Int!) {\n    performTask(id: $id) {\n      ...TaskShallowDetailsInfo\n    }\n  }\n"): (typeof documents)["\n  mutation performTask($id: Int!) {\n    performTask(id: $id) {\n      ...TaskShallowDetailsInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation stopTask($id: Int!) {\n    stopTask(id: $id) {\n      ...TaskShallowDetailsInfo\n    }\n  }\n"): (typeof documents)["\n  mutation stopTask($id: Int!) {\n    stopTask(id: $id) {\n      ...TaskShallowDetailsInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
