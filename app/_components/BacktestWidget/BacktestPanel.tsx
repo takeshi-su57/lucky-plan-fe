@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { parseDate } from "@internationalized/date";
-import { AccordionItem, Accordion, Tab, Tabs } from "@nextui-org/react";
+import { Tab, Tabs } from "@nextui-org/react";
+import { useSnackbar } from "notistack";
 
 import { getServerTimezone } from "@/utils";
 import { Stepper } from "@/components/Stepper/Stepper";
@@ -18,7 +19,7 @@ import { SaveStep } from "./SaveStep";
 import { LeaderParams } from "./LeaderItem";
 
 import { useGetBacktestHistories } from "@/app-hooks/useGetBacktestHistories";
-import { useSnackbar } from "notistack";
+import { SavedBacktestView } from "./SavedBacktestView";
 
 type TabType = "new" | "saved";
 
@@ -161,21 +162,13 @@ export function BacktestPanel() {
         <Stepper steps={steps} currentStep={currentStep} />
       ) : null}
 
-      {selected === "saved" ? (
-        <Accordion isCompact variant="splitted">
-          {savedBacktests.map((backtest, index) => (
-            <AccordionItem key={index} title={`Backtest ${index}`}>
-              <BacktestResult
-                startDate={backtest.pastDate}
-                leaders={backtest.leaders}
-                parameters={backtest.parameters}
-                onNextStep={() => {}}
-                onPrevStep={() => {}}
-              />
-            </AccordionItem>
-          ))}
-        </Accordion>
-      ) : null}
+      <div className="flex flex-col gap-2">
+        {selected === "saved"
+          ? savedBacktests.map((backtest, index) => (
+              <SavedBacktestView key={index} backtest={backtest} />
+            ))
+          : null}
+      </div>
     </div>
   );
 }

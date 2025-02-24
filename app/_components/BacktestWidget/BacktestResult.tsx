@@ -29,8 +29,8 @@ export type BacktestResultProps = {
   startDate: Date;
   leaders: LeaderParams[];
   parameters: BacktestParameters;
-  onNextStep: () => void;
-  onPrevStep: () => void;
+  onNextStep?: () => void;
+  onPrevStep?: () => void;
 };
 
 export function BacktestResult({
@@ -139,7 +139,9 @@ export function BacktestResult({
                 {leaders.map((leader) => (
                   <AccordionItem
                     key={leader.virtualId}
-                    title={<LeaderItem params={leader} />}
+                    title={
+                      <LeaderItem params={{ ...leader, isConfirmed: true }} />
+                    }
                   >
                     <FutureChart
                       startDate={startDate}
@@ -161,13 +163,27 @@ export function BacktestResult({
       ) : null}
 
       <div className="flex flex-row items-center gap-2">
-        <Button variant="solid" onClick={onNextStep} color="primary" size="sm">
-          Continue
-        </Button>
+        {onNextStep ? (
+          <Button
+            variant="solid"
+            onClick={onNextStep}
+            color="primary"
+            size="sm"
+          >
+            Continue
+          </Button>
+        ) : null}
 
-        <Button variant="light" onClick={onPrevStep} color="primary" size="sm">
-          Back
-        </Button>
+        {onPrevStep ? (
+          <Button
+            variant="light"
+            onClick={onPrevStep}
+            color="primary"
+            size="sm"
+          >
+            Back
+          </Button>
+        ) : null}
       </div>
     </div>
   );

@@ -28,6 +28,7 @@ export function useGetBacktestHistories() {
       ).map(
         (item: any) =>
           ({
+            virtualId: item.virtualId,
             pastDate: new Date(item.pastDate),
             leaders: item.leaders,
             parameters: {
@@ -63,5 +64,19 @@ export function useGetBacktestHistories() {
     [data, refetch],
   );
 
-  return { data: data || [], handleSave };
+  const handleRemove = useCallback(
+    (id: string) => {
+      localStorage.setItem(
+        "BACKTEST_HISTORIES",
+        JSON.stringify([
+          ...(data ? data : []).filter((item) => item.virtualId !== id),
+        ]),
+      );
+
+      refetch();
+    },
+    [data, refetch],
+  );
+
+  return { data: data || [], handleSave, handleRemove };
 }

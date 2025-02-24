@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Button } from "@nextui-org/react";
 import dayjs from "dayjs";
+import { nanoid } from "nanoid";
+import { useGetAllContracts } from "@/app/_hooks/useContract";
 
 import { useIsPnlSnapshotInitialized } from "@/app-hooks/useHistory";
 
@@ -10,8 +12,7 @@ import { InitializePnlSnapshotBoard } from "./InitializePnlSnapshotBoard";
 import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 import { Leaderboard } from "../LeaderboardWidgets/Leaderboard";
 import { LeaderParams } from "./LeaderItem";
-import { nanoid } from "nanoid";
-import { useGetAllContracts } from "@/app/_hooks/useContract";
+
 export type SelectLeadersProps = {
   leaders: LeaderParams[];
   onChangeLeaders: (leaders: LeaderParams[]) => void;
