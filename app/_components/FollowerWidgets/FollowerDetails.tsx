@@ -169,6 +169,7 @@ export function FollowerDetails({
                   <PositionSummary
                     index={trade.index}
                     mission={trade.mission}
+                    params={trade.params}
                   />
                 }
               >
