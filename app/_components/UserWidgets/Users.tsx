@@ -12,6 +12,7 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
+  Switch,
 } from "@nextui-org/react";
 import type { Selection } from "@nextui-org/react";
 import { Virtuoso } from "react-virtuoso";
@@ -42,6 +43,7 @@ export function Users() {
   const [selectedTags, setSelectedTags] = useState<Selection>(
     new Set((searchParams.get("tags") || "").split(",")),
   );
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
   const selectedValue = useMemo(() => Array.from(selectedTags), [selectedTags]);
 
@@ -139,6 +141,14 @@ export function Users() {
               ))}
             </DropdownMenu>
           </Dropdown>
+
+          <Switch
+            isSelected={showAllActivity}
+            onValueChange={setShowAllActivity}
+            size="sm"
+          >
+            {showAllActivity ? "Show All Activities" : "Show Valid Activities"}
+          </Switch>
         </div>
 
         <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>
@@ -156,6 +166,11 @@ export function Users() {
                 <UserTradeHistory
                   address={snapshot.address as Address}
                   contractId={contractId}
+                  mode={
+                    showAllActivity
+                      ? "show_all_activity"
+                      : "show_only_valid_activity"
+                  }
                 />
               )}
             />

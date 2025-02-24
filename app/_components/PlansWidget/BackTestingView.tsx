@@ -38,6 +38,7 @@ export function BackTestingView({
     start: now(getServerTimezone()).subtract({ months: 3 }),
     end: now(getServerTimezone()),
   });
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
   let rangeHelper = "";
 
@@ -65,6 +66,14 @@ export function BackTestingView({
         >
           {isLeaderChart ? "Leader Chart" : "Follower Chart"}
         </Switch>
+
+        <Switch
+          isSelected={showAllActivity}
+          onValueChange={setShowAllActivity}
+          size="sm"
+        >
+          {showAllActivity ? "Show All Activities" : "Show Valid Activities"}
+        </Switch>
       </div>
 
       <Card>
@@ -85,6 +94,9 @@ export function BackTestingView({
                     to: range.end.toDate(getServerTimezone()),
                   }
                 : undefined
+            }
+            mode={
+              showAllActivity ? "show_all_activity" : "show_only_valid_activity"
             }
           />
         </CardBody>
@@ -133,6 +145,11 @@ export function BackTestingView({
                 )}
                 itemContent={(_, botId) => (
                   <AutomationGridChart
+                    mode={
+                      showAllActivity
+                        ? "show_all_activity"
+                        : "show_only_valid_activity"
+                    }
                     histories={botsHistories[botId] || []}
                     title={`Automation ${botId}`}
                     range={

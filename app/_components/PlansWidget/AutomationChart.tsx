@@ -11,6 +11,7 @@ import { getPriceStr } from "@/utils/price";
 export type AutomationChartProps = {
   title: string;
   histories: PersonalTradeHistory[];
+  mode: "show_all_activity" | "show_only_valid_activity";
   range?: {
     from: Date;
     to: Date;
@@ -20,11 +21,12 @@ export type AutomationChartProps = {
 export function AutomationGridChart({
   histories,
   title,
+  mode,
   range,
 }: AutomationChartProps) {
   const { pnlChartData, inOutChartData, inChartData, outChartData } = useMemo(
-    () => getHistoriesChartData(histories || [], range),
-    [histories, range],
+    () => getHistoriesChartData(histories || [], mode, range),
+    [histories, mode, range],
   );
 
   const totalInvested = inOutChartData.reduce(

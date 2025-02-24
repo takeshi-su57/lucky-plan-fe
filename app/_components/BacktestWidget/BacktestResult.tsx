@@ -42,6 +42,7 @@ export function BacktestResult({
 }: BacktestResultProps) {
   const [selected, setSelected] = useState<TabType>("overview");
   const [isLeaderChart, setIsLeaderChart] = useState(true);
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
   const [leaderHistories, setLeaderHistories] = useState<
     Record<string, PersonalTradeHistory[]>
@@ -114,14 +115,28 @@ export function BacktestResult({
 
       {selected === "overview" ? (
         <>
-          <Switch
-            isSelected={isLeaderChart}
-            onValueChange={setIsLeaderChart}
-            size="sm"
-          >
-            {isLeaderChart ? "Leader Chart" : "Follower Chart"}
-          </Switch>
+          <div className="flex items-center gap-2">
+            <Switch
+              isSelected={isLeaderChart}
+              onValueChange={setIsLeaderChart}
+              size="sm"
+            >
+              {isLeaderChart ? "Leader Chart" : "Follower Chart"}
+            </Switch>
+            <Switch
+              isSelected={showAllActivity}
+              onValueChange={setShowAllActivity}
+              size="sm"
+            >
+              {showAllActivity
+                ? "Show All Activities"
+                : "Show Valid Activities"}
+            </Switch>
+          </div>
           <AutomationGridChart
+            mode={
+              showAllActivity ? "show_all_activity" : "show_only_valid_activity"
+            }
             histories={
               isLeaderChart ? totalLeaderHistories : totalFollowerHistories
             }

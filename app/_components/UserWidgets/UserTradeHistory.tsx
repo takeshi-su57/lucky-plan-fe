@@ -8,11 +8,13 @@ import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget";
 export type UserTradeHistoryProps = {
   address: Address;
   contractId: string;
+  mode: "show_all_activity" | "show_only_valid_activity";
 };
 
 export function UserTradeHistory({
   address,
   contractId,
+  mode,
 }: UserTradeHistoryProps) {
   const allHistories = useGetAllTradeHistory(address, contractId);
 
@@ -22,6 +24,7 @@ export function UserTradeHistory({
       contractId={+contractId}
       histories={allHistories}
       hideTags={false}
+      mode={mode}
     />
   );
 }

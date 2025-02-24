@@ -39,8 +39,9 @@ export function PastChart({
   onRemove,
   onConfirm,
 }: PastChartProps) {
-  const [isLeaderChart, setIsLeaderChart] = useState(true);
-  const [isAllTime, setIsAllTime] = useState(false);
+  const [isLeaderChart, setIsLeaderChart] = useState(false);
+  const [isAllTime, setIsAllTime] = useState(true);
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
   const allContracts = useGetAllContracts();
 
@@ -55,9 +56,13 @@ export function PastChart({
       return allHistories || [];
     }
 
-    const { sumIn, countIn } = getHistoriesChartData(allHistories || [], {
-      to: endDate,
-    });
+    const { sumIn, countIn } = getHistoriesChartData(
+      allHistories || [],
+      showAllActivity ? "show_all_activity" : "show_only_valid_activity",
+      {
+        to: endDate,
+      },
+    );
 
     const leaderCollateralBaseline = countIn > 0 ? sumIn / countIn : 0;
     const followerCollateralBaseline = getFollowerCollateralBaseline(
@@ -76,7 +81,13 @@ export function PastChart({
     );
 
     return transformed;
-  }, [allHistories, endDate, isLeaderChart, parameters]);
+  }, [
+    allHistories,
+    endDate,
+    isLeaderChart,
+    parameters.collateralBaselines,
+    showAllActivity,
+  ]);
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -103,6 +114,14 @@ export function PastChart({
           <Switch isSelected={isAllTime} onValueChange={setIsAllTime} size="sm">
             {isAllTime ? "All Time" : "Past Week"}
           </Switch>
+
+          <Switch
+            isSelected={showAllActivity}
+            onValueChange={setShowAllActivity}
+            size="sm"
+          >
+            {showAllActivity ? "Show All Activities" : "Show Valid Activities"}
+          </Switch>
         </div>
       </div>
 
@@ -119,6 +138,9 @@ export function PastChart({
                 .subtract({ days: 7 })
                 .toDate(getServerTimezone()),
         }}
+        mode={
+          showAllActivity ? "show_all_activity" : "show_only_valid_activity"
+        }
       />
     </div>
   );
