@@ -410,3 +410,22 @@ export function convertMillisToReadableTime(milliseconds: number): string {
 export function getServerTimezone() {
   return process.env.NEXT_PUBLIC_SERVER_TIME_ZONE;
 }
+
+export function getPNLPercentage(params: {
+  long: boolean;
+  closePrice: number;
+  openPrice: number;
+  leverage: number;
+}) {
+  const p =
+    params.openPrice > 0
+      ? ((params.long
+          ? params.closePrice - params.openPrice
+          : params.openPrice - params.closePrice) *
+          100 *
+          params.leverage) /
+        params.openPrice
+      : 0;
+
+  return p > 900 ? 900 : p;
+}
