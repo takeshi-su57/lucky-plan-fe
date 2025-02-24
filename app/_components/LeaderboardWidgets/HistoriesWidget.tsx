@@ -97,7 +97,7 @@ export function HistoriesWidget({
     },
     {
       id: "totalInvested",
-      label: "Total Invested",
+      label: "Max In",
       value: `$${getPriceStr(-totalInvested)}`,
     },
     {
