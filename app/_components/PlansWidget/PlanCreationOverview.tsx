@@ -28,6 +28,7 @@ export function PlanCreationOverview({
     start: now(getServerTimezone()).subtract({ months: 3 }),
     end: now(getServerTimezone()),
   });
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
   let rangeHelper = "";
 
@@ -55,6 +56,14 @@ export function PlanCreationOverview({
         >
           {isLeaderChart ? "Leader Chart" : "Follower Chart"}
         </Switch>
+
+        <Switch
+          isSelected={showAllActivity}
+          onValueChange={setShowAllActivity}
+          size="sm"
+        >
+          {showAllActivity ? "Show All Activities" : "Show Valid Activities"}
+        </Switch>
       </div>
 
       <AutomationGridChart
@@ -64,6 +73,9 @@ export function PlanCreationOverview({
           from: range?.start?.toDate(getServerTimezone()) || new Date(),
           to: range?.end?.toDate(getServerTimezone()) || new Date(),
         }}
+        mode={
+          showAllActivity ? "show_all_activity" : "show_only_valid_activity"
+        }
       />
 
       <div className="flex flex-row items-center gap-2">

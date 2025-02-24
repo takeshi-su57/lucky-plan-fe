@@ -209,6 +209,7 @@ export function AutomationDetails({
                     }
                   : undefined
               }
+              mode="show_all_activity"
             />
 
             <Divider />
@@ -224,6 +225,7 @@ export function AutomationDetails({
                     }
                   : undefined
               }
+              mode="show_all_activity"
             />
           </CardBody>
         </Card>

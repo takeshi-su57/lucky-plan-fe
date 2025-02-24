@@ -32,6 +32,7 @@ export function FutureChart({
 }: FutureChartProps) {
   const [isLeaderChart, setIsLeaderChart] = useState(true);
   const [isPastWeek, setIsPastWeek] = useState(false);
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -47,6 +48,14 @@ export function FutureChart({
         <Switch isSelected={isPastWeek} onValueChange={setIsPastWeek} size="sm">
           {isPastWeek ? "Past Week" : "All Time"}
         </Switch>
+
+        <Switch
+          isSelected={showAllActivity}
+          onValueChange={setShowAllActivity}
+          size="sm"
+        >
+          {showAllActivity ? "Show All Activities" : "Show Valid Activities"}
+        </Switch>
       </div>
 
       <HistoriesWidget
@@ -60,6 +69,9 @@ export function FutureChart({
             ? dayjs(endDate).subtract(7, "day").toDate()
             : startDate,
         }}
+        mode={
+          showAllActivity ? "show_all_activity" : "show_only_valid_activity"
+        }
       />
     </div>
   );

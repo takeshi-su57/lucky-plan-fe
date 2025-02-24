@@ -12,6 +12,7 @@ import {
   Select,
   SelectItem,
   DateRangePicker,
+  Switch,
 } from "@nextui-org/react";
 import type { Selection } from "@nextui-org/react";
 import { Address } from "viem";
@@ -73,6 +74,7 @@ export function CreateAutomationModal({
   const [selectedTags, setSelectedTags] = useState<Selection>(
     new Set(["LEADER"]),
   );
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
   const selectedValue = useMemo(() => Array.from(selectedTags), [selectedTags]);
   const allLeaders = useGetUsersByTags(selectedValue as string[]);
@@ -310,6 +312,7 @@ export function CreateAutomationModal({
     () =>
       getHistoriesChartData(
         originalHistories || [],
+        showAllActivity ? "show_all_activity" : "show_only_valid_activity",
         range
           ? {
               from: range.start.toDate(getServerTimezone()),
@@ -317,7 +320,7 @@ export function CreateAutomationModal({
             }
           : undefined,
       ),
-    [originalHistories, range],
+    [originalHistories, range, showAllActivity],
   );
 
   const {
@@ -372,6 +375,7 @@ export function CreateAutomationModal({
       transformedHistories.filter((history) =>
         availablePairNames.includes(history.pair.toLowerCase()),
       ),
+      showAllActivity ? "show_all_activity" : "show_only_valid_activity",
       range
         ? {
             from: range.start.toDate(getServerTimezone()),
@@ -381,12 +385,13 @@ export function CreateAutomationModal({
     );
   }, [
     collateralBaseline,
-    followerAvailableTradePairs,
     originalHistories,
-    ratio,
-    ratioHelper,
     strategy,
     strategyHelper,
+    ratioHelper,
+    ratio,
+    followerAvailableTradePairs,
+    showAllActivity,
     range,
   ]);
 
@@ -656,15 +661,27 @@ export function CreateAutomationModal({
           </div>
 
           <div className="flex flex-1 flex-col gap-6">
-            <DateRangePicker
-              label="Back Test Duration"
-              visibleMonths={2}
-              value={range}
-              onChange={setRange}
-              maxValue={now(getServerTimezone())}
-              errorMessage={rangeHelper}
-              className="w-fit"
-            />
+            <div className="flex items-center justify-between">
+              <DateRangePicker
+                label="Back Test Duration"
+                visibleMonths={2}
+                value={range}
+                onChange={setRange}
+                maxValue={now(getServerTimezone())}
+                errorMessage={rangeHelper}
+                className="w-fit"
+              />
+
+              <Switch
+                isSelected={showAllActivity}
+                onValueChange={setShowAllActivity}
+                size="sm"
+              >
+                {showAllActivity
+                  ? "Show All Activities"
+                  : "Show Valid Activities"}
+              </Switch>
+            </div>
 
             {originalTradePairs.length > 0 && (
               <span className="text-xl font-bold">

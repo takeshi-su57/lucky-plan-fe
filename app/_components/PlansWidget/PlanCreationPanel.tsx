@@ -201,7 +201,9 @@ export function PlanCreationPanel() {
             address: item.leaderAddress,
             contract: item.leaderContract,
             leaderCollateral: item.leaderCollateralBaseline,
+            isConfirmed: false,
           }))}
+          hideTags={true}
           onChangeLeaders={handleChangeLeaders}
           endDate={new Date()}
           onNextStep={() => setCurrentStep(3)}

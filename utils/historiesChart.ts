@@ -2,6 +2,7 @@ import { PersonalTradeHistory, TradeActionType } from "@/types";
 
 export function getSortedPartialHistories(
   histories: PersonalTradeHistory[],
+  mode: "show_all_activity" | "show_only_valid_activity",
   range?: { from?: Date; to?: Date },
 ) {
   const inRangeHistories: PersonalTradeHistory[] = [];
@@ -40,7 +41,7 @@ export function getSortedPartialHistories(
           history.action === TradeActionType.TradeOpenedLimit,
       );
 
-      if (!positionSetupAction) {
+      if (mode === "show_only_valid_activity" && !positionSetupAction) {
         return false;
       }
 
@@ -52,7 +53,7 @@ export function getSortedPartialHistories(
           history.action === TradeActionType.TradeClosedTP,
       );
 
-      if (!positionCloseAction) {
+      if (mode === "show_only_valid_activity" && !positionCloseAction) {
         return false;
       }
 
@@ -65,6 +66,7 @@ export function getSortedPartialHistories(
 
 export function getHistoriesChartData(
   histories: PersonalTradeHistory[],
+  mode: "show_all_activity" | "show_only_valid_activity",
   range?: {
     from?: Date;
     to?: Date;
@@ -100,7 +102,7 @@ export function getHistoriesChartData(
   let countIn = 0;
   const actionCounts: Record<string, number> = {};
 
-  const sortedHistories = getSortedPartialHistories(histories, range);
+  const sortedHistories = getSortedPartialHistories(histories, mode, range);
 
   if (sortedHistories.length > 0) {
     [

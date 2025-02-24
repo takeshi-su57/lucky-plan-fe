@@ -29,6 +29,8 @@ export type HistoriesWidgetProps = {
     leaderCollateral: number,
     isSelected: boolean,
   ) => void;
+  mode: "show_all_activity" | "show_only_valid_activity";
+  showLastTwoDaysTraders?: boolean;
   range?: {
     from?: Date;
     to?: Date;
@@ -43,6 +45,8 @@ export function HistoriesWidget({
   isSelected,
   label,
   onChangeSelection,
+  showLastTwoDaysTraders,
+  mode,
   range,
 }: HistoriesWidgetProps) {
   const {
@@ -58,8 +62,8 @@ export function HistoriesWidget({
     firstActivity,
     lastActivity,
   } = useMemo(
-    () => getHistoriesChartData(histories, range),
-    [histories, range],
+    () => getHistoriesChartData(histories, mode, range),
+    [histories, mode, range],
   );
 
   const totalInvested = inOutChartData.reduce(
@@ -131,6 +135,14 @@ export function HistoriesWidget({
         : "",
     },
   ];
+
+  if (range && range.to && showLastTwoDaysTraders) {
+    const twoDaysAgo = dayjs(range.to).subtract(2, "day").toDate();
+
+    if (!lastActivity || lastActivity < twoDaysAgo) {
+      return <div />;
+    }
+  }
 
   return (
     <Card

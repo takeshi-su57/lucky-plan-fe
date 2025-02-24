@@ -11,7 +11,10 @@ import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHis
 import { useGetAllContracts } from "@/app-hooks/useContract";
 
 import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget";
-import { BacktestParameters } from "./BacktestParamtersForm";
+import {
+  BacktestParameters,
+  getFollowerCollateralBaseline,
+} from "./BacktestParamtersForm";
 
 import {
   getHistoriesChartData,
@@ -25,6 +28,7 @@ export type PastChartProps = {
   address: string;
   parameters: BacktestParameters;
   onRemove: () => void;
+  onConfirm: () => void;
 };
 
 export function PastChart({
@@ -33,9 +37,11 @@ export function PastChart({
   address,
   parameters,
   onRemove,
+  onConfirm,
 }: PastChartProps) {
-  const [isLeaderChart, setIsLeaderChart] = useState(true);
-  const [isAllTime, setIsAllTime] = useState(false);
+  const [isLeaderChart, setIsLeaderChart] = useState(false);
+  const [isAllTime, setIsAllTime] = useState(true);
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
   const allContracts = useGetAllContracts();
 
@@ -50,29 +56,51 @@ export function PastChart({
       return allHistories || [];
     }
 
-    const { sumIn, countIn } = getHistoriesChartData(allHistories || [], {
-      to: endDate,
-    });
+    const { sumIn, countIn } = getHistoriesChartData(
+      allHistories || [],
+      showAllActivity ? "show_all_activity" : "show_only_valid_activity",
+      {
+        to: endDate,
+      },
+    );
+
+    const leaderCollateralBaseline = countIn > 0 ? sumIn / countIn : 0;
+    const followerCollateralBaseline = getFollowerCollateralBaseline(
+      parameters.collateralBaselines,
+      leaderCollateralBaseline,
+    );
 
     const transformed = transformHistories(
       allHistories || [],
-      countIn > 0 ? sumIn / countIn : 0,
+      leaderCollateralBaseline,
       {
-        ...parameters,
         strategyKey: "scaleCopy",
         ratio: 100,
+        collateralBaseline: followerCollateralBaseline,
       },
     );
 
     return transformed;
-  }, [allHistories, endDate, isLeaderChart, parameters]);
+  }, [
+    allHistories,
+    endDate,
+    isLeaderChart,
+    parameters.collateralBaselines,
+    showAllActivity,
+  ]);
 
   return (
     <div className="flex w-full flex-col gap-2">
       <div className="flex w-full flex-row items-center justify-between gap-2">
-        <Button size="sm" variant="ghost" color="danger" onClick={onRemove}>
-          <FaTrash /> Cancel Selection
-        </Button>
+        <div className="flex flex-row gap-2">
+          <Button size="sm" variant="flat" color="danger" onClick={onRemove}>
+            <FaTrash /> Cancel Selection
+          </Button>
+
+          <Button size="sm" variant="flat" color="success" onClick={onConfirm}>
+            <FaTrash /> Confirm Selection
+          </Button>
+        </div>
 
         <div className="flex flex-row items-center gap-2">
           <Switch
@@ -85,6 +113,14 @@ export function PastChart({
 
           <Switch isSelected={isAllTime} onValueChange={setIsAllTime} size="sm">
             {isAllTime ? "All Time" : "Past Week"}
+          </Switch>
+
+          <Switch
+            isSelected={showAllActivity}
+            onValueChange={setShowAllActivity}
+            size="sm"
+          >
+            {showAllActivity ? "Show All Activities" : "Show Valid Activities"}
           </Switch>
         </div>
       </div>
@@ -102,6 +138,9 @@ export function PastChart({
                 .subtract({ days: 7 })
                 .toDate(getServerTimezone()),
         }}
+        mode={
+          showAllActivity ? "show_all_activity" : "show_only_valid_activity"
+        }
       />
     </div>
   );

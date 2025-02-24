@@ -9,6 +9,7 @@ import {
   Spinner,
   Select,
   SelectItem,
+  Switch,
 } from "@nextui-org/react";
 import { Virtuoso } from "react-virtuoso";
 import { Address } from "viem";
@@ -58,6 +59,8 @@ export function Leaderboard({
     initialContractId,
   );
   const [kind, setKind] = useState<PnlSnapshotKind>(initialKind);
+  const [showAllActivity, setShowAllActivity] = useState(true);
+  const [showAllTraders, setShowAllTraders] = useState(true);
 
   const { pnlSnapshots, fetchMore, hasMore, loading } = useGetPnlSnapshots(
     dayjs(endDate).format("YYYY-MM-DD"),
@@ -77,59 +80,81 @@ export function Leaderboard({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-4">
-        <Select
-          variant="underlined"
-          label="Before"
-          selectedKeys={kind ? [kind] : undefined}
-          onChange={handleChangeKind}
-          selectionMode="single"
-          className="w-[200px] font-mono"
-        >
-          {Object.values(PnlSnapshotKind).map((item) => (
-            <SelectItem key={item}>{item}</SelectItem>
-          ))}
-        </Select>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Select
+            variant="underlined"
+            label="Before"
+            selectedKeys={kind ? [kind] : undefined}
+            onChange={handleChangeKind}
+            selectionMode="single"
+            className="w-[200px] font-mono"
+          >
+            {Object.values(PnlSnapshotKind).map((item) => (
+              <SelectItem key={item}>{item}</SelectItem>
+            ))}
+          </Select>
 
-        <Autocomplete
-          label="Contract"
-          variant="underlined"
-          defaultItems={allContracts}
-          placeholder="Search contract"
-          selectedKey={contractId}
-          className="w-[400px]"
-          onSelectionChange={(key) => {
-            setContractId(key as string | null);
+          <Autocomplete
+            label="Contract"
+            variant="underlined"
+            defaultItems={allContracts}
+            placeholder="Search contract"
+            selectedKey={contractId}
+            className="w-[400px]"
+            onSelectionChange={(key) => {
+              setContractId(key as string | null);
 
-            onChangeParams(key as string | null, kind);
-          }}
-        >
-          {(item) => (
-            <AutocompleteItem
-              key={item.id}
-              className="font-mono"
-              textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
-            >
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
+              onChangeParams(key as string | null, kind);
+            }}
+          >
+            {(item) => (
+              <AutocompleteItem
+                key={item.id}
+                className="font-mono"
+                textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
+              >
+                <div className="flex flex-col">
                   <div className="flex items-center gap-2">
-                    <span className="text-small">Chain: {item.chainId}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-small">Chain: {item.chainId}</span>
+                      <span className="text-small">
+                        {item.isTestnet ? "(Testnet)" : ""}
+                      </span>
+                    </div>
                     <span className="text-small">
                       {item.isTestnet ? "(Testnet)" : ""}
                     </span>
                   </div>
-                  <span className="text-small">
-                    {item.isTestnet ? "(Testnet)" : ""}
+                  <span className="text-small">Contract: {item.address}</span>
+                  <span className="text-tiny text-default-400">
+                    {item.description}
                   </span>
                 </div>
-                <span className="text-small">Contract: {item.address}</span>
-                <span className="text-tiny text-default-400">
-                  {item.description}
-                </span>
-              </div>
-            </AutocompleteItem>
-          )}
-        </Autocomplete>
+              </AutocompleteItem>
+            )}
+          </Autocomplete>
+        </div>
+
+        <div className="flex items-center gap-8">
+          <Switch
+            isSelected={showAllActivity}
+            onValueChange={setShowAllActivity}
+            size="sm"
+          >
+            {showAllActivity ? "Show All Activities" : "Show Valid Activities"}
+          </Switch>
+
+          <Switch
+            isSelected={showAllTraders}
+            onValueChange={setShowAllTraders}
+            size="sm"
+          >
+            {showAllTraders
+              ? "Show All Traders"
+              : "Show Last 2 Days Active Traders"}
+          </Switch>
+        </div>
       </div>
 
       <Card>
@@ -155,6 +180,12 @@ export function Leaderboard({
                       )
                     : undefined
                 }
+                mode={
+                  showAllActivity
+                    ? "show_all_activity"
+                    : "show_only_valid_activity"
+                }
+                showLastTwoDaysTraders={!showAllTraders}
                 onChangeSelection={onChangeSelection}
               />
             )}

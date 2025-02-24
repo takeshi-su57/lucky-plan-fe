@@ -40,11 +40,13 @@ export type FollowerDetailsProps = {
     contractId: number;
   };
   isChatFirst: boolean;
+  mode: "show_all_activity" | "show_only_valid_activity";
 };
 
 export function FollowerDetails({
   follower,
   isChatFirst,
+  mode,
 }: FollowerDetailsProps) {
   const [selected, setSelected] = useState<TabType>("chart");
 
@@ -153,6 +155,7 @@ export function FollowerDetails({
             <UserTradeHistory
               address={follower.address as Address}
               contractId={follower.contractId.toString()}
+              mode={mode}
             />
           </CardBody>
         </Card>

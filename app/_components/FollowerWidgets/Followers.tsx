@@ -48,6 +48,7 @@ export function Followers() {
     (searchParams.get("kind") as PnlSnapshotKind) || PnlSnapshotKind.AllTime,
   );
   const [isChatFirst, setIsChatFirst] = useState(true);
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
   const followerDetails = useGetAllFollowerDetails(contractId);
   useSubscribeFollowerDetailUpdated(contractId);
@@ -187,6 +188,14 @@ export function Followers() {
           >
             Chat First
           </Switch>
+
+          <Switch
+            isSelected={showAllActivity}
+            onValueChange={setShowAllActivity}
+            size="sm"
+          >
+            {showAllActivity ? "Show All Activities" : "Show Valid Activities"}
+          </Switch>
         </div>
 
         <div className="flex items-center gap-4">
@@ -238,6 +247,11 @@ export function Followers() {
                   <FollowerDetails
                     follower={follower}
                     isChatFirst={isChatFirst}
+                    mode={
+                      showAllActivity
+                        ? "show_all_activity"
+                        : "show_only_valid_activity"
+                    }
                   />
                 </AccordionItem>
               </Accordion>

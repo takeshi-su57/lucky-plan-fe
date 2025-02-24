@@ -10,7 +10,10 @@ import {
   Switch,
 } from "@nextui-org/react";
 import { Address } from "viem";
-import { BacktestParameters } from "./BacktestParamtersForm";
+import {
+  BacktestParameters,
+  getFollowerCollateralBaseline,
+} from "./BacktestParamtersForm";
 import { PersonalTradeHistory } from "@/types";
 import { getPersonalTradeHistories } from "@/app/_actions/getPersonalTradeHistories";
 import { useGetAllContracts } from "@/app/_hooks/useContract";
@@ -26,8 +29,8 @@ export type BacktestResultProps = {
   startDate: Date;
   leaders: LeaderParams[];
   parameters: BacktestParameters;
-  onNextStep: () => void;
-  onPrevStep: () => void;
+  onNextStep?: () => void;
+  onPrevStep?: () => void;
 };
 
 export function BacktestResult({
@@ -39,6 +42,7 @@ export function BacktestResult({
 }: BacktestResultProps) {
   const [selected, setSelected] = useState<TabType>("overview");
   const [isLeaderChart, setIsLeaderChart] = useState(true);
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
   const [leaderHistories, setLeaderHistories] = useState<
     Record<string, PersonalTradeHistory[]>
@@ -68,7 +72,10 @@ export function BacktestResult({
             histories || [],
             leader.leaderCollateral,
             {
-              ...parameters,
+              collateralBaseline: getFollowerCollateralBaseline(
+                parameters.collateralBaselines,
+                leader.leaderCollateral,
+              ),
               strategyKey: "scaleCopy",
               ratio: 100,
             },
@@ -108,14 +115,28 @@ export function BacktestResult({
 
       {selected === "overview" ? (
         <>
-          <Switch
-            isSelected={isLeaderChart}
-            onValueChange={setIsLeaderChart}
-            size="sm"
-          >
-            {isLeaderChart ? "Leader Chart" : "Follower Chart"}
-          </Switch>
+          <div className="flex items-center gap-2">
+            <Switch
+              isSelected={isLeaderChart}
+              onValueChange={setIsLeaderChart}
+              size="sm"
+            >
+              {isLeaderChart ? "Leader Chart" : "Follower Chart"}
+            </Switch>
+            <Switch
+              isSelected={showAllActivity}
+              onValueChange={setShowAllActivity}
+              size="sm"
+            >
+              {showAllActivity
+                ? "Show All Activities"
+                : "Show Valid Activities"}
+            </Switch>
+          </div>
           <AutomationGridChart
+            mode={
+              showAllActivity ? "show_all_activity" : "show_only_valid_activity"
+            }
             histories={
               isLeaderChart ? totalLeaderHistories : totalFollowerHistories
             }
@@ -133,7 +154,9 @@ export function BacktestResult({
                 {leaders.map((leader) => (
                   <AccordionItem
                     key={leader.virtualId}
-                    title={<LeaderItem params={leader} />}
+                    title={
+                      <LeaderItem params={{ ...leader, isConfirmed: true }} />
+                    }
                   >
                     <FutureChart
                       startDate={startDate}
@@ -155,13 +178,27 @@ export function BacktestResult({
       ) : null}
 
       <div className="flex flex-row items-center gap-2">
-        <Button variant="solid" onClick={onNextStep} color="primary" size="sm">
-          Continue
-        </Button>
+        {onNextStep ? (
+          <Button
+            variant="solid"
+            onClick={onNextStep}
+            color="primary"
+            size="sm"
+          >
+            Continue
+          </Button>
+        ) : null}
 
-        <Button variant="light" onClick={onPrevStep} color="primary" size="sm">
-          Back
-        </Button>
+        {onPrevStep ? (
+          <Button
+            variant="light"
+            onClick={onPrevStep}
+            color="primary"
+            size="sm"
+          >
+            Back
+          </Button>
+        ) : null}
       </div>
     </div>
   );

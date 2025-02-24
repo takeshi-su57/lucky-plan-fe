@@ -33,6 +33,14 @@ export function ConfirmLeaders({
     onChangeLeaders(leaders.filter((item) => item.virtualId !== id));
   };
 
+  const handleConfirmSelection = (id: string) => {
+    onChangeLeaders(
+      leaders.map((item) =>
+        item.virtualId === id ? { ...item, isConfirmed: true } : item,
+      ),
+    );
+  };
+
   return (
     <div className="flex flex-col gap-2">
       <Card>
@@ -50,6 +58,7 @@ export function ConfirmLeaders({
                     address={leader.address}
                     parameters={parameters}
                     onRemove={() => handleRemoveSelection(leader.virtualId)}
+                    onConfirm={() => handleConfirmSelection(leader.virtualId)}
                   />
                 </AccordionItem>
               ))}
