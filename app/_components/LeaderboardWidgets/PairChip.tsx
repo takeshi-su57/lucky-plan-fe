@@ -10,7 +10,7 @@ export function PairChip({
   contractId: number;
   pairIndex?: number;
   pairName?: string;
-  count: number;
+  count?: number;
 }) {
   const pairs = useGetAllTradePairs(contractId);
 
@@ -34,7 +34,7 @@ export function PairChip({
         </span>
 
         <span className="text-nowrap">
-          {pairIndex} th - {count} times
+          {pairIndex ? `${pairIndex} th` : ""} {count ? `${count} times` : ""}
         </span>
       </div>
     </div>
