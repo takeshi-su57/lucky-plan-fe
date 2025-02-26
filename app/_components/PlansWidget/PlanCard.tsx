@@ -155,99 +155,101 @@ export function PlanCard({
   ];
 
   return (
-    <Card classNames={{ base: "w-[400px]" }}>
-      <CardHeader className="flex flex-row items-start gap-2 p-3">
-        <div className="flex flex-1 flex-col">
-          <span className="text-base font-bold text-neutral-400">
-            {plan.title}
-          </span>
+    <div className="pr-4">
+      <Card>
+        <CardHeader className="flex flex-row items-start gap-2 p-3">
+          <div className="flex flex-1 flex-col">
+            <span className="text-base font-bold text-neutral-400">
+              {plan.title}
+            </span>
 
-          <p className="text-xs text-neutral-400">{plan.description}</p>
-        </div>
-
-        <Chip variant="flat">Plan {plan.id}</Chip>
-      </CardHeader>
-
-      <Divider />
-
-      <CardBody>
-        <div className="flex flex-col gap-2">
-          {items.map(
-            (item) =>
-              item.value !== null && (
-                <div key={item.label} className="flex items-center gap-2">
-                  <span className="text-xs text-neutral-400">
-                    {item.label}:
-                  </span>
-                  <span className="text-sm font-bold text-neutral-300">
-                    {item.value}
-                  </span>
-                </div>
-              ),
-          )}
-
-          <div className="flex flex-row items-center gap-3 font-mono">
-            <Chip color="secondary">Monthly: {transactions.monthly}</Chip>
-            <Chip color="secondary">Weekly: {transactions.weekly}</Chip>
-            <Chip color="secondary">Daily: {transactions.daily}</Chip>
+            <p className="text-xs text-neutral-400">{plan.description}</p>
           </div>
 
-          <div className="flex flex-row items-center gap-3 font-mono">
-            {createdCount > 0 ? (
-              <Badge color="secondary" content={createdCount}>
-                <Chip color="secondary">Created</Chip>
-              </Badge>
-            ) : null}
+          <Chip variant="flat">Plan {plan.id}</Chip>
+        </CardHeader>
 
-            {awaitedCount > 0 ? (
-              <Badge color="warning" content={awaitedCount}>
-                <Chip color="warning">Await</Chip>
-              </Badge>
-            ) : null}
+        <Divider />
 
-            {initiatedCount > 0 ? (
-              <Badge color="success" content={initiatedCount}>
-                <Chip color="success">Initiated</Chip>
-              </Badge>
-            ) : null}
+        <CardBody>
+          <div className="flex flex-col gap-2">
+            {items.map(
+              (item) =>
+                item.value !== null && (
+                  <div key={item.label} className="flex items-center gap-2">
+                    <span className="text-xs text-neutral-400">
+                      {item.label}:
+                    </span>
+                    <span className="text-sm font-bold text-neutral-300">
+                      {item.value}
+                    </span>
+                  </div>
+                ),
+            )}
 
-            {failedCount > 0 ? (
-              <Badge color="danger" content={failedCount}>
-                <Chip color="danger">Failed</Chip>
-              </Badge>
+            <div className="flex flex-row items-center gap-3 font-mono">
+              <Chip color="secondary">Monthly: {transactions.monthly}</Chip>
+              <Chip color="secondary">Weekly: {transactions.weekly}</Chip>
+              <Chip color="secondary">Daily: {transactions.daily}</Chip>
+            </div>
+
+            <div className="flex flex-row items-center gap-3 font-mono">
+              {createdCount > 0 ? (
+                <Badge color="secondary" content={createdCount}>
+                  <Chip color="secondary">Created</Chip>
+                </Badge>
+              ) : null}
+
+              {awaitedCount > 0 ? (
+                <Badge color="warning" content={awaitedCount}>
+                  <Chip color="warning">Await</Chip>
+                </Badge>
+              ) : null}
+
+              {initiatedCount > 0 ? (
+                <Badge color="success" content={initiatedCount}>
+                  <Chip color="success">Initiated</Chip>
+                </Badge>
+              ) : null}
+
+              {failedCount > 0 ? (
+                <Badge color="danger" content={failedCount}>
+                  <Chip color="danger">Failed</Chip>
+                </Badge>
+              ) : null}
+            </div>
+          </div>
+        </CardBody>
+
+        <Divider />
+
+        <CardFooter className="justify-between rounded-large p-3">
+          <div className="flex flex-row items-center gap-2">
+            <Chip color={chipColorsByPlanStatus[plan.status]} variant="flat">
+              {plan.status}
+            </Chip>
+
+            {plan.status === PlanStatus.Created ? (
+              <Button
+                size="sm"
+                variant="flat"
+                color="danger"
+                isDisabled={loading}
+                isLoading={loading}
+                onClick={handleDelete}
+              >
+                Delete
+              </Button>
             ) : null}
           </div>
-        </div>
-      </CardBody>
 
-      <Divider />
-
-      <CardFooter className="justify-between rounded-large p-3">
-        <div className="flex flex-row items-center gap-2">
-          <Chip color={chipColorsByPlanStatus[plan.status]} variant="flat">
-            {plan.status}
-          </Chip>
-
-          {plan.status === PlanStatus.Created ? (
-            <Button
-              size="sm"
-              variant="flat"
-              color="danger"
-              isDisabled={loading}
-              isLoading={loading}
-              onClick={handleDelete}
-            >
-              Delete
+          <Link href={`/plans/${plan.id}`}>
+            <Button size="sm" variant="flat" color="primary">
+              Show Details
             </Button>
-          ) : null}
-        </div>
-
-        <Link href={`/plans/${plan.id}`}>
-          <Button size="sm" variant="flat" color="primary">
-            Show Details
-          </Button>
-        </Link>
-      </CardFooter>
-    </Card>
+          </Link>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }
