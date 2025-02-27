@@ -19,6 +19,7 @@ import { Address } from "viem";
 import type { RangeValue } from "@react-types/shared";
 import type { DateValue } from "@react-types/datepicker";
 import { now } from "@internationalized/date";
+import { Virtuoso } from "react-virtuoso";
 
 import { getServerTimezone } from "@/utils";
 import { StandardModal } from "@/components/modals/StandardModal";
@@ -27,10 +28,7 @@ import {
   useGetAllContracts,
   useGetAllTradePairs,
 } from "@/app-hooks/useContract";
-import {
-  useBatchCreateBots,
-  useGetBotsByStatus,
-} from "@/app-hooks/useAutomation";
+import { useBatchCreateBots } from "@/app-hooks/useAutomation";
 import { useGetUsersByTags } from "@/app-hooks/useUser";
 import { useGetAllStrategyMetadata } from "@/app-hooks/useStrategy";
 import { useGetAllTags } from "@/app-hooks/useTag";
@@ -38,7 +36,6 @@ import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHis
 
 import { lifeTimeItems, shrinkAddress } from "@/utils";
 import { NumericInput } from "@/components/inputs/NumericInput";
-import { BotStatus } from "@/graphql/gql/graphql";
 
 import LineChart from "@/components/charts/LineChart";
 import {
@@ -46,7 +43,6 @@ import {
   transformHistories,
 } from "@/utils/historiesChart";
 import { PairChip } from "../LeaderboardWidgets/PairChip";
-import { Virtuoso } from "react-virtuoso";
 
 export type CreateAutomationModalProps = {
   planId: number | null;
@@ -66,10 +62,6 @@ export function CreateAutomationModal({
   const allTags = useGetAllTags();
   const allContracts = useGetAllContracts();
   const allStrategyMetadata = useGetAllStrategyMetadata();
-
-  const createdBots = useGetBotsByStatus(BotStatus.Created);
-  const liveBots = useGetBotsByStatus(BotStatus.Live);
-  const stopBots = useGetBotsByStatus(BotStatus.Stop);
 
   const [selectedTags, setSelectedTags] = useState<Selection>(
     new Set(["LEADER"]),
@@ -282,21 +274,6 @@ export function CreateAutomationModal({
     onClose();
   };
 
-  const updatedLeaders = useMemo(() => {
-    const countsMap = new Map<string, number>();
-
-    [...createdBots, ...liveBots, ...stopBots].forEach((bot) => {
-      countsMap.set(
-        bot.leaderAddress,
-        (countsMap.get(bot.leaderAddress) || 0) + 1,
-      );
-    });
-    return allLeaders.map((item) => ({
-      ...item,
-      count: countsMap.get(item.address) || 0,
-    }));
-  }, [createdBots, liveBots, stopBots, allLeaders]);
-
   const {
     tradePairs: originalTradePairs,
     pnlChartData: originalPNLChartData,
@@ -461,7 +438,7 @@ export function CreateAutomationModal({
               <Autocomplete
                 label="Leader"
                 variant="underlined"
-                defaultItems={updatedLeaders}
+                defaultItems={allLeaders}
                 placeholder="Search leader"
                 selectedKey={leaderAddress}
                 onSelectionChange={(key) =>
@@ -476,7 +453,6 @@ export function CreateAutomationModal({
                   >
                     <div className="flex items-center justify-between">
                       <span>{shrinkAddress(item.address as Address)}</span>
-                      <span>{item.count}</span>
                     </div>
                   </AutocompleteItem>
                 )}

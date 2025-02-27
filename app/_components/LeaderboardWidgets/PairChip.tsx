@@ -1,4 +1,4 @@
-import { useGetAllTradePairs } from "@/app/_hooks/useContract";
+import { useGetAllTradePairs } from "@/app-hooks/useContract";
 import PairIcon from "./PairIcon";
 
 export function PairChip({

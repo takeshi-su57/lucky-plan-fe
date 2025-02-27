@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Tab, Tabs, Button, Switch } from "@nextui-org/react";
+import { Tab, Tabs, Button } from "@nextui-org/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaPlus } from "react-icons/fa";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 
-import { PlanDetails, PlanStatus } from "@/graphql/gql/graphql";
+import { PlanForwardShallowDetails, PlanStatus } from "@/graphql/gql/graphql";
 
 import { useGetPlansByStatus } from "@/app-hooks/usePlan";
 import { PlanCard } from "./PlanCard";
@@ -57,13 +57,11 @@ export function Plans() {
   const [selected, setSelected] = useState<TabType>(
     (searchParams.get("status") as TabType) || "started",
   );
-  const [isHideAlertForClosedMissions, setIsHideAlertForClosedMissions] =
-    useState(true);
 
   const allPlans = useGetPlansByStatus(planStatusByTabType[selected]);
 
   const groupedPlans = useMemo(() => {
-    const weekPlans: Record<string, PlanDetails[]> = {};
+    const weekPlans: Record<string, PlanForwardShallowDetails[]> = {};
 
     allPlans
       .sort(
@@ -105,14 +103,6 @@ export function Plans() {
             <Tab key="stopped" title="Stopped" />
             <Tab key="finished" title="Finished" />
           </Tabs>
-
-          <Switch
-            isSelected={isHideAlertForClosedMissions}
-            onValueChange={setIsHideAlertForClosedMissions}
-            size="sm"
-          >
-            Hide Alert For Closed Missions
-          </Switch>
         </div>
 
         <Link href="/plans/create">
@@ -131,11 +121,7 @@ export function Plans() {
 
           <Carousel responsive={responsive}>
             {weekPlans.map((plan) => (
-              <PlanCard
-                key={plan.id}
-                plan={plan}
-                isHideAlertForClosedMissions={isHideAlertForClosedMissions}
-              />
+              <PlanCard key={plan.id} plan={plan} />
             ))}
           </Carousel>
         </div>

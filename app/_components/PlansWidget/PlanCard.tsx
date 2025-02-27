@@ -13,9 +13,13 @@ import {
   Link,
 } from "@nextui-org/react";
 import dayjs from "dayjs";
-import { PlanDetails, PlanStatus, TaskStatus } from "@/graphql/gql/graphql";
+import {
+  PlanForwardShallowDetails,
+  PlanStatus,
+  TaskStatus,
+} from "@/graphql/gql/graphql";
 
-import { useGetTasksByStatus } from "@/app-hooks/useTask";
+import { useGetAlertTasks } from "@/app-hooks/useTask";
 import { useGetUserTransactionCounts } from "@/app-hooks/useHistory";
 import { useDeletePlan } from "@/app/_hooks/usePlan";
 
@@ -27,39 +31,18 @@ export const chipColorsByPlanStatus: Record<PlanStatus, ChipProps["color"]> = {
 };
 
 export type PlanCardProps = {
-  plan: PlanDetails;
-  isHideAlertForClosedMissions: boolean;
+  plan: PlanForwardShallowDetails;
 };
 
-export function PlanCard({
-  plan,
-  isHideAlertForClosedMissions,
-}: PlanCardProps) {
+export function PlanCard({ plan }: PlanCardProps) {
   const { deletePlan, loading } = useDeletePlan();
-
+  const alertTasks = useGetAlertTasks();
   const { data: transactionCounts } = useGetUserTransactionCounts(
     plan.bots.map((bot) => ({
       address: bot.leaderAddress,
       contractId: bot.leaderContract.id,
       startedAt: bot.startedAt || null,
     })),
-  );
-
-  const { satistic: createdStatistic } = useGetTasksByStatus(
-    TaskStatus.Created,
-    isHideAlertForClosedMissions,
-  );
-  const { satistic: awaitedStatistic } = useGetTasksByStatus(
-    TaskStatus.Await,
-    isHideAlertForClosedMissions,
-  );
-  const { satistic: initiatedStatistic } = useGetTasksByStatus(
-    TaskStatus.Initiated,
-    isHideAlertForClosedMissions,
-  );
-  const { satistic: failedStatistic } = useGetTasksByStatus(
-    TaskStatus.Failed,
-    isHideAlertForClosedMissions,
   );
 
   const handleDelete = () => {
@@ -70,49 +53,25 @@ export function PlanCard({
     });
   };
 
-  const createdCount = plan.bots
-    .map((bot) =>
-      createdStatistic[bot.id]
-        ? Object.values(createdStatistic[bot.id]).reduce(
-            (acc, item) => acc + item,
-            0,
-          )
-        : 0,
-    )
-    .reduce((acc, item) => acc + item, 0);
+  const planTasks = alertTasks.filter(
+    (task) => task.mission.bot.planId === plan.id,
+  );
 
-  const awaitedCount = plan.bots
-    .map((bot) =>
-      awaitedStatistic[bot.id]
-        ? Object.values(awaitedStatistic[bot.id]).reduce(
-            (acc, item) => acc + item,
-            0,
-          )
-        : 0,
-    )
-    .reduce((acc, item) => acc + item, 0);
+  const createdCount = planTasks.filter(
+    (task) => task.status === TaskStatus.Created,
+  ).length;
 
-  const initiatedCount = plan.bots
-    .map((bot) =>
-      initiatedStatistic[bot.id]
-        ? Object.values(initiatedStatistic[bot.id]).reduce(
-            (acc, item) => acc + item,
-            0,
-          )
-        : 0,
-    )
-    .reduce((acc, item) => acc + item, 0);
+  const awaitedCount = planTasks.filter(
+    (task) => task.status === TaskStatus.Await,
+  ).length;
 
-  const failedCount = plan.bots
-    .map((bot) =>
-      failedStatistic[bot.id]
-        ? Object.values(failedStatistic[bot.id]).reduce(
-            (acc, item) => acc + item,
-            0,
-          )
-        : 0,
-    )
-    .reduce((acc, item) => acc + item, 0);
+  const initiatedCount = planTasks.filter(
+    (task) => task.status === TaskStatus.Initiated,
+  ).length;
+
+  const failedCount = planTasks.filter(
+    (task) => task.status === TaskStatus.Failed,
+  ).length;
 
   const transactions = transactionCounts?.getUserTransactionCounts
     ? transactionCounts.getUserTransactionCounts.reduce(

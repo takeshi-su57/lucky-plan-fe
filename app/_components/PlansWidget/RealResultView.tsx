@@ -6,17 +6,17 @@ import { Card, CardBody } from "@nextui-org/react";
 import { now } from "@internationalized/date";
 import type { RangeValue } from "@react-types/shared";
 import type { DateValue } from "@react-types/datepicker";
+import { Virtuoso } from "react-virtuoso";
+import { BotForwardDetails } from "@/graphql/gql/graphql";
 
 import { getServerTimezone } from "@/utils";
 
 import { AutomationRow } from "./AutomationRow";
 import { AutomationGridChart } from "./AutomationChart";
-import { Virtuoso } from "react-virtuoso";
 import { PersonalTradeHistory } from "@/types";
-import { BotDetails } from "@/graphql/gql/graphql";
 
 export type RealResultViewProps = {
-  bots: BotDetails[];
+  bots: BotForwardDetails[];
   selectedBotIds: Record<number, boolean>;
   showBotChartIds: Record<number, boolean>;
   botsHistories: Record<string, PersonalTradeHistory[]>;

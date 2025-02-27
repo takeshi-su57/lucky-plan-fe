@@ -6,7 +6,7 @@ import { TagCategory } from "@/graphql/gql/graphql";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 
-import { useUpsertCategory } from "@/app/_hooks/useTag";
+import { useUpsertCategory } from "@/app-hooks/useTag";
 
 export type UpsertTagCategoryModalProps = {
   category: TagCategory | null;

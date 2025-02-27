@@ -9,7 +9,7 @@ import { FaLongArrowAltRight } from "react-icons/fa";
 import { PersonalTradeHistory } from "@/types";
 import { PairChip } from "../PairChip";
 import { getPriceStr } from "@/utils/price";
-import { useGetAllContracts } from "@/app/_hooks/useContract";
+import { useGetAllContracts } from "@/app-hooks/useContract";
 import { convertMillisToReadableTime } from "@/utils";
 
 const collateralNamesMap: Record<number, Record<number, string>> = {
