@@ -1,18 +1,23 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useSnackbar } from "notistack";
-import {
-  useApolloClient,
-  useMutation,
-  useQuery,
-  useSubscription,
-} from "@apollo/client";
+import { useApolloClient, useMutation, useSubscription } from "@apollo/client";
 import { getFragmentData, graphql } from "@/gql/index";
-import { GetAllMissionsQuery } from "@/graphql/gql/graphql";
-
-import { BOT_INFO_FRAGMENT_DOCUMENT } from "./useAutomation";
-import { getTaskFragment } from "./useTask";
+import {
+  MissionBackwardDetailsInfoFragment,
+  MissionBackwardDetails,
+  MissionForwardDetailsInfoFragment,
+  MissionForwardDetails,
+  MissionDetailsInfoFragment,
+  MissionDetails,
+} from "@/graphql/gql/graphql";
+import {
+  BOT_FORWARD_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+  BOT_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+  getBotBackwardDetails,
+} from "./useAutomation";
+import { getTaskForwardDetails } from "./useTask";
 
 export const POSITION_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment PositionInfo on Position {
@@ -35,23 +40,26 @@ export const MISSION_INFO_FRAGMENT_DOCUMENT = graphql(`
   }
 `);
 
-export const MISSION_WITH_TASKS_INFO_FRAGMENT_DOCUMENT = graphql(`
-  fragment MissionWithTasksInfo on MissionWithTasks {
+export const MISSION_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment MissionDetailsInfo on MissionDetails {
     id
     botId
     targetPositionId
     achievePositionId
-    status
     createdAt
     updatedAt
-    tasks {
-      ...TaskShallowDetailsInfo
+    status
+    achievePosition {
+      ...PositionInfo
+    }
+    targetPosition {
+      ...PositionInfo
     }
   }
 `);
 
-export const MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
-  fragment MissionShallowDetailsInfo on MissionShallowDetails {
+export const MISSION_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment MissionBackwardDetailsInfo on MissionBackwardDetails {
     id
     botId
     targetPositionId
@@ -66,23 +74,28 @@ export const MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
       ...PositionInfo
     }
     bot {
-      ...BotInfo
+      ...BotBackwardDetailsInfo
     }
   }
 `);
 
-export const GET_ALL_MISSIONS_DOCUMENT = graphql(`
-  query getAllMissions {
-    getAllMissions {
-      ...MissionShallowDetailsInfo
+export const MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment MissionForwardDetailsInfo on MissionForwardDetails {
+    id
+    botId
+    targetPositionId
+    achievePositionId
+    createdAt
+    updatedAt
+    status
+    achievePosition {
+      ...PositionInfo
     }
-  }
-`);
-
-export const FIND_MISSION_DOCUMENT = graphql(`
-  query findMission($id: Int!) {
-    findMission(id: $id) {
-      ...MissionWithTasksInfo
+    targetPosition {
+      ...PositionInfo
+    }
+    tasks {
+      ...TaskForwardDetailsInfo
     }
   }
 `);
@@ -90,7 +103,7 @@ export const FIND_MISSION_DOCUMENT = graphql(`
 export const CLOSE_MISSION_DOCUMENT = graphql(`
   mutation closeMission($id: Int!, $isForce: Boolean!) {
     closeMission(id: $id, isForce: $isForce) {
-      ...MissionShallowDetailsInfo
+      ...MissionBackwardDetailsInfo
     }
   }
 `);
@@ -98,7 +111,7 @@ export const CLOSE_MISSION_DOCUMENT = graphql(`
 export const IGNORE_MISSION_DOCUMENT = graphql(`
   mutation ignoreMission($id: Int!) {
     ignoreMission(id: $id) {
-      ...MissionShallowDetailsInfo
+      ...MissionBackwardDetailsInfo
     }
   }
 `);
@@ -106,7 +119,7 @@ export const IGNORE_MISSION_DOCUMENT = graphql(`
 export const MISSION_ADDED_SUBSCRIPTION_DOCUMENT = graphql(`
   subscription missionAdded {
     missionAdded {
-      ...MissionShallowDetailsInfo
+      ...MissionBackwardDetailsInfo
     }
   }
 `);
@@ -114,16 +127,22 @@ export const MISSION_ADDED_SUBSCRIPTION_DOCUMENT = graphql(`
 export const MISSION_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
   subscription missionUpdated {
     missionUpdated {
-      ...MissionShallowDetailsInfo
+      ...MissionBackwardDetailsInfo
     }
   }
 `);
 
-function getMissionFragment(
-  mission: GetAllMissionsQuery["getAllMissions"][number],
-) {
+export function getMissionDetails(
+  mission: {
+    __typename?: "MissionDetails";
+  } & {
+    " $fragmentRefs"?: {
+      MissionDetailsInfoFragment: MissionDetailsInfoFragment;
+    };
+  },
+): MissionDetails {
   const missionInfo = getFragmentData(
-    MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+    MISSION_DETAILS_INFO_FRAGMENT_DOCUMENT,
     mission,
   );
 
@@ -143,42 +162,74 @@ function getMissionFragment(
           ),
         }
       : undefined,
-    bot: {
-      ...getFragmentData(BOT_INFO_FRAGMENT_DOCUMENT, missionInfo.bot),
-    },
   };
 }
 
-export function useGetAllMissions() {
-  const { data } = useQuery(GET_ALL_MISSIONS_DOCUMENT, { variables: {} });
-
-  return useMemo(() => {
-    if (!data) {
-      return [];
-    }
-    return data.getAllMissions.map(getMissionFragment);
-  }, [data]);
-}
-
-export function useGetMission(missionId: number) {
-  const { data, loading, error } = useQuery(FIND_MISSION_DOCUMENT, {
-    variables: { id: +missionId },
-  });
-
+export function getMissionBackwardDetails(
+  mission: {
+    __typename?: "MissionBackwardDetails";
+  } & {
+    " $fragmentRefs"?: {
+      MissionBackwardDetailsInfoFragment: MissionBackwardDetailsInfoFragment;
+    };
+  },
+): MissionBackwardDetails {
   const missionInfo = getFragmentData(
-    MISSION_WITH_TASKS_INFO_FRAGMENT_DOCUMENT,
-    data?.findMission,
+    MISSION_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+    mission,
   );
 
   return {
-    mission: missionInfo
+    ...missionInfo,
+    targetPosition: {
+      ...getFragmentData(
+        POSITION_INFO_FRAGMENT_DOCUMENT,
+        missionInfo.targetPosition,
+      ),
+    },
+    achievePosition: missionInfo?.achievePosition
       ? {
-          ...missionInfo,
-          tasks: missionInfo.tasks.map(getTaskFragment),
+          ...getFragmentData(
+            POSITION_INFO_FRAGMENT_DOCUMENT,
+            missionInfo.achievePosition,
+          ),
         }
       : undefined,
-    loading,
-    error,
+    bot: getBotBackwardDetails(missionInfo.bot),
+  };
+}
+
+export function getMissionForwardDetails(
+  mission: {
+    __typename?: "MissionForwardDetails";
+  } & {
+    " $fragmentRefs"?: {
+      MissionForwardDetailsInfoFragment: MissionForwardDetailsInfoFragment;
+    };
+  },
+): MissionForwardDetails {
+  const missionInfo = getFragmentData(
+    MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+    mission,
+  );
+
+  return {
+    ...missionInfo,
+    targetPosition: {
+      ...getFragmentData(
+        POSITION_INFO_FRAGMENT_DOCUMENT,
+        missionInfo.targetPosition,
+      ),
+    },
+    achievePosition: missionInfo?.achievePosition
+      ? {
+          ...getFragmentData(
+            POSITION_INFO_FRAGMENT_DOCUMENT,
+            missionInfo.achievePosition,
+          ),
+        }
+      : undefined,
+    tasks: missionInfo.tasks.map(getTaskForwardDetails),
   };
 }
 
@@ -195,7 +246,9 @@ export function useSubscribeMission() {
 
   useEffect(() => {
     if (updatedData && !error2) {
-      const missionInfos = updatedData.missionUpdated.map(getMissionFragment);
+      const missionInfos = updatedData.missionUpdated.map(
+        getMissionBackwardDetails,
+      );
 
       enqueueSnackbar("Missions Updated!", {
         variant: "info",
@@ -204,57 +257,214 @@ export function useSubscribeMission() {
       missionInfos.forEach((missionInfo) => {
         client.cache.writeFragment({
           id: client.cache.identify({
+            __typename: "MissionDetails",
+            id: missionInfo.id,
+          }),
+          fragment: MISSION_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          fragmentName: "MissionDetailsInfo",
+          data: {
+            __typename: "MissionDetails",
+            achievePosition: missionInfo.achievePosition,
+            targetPosition: missionInfo.targetPosition,
+            updatedAt: missionInfo.updatedAt,
+            status: missionInfo.status,
+            botId: missionInfo.botId,
+            targetPositionId: missionInfo.targetPositionId,
+            achievePositionId: missionInfo.achievePositionId,
+            id: missionInfo.id,
+            createdAt: missionInfo.createdAt,
+          },
+        });
+
+        client.cache.writeFragment({
+          id: client.cache.identify({
             __typename: missionInfo.__typename,
             id: missionInfo.id,
           }),
-          fragment: MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-          fragmentName: "MissionShallowDetailsInfo",
+          fragment: MISSION_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          fragmentName: "MissionBackwardDetailsInfo",
           data: missionInfo,
         });
+
+        client.cache.updateFragment(
+          {
+            id: client.cache.identify({
+              __typename: "MissionForwardDetails",
+              id: missionInfo.id,
+            }),
+            fragment: MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+            fragmentName: "MissionForwardDetailsInfo",
+          },
+          (oldData) => {
+            if (oldData) {
+              return {
+                ...oldData,
+                achievePosition: missionInfo.achievePosition,
+                targetPosition: missionInfo.targetPosition,
+                updatedAt: missionInfo.updatedAt,
+                status: missionInfo.status,
+                botId: missionInfo.botId,
+                targetPositionId: missionInfo.targetPositionId,
+                achievePositionId: missionInfo.achievePositionId,
+                id: missionInfo.id,
+                createdAt: missionInfo.createdAt,
+              };
+            }
+
+            return oldData;
+          },
+        );
+
+        client.cache.updateFragment(
+          {
+            id: client.cache.identify({
+              __typename: "MissionForwardDetails",
+              id: missionInfo.id,
+            }),
+            fragment: MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+            fragmentName: "MissionForwardDetailsInfo",
+          },
+          (oldData) => {
+            if (oldData) {
+              return {
+                ...oldData,
+                achievePosition: missionInfo.achievePosition,
+                targetPosition: missionInfo.targetPosition,
+                updatedAt: missionInfo.updatedAt,
+                status: missionInfo.status,
+                botId: missionInfo.botId,
+                targetPositionId: missionInfo.targetPositionId,
+                achievePositionId: missionInfo.achievePositionId,
+                id: missionInfo.id,
+                createdAt: missionInfo.createdAt,
+              };
+            }
+
+            return oldData;
+          },
+        );
       });
     }
   }, [client.cache, enqueueSnackbar, error1, error2, newData, updatedData]);
 
   useEffect(() => {
     if (newData && !error1) {
-      const missionInfos = newData.missionAdded.map(getMissionFragment);
+      const missionInfos = newData.missionAdded.map(getMissionBackwardDetails);
 
       enqueueSnackbar("New Missions Created!", {
         variant: "info",
       });
 
       missionInfos.forEach((missionInfo) => {
-        client.cache.updateQuery(
-          {
-            query: GET_ALL_MISSIONS_DOCUMENT,
-            variables: {},
+        client.cache.writeFragment({
+          id: client.cache.identify({
+            __typename: "MissionDetails",
+            id: missionInfo.id,
+          }),
+          fragment: MISSION_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          fragmentName: "MissionDetailsInfo",
+          data: {
+            __typename: "MissionDetails",
+            achievePosition: missionInfo.achievePosition,
+            targetPosition: missionInfo.targetPosition,
+            updatedAt: missionInfo.updatedAt,
+            status: missionInfo.status,
+            botId: missionInfo.botId,
+            targetPositionId: missionInfo.targetPositionId,
+            achievePositionId: missionInfo.achievePositionId,
+            id: missionInfo.id,
+            createdAt: missionInfo.createdAt,
           },
-          (data) => {
-            if (data && data.getAllMissions.length > 0) {
-              const alreadyExists = data.getAllMissions.filter(
-                (mission) =>
-                  missionInfo.id ===
-                  getFragmentData(
-                    MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-                    mission,
-                  ).id,
-              );
+        });
 
-              if (alreadyExists.length > 0) {
-                return data;
+        const missionDetailsFragment = client.cache.readFragment({
+          id: client.cache.identify({
+            __typename: "MissionDetails",
+            id: missionInfo.id,
+          }),
+          fragment: MISSION_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          fragmentName: "MissionDetailsInfo",
+        });
+
+        if (missionDetailsFragment) {
+          client.cache.updateFragment(
+            {
+              id: client.cache.identify({
+                __typename: "BotForwardShallowDetails",
+                id: missionInfo.bot.id,
+              }),
+              fragment: BOT_FORWARD_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+              fragmentName: "BotForwardShallowDetailsInfo",
+            },
+            (oldData) => {
+              if (oldData) {
+                return {
+                  ...oldData,
+                  missions: [...oldData.missions, missionDetailsFragment],
+                };
               }
 
-              return {
-                ...data,
-                getAllMissions: [...data.getAllMissions, missionInfo],
-              };
-            } else {
-              return {
-                getAllMissions: [missionInfo],
-              };
-            }
+              return null;
+            },
+          );
+        }
+
+        client.cache.writeFragment({
+          id: client.cache.identify({
+            __typename: "MissionForwardDetails",
+            id: missionInfo.id,
+          }),
+          fragment: MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          fragmentName: "MissionForwardDetailsInfo",
+          data: {
+            __typename: "MissionForwardDetails",
+            achievePosition: missionInfo.achievePosition,
+            targetPosition: missionInfo.targetPosition,
+            updatedAt: missionInfo.updatedAt,
+            status: missionInfo.status,
+            botId: missionInfo.botId,
+            targetPositionId: missionInfo.targetPositionId,
+            achievePositionId: missionInfo.achievePositionId,
+            id: missionInfo.id,
+            createdAt: missionInfo.createdAt,
+            tasks: [],
           },
-        );
+        });
+
+        const missionForwardDetailsFragment = client.cache.readFragment({
+          id: client.cache.identify({
+            __typename: "MissionForwardDetails",
+            id: missionInfo.id,
+          }),
+          fragment: MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          fragmentName: "MissionForwardDetailsInfo",
+        });
+
+        if (missionForwardDetailsFragment) {
+          client.cache.updateFragment(
+            {
+              id: client.cache.identify({
+                __typename: "BotForwardDetails",
+                id: missionInfo.botId,
+              }),
+              fragment: BOT_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+              fragmentName: "BotForwardDetailsInfo",
+            },
+            (oldData) => {
+              if (oldData) {
+                return {
+                  ...oldData,
+                  missions: [
+                    ...oldData.missions,
+                    missionForwardDetailsFragment,
+                  ],
+                };
+              }
+
+              return null;
+            },
+          );
+        }
       });
     }
   }, [client.cache, enqueueSnackbar, error1, newData]);
@@ -269,36 +479,9 @@ export function useCloseMission() {
 
   useEffect(() => {
     if (newData && !error) {
-      const missionInfo = getMissionFragment(newData.closeMission);
-
       enqueueSnackbar("Success at closing mission!", {
         variant: "success",
       });
-
-      client.cache.updateQuery(
-        {
-          query: GET_ALL_MISSIONS_DOCUMENT,
-          variables: {},
-        },
-        (data) => {
-          if (data && data.getAllMissions.length > 0) {
-            return {
-              ...data,
-              getAllMissions: data.getAllMissions.map((mission) =>
-                missionInfo.id ===
-                getFragmentData(
-                  MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-                  mission,
-                ).id
-                  ? missionInfo
-                  : mission,
-              ),
-            };
-          } else {
-            return data;
-          }
-        },
-      );
     }
   }, [client.cache, newData, error, enqueueSnackbar]);
 
@@ -314,36 +497,9 @@ export function useIgnoreMission() {
 
   useEffect(() => {
     if (newData && !error) {
-      const missionInfo = getMissionFragment(newData.ignoreMission);
-
       enqueueSnackbar("Success at ignoring mission!", {
         variant: "success",
       });
-
-      client.cache.updateQuery(
-        {
-          query: GET_ALL_MISSIONS_DOCUMENT,
-          variables: {},
-        },
-        (data) => {
-          if (data && data.getAllMissions.length > 0) {
-            return {
-              ...data,
-              getAllMissions: data.getAllMissions.map((mission) =>
-                missionInfo.id ===
-                getFragmentData(
-                  MISSION_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-                  mission,
-                ).id
-                  ? missionInfo
-                  : mission,
-              ),
-            };
-          } else {
-            return data;
-          }
-        },
-      );
     }
   }, [client.cache, newData, error, enqueueSnackbar]);
 

@@ -10,7 +10,7 @@ import { FaTrash } from "react-icons/fa";
 import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHistories";
 import { useGetAllContracts } from "@/app-hooks/useContract";
 
-import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget";
+import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget/HistoriesWidget";
 import {
   BacktestParameters,
   getFollowerCollateralBaseline,

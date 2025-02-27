@@ -1,68 +1,46 @@
 "use client";
 
 import { useCallback } from "react";
-import { Accordion, AccordionItem, Progress, Button } from "@nextui-org/react";
-import { MissionStatus } from "@/graphql/gql/graphql";
+import { Accordion, AccordionItem, Button } from "@nextui-org/react";
+import { MissionStatus, MissionForwardDetails } from "@/graphql/gql/graphql";
 
-import {
-  useCloseMission,
-  useGetMission,
-  useIgnoreMission,
-} from "@/app-hooks/useMission";
+import { useCloseMission, useIgnoreMission } from "@/app-hooks/useMission";
 import { TaskSummary } from "../TaskWidgets/TaskSummary";
 import { TaskDetails } from "../TaskWidgets/TaskDetails";
 
 export type MissionDetailsProps = {
-  missionId: number;
+  mission: MissionForwardDetails;
 };
 
-export function MissionDetails({ missionId }: MissionDetailsProps) {
-  const { mission, loading, error } = useGetMission(missionId);
-
+export function MissionDetails({ mission }: MissionDetailsProps) {
   const closeMission = useCloseMission();
   const ignoreMission = useIgnoreMission();
 
   const handleCloseMission = useCallback(() => {
     closeMission({
       variables: {
-        id: missionId,
+        id: mission.id,
         isForce: false,
       },
     });
-  }, [closeMission, missionId]);
+  }, [closeMission, mission.id]);
 
   const handleIgnoreMission = useCallback(() => {
     ignoreMission({
       variables: {
-        id: missionId,
+        id: mission.id,
       },
     });
-  }, [ignoreMission, missionId]);
+  }, [ignoreMission, mission.id]);
 
   const handleCloseForceMission = useCallback(() => {
     closeMission({
       variables: {
-        id: missionId,
+        id: mission.id,
         isForce: true,
       },
     });
-  }, [closeMission, missionId]);
-
-  if (loading) {
-    return <Progress isIndeterminate className="w-full flex-1" size="sm" />;
-  }
-
-  if (error) {
-    return (
-      <span className="text-bold text-base text-red-400">
-        Oops, There is an issue, Please check your network.
-      </span>
-    );
-  }
-
-  if (!mission) {
-    return null;
-  }
+  }, [closeMission, mission.id]);
 
   return (
     <div className="flex flex-col gap-2 border-t border-t-neutral-400/20 py-6">
@@ -107,7 +85,7 @@ export function MissionDetails({ missionId }: MissionDetailsProps) {
           .sort((a, b) => a.id - b.id)
           .map((task) => (
             <AccordionItem key={task.id} title={<TaskSummary task={task} />}>
-              <TaskDetails taskId={task.id} missionStatus={mission.status} />
+              <TaskDetails task={task} missionStatus={mission.status} />
             </AccordionItem>
           ))}
       </Accordion>

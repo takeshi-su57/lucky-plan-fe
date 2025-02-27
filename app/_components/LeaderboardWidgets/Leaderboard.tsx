@@ -21,7 +21,7 @@ import { useGetAllContracts } from "@/app-hooks/useContract";
 import { useGetPnlSnapshots } from "@/app-hooks/useHistory";
 
 import { shrinkAddress } from "@/utils";
-import { HistoriesWidget } from "./HistoriesWidget";
+import { HistoriesWidget } from "./HistoriesWidget/HistoriesWidget";
 
 export type LeaderboardProps = {
   selectionLabel?: string;

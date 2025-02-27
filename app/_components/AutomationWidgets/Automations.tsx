@@ -9,6 +9,7 @@ import {
   Accordion,
   AccordionItem,
   Switch,
+  Spinner,
 } from "@nextui-org/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -20,6 +21,7 @@ import { CreateAutomationModal } from "@/app-components/AutomationWidgets/Create
 import { AutomationSummary } from "@/app-components/AutomationWidgets/AutomationSummary";
 import { AutomationDetails } from "@/app-components/AutomationWidgets/AutomationDetails";
 import { FaPlus } from "react-icons/fa";
+import { Virtuoso } from "react-virtuoso";
 
 type TabType = "created" | "live" | "stop" | "dead";
 
@@ -38,11 +40,11 @@ export function Automations() {
     (searchParams.get("status") as TabType) || "live",
   );
   const [isChatFirst, setIsChatFirst] = useState(true);
-  const [isHideAlertForClosedMissions, setIsHideAlertForClosedMissions] =
-    useState(true);
   const [isHiddedPlanedBots, setIsHiddedPlanedBots] = useState(true);
 
-  const bots = useGetBotsByStatus(botStatusByTabType[selected]);
+  const { bots, hasMore, loading, fetchMore } = useGetBotsByStatus(
+    botStatusByTabType[selected],
+  );
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
@@ -75,14 +77,6 @@ export function Automations() {
           </Switch>
 
           <Switch
-            isSelected={isHideAlertForClosedMissions}
-            onValueChange={setIsHideAlertForClosedMissions}
-            size="sm"
-          >
-            Hide Alert For Closed Missions
-          </Switch>
-
-          <Switch
             isSelected={isHiddedPlanedBots}
             onValueChange={setIsHiddedPlanedBots}
             size="sm"
@@ -96,27 +90,25 @@ export function Automations() {
         </Button>
       </div>
 
-      <Accordion selectionMode="multiple" isCompact variant="splitted">
-        {bots
-          .filter((bot) => (isHiddedPlanedBots ? !bot.planId : true))
-          .map((bot) => (
-            <AccordionItem
-              key={bot.id}
-              title={
-                <AutomationSummary
-                  bot={bot}
-                  isHideAlertForClosedMissions={isHideAlertForClosedMissions}
-                />
-              }
-            >
-              <AutomationDetails
-                botId={bot.id}
-                isChatFirst={isChatFirst}
-                isHideAlertForClosedMissions={isHideAlertForClosedMissions}
-              />
+      <Virtuoso
+        style={{ height: 700 }}
+        data={bots.filter((bot) => (isHiddedPlanedBots ? !bot.planId : true))}
+        itemContent={(_, bot) => (
+          <Accordion isCompact variant="splitted">
+            <AccordionItem key={bot.id} title={<AutomationSummary bot={bot} />}>
+              <AutomationDetails bot={bot} isChatFirst={isChatFirst} />
             </AccordionItem>
-          ))}
-      </Accordion>
+          </Accordion>
+        )}
+        endReached={() => hasMore && !loading && fetchMore()}
+        components={{
+          Footer: () => (
+            <div className="flex w-full items-center justify-center">
+              {hasMore && loading ? <Spinner color="white" size="lg" /> : null}
+            </div>
+          ),
+        }}
+      />
 
       <CreateAutomationModal
         planId={null}

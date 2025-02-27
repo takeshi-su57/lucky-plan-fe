@@ -1,57 +1,44 @@
 "use client";
 
 import { useCallback } from "react";
-import { Button, Progress } from "@nextui-org/react";
-import { MissionStatus, TaskStatus } from "@/graphql/gql/graphql";
+import { Button } from "@nextui-org/react";
+import {
+  MissionStatus,
+  TaskForwardDetails,
+  TaskStatus,
+} from "@/graphql/gql/graphql";
 
-import { useGetTask, useStopTask } from "@/app-hooks/useTask";
-import { usePerformTask } from "@/app/_hooks/useTask";
+import { useStopTask } from "@/app-hooks/useTask";
+import { usePerformTask } from "@/app-hooks/useTask";
 
 import { ActionView } from "@/app-components/ActionsWidget/ActionView";
+
 import { TaskLogView } from "./TaskLogView";
 
 export type TaskDetailsProps = {
-  taskId: number;
+  task: TaskForwardDetails;
   missionStatus: MissionStatus;
 };
 
-export function TaskDetails({ taskId, missionStatus }: TaskDetailsProps) {
-  const { task, loading, error } = useGetTask(taskId);
-
+export function TaskDetails({ task, missionStatus }: TaskDetailsProps) {
   const performTask = usePerformTask();
   const stopTask = useStopTask();
 
   const handlePerformTask = useCallback(() => {
     performTask({
       variables: {
-        id: taskId,
+        id: task.id,
       },
     });
-  }, [performTask, taskId]);
+  }, [performTask, task.id]);
 
   const handleStopTask = useCallback(() => {
     stopTask({
       variables: {
-        id: taskId,
+        id: task.id,
       },
     });
-  }, [stopTask, taskId]);
-
-  if (loading) {
-    return <Progress isIndeterminate className="w-full flex-1" size="sm" />;
-  }
-
-  if (error) {
-    return (
-      <span className="text-bold text-base text-red-400">
-        Oops, There is an issue, Please check your network.
-      </span>
-    );
-  }
-
-  if (!task) {
-    return null;
-  }
+  }, [stopTask, task.id]);
 
   return (
     <div className="flex flex-col gap-6 border-t border-t-neutral-400/20 py-6 text-neutral-400">
@@ -81,7 +68,7 @@ export function TaskDetails({ taskId, missionStatus }: TaskDetailsProps) {
             <span className="px-2 text-base">Follower</span>
 
             {task.followerActions.map((action) => (
-              <ActionView key={action.id} action={action} />
+              <ActionView key={action.id} action={action.action} />
             ))}
           </div>
         </div>

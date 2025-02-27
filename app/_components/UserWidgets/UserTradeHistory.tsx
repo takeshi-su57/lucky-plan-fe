@@ -3,7 +3,7 @@
 import { Address } from "viem";
 import { useGetAllTradeHistory } from "@/app/_hooks/useHistory";
 
-import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget";
+import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget/HistoriesWidget";
 
 export type UserTradeHistoryProps = {
   address: Address;

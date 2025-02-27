@@ -1,11 +1,11 @@
 "use client";
 
-import { useGetAllCategories, useGetAllTags } from "@/app/_hooks/useTag";
+import { useGetAllCategories, useGetAllTags } from "@/app-hooks/useTag";
 import {
   useAddTagToUser,
   useGetTagsByAddress,
   useRemoveTagFromUser,
-} from "@/app/_hooks/useUser";
+} from "@/app-hooks/useUser";
 import { Tag, TagCategory, TagInfoFragment } from "@/graphql/gql/graphql";
 import {
   Button,

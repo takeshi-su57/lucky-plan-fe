@@ -68,7 +68,7 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
                 from: new Date(bot.startedAt),
                 to: new Date(bot.endedAt),
               },
-            ),
+            ).sortedHistories,
           }));
         });
       });

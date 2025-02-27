@@ -13,9 +13,13 @@ import {
   Link,
 } from "@nextui-org/react";
 import dayjs from "dayjs";
-import { PlanDetails, PlanStatus, TaskStatus } from "@/graphql/gql/graphql";
+import {
+  PlanForwardShallowDetails,
+  PlanStatus,
+  TaskStatus,
+} from "@/graphql/gql/graphql";
 
-import { useGetTasksByStatus } from "@/app-hooks/useTask";
+import { useGetAlertTasks } from "@/app-hooks/useTask";
 import { useGetUserTransactionCounts } from "@/app-hooks/useHistory";
 import { useDeletePlan } from "@/app/_hooks/usePlan";
 
@@ -27,39 +31,18 @@ export const chipColorsByPlanStatus: Record<PlanStatus, ChipProps["color"]> = {
 };
 
 export type PlanCardProps = {
-  plan: PlanDetails;
-  isHideAlertForClosedMissions: boolean;
+  plan: PlanForwardShallowDetails;
 };
 
-export function PlanCard({
-  plan,
-  isHideAlertForClosedMissions,
-}: PlanCardProps) {
+export function PlanCard({ plan }: PlanCardProps) {
   const { deletePlan, loading } = useDeletePlan();
-
+  const alertTasks = useGetAlertTasks();
   const { data: transactionCounts } = useGetUserTransactionCounts(
     plan.bots.map((bot) => ({
       address: bot.leaderAddress,
       contractId: bot.leaderContract.id,
       startedAt: bot.startedAt || null,
     })),
-  );
-
-  const { satistic: createdStatistic } = useGetTasksByStatus(
-    TaskStatus.Created,
-    isHideAlertForClosedMissions,
-  );
-  const { satistic: awaitedStatistic } = useGetTasksByStatus(
-    TaskStatus.Await,
-    isHideAlertForClosedMissions,
-  );
-  const { satistic: initiatedStatistic } = useGetTasksByStatus(
-    TaskStatus.Initiated,
-    isHideAlertForClosedMissions,
-  );
-  const { satistic: failedStatistic } = useGetTasksByStatus(
-    TaskStatus.Failed,
-    isHideAlertForClosedMissions,
   );
 
   const handleDelete = () => {
@@ -70,49 +53,25 @@ export function PlanCard({
     });
   };
 
-  const createdCount = plan.bots
-    .map((bot) =>
-      createdStatistic[bot.id]
-        ? Object.values(createdStatistic[bot.id]).reduce(
-            (acc, item) => acc + item,
-            0,
-          )
-        : 0,
-    )
-    .reduce((acc, item) => acc + item, 0);
+  const planTasks = alertTasks.filter(
+    (task) => task.mission.bot.planId === plan.id,
+  );
 
-  const awaitedCount = plan.bots
-    .map((bot) =>
-      awaitedStatistic[bot.id]
-        ? Object.values(awaitedStatistic[bot.id]).reduce(
-            (acc, item) => acc + item,
-            0,
-          )
-        : 0,
-    )
-    .reduce((acc, item) => acc + item, 0);
+  const createdCount = planTasks.filter(
+    (task) => task.status === TaskStatus.Created,
+  ).length;
 
-  const initiatedCount = plan.bots
-    .map((bot) =>
-      initiatedStatistic[bot.id]
-        ? Object.values(initiatedStatistic[bot.id]).reduce(
-            (acc, item) => acc + item,
-            0,
-          )
-        : 0,
-    )
-    .reduce((acc, item) => acc + item, 0);
+  const awaitedCount = planTasks.filter(
+    (task) => task.status === TaskStatus.Await,
+  ).length;
 
-  const failedCount = plan.bots
-    .map((bot) =>
-      failedStatistic[bot.id]
-        ? Object.values(failedStatistic[bot.id]).reduce(
-            (acc, item) => acc + item,
-            0,
-          )
-        : 0,
-    )
-    .reduce((acc, item) => acc + item, 0);
+  const initiatedCount = planTasks.filter(
+    (task) => task.status === TaskStatus.Initiated,
+  ).length;
+
+  const failedCount = planTasks.filter(
+    (task) => task.status === TaskStatus.Failed,
+  ).length;
 
   const transactions = transactionCounts?.getUserTransactionCounts
     ? transactionCounts.getUserTransactionCounts.reduce(
@@ -155,99 +114,101 @@ export function PlanCard({
   ];
 
   return (
-    <Card classNames={{ base: "w-[400px]" }}>
-      <CardHeader className="flex flex-row items-start gap-2 p-3">
-        <div className="flex flex-1 flex-col">
-          <span className="text-base font-bold text-neutral-400">
-            {plan.title}
-          </span>
+    <div className="pr-4">
+      <Card>
+        <CardHeader className="flex flex-row items-start gap-2 p-3">
+          <div className="flex flex-1 flex-col">
+            <span className="text-base font-bold text-neutral-400">
+              {plan.title}
+            </span>
 
-          <p className="text-xs text-neutral-400">{plan.description}</p>
-        </div>
-
-        <Chip variant="flat">Plan {plan.id}</Chip>
-      </CardHeader>
-
-      <Divider />
-
-      <CardBody>
-        <div className="flex flex-col gap-2">
-          {items.map(
-            (item) =>
-              item.value !== null && (
-                <div key={item.label} className="flex items-center gap-2">
-                  <span className="text-xs text-neutral-400">
-                    {item.label}:
-                  </span>
-                  <span className="text-sm font-bold text-neutral-300">
-                    {item.value}
-                  </span>
-                </div>
-              ),
-          )}
-
-          <div className="flex flex-row items-center gap-3 font-mono">
-            <Chip color="secondary">Monthly: {transactions.monthly}</Chip>
-            <Chip color="secondary">Weekly: {transactions.weekly}</Chip>
-            <Chip color="secondary">Daily: {transactions.daily}</Chip>
+            <p className="text-xs text-neutral-400">{plan.description}</p>
           </div>
 
-          <div className="flex flex-row items-center gap-3 font-mono">
-            {createdCount > 0 ? (
-              <Badge color="secondary" content={createdCount}>
-                <Chip color="secondary">Created</Chip>
-              </Badge>
-            ) : null}
+          <Chip variant="flat">Plan {plan.id}</Chip>
+        </CardHeader>
 
-            {awaitedCount > 0 ? (
-              <Badge color="warning" content={awaitedCount}>
-                <Chip color="warning">Await</Chip>
-              </Badge>
-            ) : null}
+        <Divider />
 
-            {initiatedCount > 0 ? (
-              <Badge color="success" content={initiatedCount}>
-                <Chip color="success">Initiated</Chip>
-              </Badge>
-            ) : null}
+        <CardBody>
+          <div className="flex flex-col gap-2">
+            {items.map(
+              (item) =>
+                item.value !== null && (
+                  <div key={item.label} className="flex items-center gap-2">
+                    <span className="text-xs text-neutral-400">
+                      {item.label}:
+                    </span>
+                    <span className="text-sm font-bold text-neutral-300">
+                      {item.value}
+                    </span>
+                  </div>
+                ),
+            )}
 
-            {failedCount > 0 ? (
-              <Badge color="danger" content={failedCount}>
-                <Chip color="danger">Failed</Chip>
-              </Badge>
+            <div className="flex flex-row items-center gap-3 font-mono">
+              <Chip color="secondary">Monthly: {transactions.monthly}</Chip>
+              <Chip color="secondary">Weekly: {transactions.weekly}</Chip>
+              <Chip color="secondary">Daily: {transactions.daily}</Chip>
+            </div>
+
+            <div className="flex flex-row items-center gap-3 font-mono">
+              {createdCount > 0 ? (
+                <Badge color="secondary" content={createdCount}>
+                  <Chip color="secondary">Created</Chip>
+                </Badge>
+              ) : null}
+
+              {awaitedCount > 0 ? (
+                <Badge color="warning" content={awaitedCount}>
+                  <Chip color="warning">Await</Chip>
+                </Badge>
+              ) : null}
+
+              {initiatedCount > 0 ? (
+                <Badge color="success" content={initiatedCount}>
+                  <Chip color="success">Initiated</Chip>
+                </Badge>
+              ) : null}
+
+              {failedCount > 0 ? (
+                <Badge color="danger" content={failedCount}>
+                  <Chip color="danger">Failed</Chip>
+                </Badge>
+              ) : null}
+            </div>
+          </div>
+        </CardBody>
+
+        <Divider />
+
+        <CardFooter className="justify-between rounded-large p-3">
+          <div className="flex flex-row items-center gap-2">
+            <Chip color={chipColorsByPlanStatus[plan.status]} variant="flat">
+              {plan.status}
+            </Chip>
+
+            {plan.status === PlanStatus.Created ? (
+              <Button
+                size="sm"
+                variant="flat"
+                color="danger"
+                isDisabled={loading}
+                isLoading={loading}
+                onClick={handleDelete}
+              >
+                Delete
+              </Button>
             ) : null}
           </div>
-        </div>
-      </CardBody>
 
-      <Divider />
-
-      <CardFooter className="justify-between rounded-large p-3">
-        <div className="flex flex-row items-center gap-2">
-          <Chip color={chipColorsByPlanStatus[plan.status]} variant="flat">
-            {plan.status}
-          </Chip>
-
-          {plan.status === PlanStatus.Created ? (
-            <Button
-              size="sm"
-              variant="flat"
-              color="danger"
-              isDisabled={loading}
-              isLoading={loading}
-              onClick={handleDelete}
-            >
-              Delete
+          <Link href={`/plans/${plan.id}`}>
+            <Button size="sm" variant="flat" color="primary">
+              Show Details
             </Button>
-          ) : null}
-        </div>
-
-        <Link href={`/plans/${plan.id}`}>
-          <Button size="sm" variant="flat" color="primary">
-            Show Details
-          </Button>
-        </Link>
-      </CardFooter>
-    </Card>
+          </Link>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }

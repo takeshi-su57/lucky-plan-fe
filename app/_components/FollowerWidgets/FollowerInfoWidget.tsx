@@ -6,7 +6,6 @@ import { Chip, Skeleton } from "@nextui-org/react";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import {
-  useGetAvailableFollowers,
   useGetTradedOrders,
   useGetPendingOrders,
 } from "@/app-hooks/useFollower";
@@ -28,7 +27,6 @@ export type FollowerInfoWidgetProps = {
 };
 
 export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
-  const availableFollowers = useGetAvailableFollowers([]);
   const { pendingOrders, loading: pendingOrdersLoading } = useGetPendingOrders(
     follower.address,
     follower.contractId,
@@ -120,12 +118,6 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
           </Skeleton>
         ) : pendingOrdersCount !== 0 ? (
           <Chip color="secondary">{pendingOrdersCount} Pendings</Chip>
-        ) : null}
-
-        {availableFollowers
-          .map((item) => item.address)
-          .includes(follower.address) ? (
-          <Chip>Available</Chip>
         ) : null}
       </div>
 

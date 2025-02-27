@@ -7,21 +7,23 @@ export function getSortedPartialHistories(
 ) {
   const inRangeHistories: PersonalTradeHistory[] = [];
 
-  histories.forEach((history) => {
-    if (!range) {
-      inRangeHistories.push(history);
-    } else {
-      if (range.from && range.from > new Date(history.date)) {
-        return;
-      }
+  histories
+    .sort((a, b) => a.block - b.block)
+    .forEach((history) => {
+      if (!range) {
+        inRangeHistories.push(history);
+      } else {
+        if (range.from && range.from > new Date(history.date)) {
+          return;
+        }
 
-      if (range.to && range.to < new Date(history.date)) {
-        return;
-      }
+        if (range.to && range.to < new Date(history.date)) {
+          return;
+        }
 
-      inRangeHistories.push(history);
-    }
-  });
+        inRangeHistories.push(history);
+      }
+    });
 
   const historiesByTradeIndex: Record<number, PersonalTradeHistory[]> = {};
 
@@ -61,7 +63,18 @@ export function getSortedPartialHistories(
     },
   );
 
-  return validHistories.flat().sort((a, b) => a.block - b.block);
+  return {
+    historiesGroupedByTradeIndex: validHistories
+      .filter((item) => item.length > 0)
+      .map((item) => ({
+        tradeIndex: item[0].tradeIndex,
+        pair: item[0].pair,
+        long: item[0].long,
+        collateralIndex: item[0].collateralIndex,
+        actions: item,
+      })),
+    sortedHistories: validHistories.flat().sort((a, b) => a.block - b.block),
+  };
 }
 
 export function getHistoriesChartData(
@@ -102,7 +115,8 @@ export function getHistoriesChartData(
   let countIn = 0;
   const actionCounts: Record<string, number> = {};
 
-  const sortedHistories = getSortedPartialHistories(histories, mode, range);
+  const { sortedHistories, historiesGroupedByTradeIndex } =
+    getSortedPartialHistories(histories, mode, range);
 
   if (sortedHistories.length > 0) {
     [
@@ -316,6 +330,7 @@ export function getHistoriesChartData(
   }
 
   return {
+    historiesGroupedByTradeIndex,
     pnlChartData,
     inOutChartData,
     inChartData,

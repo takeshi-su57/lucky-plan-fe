@@ -5,9 +5,12 @@ import { Address } from "viem";
 import dayjs from "dayjs";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
-import { BotDetails, BotStatus, TaskStatus } from "@/graphql/gql/graphql";
-import { useGetTasksByStatus } from "@/app/_hooks/useTask";
-import { useGetUserTransactionCounts } from "@/app/_hooks/useHistory";
+import {
+  BotForwardDetails,
+  BotStatus,
+  TaskStatus,
+} from "@/graphql/gql/graphql";
+import { useGetAlertTasks } from "@/app/_hooks/useTask";
 
 const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
   {
@@ -18,38 +21,11 @@ const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
   };
 
 export type AutomationSummaryProps = {
-  bot: BotDetails;
-  isHideAlertForClosedMissions: boolean;
+  bot: BotForwardDetails;
 };
 
-export function AutomationSummary({
-  bot,
-  isHideAlertForClosedMissions,
-}: AutomationSummaryProps) {
-  const { data: transactionCounts } = useGetUserTransactionCounts([
-    {
-      address: bot.leaderAddress,
-      contractId: bot.leaderContract.id,
-      startedAt: bot.startedAt || null,
-    },
-  ]);
-
-  const { satistic: createdStatistic } = useGetTasksByStatus(
-    TaskStatus.Created,
-    isHideAlertForClosedMissions,
-  );
-  const { satistic: awaitedStatistic } = useGetTasksByStatus(
-    TaskStatus.Await,
-    isHideAlertForClosedMissions,
-  );
-  const { satistic: initiatedStatistic } = useGetTasksByStatus(
-    TaskStatus.Initiated,
-    isHideAlertForClosedMissions,
-  );
-  const { satistic: failedStatistic } = useGetTasksByStatus(
-    TaskStatus.Failed,
-    isHideAlertForClosedMissions,
-  );
+export function AutomationSummary({ bot }: AutomationSummaryProps) {
+  const alertTasks = useGetAlertTasks();
 
   const {
     leaderContract,
@@ -59,33 +35,23 @@ export function AutomationSummary({
     followerAddress,
   } = bot;
 
-  const createdCount = createdStatistic[bot.id]
-    ? Object.values(createdStatistic[bot.id]).reduce(
-        (acc, item) => acc + item,
-        0,
-      )
-    : 0;
+  const botTasks = alertTasks.filter((task) => task.mission.botId === bot.id);
 
-  const awaitedCount = awaitedStatistic[bot.id]
-    ? Object.values(awaitedStatistic[bot.id]).reduce(
-        (acc, item) => acc + item,
-        0,
-      )
-    : 0;
+  const createdCount = botTasks.filter(
+    (task) => task.status === TaskStatus.Created,
+  ).length;
 
-  const initiatedCount = initiatedStatistic[bot.id]
-    ? Object.values(initiatedStatistic[bot.id]).reduce(
-        (acc, item) => acc + item,
-        0,
-      )
-    : 0;
+  const awaitedCount = botTasks.filter(
+    (task) => task.status === TaskStatus.Await,
+  ).length;
 
-  const failedCount = failedStatistic[bot.id]
-    ? Object.values(failedStatistic[bot.id]).reduce(
-        (acc, item) => acc + item,
-        0,
-      )
-    : 0;
+  const initiatedCount = botTasks.filter(
+    (task) => task.status === TaskStatus.Initiated,
+  ).length;
+
+  const failedCount = botTasks.filter(
+    (task) => task.status === TaskStatus.Failed,
+  ).length;
 
   return (
     <div className="flex items-center justify-between gap-6 text-neutral-400">
@@ -115,15 +81,9 @@ export function AutomationSummary({
 
         <div className="flex flex-col font-mono">
           <span className="text-xs">
-            {`${strategy.strategyKey}(${strategy.id}, ${strategy.ratio}%)`}
-          </span>
-          <span className="text-xs">
             Collateral:
             {`(${Number(strategy.minCollateral)} ~ ${Number(strategy.maxCollateral)}) USDC`}
           </span>
-        </div>
-
-        <div className="flex flex-col font-mono">
           <span className="text-xs">
             Leverage:
             {`(${strategy.minLeverage / 1000} ~ ${strategy.maxLeverage / 1000}) x`}
@@ -173,13 +133,6 @@ export function AutomationSummary({
       </div>
 
       <div className="flex flex-row items-center gap-3">
-        <Badge
-          color="secondary"
-          content={transactionCounts?.getUserTransactionCounts[0].daily || 0}
-        >
-          <Chip color="secondary">Today</Chip>
-        </Badge>
-
         <Chip color={colorsByBotsStatus[bot.status]}>{bot.status}</Chip>
       </div>
     </div>

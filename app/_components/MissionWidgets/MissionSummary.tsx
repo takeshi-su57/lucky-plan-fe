@@ -3,8 +3,12 @@
 import { Badge, Chip } from "@nextui-org/react";
 import dayjs from "dayjs";
 
-import { MissionStatus, Mission, TaskStatus } from "@/graphql/gql/graphql";
-import { useGetTasksByStatus } from "@/app/_hooks/useTask";
+import {
+  MissionStatus,
+  MissionForwardDetails,
+  TaskStatus,
+} from "@/graphql/gql/graphql";
+import { useGetAlertTasks } from "@/app/_hooks/useTask";
 
 const colorsByMissionStatus: Record<
   MissionStatus,
@@ -19,50 +23,31 @@ const colorsByMissionStatus: Record<
 };
 
 export type MissionSummaryProps = {
-  mission: Mission;
-  isHideAlertForClosedMissions: boolean;
+  mission: MissionForwardDetails;
 };
 
-export function MissionSummary({
-  mission,
-  isHideAlertForClosedMissions,
-}: MissionSummaryProps) {
-  const { satistic: createdStatistic } = useGetTasksByStatus(
-    TaskStatus.Created,
-    isHideAlertForClosedMissions,
-  );
-  const { satistic: awaitedStatistic } = useGetTasksByStatus(
-    TaskStatus.Await,
-    isHideAlertForClosedMissions,
-  );
-  const { satistic: initiatedStatistic } = useGetTasksByStatus(
-    TaskStatus.Initiated,
-    isHideAlertForClosedMissions,
-  );
-  const { satistic: failedStatistic } = useGetTasksByStatus(
-    TaskStatus.Failed,
-    isHideAlertForClosedMissions,
+export function MissionSummary({ mission }: MissionSummaryProps) {
+  const alertTasks = useGetAlertTasks();
+
+  const missionTasks = alertTasks.filter(
+    (task) => task.missionId === mission.id,
   );
 
-  const createdCount =
-    (createdStatistic[mission.botId] &&
-      createdStatistic[mission.botId][mission.id]) ||
-    0;
+  const createdCount = missionTasks.filter(
+    (task) => task.status === TaskStatus.Created,
+  ).length;
 
-  const awaitedCount =
-    (awaitedStatistic[mission.botId] &&
-      awaitedStatistic[mission.botId][mission.id]) ||
-    0;
+  const awaitedCount = missionTasks.filter(
+    (task) => task.status === TaskStatus.Await,
+  ).length;
 
-  const initiatedCount =
-    (initiatedStatistic[mission.botId] &&
-      initiatedStatistic[mission.botId][mission.id]) ||
-    0;
+  const initiatedCount = missionTasks.filter(
+    (task) => task.status === TaskStatus.Initiated,
+  ).length;
 
-  const failedCount =
-    (failedStatistic[mission.botId] &&
-      failedStatistic[mission.botId][mission.id]) ||
-    0;
+  const failedCount = missionTasks.filter(
+    (task) => task.status === TaskStatus.Failed,
+  ).length;
 
   return (
     <div className="flex w-full items-center justify-between gap-6">

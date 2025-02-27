@@ -76,6 +76,7 @@ const cache = new InMemoryCache({
     Query: {
       fields: {
         getPnlSnapshots: relayStylePagination(["contractId", "kind"]),
+        getBotsByStatus: relayStylePagination(["status"]),
       },
     },
     TagCategory: { keyFields: ["id"] },
@@ -100,34 +101,55 @@ const cache = new InMemoryCache({
     Contract: {
       keyFields: ["id"],
     },
-    Bot: {
+    Plan: {
+      keyFields: ["id"],
+    },
+    PlanForwardShallowDetails: {
+      keyFields: ["id"],
+    },
+    PlanForwardDetails: {
       keyFields: ["id"],
     },
     BotDetails: {
       keyFields: ["id"],
     },
-    PlanDetails: {
+    BotForwardShallowDetails: {
       keyFields: ["id"],
+    },
+    BotForwardDetails: {
+      keyFields: ["id"],
+    },
+    BotBackwardDetails: {
+      keyFields: ["id"],
+    },
+    BotEdge: {
+      keyFields: ["cursor"],
     },
     Position: {
-      keyFields: ["id"],
-    },
-    MissionShallowDetails: {
       keyFields: ["id"],
     },
     Mission: {
       keyFields: ["id"],
     },
-    TaskShallowDetails: {
+    MissionDetails: {
       keyFields: ["id"],
     },
-    TaskWithActions: {
+    MissionBackwardDetails: {
+      keyFields: ["id"],
+    },
+    MissionForwardDetails: {
+      keyFields: ["id"],
+    },
+    TaskBackwardDetails: {
+      keyFields: ["id"],
+    },
+    TaskForwardDetails: {
       keyFields: ["id"],
     },
     Action: {
       keyFields: ["id"],
     },
-    FollowerAction: {
+    FollowerActionDetails: {
       keyFields: ["id"],
     },
     PnlSnapshotDetails: {

@@ -429,3 +429,19 @@ export function getPNLPercentage(params: {
 
   return p > 900 ? 900 : p;
 }
+
+export function getWeekDateStr(date: Date) {
+  const year = date.getFullYear();
+  const month = date.toLocaleString("en-US", { month: "short" });
+  const weekNumber = Math.ceil(date.getDate() / 7);
+  const suffix =
+    weekNumber === 1
+      ? "st"
+      : weekNumber === 2
+        ? "nd"
+        : weekNumber === 3
+          ? "rd"
+          : "th";
+
+  return `${year} ${month} ${weekNumber}${suffix} Week`;
+}

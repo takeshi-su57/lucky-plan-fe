@@ -1,76 +1,28 @@
 "use client";
 
-import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { useApolloClient, useLazyQuery, useMutation } from "@apollo/client";
 
 import { getFragmentData, graphql } from "@/gql/index";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
-import { CONTRACT_INFO_FRAGMENT_DOCUMENT } from "./useContract";
-import { STRATEGY_INFO_FRAGMENT_DOCUMENT } from "./useStrategy";
+
 import {
-  BotDetails,
-  BotDetailsInfoFragment,
+  BotBackwardDetails,
+  BotForwardDetails,
+  BotForwardDetailsInfoFragment,
+  BotForwardShallowDetails,
+  BotForwardShallowDetailsInfoFragment,
   BotStatus,
 } from "@/graphql/gql/graphql";
+import { BotBackwardDetailsInfoFragment } from "@/graphql/gql/graphql";
+
 import { FOLLOWER_INFO_FRAGMENT_DOCUMENT } from "./useFollower";
-import { MISSION_INFO_FRAGMENT_DOCUMENT } from "./useMission";
+import { PLAN_INFO_FRAGMENT_DOCUMENT } from "./usePlan";
+import { getMissionDetails, getMissionForwardDetails } from "./useMission";
+import { CONTRACT_INFO_FRAGMENT_DOCUMENT } from "./useContract";
+import { STRATEGY_INFO_FRAGMENT_DOCUMENT } from "./useStrategy";
 
-export const BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
-  fragment BotInfo on Bot {
-    id
-    leaderAddress
-    followerAddress
-    strategyId
-    planId
-    leaderContractId
-    leaderCollateralBaseline
-    leaderStartedBlock
-    leaderEndedBlock
-    followerContractId
-    followerStartedBlock
-    followerEndedBlock
-    startedAt
-    endedAt
-    status
-  }
-`);
-
-export const BOT_WITH_MISSIONS_INFO_FRAGMENT_DOCUMENT = graphql(`
-  fragment BotWithMissionsInfo on BotWithMissions {
-    id
-    leaderAddress
-    followerAddress
-    strategyId
-    planId
-    leaderContractId
-    leaderCollateralBaseline
-    leaderStartedBlock
-    leaderEndedBlock
-    followerContractId
-    followerStartedBlock
-    followerEndedBlock
-    startedAt
-    endedAt
-    status
-    missions {
-      ...MissionInfo
-    }
-    followerContract {
-      ...ContractInfo
-    }
-    leaderContract {
-      ...ContractInfo
-    }
-    follower {
-      ...FollowerInfo
-    }
-    strategy {
-      ...StrategyInfo
-    }
-  }
-`);
-
-export const BOTDETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
+export const BOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment BotDetailsInfo on BotDetails {
     id
     leaderAddress
@@ -102,18 +54,124 @@ export const BOTDETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   }
 `);
 
-export const GET_BOTS_BY_STATUS_DOCUMENT = graphql(`
-  query getBotsByStatus($status: BotStatus!) {
-    getBotsByStatus(status: $status) {
-      ...BotDetailsInfo
+export const BOT_FORWARD_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment BotForwardShallowDetailsInfo on BotForwardShallowDetails {
+    id
+    leaderAddress
+    followerAddress
+    strategyId
+    planId
+    leaderContractId
+    leaderCollateralBaseline
+    leaderStartedBlock
+    leaderEndedBlock
+    followerContractId
+    followerStartedBlock
+    followerEndedBlock
+    startedAt
+    endedAt
+    status
+    followerContract {
+      ...ContractInfo
+    }
+    leaderContract {
+      ...ContractInfo
+    }
+    follower {
+      ...FollowerInfo
+    }
+    strategy {
+      ...StrategyInfo
+    }
+    missions {
+      ...MissionDetailsInfo
     }
   }
 `);
 
-export const FIND_BOT_DOCUMENT = graphql(`
-  query findBot($id: Int!) {
-    findBot(id: $id) {
-      ...BotWithMissionsInfo
+export const BOT_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment BotForwardDetailsInfo on BotForwardDetails {
+    id
+    leaderAddress
+    followerAddress
+    strategyId
+    planId
+    leaderContractId
+    leaderCollateralBaseline
+    leaderStartedBlock
+    leaderEndedBlock
+    followerContractId
+    followerStartedBlock
+    followerEndedBlock
+    startedAt
+    endedAt
+    status
+    followerContract {
+      ...ContractInfo
+    }
+    leaderContract {
+      ...ContractInfo
+    }
+    follower {
+      ...FollowerInfo
+    }
+    strategy {
+      ...StrategyInfo
+    }
+    missions {
+      ...MissionForwardDetailsInfo
+    }
+  }
+`);
+
+export const BOT_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment BotBackwardDetailsInfo on BotBackwardDetails {
+    id
+    leaderAddress
+    followerAddress
+    strategyId
+    planId
+    leaderContractId
+    leaderCollateralBaseline
+    leaderStartedBlock
+    leaderEndedBlock
+    followerContractId
+    followerStartedBlock
+    followerEndedBlock
+    startedAt
+    endedAt
+    status
+    followerContract {
+      ...ContractInfo
+    }
+    leaderContract {
+      ...ContractInfo
+    }
+    follower {
+      ...FollowerInfo
+    }
+    strategy {
+      ...StrategyInfo
+    }
+    plan {
+      ...PlanInfo
+    }
+  }
+`);
+
+export const GET_BOTS_BY_STATUS_DOCUMENT = graphql(`
+  query getBotsByStatus($status: BotStatus!, $first: Int!, $after: Int) {
+    getBotsByStatus(status: $status, first: $first, after: $after) {
+      edges {
+        cursor
+        node {
+          ...BotForwardDetailsInfo
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
     }
   }
 `);
@@ -121,7 +179,7 @@ export const FIND_BOT_DOCUMENT = graphql(`
 export const CREATE_BOT_DOCUMENT = graphql(`
   mutation createBot($input: CreateBotInput!) {
     createBot(input: $input) {
-      ...BotDetailsInfo
+      ...BotBackwardDetailsInfo
     }
   }
 `);
@@ -129,21 +187,23 @@ export const CREATE_BOT_DOCUMENT = graphql(`
 export const BATCH_CREATE_BOTS_DOCUMENT = graphql(`
   mutation batchCreateBots($input: [CreateBotAndStrategyInput!]!) {
     batchCreateBots(input: $input) {
-      ...BotDetailsInfo
+      ...BotBackwardDetailsInfo
     }
   }
 `);
 
 export const DELETE_BOT_DOCUMENT = graphql(`
   mutation deleteBot($id: Int!) {
-    deleteBot(id: $id)
+    deleteBot(id: $id) {
+      ...BotBackwardDetailsInfo
+    }
   }
 `);
 
 export const LIVE_BOT_DOCUMENT = graphql(`
   mutation liveBot($id: Int!) {
     liveBot(id: $id) {
-      ...BotDetailsInfo
+      ...BotBackwardDetailsInfo
     }
   }
 `);
@@ -151,21 +211,24 @@ export const LIVE_BOT_DOCUMENT = graphql(`
 export const STOP_BOT_DOCUMENT = graphql(`
   mutation stopBot($id: Int!) {
     stopBot(id: $id) {
-      ...BotDetailsInfo
+      ...BotBackwardDetailsInfo
     }
   }
 `);
 
-export function getBotFragment(
+export function getBotBackwardDetails(
   bot: {
-    __typename?: "BotDetails";
+    __typename?: "BotBackwardDetails";
   } & {
     " $fragmentRefs"?: {
-      BotDetailsInfoFragment: BotDetailsInfoFragment;
+      BotBackwardDetailsInfoFragment: BotBackwardDetailsInfoFragment;
     };
   },
-): BotDetails {
-  const botInfo = getFragmentData(BOTDETAILS_INFO_FRAGMENT_DOCUMENT, bot);
+): BotBackwardDetails {
+  const botInfo = getFragmentData(
+    BOT_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+    bot,
+  );
 
   return {
     ...botInfo,
@@ -187,67 +250,126 @@ export function getBotFragment(
     strategy: {
       ...getFragmentData(STRATEGY_INFO_FRAGMENT_DOCUMENT, botInfo.strategy),
     },
+    plan: getFragmentData(PLAN_INFO_FRAGMENT_DOCUMENT, botInfo.plan),
   };
 }
 
-export function useGetBotsByStatus(status?: BotStatus) {
-  const { data } = useQuery(GET_BOTS_BY_STATUS_DOCUMENT, {
-    variables: status ? { status } : undefined,
-  });
-
-  return useMemo(() => {
-    if (!data) {
-      return [];
-    }
-    return data.getBotsByStatus.map(getBotFragment).sort((a, b) => a.id - b.id);
-  }, [data]);
-}
-
-export function useGetBot(botId: number) {
-  const { data, loading, error } = useQuery(FIND_BOT_DOCUMENT, {
-    variables: { id: +botId },
-  });
-
+export function getBotForwardShallowDetails(
+  bot: {
+    __typename?: "BotForwardShallowDetails";
+  } & {
+    " $fragmentRefs"?: {
+      BotForwardShallowDetailsInfoFragment: BotForwardShallowDetailsInfoFragment;
+    };
+  },
+): BotForwardShallowDetails {
   const botInfo = getFragmentData(
-    BOT_WITH_MISSIONS_INFO_FRAGMENT_DOCUMENT,
-    data?.findBot,
+    BOT_FORWARD_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+    bot,
   );
 
   return {
-    bot: botInfo
-      ? {
-          ...botInfo,
-          missions: botInfo.missions.map((item) =>
-            getFragmentData(MISSION_INFO_FRAGMENT_DOCUMENT, item),
-          ),
-          follower: {
-            ...getFragmentData(
-              FOLLOWER_INFO_FRAGMENT_DOCUMENT,
-              botInfo.follower,
-            ),
-          },
-          leaderContract: {
-            ...getFragmentData(
-              CONTRACT_INFO_FRAGMENT_DOCUMENT,
-              botInfo.leaderContract,
-            ),
-          },
-          followerContract: {
-            ...getFragmentData(
-              CONTRACT_INFO_FRAGMENT_DOCUMENT,
-              botInfo.followerContract,
-            ),
-          },
-          strategy: {
-            ...getFragmentData(
-              STRATEGY_INFO_FRAGMENT_DOCUMENT,
-              botInfo.strategy,
-            ),
-          },
-        }
-      : undefined,
+    ...botInfo,
+    follower: {
+      ...getFragmentData(FOLLOWER_INFO_FRAGMENT_DOCUMENT, botInfo.follower),
+    },
+    leaderContract: {
+      ...getFragmentData(
+        CONTRACT_INFO_FRAGMENT_DOCUMENT,
+        botInfo.leaderContract,
+      ),
+    },
+    followerContract: {
+      ...getFragmentData(
+        CONTRACT_INFO_FRAGMENT_DOCUMENT,
+        botInfo.followerContract,
+      ),
+    },
+    strategy: {
+      ...getFragmentData(STRATEGY_INFO_FRAGMENT_DOCUMENT, botInfo.strategy),
+    },
+    missions: botInfo.missions.map(getMissionDetails),
+  };
+}
+
+export function getBotForwardDetails(
+  bot: {
+    __typename?: "BotForwardDetails";
+  } & {
+    " $fragmentRefs"?: {
+      BotForwardDetailsInfoFragment: BotForwardDetailsInfoFragment;
+    };
+  },
+): BotForwardDetails {
+  const botInfo = getFragmentData(
+    BOT_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+    bot,
+  );
+
+  return {
+    ...botInfo,
+    follower: {
+      ...getFragmentData(FOLLOWER_INFO_FRAGMENT_DOCUMENT, botInfo.follower),
+    },
+    leaderContract: {
+      ...getFragmentData(
+        CONTRACT_INFO_FRAGMENT_DOCUMENT,
+        botInfo.leaderContract,
+      ),
+    },
+    followerContract: {
+      ...getFragmentData(
+        CONTRACT_INFO_FRAGMENT_DOCUMENT,
+        botInfo.followerContract,
+      ),
+    },
+    strategy: {
+      ...getFragmentData(STRATEGY_INFO_FRAGMENT_DOCUMENT, botInfo.strategy),
+    },
+    missions: botInfo.missions.map(getMissionForwardDetails),
+  };
+}
+
+export function useGetBotsByStatus(status: BotStatus) {
+  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
+    GET_BOTS_BY_STATUS_DOCUMENT,
+  );
+
+  useEffect(() => {
+    query({
+      variables: {
+        status,
+        first: 20,
+      },
+    });
+  }, [query, status]);
+
+  const bots = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+    return data.getBotsByStatus.edges.map((edge) =>
+      getBotForwardDetails(edge.node),
+    );
+  }, [data]);
+
+  const handleFetchMore = useCallback(() => {
+    if (data && !error) {
+      fetchMore({
+        variables: {
+          status,
+          first: 20,
+          after: data.getBotsByStatus.pageInfo.endCursor,
+        },
+      });
+    }
+  }, [data, error, fetchMore, status]);
+
+  return {
+    hasMore: data?.getBotsByStatus.pageInfo.hasNextPage,
+    bots,
+    fetchMore: handleFetchMore,
     loading,
-    error,
   };
 }
 
@@ -259,40 +381,85 @@ export function useCreateBot() {
 
   useEffect(() => {
     if (newData && !error) {
-      const botInfo = getBotFragment(newData.createBot);
+      const botInfo = getBotBackwardDetails(newData.createBot);
 
       enqueueSnackbar("Success at creating new bot!", {
         variant: "success",
       });
 
-      client.cache.updateQuery(
-        {
-          query: GET_BOTS_BY_STATUS_DOCUMENT,
-          variables: { status: botInfo.status },
-        },
-        (data) => {
-          if (data && data.getBotsByStatus.length > 0) {
-            const alreadyExists = data.getBotsByStatus.filter(
-              (bot) =>
-                botInfo.id ===
-                getFragmentData(BOTDETAILS_INFO_FRAGMENT_DOCUMENT, bot).id,
-            );
+      client.cache.writeFragment({
+        id: client.cache.identify({
+          __typename: "BotBackwardDetails",
+          id: botInfo.id,
+        }),
+        fragment: BOT_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "BotBackwardDetailsInfo",
+        data: botInfo,
+      });
 
-            if (alreadyExists.length > 0) {
-              return data;
-            }
-
-            return {
-              ...data,
-              getBotsByStatus: [...data.getBotsByStatus, botInfo],
-            };
-          } else {
-            return {
-              getBotsByStatus: [botInfo],
-            };
-          }
+      client.cache.writeFragment({
+        id: client.cache.identify({
+          __typename: "BotForwardDetails",
+          id: botInfo.id,
+        }),
+        fragment: BOT_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "BotForwardDetailsInfo",
+        data: {
+          __typename: "BotForwardDetails",
+          endedAt: botInfo.endedAt,
+          follower: botInfo.follower,
+          followerAddress: botInfo.followerAddress,
+          followerContract: botInfo.followerContract,
+          followerContractId: botInfo.followerContractId,
+          followerEndedBlock: botInfo.followerEndedBlock,
+          followerStartedBlock: botInfo.followerStartedBlock,
+          id: botInfo.id,
+          leaderAddress: botInfo.leaderAddress,
+          leaderCollateralBaseline: botInfo.leaderCollateralBaseline,
+          leaderContract: botInfo.leaderContract,
+          leaderContractId: botInfo.leaderContractId,
+          leaderEndedBlock: botInfo.leaderEndedBlock,
+          leaderStartedBlock: botInfo.leaderStartedBlock,
+          missions: [],
+          planId: botInfo.planId,
+          startedAt: botInfo.startedAt,
+          status: botInfo.status,
+          strategy: botInfo.strategy,
+          strategyId: botInfo.strategyId,
         },
-      );
+      });
+
+      client.cache.writeFragment({
+        id: client.cache.identify({
+          __typename: "BotForwardShallowDetails",
+          id: botInfo.id,
+        }),
+        fragment: BOT_FORWARD_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "BotForwardShallowDetailsInfo",
+        data: {
+          __typename: "BotForwardShallowDetails",
+          endedAt: botInfo.endedAt,
+          follower: botInfo.follower,
+          followerAddress: botInfo.followerAddress,
+          followerContract: botInfo.followerContract,
+          followerContractId: botInfo.followerContractId,
+          followerEndedBlock: botInfo.followerEndedBlock,
+          followerStartedBlock: botInfo.followerStartedBlock,
+          id: botInfo.id,
+          leaderAddress: botInfo.leaderAddress,
+          leaderCollateralBaseline: botInfo.leaderCollateralBaseline,
+          leaderContract: botInfo.leaderContract,
+          leaderContractId: botInfo.leaderContractId,
+          leaderEndedBlock: botInfo.leaderEndedBlock,
+          leaderStartedBlock: botInfo.leaderStartedBlock,
+          missions: [],
+          planId: botInfo.planId,
+          startedAt: botInfo.startedAt,
+          status: botInfo.status,
+          strategy: botInfo.strategy,
+          strategyId: botInfo.strategyId,
+        },
+      });
     }
   }, [client.cache, newData, error, enqueueSnackbar]);
 
@@ -309,41 +476,8 @@ export function useBatchCreateBots() {
 
   useEffect(() => {
     if (newData && !error) {
-      const botInfo = newData.batchCreateBots.map(getBotFragment);
-
       enqueueSnackbar("Success at creating new bots!", {
         variant: "success",
-      });
-
-      botInfo.forEach((bot) => {
-        client.cache.updateQuery(
-          {
-            query: GET_BOTS_BY_STATUS_DOCUMENT,
-            variables: { status: bot.status },
-          },
-          (data) => {
-            if (data && data.getBotsByStatus.length > 0) {
-              const alreadyExists = data.getBotsByStatus.filter(
-                (item) =>
-                  bot.id ===
-                  getFragmentData(BOTDETAILS_INFO_FRAGMENT_DOCUMENT, item).id,
-              );
-
-              if (alreadyExists.length > 0) {
-                return data;
-              }
-
-              return {
-                ...data,
-                getBotsByStatus: [...data.getBotsByStatus, bot],
-              };
-            } else {
-              return {
-                getBotsByStatus: [bot],
-              };
-            }
-          },
-        );
       });
     }
 
@@ -364,32 +498,9 @@ export function useDeleteBot() {
 
   useEffect(() => {
     if (data && !error) {
-      const deletedBotId = data.deleteBot;
-
       enqueueSnackbar("Success at deleting a bot!", {
         variant: "success",
       });
-
-      client.cache.updateQuery(
-        {
-          query: GET_BOTS_BY_STATUS_DOCUMENT,
-          variables: { status: BotStatus.Created },
-        },
-        (data) => {
-          if (data && data.getBotsByStatus.length > 0) {
-            return {
-              ...data,
-              getBotsByStatus: data.getBotsByStatus.filter(
-                (bot) =>
-                  deletedBotId !==
-                  getFragmentData(BOTDETAILS_INFO_FRAGMENT_DOCUMENT, bot).id,
-              ),
-            };
-          } else {
-            return data;
-          }
-        },
-      );
     }
   }, [client.cache, data, error, enqueueSnackbar]);
 
@@ -403,20 +514,8 @@ export function useLiveBot() {
 
   useEffect(() => {
     if (newData && !error) {
-      const botInfo = getBotFragment(newData.liveBot);
-
       enqueueSnackbar("Success at living bot!", {
         variant: "success",
-      });
-
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: botInfo.__typename,
-          id: botInfo.id,
-        }),
-        fragment: BOTDETAILS_INFO_FRAGMENT_DOCUMENT,
-        fragmentName: "BotDetailsInfo",
-        data: botInfo,
       });
     }
   }, [client.cache, newData, error, enqueueSnackbar]);
@@ -431,20 +530,8 @@ export function useStopBot() {
 
   useEffect(() => {
     if (newData && !error) {
-      const botInfo = getBotFragment(newData.stopBot);
-
       enqueueSnackbar("Success at stoping bot!", {
         variant: "success",
-      });
-
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: botInfo.__typename,
-          id: botInfo.id,
-        }),
-        fragment: BOTDETAILS_INFO_FRAGMENT_DOCUMENT,
-        fragmentName: "BotDetailsInfo",
-        data: botInfo,
       });
     }
   }, [client.cache, newData, error, enqueueSnackbar]);
