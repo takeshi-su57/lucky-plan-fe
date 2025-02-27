@@ -9,14 +9,14 @@ import {
   useSubscription,
 } from "@apollo/client";
 import {
-  MissionStatus,
-  TaskShallowDetails,
-  TaskShallowDetailsInfoFragment,
-  TaskStatus,
+  TaskBackwardDetails,
+  TaskBackwardDetailsInfoFragment,
+  TaskForwardDetails,
+  TaskForwardDetailsInfoFragment,
 } from "@/graphql/gql/graphql";
 import { getFragmentData, graphql } from "@/gql/index";
 
-import { MISSION_INFO_FRAGMENT_DOCUMENT } from "./useMission";
+import { getMissionBackwardDetails } from "./useMission";
 
 export const ACTION_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment ActionInfo on Action {
@@ -41,8 +41,8 @@ export const FOLLOWER_ACTION_INFO_FRAGMENT_DOCUMENT = graphql(`
   }
 `);
 
-export const TASK_WITH_ACTIONS_INFO_FRAGMENT_DOCUMENT = graphql(`
-  fragment TaskWithActionsInfo on TaskWithActions {
+export const TASK_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment TaskForwardDetailsInfo on TaskForwardDetails {
     id
     missionId
     actionId
@@ -58,8 +58,8 @@ export const TASK_WITH_ACTIONS_INFO_FRAGMENT_DOCUMENT = graphql(`
   }
 `);
 
-export const TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
-  fragment TaskShallowDetailsInfo on TaskShallowDetails {
+export const TASK_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment TaskBackwardDetailsInfo on TaskBackwardDetails {
     id
     missionId
     actionId
@@ -69,32 +69,19 @@ export const TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     action {
       ...ActionInfo
     }
+    followerActions {
+      ...FollowerActionDetailsInfo
+    }
     mission {
-      ...MissionInfo
+      ...MissionBackwardDetailsInfo
     }
   }
 `);
 
-export const GET_ALL_TASKS_DOCUMENT = graphql(`
-  query getAllTasks {
-    getAllTasks {
-      ...TaskShallowDetailsInfo
-    }
-  }
-`);
-
-export const GET_TASKS_BY_STATUS_DOCUMENT = graphql(`
-  query getTasksByStatus($status: TaskStatus!) {
-    getTasksByStatus(status: $status) {
-      ...TaskShallowDetailsInfo
-    }
-  }
-`);
-
-export const FIND_TASK_DOCUMENT = graphql(`
-  query findTask($id: Int!) {
-    findTask(id: $id) {
-      ...TaskWithActionsInfo
+export const GET_ALERT_TASKS_DOCUMENT = graphql(`
+  query getAlertTasks {
+    getAlertTasks {
+      ...TaskBackwardDetailsInfo
     }
   }
 `);
@@ -102,7 +89,7 @@ export const FIND_TASK_DOCUMENT = graphql(`
 export const PERFORM_TASK_DOCUMENT = graphql(`
   mutation performTask($id: Int!) {
     performTask(id: $id) {
-      ...TaskShallowDetailsInfo
+      ...TaskBackwardDetailsInfo
     }
   }
 `);
@@ -110,7 +97,7 @@ export const PERFORM_TASK_DOCUMENT = graphql(`
 export const STOP_TASK_DOCUMENT = graphql(`
   mutation stopTask($id: Int!) {
     stopTask(id: $id) {
-      ...TaskShallowDetailsInfo
+      ...TaskBackwardDetailsInfo
     }
   }
 `);
@@ -118,7 +105,7 @@ export const STOP_TASK_DOCUMENT = graphql(`
 export const TASK_ADDED_SUBSCRIPTION_DOCUMENT = graphql(`
   subscription taskAdded {
     taskAdded {
-      ...TaskShallowDetailsInfo
+      ...TaskBackwardDetailsInfo
     }
   }
 `);
@@ -126,22 +113,51 @@ export const TASK_ADDED_SUBSCRIPTION_DOCUMENT = graphql(`
 export const TASK_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
   subscription taskUpdated {
     taskUpdated {
-      ...TaskShallowDetailsInfo
+      ...TaskBackwardDetailsInfo
     }
   }
 `);
 
-export function getTaskFragment(
+export function getTaskBackwardDetails(
   task: {
-    __typename?: "TaskShallowDetails";
+    __typename?: "TaskBackwardDetails";
   } & {
     " $fragmentRefs"?: {
-      TaskShallowDetailsInfoFragment: TaskShallowDetailsInfoFragment;
+      TaskBackwardDetailsInfoFragment: TaskBackwardDetailsInfoFragment;
     };
   },
-): TaskShallowDetails {
+): TaskBackwardDetails {
   const taskInfo = getFragmentData(
-    TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+    TASK_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+    task,
+  );
+
+  return {
+    ...taskInfo,
+    mission: getMissionBackwardDetails(taskInfo.mission),
+    action: getFragmentData(ACTION_INFO_FRAGMENT_DOCUMENT, taskInfo.action),
+    followerActions: taskInfo.followerActions
+      .map((item) =>
+        getFragmentData(FOLLOWER_ACTION_INFO_FRAGMENT_DOCUMENT, item),
+      )
+      .map((item) => ({
+        ...item,
+        action: getFragmentData(ACTION_INFO_FRAGMENT_DOCUMENT, item.action),
+      })),
+  };
+}
+
+export function getTaskForwardDetails(
+  task: {
+    __typename?: "TaskForwardDetails";
+  } & {
+    " $fragmentRefs"?: {
+      TaskForwardDetailsInfoFragment: TaskForwardDetailsInfoFragment;
+    };
+  },
+): TaskForwardDetails {
+  const taskInfo = getFragmentData(
+    TASK_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
     task,
   );
 
@@ -150,108 +166,23 @@ export function getTaskFragment(
     action: {
       ...getFragmentData(ACTION_INFO_FRAGMENT_DOCUMENT, taskInfo.action),
     },
-    mission: {
-      ...getFragmentData(MISSION_INFO_FRAGMENT_DOCUMENT, taskInfo.mission),
-    },
+    followerActions: taskInfo.followerActions
+      .map((item) =>
+        getFragmentData(FOLLOWER_ACTION_INFO_FRAGMENT_DOCUMENT, item),
+      )
+      .map((item) => ({
+        ...item,
+        action: getFragmentData(ACTION_INFO_FRAGMENT_DOCUMENT, item.action),
+      })),
   };
 }
 
-export function useGetAllTasks() {
-  const { data } = useQuery(GET_ALL_TASKS_DOCUMENT, { variables: {} });
+export function useGetAlertTasks() {
+  const { data } = useQuery(GET_ALERT_TASKS_DOCUMENT);
 
   return useMemo(() => {
-    if (!data) {
-      return [];
-    }
-    return data.getAllTasks.map(getTaskFragment);
+    return (data?.getAlertTasks || []).map(getTaskBackwardDetails);
   }, [data]);
-}
-
-export function useGetTasksByStatus(
-  status: TaskStatus,
-  isHideAlertForClosedMissions: boolean,
-) {
-  const { data } = useQuery(GET_TASKS_BY_STATUS_DOCUMENT, {
-    variables: { status },
-  });
-
-  return useMemo(() => {
-    const taskMaps: Record<string, Record<string, number>> = {};
-
-    if (!data) {
-      return {
-        tasks: [],
-        satistic: {},
-      };
-    }
-
-    data.getTasksByStatus.forEach((item) => {
-      const task = getTaskFragment(item);
-
-      const botId = task.mission.botId;
-      const missionId = task.missionId;
-      const missionStatus = task.mission.status;
-
-      if (
-        isHideAlertForClosedMissions &&
-        (missionStatus === MissionStatus.Closed ||
-          missionStatus === MissionStatus.Ignored)
-      ) {
-        return;
-      }
-
-      const missionMap = taskMaps[botId];
-
-      if (missionMap) {
-        if (missionMap[missionId]) {
-          missionMap[missionId] = missionMap[missionId] + 1;
-        } else {
-          missionMap[missionId] = 1;
-        }
-      } else {
-        taskMaps[botId] = {
-          [missionId]: 1,
-        };
-      }
-    });
-
-    return {
-      tasks: data.getTasksByStatus.map(getTaskFragment),
-      satistic: taskMaps,
-    };
-  }, [data, isHideAlertForClosedMissions]);
-}
-
-export function useGetTask(taskId: number) {
-  const { data, loading, error } = useQuery(FIND_TASK_DOCUMENT, {
-    variables: { id: +taskId },
-  });
-
-  const taskInfo = getFragmentData(
-    TASK_WITH_ACTIONS_INFO_FRAGMENT_DOCUMENT,
-    data?.findTask,
-  );
-
-  return {
-    task: taskInfo
-      ? {
-          ...taskInfo,
-          action: getFragmentData(
-            ACTION_INFO_FRAGMENT_DOCUMENT,
-            taskInfo.action,
-          ),
-          followerActions: taskInfo.followerActions
-            .map((item) =>
-              getFragmentData(FOLLOWER_ACTION_INFO_FRAGMENT_DOCUMENT, item),
-            )
-            .map((item) =>
-              getFragmentData(ACTION_INFO_FRAGMENT_DOCUMENT, item.action),
-            ),
-        }
-      : undefined,
-    loading,
-    error,
-  };
 }
 
 export function useSubscribeTask() {
@@ -267,7 +198,7 @@ export function useSubscribeTask() {
 
   useEffect(() => {
     if (updatedData && !error2) {
-      const taskInfos = updatedData.taskUpdated.map(getTaskFragment);
+      const taskInfos = updatedData.taskUpdated.map(getTaskBackwardDetails);
 
       enqueueSnackbar("Tasks Updated!", {
         variant: "info",
@@ -279,9 +210,29 @@ export function useSubscribeTask() {
             __typename: taskInfo.__typename,
             id: taskInfo.id,
           }),
-          fragment: TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-          fragmentName: "TaskShallowDetailsInfo",
+          fragment: TASK_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          fragmentName: "TaskBackwardDetailsInfo",
           data: taskInfo,
+        });
+
+        client.cache.writeFragment({
+          id: client.cache.identify({
+            __typename: "TaskForwardDetails",
+            id: taskInfo.mission.id,
+          }),
+          fragment: TASK_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          fragmentName: "TaskForwardDetailsInfo",
+          data: {
+            __typename: "TaskForwardDetails",
+            action: taskInfo.action,
+            actionId: taskInfo.actionId,
+            createdAt: taskInfo.createdAt,
+            followerActions: taskInfo.followerActions,
+            id: taskInfo.id,
+            logs: taskInfo.logs,
+            missionId: taskInfo.missionId,
+            status: taskInfo.status,
+          },
         });
       });
     }
@@ -289,7 +240,7 @@ export function useSubscribeTask() {
 
   useEffect(() => {
     if (newData && !error1) {
-      const taskInfos = newData.taskAdded.map(getTaskFragment);
+      const taskInfos = newData.taskAdded.map(getTaskBackwardDetails);
 
       enqueueSnackbar("New Tasks Created!", {
         variant: "info",
@@ -298,16 +249,16 @@ export function useSubscribeTask() {
       taskInfos.forEach((taskInfo) => {
         client.cache.updateQuery(
           {
-            query: GET_ALL_TASKS_DOCUMENT,
+            query: GET_ALERT_TASKS_DOCUMENT,
             variables: {},
           },
           (data) => {
-            if (data && data.getAllTasks.length > 0) {
-              const alreadyExists = data.getAllTasks.filter(
+            if (data && data.getAlertTasks.length > 0) {
+              const alreadyExists = data.getAlertTasks.filter(
                 (task) =>
                   taskInfo.id ===
                   getFragmentData(
-                    TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+                    TASK_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
                     task,
                   ).id,
               );
@@ -318,11 +269,11 @@ export function useSubscribeTask() {
 
               return {
                 ...data,
-                getAllTasks: [...data.getAllTasks, taskInfo],
+                getAlertTasks: [...data.getAlertTasks, taskInfo],
               };
             } else {
               return {
-                getAllTasks: [taskInfo],
+                getAlertTasks: [taskInfo],
               };
             }
           },
@@ -341,20 +292,8 @@ export function usePerformTask() {
 
   useEffect(() => {
     if (newData && !error) {
-      const taskInfo = getTaskFragment(newData.performTask);
-
       enqueueSnackbar("Success at perform task!", {
         variant: "success",
-      });
-
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: taskInfo.__typename,
-          id: taskInfo.id,
-        }),
-        fragment: TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-        fragmentName: "TaskShallowDetailsInfo",
-        data: taskInfo,
       });
     }
   }, [client.cache, newData, error, enqueueSnackbar]);
@@ -369,20 +308,8 @@ export function useStopTask() {
 
   useEffect(() => {
     if (newData?.stopTask && !error) {
-      const taskInfo = getTaskFragment(newData.stopTask);
-
       enqueueSnackbar("Success at stop task!", {
         variant: "success",
-      });
-
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: taskInfo.__typename,
-          id: taskInfo.id,
-        }),
-        fragment: TASK_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-        fragmentName: "TaskShallowDetailsInfo",
-        data: taskInfo,
       });
     }
   }, [client.cache, newData, error, enqueueSnackbar]);

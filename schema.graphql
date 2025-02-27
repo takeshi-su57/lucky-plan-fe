@@ -18,22 +18,32 @@ input AddUserInput {
   address: String!
 }
 
-type Bot {
+type BotBackwardDetails {
   endedAt: DateTime
+  follower: Follower!
   followerAddress: String!
+  followerContract: Contract!
   followerContractId: Int!
   followerEndedBlock: Int
   followerStartedBlock: Int
   id: Int!
   leaderAddress: String!
   leaderCollateralBaseline: Int!
+  leaderContract: Contract!
   leaderContractId: Int!
   leaderEndedBlock: Int
   leaderStartedBlock: Int
+  plan: Plan
   planId: Int
   startedAt: DateTime
   status: BotStatus!
+  strategy: Strategy!
   strategyId: Int!
+}
+
+type BotConnection {
+  edges: [BotEdge!]!
+  pageInfo: BotPageInfo!
 }
 
 type BotDetails {
@@ -58,14 +68,12 @@ type BotDetails {
   strategyId: Int!
 }
 
-enum BotStatus {
-  Created
-  Dead
-  Live
-  Stop
+type BotEdge {
+  cursor: Int!
+  node: BotForwardDetails!
 }
 
-type BotWithMissions {
+type BotForwardDetails {
   endedAt: DateTime
   follower: Follower!
   followerAddress: String!
@@ -80,12 +88,47 @@ type BotWithMissions {
   leaderContractId: Int!
   leaderEndedBlock: Int
   leaderStartedBlock: Int
-  missions: [Mission!]!
+  missions: [MissionForwardDetails!]!
   planId: Int
   startedAt: DateTime
   status: BotStatus!
   strategy: Strategy!
   strategyId: Int!
+}
+
+type BotForwardShallowDetails {
+  endedAt: DateTime
+  follower: Follower!
+  followerAddress: String!
+  followerContract: Contract!
+  followerContractId: Int!
+  followerEndedBlock: Int
+  followerStartedBlock: Int
+  id: Int!
+  leaderAddress: String!
+  leaderCollateralBaseline: Int!
+  leaderContract: Contract!
+  leaderContractId: Int!
+  leaderEndedBlock: Int
+  leaderStartedBlock: Int
+  missions: [MissionDetails!]!
+  planId: Int
+  startedAt: DateTime
+  status: BotStatus!
+  strategy: Strategy!
+  strategyId: Int!
+}
+
+type BotPageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
+enum BotStatus {
+  Created
+  Dead
+  Live
+  Stop
 }
 
 input CancelOrderAfterTimeoutInput {
@@ -189,22 +232,10 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
-input FindPositionInput {
-  address: String!
-  contractId: Int!
-  index: Int!
-}
-
 type Follower {
   accountIndex: Int!
   address: String!
   publicKey: String!
-}
-
-type FollowerAction {
-  actionId: Int!
-  id: Int!
-  taskId: Int!
 }
 
 type FollowerActionDetails {
@@ -270,10 +301,10 @@ type Mission {
   updatedAt: DateTime!
 }
 
-type MissionDetails {
+type MissionBackwardDetails {
   achievePosition: Position
   achievePositionId: Int
-  bot: BotDetails!
+  bot: BotBackwardDetails!
   botId: Int!
   createdAt: DateTime!
   id: Int!
@@ -283,10 +314,35 @@ type MissionDetails {
   updatedAt: DateTime!
 }
 
-type MissionShallowDetails {
+type MissionDetails {
   achievePosition: Position
   achievePositionId: Int
-  bot: Bot!
+  botId: Int!
+  createdAt: DateTime!
+  id: Int!
+  status: MissionStatus!
+  targetPosition: Position!
+  targetPositionId: Int!
+  updatedAt: DateTime!
+}
+
+type MissionForwardDetails {
+  achievePosition: Position
+  achievePositionId: Int
+  botId: Int!
+  createdAt: DateTime!
+  id: Int!
+  status: MissionStatus!
+  targetPosition: Position!
+  targetPositionId: Int!
+  tasks: [TaskForwardDetails!]!
+  updatedAt: DateTime!
+}
+
+type MissionShallowBackwardDetails {
+  achievePosition: Position
+  achievePositionId: Int
+  bot: BotDetails!
   botId: Int!
   createdAt: DateTime!
   id: Int!
@@ -305,52 +361,41 @@ enum MissionStatus {
   Opening
 }
 
-type MissionWithTasks {
-  achievePositionId: Int
-  botId: Int!
-  createdAt: DateTime!
-  id: Int!
-  status: MissionStatus!
-  targetPositionId: Int!
-  tasks: [TaskShallowDetails!]!
-  updatedAt: DateTime!
-}
-
 type Mutation {
-  addBotsToPlan(botIds: [Int!]!, planId: Int!): PlanDetails!
+  addBotsToPlan(botIds: [Int!]!, planId: Int!): PlanForwardShallowDetails!
   addTagToUser(input: ChangeUserTagInput!): User!
   addUser(input: AddUserInput!): User!
-  batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotDetails!]!
+  batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
   buildPnlSnapshots(dateStr: String!, isForceBuild: Boolean!): PnlSnapshotInitializedFlag
   cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
   changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changePassword(input: ChangePasswordInput!): Boolean!
-  closeMission(id: Int!, isForce: Boolean!): MissionShallowDetails!
+  closeMission(id: Int!, isForce: Boolean!): MissionBackwardDetails!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
-  createBot(input: CreateBotInput!): BotDetails!
+  createBot(input: CreateBotInput!): BotBackwardDetails!
   createContract(input: CreateContractInput!): Contract!
-  createPlan(createPlanInput: CreatePlanInput!): PlanDetails!
+  createPlan(createPlanInput: CreatePlanInput!): PlanForwardShallowDetails!
   createStrategy(input: CreateStrategyInput!): Strategy!
-  deleteBot(id: Int!): Int!
+  deleteBot(id: Int!): [BotBackwardDetails!]!
   deleteCategory(id: Int!): TagCategory!
   deletePlan(id: Int!): Int!
   deleteTag(tag: String!): Tag!
   dynamicSnapshotBuild(dateStr: String!): PnlSnapshotInitializedFlag
-  endPlan(id: Int!): PlanDetails!
+  endPlan(id: Int!): PlanForwardShallowDetails!
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
-  ignoreMission(id: Int!): MissionShallowDetails!
+  ignoreMission(id: Int!): MissionBackwardDetails!
   initializePnlSnapshot: Boolean!
-  liveBot(id: Int!): BotDetails!
+  liveBot(id: Int!): BotBackwardDetails!
   pauseSystem: Boolean!
-  performTask(id: Int!): TaskShallowDetails!
+  performTask(id: Int!): TaskBackwardDetails!
   removeStrategy(id: Int!): Strategy!
   removeTagFromUser(input: ChangeUserTagInput!): User!
   resumeSystem: Boolean!
-  startPlan(id: Int!): PlanDetails!
-  stopBot(id: Int!): BotDetails!
-  stopTask(id: Int!): TaskShallowDetails
-  updatePlan(updatePlanInput: UpdatePlanInput!): PlanDetails!
+  startPlan(id: Int!): PlanForwardShallowDetails!
+  stopBot(id: Int!): BotBackwardDetails!
+  stopTask(id: Int!): TaskBackwardDetails
+  updatePlan(updatePlanInput: UpdatePlanInput!): PlanForwardShallowDetails!
   updateStrategyMetadata(input: UpdateStrategyMetadataInput!, key: String!): StrategyMetadata!
   upsertCategory(input: TagCategoryInput!): TagCategory!
   upsertTag(input: TagInput!): Tag!
@@ -358,13 +403,31 @@ type Mutation {
   withdrawAllUSDC(input: WithdrawAllInput!): Boolean!
 }
 
-type PageInfo {
-  endCursor: Int
-  hasNextPage: Boolean!
+type Plan {
+  description: String!
+  endedAt: DateTime
+  id: Int!
+  scheduledEnd: DateTime!
+  scheduledStart: DateTime!
+  startedAt: DateTime
+  status: PlanStatus!
+  title: String!
 }
 
-type PlanDetails {
-  bots: [BotDetails!]!
+type PlanForwardDetails {
+  bots: [BotForwardDetails!]!
+  description: String!
+  endedAt: DateTime
+  id: Int!
+  scheduledEnd: DateTime!
+  scheduledStart: DateTime!
+  startedAt: DateTime
+  status: PlanStatus!
+  title: String!
+}
+
+type PlanForwardShallowDetails {
+  bots: [BotForwardShallowDetails!]!
   description: String!
   endedAt: DateTime
   id: Int!
@@ -403,12 +466,17 @@ type PnlSnapshotDetails {
 
 type PnlSnapshotDetailsConnection {
   edges: [PnlSnapshotDetailsEdge!]!
-  pageInfo: PageInfo!
+  pageInfo: PnlSnapshotDetailsPageInfo!
 }
 
 type PnlSnapshotDetailsEdge {
   cursor: Int!
   node: PnlSnapshotDetails!
+}
+
+type PnlSnapshotDetailsPageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
 }
 
 type PnlSnapshotInitializedFlag {
@@ -444,40 +512,27 @@ type PositionInfo {
 }
 
 type Query {
-  findAction(id: Int!): Action
-  findActionsByPosition(positionId: Float!): [Action!]!
-  findAllPositions: [Position!]!
-  findBot(id: Int!): BotWithMissions
   findContract(id: Int!): Contract!
-  findFollowerAction(id: Int!): FollowerActionDetails
-  findMission(id: Int!): MissionWithTasks
-  findPosition(input: FindPositionInput!): Position
-  findPositionById(id: Int!): Position
   findStrategy(id: Int!): Strategy
   findStrategyMetadata(key: String!): StrategyMetadata!
-  findTask(id: Int!): TaskWithActions
-  getAllActions: [Action!]!
+  getAlertTasks: [TaskBackwardDetails!]!
   getAllCategories: [TagCategory!]!
   getAllContracts: [Contract!]!
-  getAllFollowerActions: [FollowerAction!]!
   getAllFollowerDetails(contractId: Int!): [FollowerDetail!]!
   getAllFollowers: [Follower!]!
-  getAllMissions: [MissionShallowDetails!]!
   getAllStrategy: [Strategy!]!
   getAllStrategyMetadata: [StrategyMetadata!]!
   getAllTags: [Tag!]!
-  getAllTasks: [TaskShallowDetails!]!
   getAllUsers: [User!]!
-  getBotsByStatus(status: BotStatus!): [BotDetails!]!
+  getBotsByStatus(after: Int, first: Int!, status: BotStatus!): BotConnection!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
   getPendingOrders(address: String!, contractId: Int!): [FollowerPendingOrder!]!
-  getPlanById(id: Int!): PlanDetails
-  getPlansByStatus(status: PlanStatus!): [PlanDetails!]!
+  getPlanById(id: Int!): PlanForwardDetails
+  getPlansByStatus(status: PlanStatus!): [PlanForwardShallowDetails!]!
   getPnlSnapshotInitializedFlag: [PnlSnapshotInitializedFlag!]!
   getPnlSnapshots(after: Int, contractId: Int!, dateStr: String!, first: Int!, kind: PnlSnapshotKind!): PnlSnapshotDetailsConnection!
   getPnlSnapshotsByAddress(address: String!, dateStr: String!): [PnlSnapshot!]!
   getServerTime: ServerTime!
-  getTasksByStatus(status: TaskStatus!): [TaskShallowDetails!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getTradePairs(contractId: Int!): [TradePair!]!
   getTradeTransactionCounts(addresses: [String!]!, contractIds: [Int!]!): TradeTransactionCount!
@@ -513,13 +568,11 @@ type StrategyMetadata {
 }
 
 type Subscription {
-  actionAdded: [Action!]!
-  followerActionAdded: [FollowerAction!]!
   followerDetailsUpdated(contractId: Int!): [FollowerDetail!]!
-  missionAdded: [MissionShallowDetails!]!
-  missionUpdated: [MissionShallowDetails!]!
-  taskAdded: [TaskShallowDetails!]!
-  taskUpdated: [TaskShallowDetails!]!
+  missionAdded: [MissionBackwardDetails!]!
+  missionUpdated: [MissionBackwardDetails!]!
+  taskAdded: [TaskBackwardDetails!]!
+  taskUpdated: [TaskBackwardDetails!]!
 }
 
 type Tag {
@@ -547,13 +600,25 @@ input TagInput {
   tag: String!
 }
 
-type TaskShallowDetails {
+type TaskBackwardDetails {
   action: Action!
   actionId: Int!
   createdAt: DateTime!
+  followerActions: [FollowerActionDetails!]!
   id: Int!
   logs: [String!]!
-  mission: Mission!
+  mission: MissionBackwardDetails!
+  missionId: Int!
+  status: TaskStatus!
+}
+
+type TaskForwardDetails {
+  action: Action!
+  actionId: Int!
+  createdAt: DateTime!
+  followerActions: [FollowerActionDetails!]!
+  id: Int!
+  logs: [String!]!
   missionId: Int!
   status: TaskStatus!
 }
@@ -565,17 +630,6 @@ enum TaskStatus {
   Failed
   Initiated
   Stopped
-}
-
-type TaskWithActions {
-  action: Action!
-  actionId: Int!
-  createdAt: DateTime!
-  followerActions: [FollowerActionDetails!]!
-  id: Int!
-  logs: [String!]!
-  missionId: Int!
-  status: TaskStatus!
 }
 
 enum TradeActionType {
