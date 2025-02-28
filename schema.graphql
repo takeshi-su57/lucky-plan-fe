@@ -96,29 +96,6 @@ type BotForwardDetails {
   strategyId: Int!
 }
 
-type BotForwardShallowDetails {
-  endedAt: DateTime
-  follower: Follower!
-  followerAddress: String!
-  followerContract: Contract!
-  followerContractId: Int!
-  followerEndedBlock: Int
-  followerStartedBlock: Int
-  id: Int!
-  leaderAddress: String!
-  leaderCollateralBaseline: Int!
-  leaderContract: Contract!
-  leaderContractId: Int!
-  leaderEndedBlock: Int
-  leaderStartedBlock: Int
-  missions: [MissionDetails!]!
-  planId: Int
-  startedAt: DateTime
-  status: BotStatus!
-  strategy: Strategy!
-  strategyId: Int!
-}
-
 type BotPageInfo {
   endCursor: Int
   hasNextPage: Boolean!
@@ -314,18 +291,6 @@ type MissionBackwardDetails {
   updatedAt: DateTime!
 }
 
-type MissionDetails {
-  achievePosition: Position
-  achievePositionId: Int
-  botId: Int!
-  createdAt: DateTime!
-  id: Int!
-  status: MissionStatus!
-  targetPosition: Position!
-  targetPositionId: Int!
-  updatedAt: DateTime!
-}
-
 type MissionForwardDetails {
   achievePosition: Position
   achievePositionId: Int
@@ -362,7 +327,7 @@ enum MissionStatus {
 }
 
 type Mutation {
-  addBotsToPlan(botIds: [Int!]!, planId: Int!): PlanForwardShallowDetails!
+  addBotsToPlan(botIds: [Int!]!, planId: Int!): PlanForwardDetails!
   addTagToUser(input: ChangeUserTagInput!): User!
   addUser(input: AddUserInput!): User!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
@@ -374,14 +339,14 @@ type Mutation {
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
   createBot(input: CreateBotInput!): BotBackwardDetails!
   createContract(input: CreateContractInput!): Contract!
-  createPlan(createPlanInput: CreatePlanInput!): PlanForwardShallowDetails!
+  createPlan(createPlanInput: CreatePlanInput!): PlanForwardDetails!
   createStrategy(input: CreateStrategyInput!): Strategy!
   deleteBot(id: Int!): [BotBackwardDetails!]!
   deleteCategory(id: Int!): TagCategory!
   deletePlan(id: Int!): Int!
   deleteTag(tag: String!): Tag!
   dynamicSnapshotBuild(dateStr: String!): PnlSnapshotInitializedFlag
-  endPlan(id: Int!): PlanForwardShallowDetails!
+  endPlan(id: Int!): PlanForwardDetails!
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
   ignoreMission(id: Int!): MissionBackwardDetails!
@@ -392,10 +357,10 @@ type Mutation {
   removeStrategy(id: Int!): Strategy!
   removeTagFromUser(input: ChangeUserTagInput!): User!
   resumeSystem: Boolean!
-  startPlan(id: Int!): PlanForwardShallowDetails!
+  startPlan(id: Int!): PlanForwardDetails!
   stopBot(id: Int!): BotBackwardDetails!
   stopTask(id: Int!): TaskBackwardDetails
-  updatePlan(updatePlanInput: UpdatePlanInput!): PlanForwardShallowDetails!
+  updatePlan(updatePlanInput: UpdatePlanInput!): PlanForwardDetails!
   updateStrategyMetadata(input: UpdateStrategyMetadataInput!, key: String!): StrategyMetadata!
   upsertCategory(input: TagCategoryInput!): TagCategory!
   upsertTag(input: TagInput!): Tag!
@@ -414,6 +379,16 @@ type Plan {
   title: String!
 }
 
+type PlanConnection {
+  edges: [PlanEdge!]!
+  pageInfo: PlanPageInfo!
+}
+
+type PlanEdge {
+  cursor: Int!
+  node: PlanForwardDetails!
+}
+
 type PlanForwardDetails {
   bots: [BotForwardDetails!]!
   description: String!
@@ -426,16 +401,9 @@ type PlanForwardDetails {
   title: String!
 }
 
-type PlanForwardShallowDetails {
-  bots: [BotForwardShallowDetails!]!
-  description: String!
-  endedAt: DateTime
-  id: Int!
-  scheduledEnd: DateTime!
-  scheduledStart: DateTime!
-  startedAt: DateTime
-  status: PlanStatus!
-  title: String!
+type PlanPageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
 }
 
 enum PlanStatus {
@@ -528,7 +496,7 @@ type Query {
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
   getPendingOrders(address: String!, contractId: Int!): [FollowerPendingOrder!]!
   getPlanById(id: Int!): PlanForwardDetails
-  getPlansByStatus(status: PlanStatus!): [PlanForwardShallowDetails!]!
+  getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
   getPnlSnapshotInitializedFlag: [PnlSnapshotInitializedFlag!]!
   getPnlSnapshots(after: Int, contractId: Int!, dateStr: String!, first: Int!, kind: PnlSnapshotKind!): PnlSnapshotDetailsConnection!
   getPnlSnapshotsByAddress(address: String!, dateStr: String!): [PnlSnapshot!]!

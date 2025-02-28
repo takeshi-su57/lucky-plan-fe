@@ -14,15 +14,18 @@ import {
 } from "@nextui-org/react";
 import dayjs from "dayjs";
 import {
-  PlanForwardShallowDetails,
+  PlanForwardDetails,
   PlanStatus,
   TaskStatus,
 } from "@/graphql/gql/graphql";
 
 import { useGetAlertTasks } from "@/app-hooks/useTask";
 import { useGetUserTransactionCounts } from "@/app-hooks/useHistory";
-import { useDeletePlan } from "@/app/_hooks/usePlan";
+import { useDeletePlan } from "@/app-hooks/usePlan";
+import { useGetAllContracts } from "@/app-hooks/useContract";
+
 import { LabeledChip } from "@/components/chips/LabeledChip";
+import { ContractPnl } from "@/app-components/MissionWidgets/ContractPnl";
 
 export const chipColorsByPlanStatus: Record<PlanStatus, ChipProps["color"]> = {
   [PlanStatus.Created]: "primary",
@@ -32,7 +35,7 @@ export const chipColorsByPlanStatus: Record<PlanStatus, ChipProps["color"]> = {
 };
 
 export type PlanCardProps = {
-  plan: PlanForwardShallowDetails;
+  plan: PlanForwardDetails;
 };
 
 export function PlanCard({ plan }: PlanCardProps) {
@@ -45,6 +48,8 @@ export function PlanCard({ plan }: PlanCardProps) {
       startedAt: bot.startedAt || null,
     })),
   );
+
+  const allContracts = useGetAllContracts();
 
   const handleDelete = () => {
     deletePlan({
@@ -163,6 +168,66 @@ export function PlanCard({ plan }: PlanCardProps) {
                 value={transactions.daily}
                 unit="Trades"
               />
+            </div>
+
+            <Divider />
+
+            <div className="flex items-center justify-between">
+              <div className="flex flex-1 flex-col gap-2">
+                <span className="text-xs text-neutral-400">Leaders Pnl</span>
+
+                {(allContracts || []).map((contract) => (
+                  <ContractPnl
+                    key={contract.id}
+                    showZero
+                    label={`Chain (${contract.chainId})`}
+                    contractId={contract.id}
+                    actions={plan.bots
+                      .filter((bot) => bot.leaderContractId === contract.id)
+                      .flatMap((bot) =>
+                        bot.missions.flatMap((mission) =>
+                          mission.tasks.map((task) => task.action),
+                        ),
+                      )}
+                  />
+                ))}
+              </div>
+
+              <div className="flex flex-1 flex-col gap-2">
+                <span className="text-xs text-neutral-400">Followers Pnl</span>
+                {(allContracts || []).map((contract) => (
+                  <ContractPnl
+                    key={contract.id}
+                    showZero
+                    label={`Chain (${contract.chainId})`}
+                    contractId={contract.id}
+                    actions={plan.bots
+                      .filter((bot) => bot.followerContractId === contract.id)
+                      .flatMap((bot) =>
+                        bot.missions.flatMap((mission) =>
+                          mission.tasks
+                            .map((task) => {
+                              if (task.followerActions.length === 0) {
+                                return null;
+                              }
+
+                              const followerAction =
+                                task.followerActions[
+                                  task.followerActions.length - 1
+                                ];
+
+                              if (!followerAction) {
+                                return null;
+                              }
+
+                              return followerAction.action;
+                            })
+                            .filter((action) => action !== null),
+                        ),
+                      )}
+                  />
+                ))}
+              </div>
             </div>
 
             <div className="flex flex-row items-center gap-3 font-mono">

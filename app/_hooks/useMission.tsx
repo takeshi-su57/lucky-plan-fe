@@ -9,11 +9,8 @@ import {
   MissionBackwardDetails,
   MissionForwardDetailsInfoFragment,
   MissionForwardDetails,
-  MissionDetailsInfoFragment,
-  MissionDetails,
 } from "@/graphql/gql/graphql";
 import {
-  BOT_FORWARD_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
   BOT_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
   getBotBackwardDetails,
 } from "./useAutomation";
@@ -37,24 +34,6 @@ export const MISSION_INFO_FRAGMENT_DOCUMENT = graphql(`
     status
     createdAt
     updatedAt
-  }
-`);
-
-export const MISSION_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
-  fragment MissionDetailsInfo on MissionDetails {
-    id
-    botId
-    targetPositionId
-    achievePositionId
-    createdAt
-    updatedAt
-    status
-    achievePosition {
-      ...PositionInfo
-    }
-    targetPosition {
-      ...PositionInfo
-    }
   }
 `);
 
@@ -131,39 +110,6 @@ export const MISSION_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
     }
   }
 `);
-
-export function getMissionDetails(
-  mission: {
-    __typename?: "MissionDetails";
-  } & {
-    " $fragmentRefs"?: {
-      MissionDetailsInfoFragment: MissionDetailsInfoFragment;
-    };
-  },
-): MissionDetails {
-  const missionInfo = getFragmentData(
-    MISSION_DETAILS_INFO_FRAGMENT_DOCUMENT,
-    mission,
-  );
-
-  return {
-    ...missionInfo,
-    targetPosition: {
-      ...getFragmentData(
-        POSITION_INFO_FRAGMENT_DOCUMENT,
-        missionInfo.targetPosition,
-      ),
-    },
-    achievePosition: missionInfo?.achievePosition
-      ? {
-          ...getFragmentData(
-            POSITION_INFO_FRAGMENT_DOCUMENT,
-            missionInfo.achievePosition,
-          ),
-        }
-      : undefined,
-  };
-}
 
 export function getMissionBackwardDetails(
   mission: {
@@ -257,27 +203,6 @@ export function useSubscribeMission() {
       missionInfos.forEach((missionInfo) => {
         client.cache.writeFragment({
           id: client.cache.identify({
-            __typename: "MissionDetails",
-            id: missionInfo.id,
-          }),
-          fragment: MISSION_DETAILS_INFO_FRAGMENT_DOCUMENT,
-          fragmentName: "MissionDetailsInfo",
-          data: {
-            __typename: "MissionDetails",
-            achievePosition: missionInfo.achievePosition,
-            targetPosition: missionInfo.targetPosition,
-            updatedAt: missionInfo.updatedAt,
-            status: missionInfo.status,
-            botId: missionInfo.botId,
-            targetPositionId: missionInfo.targetPositionId,
-            achievePositionId: missionInfo.achievePositionId,
-            id: missionInfo.id,
-            createdAt: missionInfo.createdAt,
-          },
-        });
-
-        client.cache.writeFragment({
-          id: client.cache.identify({
             __typename: missionInfo.__typename,
             id: missionInfo.id,
           }),
@@ -356,59 +281,6 @@ export function useSubscribeMission() {
       });
 
       missionInfos.forEach((missionInfo) => {
-        client.cache.writeFragment({
-          id: client.cache.identify({
-            __typename: "MissionDetails",
-            id: missionInfo.id,
-          }),
-          fragment: MISSION_DETAILS_INFO_FRAGMENT_DOCUMENT,
-          fragmentName: "MissionDetailsInfo",
-          data: {
-            __typename: "MissionDetails",
-            achievePosition: missionInfo.achievePosition,
-            targetPosition: missionInfo.targetPosition,
-            updatedAt: missionInfo.updatedAt,
-            status: missionInfo.status,
-            botId: missionInfo.botId,
-            targetPositionId: missionInfo.targetPositionId,
-            achievePositionId: missionInfo.achievePositionId,
-            id: missionInfo.id,
-            createdAt: missionInfo.createdAt,
-          },
-        });
-
-        const missionDetailsFragment = client.cache.readFragment({
-          id: client.cache.identify({
-            __typename: "MissionDetails",
-            id: missionInfo.id,
-          }),
-          fragment: MISSION_DETAILS_INFO_FRAGMENT_DOCUMENT,
-          fragmentName: "MissionDetailsInfo",
-        });
-
-        if (missionDetailsFragment) {
-          client.cache.updateFragment(
-            {
-              id: client.cache.identify({
-                __typename: "BotForwardShallowDetails",
-                id: missionInfo.bot.id,
-              }),
-              fragment: BOT_FORWARD_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-              fragmentName: "BotForwardShallowDetailsInfo",
-            },
-            (oldData) => {
-              if (oldData) {
-                return {
-                  ...oldData,
-                  missions: [...oldData.missions, missionDetailsFragment],
-                };
-              }
-
-              return null;
-            },
-          );
-        }
-
         client.cache.writeFragment({
           id: client.cache.identify({
             __typename: "MissionForwardDetails",

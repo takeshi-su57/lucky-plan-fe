@@ -10,15 +10,13 @@ import {
   BotBackwardDetails,
   BotForwardDetails,
   BotForwardDetailsInfoFragment,
-  BotForwardShallowDetails,
-  BotForwardShallowDetailsInfoFragment,
   BotStatus,
 } from "@/graphql/gql/graphql";
 import { BotBackwardDetailsInfoFragment } from "@/graphql/gql/graphql";
 
 import { FOLLOWER_INFO_FRAGMENT_DOCUMENT } from "./useFollower";
 import { PLAN_INFO_FRAGMENT_DOCUMENT } from "./usePlan";
-import { getMissionDetails, getMissionForwardDetails } from "./useMission";
+import { getMissionForwardDetails } from "./useMission";
 import { CONTRACT_INFO_FRAGMENT_DOCUMENT } from "./useContract";
 import { STRATEGY_INFO_FRAGMENT_DOCUMENT } from "./useStrategy";
 
@@ -50,41 +48,6 @@ export const BOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     }
     strategy {
       ...StrategyInfo
-    }
-  }
-`);
-
-export const BOT_FORWARD_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
-  fragment BotForwardShallowDetailsInfo on BotForwardShallowDetails {
-    id
-    leaderAddress
-    followerAddress
-    strategyId
-    planId
-    leaderContractId
-    leaderCollateralBaseline
-    leaderStartedBlock
-    leaderEndedBlock
-    followerContractId
-    followerStartedBlock
-    followerEndedBlock
-    startedAt
-    endedAt
-    status
-    followerContract {
-      ...ContractInfo
-    }
-    leaderContract {
-      ...ContractInfo
-    }
-    follower {
-      ...FollowerInfo
-    }
-    strategy {
-      ...StrategyInfo
-    }
-    missions {
-      ...MissionDetailsInfo
     }
   }
 `);
@@ -254,44 +217,6 @@ export function getBotBackwardDetails(
   };
 }
 
-export function getBotForwardShallowDetails(
-  bot: {
-    __typename?: "BotForwardShallowDetails";
-  } & {
-    " $fragmentRefs"?: {
-      BotForwardShallowDetailsInfoFragment: BotForwardShallowDetailsInfoFragment;
-    };
-  },
-): BotForwardShallowDetails {
-  const botInfo = getFragmentData(
-    BOT_FORWARD_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-    bot,
-  );
-
-  return {
-    ...botInfo,
-    follower: {
-      ...getFragmentData(FOLLOWER_INFO_FRAGMENT_DOCUMENT, botInfo.follower),
-    },
-    leaderContract: {
-      ...getFragmentData(
-        CONTRACT_INFO_FRAGMENT_DOCUMENT,
-        botInfo.leaderContract,
-      ),
-    },
-    followerContract: {
-      ...getFragmentData(
-        CONTRACT_INFO_FRAGMENT_DOCUMENT,
-        botInfo.followerContract,
-      ),
-    },
-    strategy: {
-      ...getFragmentData(STRATEGY_INFO_FRAGMENT_DOCUMENT, botInfo.strategy),
-    },
-    missions: botInfo.missions.map(getMissionDetails),
-  };
-}
-
 export function getBotForwardDetails(
   bot: {
     __typename?: "BotForwardDetails";
@@ -406,38 +331,6 @@ export function useCreateBot() {
         fragmentName: "BotForwardDetailsInfo",
         data: {
           __typename: "BotForwardDetails",
-          endedAt: botInfo.endedAt,
-          follower: botInfo.follower,
-          followerAddress: botInfo.followerAddress,
-          followerContract: botInfo.followerContract,
-          followerContractId: botInfo.followerContractId,
-          followerEndedBlock: botInfo.followerEndedBlock,
-          followerStartedBlock: botInfo.followerStartedBlock,
-          id: botInfo.id,
-          leaderAddress: botInfo.leaderAddress,
-          leaderCollateralBaseline: botInfo.leaderCollateralBaseline,
-          leaderContract: botInfo.leaderContract,
-          leaderContractId: botInfo.leaderContractId,
-          leaderEndedBlock: botInfo.leaderEndedBlock,
-          leaderStartedBlock: botInfo.leaderStartedBlock,
-          missions: [],
-          planId: botInfo.planId,
-          startedAt: botInfo.startedAt,
-          status: botInfo.status,
-          strategy: botInfo.strategy,
-          strategyId: botInfo.strategyId,
-        },
-      });
-
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: "BotForwardShallowDetails",
-          id: botInfo.id,
-        }),
-        fragment: BOT_FORWARD_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-        fragmentName: "BotForwardShallowDetailsInfo",
-        data: {
-          __typename: "BotForwardShallowDetails",
           endedAt: botInfo.endedAt,
           follower: botInfo.follower,
           followerAddress: botInfo.followerAddress,
