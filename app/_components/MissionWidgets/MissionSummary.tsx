@@ -2,13 +2,15 @@
 
 import { Badge, Chip } from "@nextui-org/react";
 import dayjs from "dayjs";
-
 import {
   MissionStatus,
   MissionForwardDetails,
   TaskStatus,
 } from "@/graphql/gql/graphql";
-import { useGetAlertTasks } from "@/app/_hooks/useTask";
+
+import { useGetAlertTasks } from "@/app-hooks/useTask";
+
+import { ContractPnl } from "./ContractPnl";
 
 const colorsByMissionStatus: Record<
   MissionStatus,
@@ -24,9 +26,15 @@ const colorsByMissionStatus: Record<
 
 export type MissionSummaryProps = {
   mission: MissionForwardDetails;
+  leaderContractId: number;
+  followerContractId: number;
 };
 
-export function MissionSummary({ mission }: MissionSummaryProps) {
+export function MissionSummary({
+  mission,
+  leaderContractId,
+  followerContractId,
+}: MissionSummaryProps) {
   const alertTasks = useGetAlertTasks();
 
   const missionTasks = alertTasks.filter(
@@ -65,6 +73,33 @@ export function MissionSummary({ mission }: MissionSummaryProps) {
         <span className="text-xs text-neutral-600">
           {dayjs(new Date(mission.createdAt)).format("YYYY/MM/DD hh:mm:ss")}
         </span>
+
+        <ContractPnl
+          label="Leader PnL"
+          contractId={leaderContractId}
+          actions={mission.tasks.map((task) => task.action)}
+        />
+
+        <ContractPnl
+          label="Follower PnL"
+          contractId={followerContractId}
+          actions={mission.tasks
+            .map((task) => {
+              if (task.followerActions.length === 0) {
+                return null;
+              }
+
+              const followerAction =
+                task.followerActions[task.followerActions.length - 1];
+
+              if (!followerAction) {
+                return null;
+              }
+
+              return followerAction.action;
+            })
+            .filter((action) => action !== null)}
+        />
 
         <div className="flex flex-row items-center gap-3 font-mono">
           {createdCount > 0 ? (

@@ -1,21 +1,21 @@
 "use client";
 
-import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import {
+  useApolloClient,
+  useLazyQuery,
+  useMutation,
+  useQuery,
+} from "@apollo/client";
 
 import { getFragmentData, graphql } from "@/gql/index";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
 import {
-  PlanForwardShallowDetailsInfoFragment,
   PlanForwardDetailsInfoFragment,
-  PlanForwardShallowDetails,
   PlanForwardDetails,
   PlanStatus,
 } from "@/graphql/gql/graphql";
-import {
-  getBotForwardDetails,
-  getBotForwardShallowDetails,
-} from "./useAutomation";
+import { getBotForwardDetails } from "./useAutomation";
 
 export const PLAN_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment PlanInfo on Plan {
@@ -27,22 +27,6 @@ export const PLAN_INFO_FRAGMENT_DOCUMENT = graphql(`
     scheduledEnd
     startedAt
     endedAt
-  }
-`);
-
-export const PLAN_FORWARD_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
-  fragment PlanForwardShallowDetailsInfo on PlanForwardShallowDetails {
-    id
-    title
-    description
-    status
-    scheduledStart
-    scheduledEnd
-    startedAt
-    endedAt
-    bots {
-      ...BotForwardShallowDetailsInfo
-    }
   }
 `);
 
@@ -63,9 +47,18 @@ export const PLAN_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
 `);
 
 export const GET_PLANS_BY_STATUS_DOCUMENT = graphql(`
-  query getPlansByStatus($status: PlanStatus!) {
-    getPlansByStatus(status: $status) {
-      ...PlanForwardShallowDetailsInfo
+  query getPlansByStatus($status: PlanStatus!, $after: Int, $first: Int!) {
+    getPlansByStatus(status: $status, after: $after, first: $first) {
+      edges {
+        cursor
+        node {
+          ...PlanForwardDetailsInfo
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
     }
   }
 `);
@@ -81,7 +74,7 @@ export const GET_PLAN_BY_ID_DOCUMENT = graphql(`
 export const CREATE_PLAN_DOCUMENT = graphql(`
   mutation createPlan($createPlanInput: CreatePlanInput!) {
     createPlan(createPlanInput: $createPlanInput) {
-      ...PlanForwardShallowDetailsInfo
+      ...PlanForwardDetailsInfo
     }
   }
 `);
@@ -89,7 +82,7 @@ export const CREATE_PLAN_DOCUMENT = graphql(`
 export const UPDATE_PLAN_DOCUMENT = graphql(`
   mutation updatePlan($updatePlanInput: UpdatePlanInput!) {
     updatePlan(updatePlanInput: $updatePlanInput) {
-      ...PlanForwardShallowDetailsInfo
+      ...PlanForwardDetailsInfo
     }
   }
 `);
@@ -103,7 +96,7 @@ export const DELETE_PLAN_DOCUMENT = graphql(`
 export const START_PLAN_DOCUMENT = graphql(`
   mutation startPlan($id: Int!) {
     startPlan(id: $id) {
-      ...PlanForwardShallowDetailsInfo
+      ...PlanForwardDetailsInfo
     }
   }
 `);
@@ -111,7 +104,7 @@ export const START_PLAN_DOCUMENT = graphql(`
 export const END_PLAN_DOCUMENT = graphql(`
   mutation endPlan($id: Int!) {
     endPlan(id: $id) {
-      ...PlanForwardShallowDetailsInfo
+      ...PlanForwardDetailsInfo
     }
   }
 `);
@@ -119,30 +112,10 @@ export const END_PLAN_DOCUMENT = graphql(`
 export const ADD_BOTS_TO_PLAN_DOCUMENT = graphql(`
   mutation addBotsToPlan($botIds: [Int!]!, $planId: Int!) {
     addBotsToPlan(botIds: $botIds, planId: $planId) {
-      ...PlanForwardShallowDetailsInfo
+      ...PlanForwardDetailsInfo
     }
   }
 `);
-
-export function getPlanForwardShallowDetails(
-  plan: {
-    __typename?: "PlanForwardShallowDetails";
-  } & {
-    " $fragmentRefs"?: {
-      PlanForwardShallowDetailsInfoFragment: PlanForwardShallowDetailsInfoFragment;
-    };
-  },
-): PlanForwardShallowDetails {
-  const planInfo = getFragmentData(
-    PLAN_FORWARD_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
-    plan,
-  );
-
-  return {
-    ...planInfo,
-    bots: planInfo.bots.map((bot) => getBotForwardShallowDetails(bot)),
-  };
-}
 
 export function getPlanForwardDetails(
   plan: {
@@ -165,18 +138,46 @@ export function getPlanForwardDetails(
 }
 
 export function useGetPlansByStatus(status: PlanStatus) {
-  const { data } = useQuery(GET_PLANS_BY_STATUS_DOCUMENT, {
-    variables: { status },
-  });
+  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
+    GET_PLANS_BY_STATUS_DOCUMENT,
+  );
 
-  return useMemo(() => {
+  useEffect(() => {
+    query({
+      variables: {
+        status,
+        first: 20,
+      },
+    });
+  }, [query, status]);
+
+  const plans = useMemo(() => {
     if (!data) {
       return [];
     }
-    return data.getPlansByStatus
-      .map(getPlanForwardShallowDetails)
-      .sort((a, b) => b.id - a.id);
+    return data.getPlansByStatus.edges.map((edge) =>
+      getPlanForwardDetails(edge.node),
+    );
   }, [data]);
+
+  const handleFetchMore = useCallback(() => {
+    if (data && !error) {
+      fetchMore({
+        variables: {
+          status,
+          first: 20,
+          after: data.getPlansByStatus.pageInfo.endCursor,
+        },
+      });
+    }
+  }, [data, error, fetchMore, status]);
+
+  return {
+    plans,
+    loading,
+    fetchMore: handleFetchMore,
+    hasMore: data?.getPlansByStatus.pageInfo.hasNextPage,
+  };
 }
 
 export function useGetPlanById(id: number) {

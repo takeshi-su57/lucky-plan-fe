@@ -18,7 +18,7 @@ import { PlanCreationOverview } from "./PlanCreationOverview";
 import { transformHistories } from "@/utils/historiesChart";
 
 import { BOT_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT } from "@/app-hooks/useAutomation";
-import { PLAN_FORWARD_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT } from "@/app-hooks/usePlan";
+import { PLAN_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT } from "@/app-hooks/usePlan";
 
 import { useBatchCreateBots } from "@/app-hooks/useAutomation";
 import { useAddBotsToPlan, useCreatePlan } from "@/app-hooks/usePlan";
@@ -66,7 +66,7 @@ export function PlanCreationPanel() {
       }
 
       const planId = getFragmentData(
-        PLAN_FORWARD_SHALLOW_DETAILS_INFO_FRAGMENT_DOCUMENT,
+        PLAN_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
         planData.createPlan,
       ).id;
 
@@ -204,7 +204,7 @@ export function PlanCreationPanel() {
             leaderCollateral: item.leaderCollateralBaseline,
             isConfirmed: false,
           }))}
-          hideTags={true}
+          hideTags={false}
           onChangeLeaders={handleChangeLeaders}
           endDate={new Date()}
           onNextStep={() => setCurrentStep(3)}

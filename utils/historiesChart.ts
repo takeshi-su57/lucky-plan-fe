@@ -2,28 +2,51 @@ import { PersonalTradeHistory, TradeActionType } from "@/types";
 
 export function getSortedPartialHistories(
   histories: PersonalTradeHistory[],
-  mode: "show_all_activity" | "show_only_valid_activity",
-  range?: { from?: Date; to?: Date },
+  filters: {
+    mode: "show_all_activity" | "show_only_valid_activity";
+    supportedPairs?: string[];
+    range?: { from?: Date; to?: Date };
+  },
 ) {
   const inRangeHistories: PersonalTradeHistory[] = [];
+  const supportedPairsMap: Record<string, boolean> = {};
+
+  if (filters.supportedPairs) {
+    filters.supportedPairs.forEach((pair) => {
+      supportedPairsMap[pair.toLowerCase()] = true;
+    });
+  }
 
   histories
     .sort((a, b) => a.block - b.block)
     .forEach((history) => {
-      if (!range) {
+      if (
+        filters.supportedPairs &&
+        !supportedPairsMap[history.pair.toLowerCase()]
+      ) {
+        return;
+      }
+
+      if (!filters.range) {
         inRangeHistories.push(history);
       } else {
-        if (range.from && range.from > new Date(history.date)) {
+        if (filters.range.from && filters.range.from > new Date(history.date)) {
           return;
         }
 
-        if (range.to && range.to < new Date(history.date)) {
+        if (filters.range.to && filters.range.to < new Date(history.date)) {
+          console.log(
+            filters.range.to.getTime(),
+            new Date(history.date).getTime(),
+          );
           return;
         }
 
         inRangeHistories.push(history);
       }
     });
+
+  console.log(filters?.range, inRangeHistories);
 
   const historiesByTradeIndex: Record<number, PersonalTradeHistory[]> = {};
 
@@ -43,7 +66,7 @@ export function getSortedPartialHistories(
           history.action === TradeActionType.TradeOpenedLimit,
       );
 
-      if (mode === "show_only_valid_activity" && !positionSetupAction) {
+      if (filters.mode === "show_only_valid_activity" && !positionSetupAction) {
         return false;
       }
 
@@ -55,7 +78,7 @@ export function getSortedPartialHistories(
           history.action === TradeActionType.TradeClosedTP,
       );
 
-      if (mode === "show_only_valid_activity" && !positionCloseAction) {
+      if (filters.mode === "show_only_valid_activity" && !positionCloseAction) {
         return false;
       }
 
@@ -79,10 +102,10 @@ export function getSortedPartialHistories(
 
 export function getHistoriesChartData(
   histories: PersonalTradeHistory[],
-  mode: "show_all_activity" | "show_only_valid_activity",
-  range?: {
-    from?: Date;
-    to?: Date;
+  filters: {
+    mode: "show_all_activity" | "show_only_valid_activity";
+    supportedPairs?: string[];
+    range?: { from?: Date; to?: Date };
   },
 ) {
   const pnlChartData: {
@@ -116,7 +139,7 @@ export function getHistoriesChartData(
   const actionCounts: Record<string, number> = {};
 
   const { sortedHistories, historiesGroupedByTradeIndex } =
-    getSortedPartialHistories(histories, mode, range);
+    getSortedPartialHistories(histories, filters);
 
   if (sortedHistories.length > 0) {
     [

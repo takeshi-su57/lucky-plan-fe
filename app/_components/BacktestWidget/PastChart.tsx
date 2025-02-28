@@ -56,13 +56,12 @@ export function PastChart({
       return allHistories || [];
     }
 
-    const { sumIn, countIn } = getHistoriesChartData(
-      allHistories || [],
-      showAllActivity ? "show_all_activity" : "show_only_valid_activity",
-      {
+    const { sumIn, countIn } = getHistoriesChartData(allHistories || [], {
+      mode: showAllActivity ? "show_all_activity" : "show_only_valid_activity",
+      range: {
         to: endDate,
       },
-    );
+    });
 
     const leaderCollateralBaseline = countIn > 0 ? sumIn / countIn : 0;
     const followerCollateralBaseline = getFollowerCollateralBaseline(

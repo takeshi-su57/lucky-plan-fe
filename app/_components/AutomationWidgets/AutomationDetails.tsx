@@ -8,7 +8,6 @@ import {
   Card,
   CardBody,
   Checkbox,
-  Chip,
   Divider,
   Tab,
   Tabs,
@@ -31,6 +30,8 @@ import { FaCopy } from "react-icons/fa";
 import { useCloseMission } from "@/app/_hooks/useMission";
 import { AutomationGridChart } from "../PlansWidget/AutomationChart";
 import { useGetPersonalTradeHistories } from "@/app/_hooks/useGetPersonalTradeHistories";
+
+import { ContractPnl } from "../MissionWidgets/ContractPnl";
 
 type TabType = "chart" | "missions";
 
@@ -147,7 +148,36 @@ export function AutomationDetails({
         </div>
 
         <div className="flex items-center gap-3">
-          <Chip>{bot.missions.length} Missions</Chip>
+          <ContractPnl
+            label="Leaders PnL"
+            contractId={bot.leaderContractId}
+            actions={bot.missions.flatMap((mission) =>
+              mission.tasks.map((task) => task.action),
+            )}
+          />
+
+          <ContractPnl
+            label="Followers PnL"
+            contractId={bot.followerContractId}
+            actions={bot.missions.flatMap((mission) =>
+              mission.tasks
+                .map((task) => {
+                  if (task.followerActions.length === 0) {
+                    return null;
+                  }
+
+                  const followerAction =
+                    task.followerActions[task.followerActions.length - 1];
+
+                  if (!followerAction) {
+                    return null;
+                  }
+
+                  return followerAction.action;
+                })
+                .filter((action) => action !== null),
+            )}
+          />
 
           {bot.status === BotStatus.Created ? (
             <div className="flex items-center gap-2">
@@ -159,7 +189,6 @@ export function AutomationDetails({
               </Button>
             </div>
           ) : null}
-
           {bot.status === BotStatus.Live ? (
             <div className="flex items-center gap-2">
               <Button onClick={handleStop} color="primary">
@@ -167,13 +196,11 @@ export function AutomationDetails({
               </Button>
             </div>
           ) : null}
-
           {bot.status === BotStatus.Stop ? (
             <Button color="danger" onClick={handleCloseAllMissions}>
               Close All Missions
             </Button>
           ) : null}
-
           {bot.status === BotStatus.Dead ? (
             <Button isIconOnly disabled variant="flat">
               <FaCopy />
@@ -191,8 +218,10 @@ export function AutomationDetails({
               range={
                 showOnlyAutomationHistory
                   ? {
-                      from: new Date(bot.startedAt) || new Date(),
-                      to: new Date(bot.endedAt) || new Date(),
+                      from: bot.startedAt
+                        ? new Date(bot.startedAt)
+                        : new Date(),
+                      to: bot.endedAt ? new Date(bot.endedAt) : new Date(),
                     }
                   : undefined
               }
@@ -207,8 +236,10 @@ export function AutomationDetails({
               range={
                 showOnlyAutomationHistory
                   ? {
-                      from: new Date(bot.startedAt) || new Date(),
-                      to: new Date(bot.endedAt) || new Date(),
+                      from: bot.startedAt
+                        ? new Date(bot.startedAt)
+                        : new Date(),
+                      to: bot.endedAt ? new Date(bot.endedAt) : new Date(),
                     }
                   : undefined
               }
@@ -229,7 +260,13 @@ export function AutomationDetails({
             .map((mission) => (
               <AccordionItem
                 key={mission.id}
-                title={<MissionSummary mission={mission} />}
+                title={
+                  <MissionSummary
+                    mission={mission}
+                    leaderContractId={bot.leaderContractId}
+                    followerContractId={bot.followerContractId}
+                  />
+                }
               >
                 <MissionDetails mission={mission} />
               </AccordionItem>

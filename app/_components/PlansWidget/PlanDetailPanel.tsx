@@ -61,14 +61,13 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
         ).then((histories) => {
           setFollowerBotsHistories((prev) => ({
             ...prev,
-            [bot.id]: getSortedPartialHistories(
-              histories,
-              "show_all_activity",
-              {
+            [bot.id]: getSortedPartialHistories(histories, {
+              mode: "show_all_activity",
+              range: {
                 from: new Date(bot.startedAt),
                 to: new Date(bot.endedAt),
               },
-            ).sortedHistories,
+            }).sortedHistories,
           }));
         });
       });

@@ -11,6 +11,9 @@ import {
   TaskStatus,
 } from "@/graphql/gql/graphql";
 import { useGetAlertTasks } from "@/app/_hooks/useTask";
+import { LabeledChip } from "@/components/chips/LabeledChip";
+
+import { ContractPnl } from "../MissionWidgets/ContractPnl";
 
 const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
   {
@@ -106,6 +109,41 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
         </div>
 
         <div className="flex flex-row items-center gap-3 font-mono">
+          <ContractPnl
+            label="Leaders PnL"
+            contractId={bot.leaderContractId}
+            actions={bot.missions.flatMap((mission) =>
+              mission.tasks.map((task) => task.action),
+            )}
+          />
+
+          <ContractPnl
+            label="Followers PnL"
+            contractId={bot.followerContractId}
+            actions={bot.missions.flatMap((mission) =>
+              mission.tasks
+                .map((task) => {
+                  if (task.followerActions.length === 0) {
+                    return null;
+                  }
+
+                  const followerAction =
+                    task.followerActions[task.followerActions.length - 1];
+
+                  if (!followerAction) {
+                    return null;
+                  }
+
+                  return followerAction.action;
+                })
+                .filter((action) => action !== null),
+            )}
+          />
+
+          {bot.missions.length > 0 && (
+            <LabeledChip value={bot.missions.length} unit="Missions" />
+          )}
+
           {createdCount > 0 ? (
             <Badge color="secondary" content={createdCount}>
               <Chip color="secondary">Created</Chip>

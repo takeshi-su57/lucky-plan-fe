@@ -287,16 +287,17 @@ export function CreateAutomationModal({
     countIn: originalCountIn,
   } = useMemo(
     () =>
-      getHistoriesChartData(
-        originalHistories || [],
-        showAllActivity ? "show_all_activity" : "show_only_valid_activity",
-        range
+      getHistoriesChartData(originalHistories || [], {
+        mode: showAllActivity
+          ? "show_all_activity"
+          : "show_only_valid_activity",
+        range: range
           ? {
               from: range.start.toDate(getServerTimezone()),
               to: range.end.toDate(getServerTimezone()),
             }
           : undefined,
-      ),
+      }),
     [originalHistories, range, showAllActivity],
   );
 
@@ -348,18 +349,16 @@ export function CreateAutomationModal({
       `${item.from}/${item.to}`.toLowerCase(),
     );
 
-    return getHistoriesChartData(
-      transformedHistories.filter((history) =>
-        availablePairNames.includes(history.pair.toLowerCase()),
-      ),
-      showAllActivity ? "show_all_activity" : "show_only_valid_activity",
-      range
+    return getHistoriesChartData(transformedHistories, {
+      mode: showAllActivity ? "show_all_activity" : "show_only_valid_activity",
+      supportedPairs: availablePairNames,
+      range: range
         ? {
             from: range.start.toDate(getServerTimezone()),
             to: range.end.toDate(getServerTimezone()),
           }
         : undefined,
-    );
+    });
   }, [
     collateralBaseline,
     originalHistories,

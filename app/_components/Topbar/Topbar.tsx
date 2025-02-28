@@ -7,16 +7,36 @@ import { useGetTradeTransactionCounts } from "@/app/_hooks/useHistory";
 import { useGetAllContracts } from "@/app/_hooks/useContract";
 import { Chip } from "@nextui-org/react";
 import { Badge } from "@nextui-org/react";
+import { useGetAlertTasks } from "@/app/_hooks/useTask";
+import { TaskStatus } from "@/graphql/gql/graphql";
+import { LabeledChip } from "@/components/chips/LabeledChip";
 
 export function Topbar() {
   const { data } = useGetSystemStatus();
 
   const contracts = useGetAllContracts();
+  const alertTasks = useGetAlertTasks();
 
   const { data: tradeTransactionCounts } = useGetTradeTransactionCounts(
     contracts.map((item) => item.id),
     [],
   );
+
+  const createdCount = alertTasks.filter(
+    (task) => task.status === TaskStatus.Created,
+  ).length;
+
+  const awaitedCount = alertTasks.filter(
+    (task) => task.status === TaskStatus.Await,
+  ).length;
+
+  const initiatedCount = alertTasks.filter(
+    (task) => task.status === TaskStatus.Initiated,
+  ).length;
+
+  const failedCount = alertTasks.filter(
+    (task) => task.status === TaskStatus.Failed,
+  ).length;
 
   return (
     <div className="sticky flex items-center justify-between">
@@ -46,31 +66,48 @@ export function Topbar() {
         </span>
       </div>
 
-      <div className="flex items-center gap-10">
-        <Badge
-          color="secondary"
-          content={
+      <div className="flex items-center gap-6">
+        <LabeledChip
+          label="This Month"
+          value={
             tradeTransactionCounts?.getTradeTransactionCounts?.monthly || 0
           }
-        >
-          <Chip color="secondary">This Month Trades</Chip>
-        </Badge>
-        <Badge
-          color="secondary"
-          content={
-            tradeTransactionCounts?.getTradeTransactionCounts?.weekly || 0
-          }
-        >
-          <Chip color="secondary">This Week Trades</Chip>
-        </Badge>
-        <Badge
-          color="secondary"
-          content={
-            tradeTransactionCounts?.getTradeTransactionCounts?.daily || 0
-          }
-        >
-          <Chip color="secondary">Today Trades</Chip>
-        </Badge>
+          unit="Trades"
+        />
+        <LabeledChip
+          label="This Week"
+          value={tradeTransactionCounts?.getTradeTransactionCounts?.weekly || 0}
+          unit="Trades"
+        />
+        <LabeledChip
+          label="Today"
+          value={tradeTransactionCounts?.getTradeTransactionCounts?.daily || 0}
+          unit="Trades"
+        />
+
+        {createdCount > 0 ? (
+          <Badge color="secondary" content={createdCount}>
+            <Chip color="secondary">Created</Chip>
+          </Badge>
+        ) : null}
+
+        {awaitedCount > 0 ? (
+          <Badge color="warning" content={awaitedCount}>
+            <Chip color="warning">Await</Chip>
+          </Badge>
+        ) : null}
+
+        {initiatedCount > 0 ? (
+          <Badge color="success" content={initiatedCount}>
+            <Chip color="success">Initiated</Chip>
+          </Badge>
+        ) : null}
+
+        {failedCount > 0 ? (
+          <Badge color="danger" content={failedCount}>
+            <Chip color="danger">Failed</Chip>
+          </Badge>
+        ) : null}
 
         <ConnectButton
           accountStatus={{

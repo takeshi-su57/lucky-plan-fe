@@ -6,8 +6,6 @@ import {
   Tabs,
   Button,
   useDisclosure,
-  Accordion,
-  AccordionItem,
   Switch,
   Spinner,
 } from "@nextui-org/react";
@@ -22,6 +20,7 @@ import { AutomationSummary } from "@/app-components/AutomationWidgets/Automation
 import { AutomationDetails } from "@/app-components/AutomationWidgets/AutomationDetails";
 import { FaPlus } from "react-icons/fa";
 import { Virtuoso } from "react-virtuoso";
+import { ModaledItems } from "@/components/modals/ModaledItems";
 
 type TabType = "created" | "live" | "stop" | "dead";
 
@@ -40,7 +39,7 @@ export function Automations() {
     (searchParams.get("status") as TabType) || "live",
   );
   const [isChatFirst, setIsChatFirst] = useState(true);
-  const [isHiddedPlanedBots, setIsHiddedPlanedBots] = useState(true);
+  const [isHiddedPlanedBots, setIsHiddedPlanedBots] = useState(false);
 
   const { bots, hasMore, loading, fetchMore } = useGetBotsByStatus(
     botStatusByTabType[selected],
@@ -91,20 +90,30 @@ export function Automations() {
       </div>
 
       <Virtuoso
-        style={{ height: 700 }}
+        style={{ height: 750 }}
         data={bots.filter((bot) => (isHiddedPlanedBots ? !bot.planId : true))}
         itemContent={(_, bot) => (
-          <Accordion isCompact variant="splitted">
-            <AccordionItem key={bot.id} title={<AutomationSummary bot={bot} />}>
-              <AutomationDetails bot={bot} isChatFirst={isChatFirst} />
-            </AccordionItem>
-          </Accordion>
+          <ModaledItems
+            mode="rightDrawer"
+            trigger={<AutomationSummary bot={bot} />}
+            content={<AutomationDetails bot={bot} isChatFirst={isChatFirst} />}
+            contentTitle={`Automation ${bot.id}`}
+            classNames={{
+              trigger: "border border-neutral-700 rounded-lg p-2 mb-2",
+            }}
+          />
         )}
         endReached={() => hasMore && !loading && fetchMore()}
         components={{
           Footer: () => (
             <div className="flex w-full items-center justify-center">
-              {hasMore && loading ? <Spinner color="white" size="lg" /> : null}
+              {hasMore === false ? (
+                <span className="text-neutral-400">
+                  There is no more data to display.
+                </span>
+              ) : loading ? (
+                <Spinner color="warning" size="lg" />
+              ) : null}
             </div>
           ),
         }}
