@@ -25,7 +25,7 @@ export function AutomationGridChart({
   range,
 }: AutomationChartProps) {
   const { pnlChartData, inOutChartData, inChartData, outChartData } = useMemo(
-    () => getHistoriesChartData(histories || [], mode, range),
+    () => getHistoriesChartData(histories || [], { mode, range }),
     [histories, mode, range],
   );
 

@@ -14,6 +14,7 @@ import { HistoryCharts } from "../HistoryCharts";
 import { twMerge } from "tailwind-merge";
 import { HistoriesSummary } from "./HistoriesSummary";
 import { HistoriesPositionList } from "./HistoriesPositionList";
+import { useGetAllTradePairs } from "@/app/_hooks/useContract";
 
 type TabType = "chart" | "positions";
 
@@ -51,6 +52,7 @@ export function HistoriesWidget({
   range,
 }: HistoriesWidgetProps) {
   const [selected, setSelected] = useState<TabType>("chart");
+  const availableTradePairs = useGetAllTradePairs(contractId);
 
   const {
     historiesGroupedByTradeIndex,
@@ -65,10 +67,17 @@ export function HistoriesWidget({
     countIn,
     firstActivity,
     lastActivity,
-  } = useMemo(
-    () => getHistoriesChartData(histories, mode, range),
-    [histories, mode, range],
-  );
+  } = useMemo(() => {
+    const availablePairNames = availableTradePairs.map((pair) =>
+      `${pair.from}/${pair.to}`.toLowerCase(),
+    );
+
+    return getHistoriesChartData(histories, {
+      mode,
+      range,
+      supportedPairs: availablePairNames,
+    });
+  }, [availableTradePairs, histories, mode, range]);
 
   if (range && range.to && showLastTwoDaysTraders) {
     const twoDaysAgo = dayjs(range.to).subtract(2, "day").toDate();
