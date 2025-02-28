@@ -22,6 +22,7 @@ import {
 import { useGetAlertTasks } from "@/app-hooks/useTask";
 import { useGetUserTransactionCounts } from "@/app-hooks/useHistory";
 import { useDeletePlan } from "@/app/_hooks/usePlan";
+import { LabeledChip } from "@/components/chips/LabeledChip";
 
 export const chipColorsByPlanStatus: Record<PlanStatus, ChipProps["color"]> = {
   [PlanStatus.Created]: "primary",
@@ -147,9 +148,21 @@ export function PlanCard({ plan }: PlanCardProps) {
             )}
 
             <div className="flex flex-row items-center gap-3 font-mono">
-              <Chip color="secondary">Monthly: {transactions.monthly}</Chip>
-              <Chip color="secondary">Weekly: {transactions.weekly}</Chip>
-              <Chip color="secondary">Daily: {transactions.daily}</Chip>
+              <LabeledChip
+                label="Monthly"
+                value={transactions.monthly}
+                unit="Trades"
+              />
+              <LabeledChip
+                label="Weekly"
+                value={transactions.weekly}
+                unit="Trades"
+              />
+              <LabeledChip
+                label="Daily"
+                value={transactions.daily}
+                unit="Trades"
+              />
             </div>
 
             <div className="flex flex-row items-center gap-3 font-mono">
