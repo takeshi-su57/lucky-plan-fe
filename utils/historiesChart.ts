@@ -35,12 +35,18 @@ export function getSortedPartialHistories(
         }
 
         if (filters.range.to && filters.range.to < new Date(history.date)) {
+          console.log(
+            filters.range.to.getTime(),
+            new Date(history.date).getTime(),
+          );
           return;
         }
 
         inRangeHistories.push(history);
       }
     });
+
+  console.log(filters?.range, inRangeHistories);
 
   const historiesByTradeIndex: Record<number, PersonalTradeHistory[]> = {};
 

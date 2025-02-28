@@ -188,8 +188,10 @@ export function AutomationDetails({
               range={
                 showOnlyAutomationHistory
                   ? {
-                      from: new Date(bot.startedAt) || new Date(),
-                      to: new Date(bot.endedAt) || new Date(),
+                      from: bot.startedAt
+                        ? new Date(bot.startedAt)
+                        : new Date(),
+                      to: bot.endedAt ? new Date(bot.endedAt) : new Date(),
                     }
                   : undefined
               }
@@ -204,8 +206,10 @@ export function AutomationDetails({
               range={
                 showOnlyAutomationHistory
                   ? {
-                      from: new Date(bot.startedAt) || new Date(),
-                      to: new Date(bot.endedAt) || new Date(),
+                      from: bot.startedAt
+                        ? new Date(bot.startedAt)
+                        : new Date(),
+                      to: bot.endedAt ? new Date(bot.endedAt) : new Date(),
                     }
                   : undefined
               }

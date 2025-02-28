@@ -107,7 +107,9 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
         </div>
 
         <div className="flex flex-row items-center gap-3 font-mono">
-          <LabeledChip value={bot.missions.length} unit="Missions" />
+          {bot.missions.length > 0 && (
+            <LabeledChip value={bot.missions.length} unit="Missions" />
+          )}
 
           {createdCount > 0 ? (
             <Badge color="secondary" content={createdCount}>
