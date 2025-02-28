@@ -36,6 +36,18 @@ export const GET_ALL_TRADE_PAIRS_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_TRADE_COLLATERALS_DOCUMENT = graphql(`
+  query getTradeCollaterals($contractId: Int!) {
+    getTradeCollaterals(contractId: $contractId) {
+      collateral
+      collateralIndex
+      isActive
+      precision
+      precisionDelta
+    }
+  }
+`);
+
 export const CREATE_CONTRACT_DOCUMENT = graphql(`
   mutation createContract($input: CreateContractInput!) {
     createContract(input: $input) {
@@ -58,6 +70,14 @@ export function useGetAllTradePairs(contractId?: number) {
   });
 
   return data?.getTradePairs || [];
+}
+
+export function useGetTradeCollaterals(contractId?: number) {
+  const { data } = useQuery(GET_TRADE_COLLATERALS_DOCUMENT, {
+    variables: contractId ? { contractId } : undefined,
+  });
+
+  return data?.getTradeCollaterals || [];
 }
 
 export function useGetAllContracts() {

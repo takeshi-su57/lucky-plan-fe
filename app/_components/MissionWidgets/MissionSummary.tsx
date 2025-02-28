@@ -1,14 +1,23 @@
 "use client";
 
+import { useMemo } from "react";
 import { Badge, Chip } from "@nextui-org/react";
 import dayjs from "dayjs";
-
 import {
   MissionStatus,
   MissionForwardDetails,
   TaskStatus,
 } from "@/graphql/gql/graphql";
-import { useGetAlertTasks } from "@/app/_hooks/useTask";
+
+import { useGetAlertTasks } from "@/app-hooks/useTask";
+import {
+  useGetAllTradePairs,
+  useGetTradeCollaterals,
+} from "@/app-hooks/useContract";
+
+import { convertTradeActionToHistory } from "@/utils/convertTradeActionToHistory";
+import { LabeledChip } from "@/components/chips/LabeledChip";
+import { getPriceStr } from "@/utils/price";
 
 const colorsByMissionStatus: Record<
   MissionStatus,
@@ -24,10 +33,22 @@ const colorsByMissionStatus: Record<
 
 export type MissionSummaryProps = {
   mission: MissionForwardDetails;
+  leaderContractId: number;
+  followerContractId: number;
 };
 
-export function MissionSummary({ mission }: MissionSummaryProps) {
+export function MissionSummary({
+  mission,
+  leaderContractId,
+  followerContractId,
+}: MissionSummaryProps) {
   const alertTasks = useGetAlertTasks();
+
+  const leaderCollaterals = useGetTradeCollaterals(leaderContractId);
+  const leaderPairs = useGetAllTradePairs(leaderContractId);
+
+  const followerCollaterals = useGetTradeCollaterals(followerContractId);
+  const followerPairs = useGetAllTradePairs(followerContractId);
 
   const missionTasks = alertTasks.filter(
     (task) => task.missionId === mission.id,
@@ -49,6 +70,49 @@ export function MissionSummary({ mission }: MissionSummaryProps) {
     (task) => task.status === TaskStatus.Failed,
   ).length;
 
+  const leaderPnl = useMemo(() => {
+    if (leaderCollaterals.length === 0 || leaderPairs.length === 0) {
+      return 0;
+    }
+
+    return mission.tasks.reduce((acc, task) => {
+      const history = convertTradeActionToHistory(
+        task.action,
+        leaderCollaterals,
+        leaderPairs,
+      );
+
+      return acc + (history?.pnl || 0) * (history?.collateralPriceUsd || 0);
+    }, 0);
+  }, [mission.tasks, leaderCollaterals, leaderPairs]);
+
+  const followerPnl = useMemo(() => {
+    if (followerCollaterals.length === 0 || followerPairs.length === 0) {
+      return 0;
+    }
+
+    return mission.tasks.reduce((acc, task) => {
+      if (task.followerActions.length === 0) {
+        return acc;
+      }
+
+      const followerAction =
+        task.followerActions[task.followerActions.length - 1];
+
+      if (!followerAction) {
+        return acc;
+      }
+
+      const history = convertTradeActionToHistory(
+        followerAction.action,
+        followerCollaterals,
+        followerPairs,
+      );
+
+      return acc + (history?.pnl || 0) * (history?.collateralPriceUsd || 0);
+    }, 0);
+  }, [followerCollaterals, followerPairs, mission]);
+
   return (
     <div className="flex w-full items-center justify-between gap-6">
       <div className="flex items-center gap-6">
@@ -65,6 +129,26 @@ export function MissionSummary({ mission }: MissionSummaryProps) {
         <span className="text-xs text-neutral-600">
           {dayjs(new Date(mission.createdAt)).format("YYYY/MM/DD hh:mm:ss")}
         </span>
+
+        {leaderPnl !== 0 && (
+          <LabeledChip
+            label="Leader PnL"
+            value={getPriceStr(leaderPnl)}
+            unit="$"
+            isPrefix={true}
+            color={leaderPnl > 0 ? "warning" : "danger"}
+          />
+        )}
+
+        {followerPnl !== 0 && (
+          <LabeledChip
+            label="Follower PnL"
+            value={getPriceStr(followerPnl)}
+            unit="$"
+            isPrefix={true}
+            color={followerPnl > 0 ? "warning" : "danger"}
+          />
+        )}
 
         <div className="flex flex-row items-center gap-3 font-mono">
           {createdCount > 0 ? (

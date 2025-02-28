@@ -545,6 +545,7 @@ type Query {
   ): PnlSnapshotDetailsConnection!
   getPnlSnapshotsByAddress(address: String!, dateStr: String!): [PnlSnapshot!]!
   getServerTime: ServerTime!
+  getTradeCollaterals(contractId: Int!): [TradeCollateral!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getTradePairs(contractId: Int!): [TradePair!]!
   getTradeTransactionCounts(
@@ -659,6 +660,14 @@ enum TradeActionType {
   TradeOpenedMarket
   TradePosSizeDecrease
   TradePosSizeIncrease
+}
+
+type TradeCollateral {
+  collateral: String!
+  collateralIndex: Int!
+  isActive: Boolean!
+  precision: String!
+  precisionDelta: String!
 }
 
 type TradeHistory {

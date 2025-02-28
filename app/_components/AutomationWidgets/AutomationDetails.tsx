@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Accordion,
   AccordionItem,
@@ -30,6 +30,11 @@ import { FaCopy } from "react-icons/fa";
 import { useCloseMission } from "@/app/_hooks/useMission";
 import { AutomationGridChart } from "../PlansWidget/AutomationChart";
 import { useGetPersonalTradeHistories } from "@/app/_hooks/useGetPersonalTradeHistories";
+import { useGetAllTradePairs } from "@/app/_hooks/useContract";
+import { useGetTradeCollaterals } from "@/app/_hooks/useContract";
+import { convertTradeActionToHistory } from "@/utils/convertTradeActionToHistory";
+import { LabeledChip } from "@/components/chips/LabeledChip";
+import { getPriceStr } from "@/utils/price";
 
 type TabType = "chart" | "missions";
 
@@ -62,6 +67,12 @@ export function AutomationDetails({
     bot?.followerContract?.backendUrl || null,
     bot?.followerAddress || null,
   );
+
+  const leaderCollaterals = useGetTradeCollaterals(bot.leaderContractId);
+  const leaderPairs = useGetAllTradePairs(bot.leaderContractId);
+
+  const followerCollaterals = useGetTradeCollaterals(bot.followerContractId);
+  const followerPairs = useGetAllTradePairs(bot.followerContractId);
 
   useEffect(() => {
     if (isChatFirst) {
@@ -112,6 +123,61 @@ export function AutomationDetails({
     await Promise.all(promise);
   }, [bot.missions, closeMission]);
 
+  const leaderPnl = useMemo(() => {
+    if (leaderCollaterals.length === 0 || leaderPairs.length === 0) {
+      return 0;
+    }
+
+    return bot.missions.reduce((acc, mission) => {
+      const pnl = mission.tasks.reduce((acc, task) => {
+        const history = convertTradeActionToHistory(
+          task.action,
+          leaderCollaterals,
+          leaderPairs,
+        );
+
+        return acc + (history?.pnl || 0) * (history?.collateralPriceUsd || 0);
+      }, 0);
+
+      return acc + pnl;
+    }, 0);
+  }, [bot.missions, leaderCollaterals, leaderPairs]);
+
+  const followerPnl = useMemo(() => {
+    if (followerCollaterals.length === 0 || followerPairs.length === 0) {
+      return 0;
+    }
+
+    return bot.missions.reduce((acc, mission) => {
+      if (mission.tasks.length === 0) {
+        return acc;
+      }
+
+      const pnl = mission.tasks.reduce((acc, task) => {
+        if (task.followerActions.length === 0) {
+          return acc;
+        }
+
+        const followerAction =
+          task.followerActions[task.followerActions.length - 1];
+
+        if (!followerAction) {
+          return acc;
+        }
+
+        const history = convertTradeActionToHistory(
+          followerAction.action,
+          followerCollaterals,
+          followerPairs,
+        );
+
+        return acc + (history?.pnl || 0) * (history?.collateralPriceUsd || 0);
+      }, 0);
+
+      return acc + pnl;
+    }, 0);
+  }, [bot.missions, followerCollaterals, followerPairs]);
+
   return (
     <div className="flex flex-col gap-6 border-t border-t-neutral-400/20 py-6">
       <div className="flex items-center justify-between">
@@ -146,6 +212,24 @@ export function AutomationDetails({
         </div>
 
         <div className="flex items-center gap-3">
+          {leaderPnl !== 0 && (
+            <LabeledChip
+              label="Leader PnL"
+              value={getPriceStr(leaderPnl)}
+              unit="$"
+              isPrefix={true}
+              color={leaderPnl > 0 ? "warning" : "danger"}
+            />
+          )}
+          {followerPnl !== 0 && (
+            <LabeledChip
+              label="Follower PnL"
+              value={getPriceStr(followerPnl)}
+              unit="$"
+              isPrefix={true}
+              color={followerPnl > 0 ? "warning" : "danger"}
+            />
+          )}
           {bot.status === BotStatus.Created ? (
             <div className="flex items-center gap-2">
               <Button onClick={handleDelete} color="default">
@@ -156,7 +240,6 @@ export function AutomationDetails({
               </Button>
             </div>
           ) : null}
-
           {bot.status === BotStatus.Live ? (
             <div className="flex items-center gap-2">
               <Button onClick={handleStop} color="primary">
@@ -164,13 +247,11 @@ export function AutomationDetails({
               </Button>
             </div>
           ) : null}
-
           {bot.status === BotStatus.Stop ? (
             <Button color="danger" onClick={handleCloseAllMissions}>
               Close All Missions
             </Button>
           ) : null}
-
           {bot.status === BotStatus.Dead ? (
             <Button isIconOnly disabled variant="flat">
               <FaCopy />
@@ -230,7 +311,13 @@ export function AutomationDetails({
             .map((mission) => (
               <AccordionItem
                 key={mission.id}
-                title={<MissionSummary mission={mission} />}
+                title={
+                  <MissionSummary
+                    mission={mission}
+                    leaderContractId={bot.leaderContractId}
+                    followerContractId={bot.followerContractId}
+                  />
+                }
               >
                 <MissionDetails mission={mission} />
               </AccordionItem>

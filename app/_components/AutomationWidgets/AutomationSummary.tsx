@@ -12,6 +12,11 @@ import {
 } from "@/graphql/gql/graphql";
 import { useGetAlertTasks } from "@/app/_hooks/useTask";
 import { LabeledChip } from "@/components/chips/LabeledChip";
+import { useGetTradeCollaterals } from "@/app/_hooks/useContract";
+import { useGetAllTradePairs } from "@/app/_hooks/useContract";
+import { useMemo } from "react";
+import { convertTradeActionToHistory } from "@/utils/convertTradeActionToHistory";
+import { getPriceStr } from "@/utils/price";
 
 const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
   {
@@ -27,6 +32,12 @@ export type AutomationSummaryProps = {
 
 export function AutomationSummary({ bot }: AutomationSummaryProps) {
   const alertTasks = useGetAlertTasks();
+
+  const leaderCollaterals = useGetTradeCollaterals(bot.leaderContractId);
+  const leaderPairs = useGetAllTradePairs(bot.leaderContractId);
+
+  const followerCollaterals = useGetTradeCollaterals(bot.followerContractId);
+  const followerPairs = useGetAllTradePairs(bot.followerContractId);
 
   const {
     leaderContract,
@@ -53,6 +64,61 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
   const failedCount = botTasks.filter(
     (task) => task.status === TaskStatus.Failed,
   ).length;
+
+  const leaderPnl = useMemo(() => {
+    if (leaderCollaterals.length === 0 || leaderPairs.length === 0) {
+      return 0;
+    }
+
+    return bot.missions.reduce((acc, mission) => {
+      const pnl = mission.tasks.reduce((acc, task) => {
+        const history = convertTradeActionToHistory(
+          task.action,
+          leaderCollaterals,
+          leaderPairs,
+        );
+
+        return acc + (history?.pnl || 0) * (history?.collateralPriceUsd || 0);
+      }, 0);
+
+      return acc + pnl;
+    }, 0);
+  }, [bot.missions, leaderCollaterals, leaderPairs]);
+
+  const followerPnl = useMemo(() => {
+    if (followerCollaterals.length === 0 || followerPairs.length === 0) {
+      return 0;
+    }
+
+    return bot.missions.reduce((acc, mission) => {
+      if (mission.tasks.length === 0) {
+        return acc;
+      }
+
+      const pnl = mission.tasks.reduce((acc, task) => {
+        if (task.followerActions.length === 0) {
+          return acc;
+        }
+
+        const followerAction =
+          task.followerActions[task.followerActions.length - 1];
+
+        if (!followerAction) {
+          return acc;
+        }
+
+        const history = convertTradeActionToHistory(
+          followerAction.action,
+          followerCollaterals,
+          followerPairs,
+        );
+
+        return acc + (history?.pnl || 0) * (history?.collateralPriceUsd || 0);
+      }, 0);
+
+      return acc + pnl;
+    }, 0);
+  }, [bot.missions, followerCollaterals, followerPairs]);
 
   return (
     <div className="flex items-center justify-between gap-6 text-neutral-400">
@@ -107,6 +173,25 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
         </div>
 
         <div className="flex flex-row items-center gap-3 font-mono">
+          {leaderPnl !== 0 && (
+            <LabeledChip
+              label="Leader PnL"
+              value={getPriceStr(leaderPnl)}
+              unit="$"
+              isPrefix={true}
+              color={leaderPnl > 0 ? "warning" : "danger"}
+            />
+          )}
+          {followerPnl !== 0 && (
+            <LabeledChip
+              label="Follower PnL"
+              value={getPriceStr(followerPnl)}
+              unit="$"
+              isPrefix={true}
+              color={followerPnl > 0 ? "warning" : "danger"}
+            />
+          )}
+
           {bot.missions.length > 0 && (
             <LabeledChip value={bot.missions.length} unit="Missions" />
           )}
