@@ -8,7 +8,6 @@ import {
   Card,
   CardBody,
   Checkbox,
-  Chip,
   Divider,
   Tab,
   Tabs,
@@ -147,8 +146,6 @@ export function AutomationDetails({
         </div>
 
         <div className="flex items-center gap-3">
-          <Chip>{bot.missions.length} Missions</Chip>
-
           {bot.status === BotStatus.Created ? (
             <div className="flex items-center gap-2">
               <Button onClick={handleDelete} color="default">

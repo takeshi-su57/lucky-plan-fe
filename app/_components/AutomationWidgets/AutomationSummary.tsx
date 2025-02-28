@@ -11,6 +11,7 @@ import {
   TaskStatus,
 } from "@/graphql/gql/graphql";
 import { useGetAlertTasks } from "@/app/_hooks/useTask";
+import { LabeledChip } from "@/components/chips/LabeledChip";
 
 const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
   {
@@ -106,6 +107,8 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
         </div>
 
         <div className="flex flex-row items-center gap-3 font-mono">
+          <LabeledChip value={bot.missions.length} unit="Missions" />
+
           {createdCount > 0 ? (
             <Badge color="secondary" content={createdCount}>
               <Chip color="secondary">Created</Chip>
