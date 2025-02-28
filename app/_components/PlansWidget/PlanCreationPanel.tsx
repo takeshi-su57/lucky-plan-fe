@@ -204,7 +204,7 @@ export function PlanCreationPanel() {
             leaderCollateral: item.leaderCollateralBaseline,
             isConfirmed: false,
           }))}
-          hideTags={true}
+          hideTags={false}
           onChangeLeaders={handleChangeLeaders}
           endDate={new Date()}
           onNextStep={() => setCurrentStep(3)}

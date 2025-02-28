@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Tab, Tabs, Button } from "@nextui-org/react";
+import { Tab, Tabs, Button, Spinner } from "@nextui-org/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaPlus } from "react-icons/fa";
 import Carousel from "react-multi-carousel";
@@ -58,12 +58,12 @@ export function Plans() {
     (searchParams.get("status") as TabType) || "started",
   );
 
-  const allPlans = useGetPlansByStatus(planStatusByTabType[selected]);
+  const { plans, loading } = useGetPlansByStatus(planStatusByTabType[selected]);
 
   const groupedPlans = useMemo(() => {
     const weekPlans: Record<string, PlanForwardShallowDetails[]> = {};
 
-    allPlans
+    plans
       .sort(
         (a, b) =>
           (b.startedAt ? new Date(b.startedAt).getTime() : 0) -
@@ -82,7 +82,7 @@ export function Plans() {
       });
 
     return weekPlans;
-  }, [allPlans]);
+  }, [plans]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -112,20 +112,26 @@ export function Plans() {
         </Link>
       </div>
 
-      {Object.entries(groupedPlans).map(([week, weekPlans]) => (
-        <div
-          key={week}
-          className="flex flex-col gap-4 border-b border-neutral-400/20 pb-4"
-        >
-          <h2 className="text-lg font-bold text-neutral-400">{week}</h2>
-
-          <Carousel responsive={responsive}>
-            {weekPlans.map((plan) => (
-              <PlanCard key={plan.id} plan={plan} />
-            ))}
-          </Carousel>
+      {loading ? (
+        <div className="flex h-[300px] w-full items-center justify-center">
+          <Spinner size="lg" color="warning" />
         </div>
-      ))}
+      ) : (
+        Object.entries(groupedPlans).map(([week, weekPlans]) => (
+          <div
+            key={week}
+            className="flex flex-col gap-4 border-b border-neutral-400/20 pb-4"
+          >
+            <h2 className="text-lg font-bold text-neutral-400">{week}</h2>
+
+            <Carousel responsive={responsive}>
+              {weekPlans.map((plan) => (
+                <PlanCard key={plan.id} plan={plan} />
+              ))}
+            </Carousel>
+          </div>
+        ))
+      )}
     </div>
   );
 }

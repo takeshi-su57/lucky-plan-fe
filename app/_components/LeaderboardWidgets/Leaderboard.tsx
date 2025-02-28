@@ -190,7 +190,19 @@ export function Leaderboard({
               />
             )}
             endReached={() => hasMore && !loading && fetchMore()}
-            components={{ Footer: () => <Spinner color="white" size="sm" /> }}
+            components={{
+              Footer: () => (
+                <div className="flex w-full items-center justify-center">
+                  {hasMore === false ? (
+                    <span className="text-neutral-400">
+                      There is no more data to display.
+                    </span>
+                  ) : loading ? (
+                    <Spinner color="warning" size="lg" />
+                  ) : null}
+                </div>
+              ),
+            }}
           />
         </CardBody>
       </Card>

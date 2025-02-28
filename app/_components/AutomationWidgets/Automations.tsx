@@ -40,7 +40,7 @@ export function Automations() {
     (searchParams.get("status") as TabType) || "live",
   );
   const [isChatFirst, setIsChatFirst] = useState(true);
-  const [isHiddedPlanedBots, setIsHiddedPlanedBots] = useState(true);
+  const [isHiddedPlanedBots, setIsHiddedPlanedBots] = useState(false);
 
   const { bots, hasMore, loading, fetchMore } = useGetBotsByStatus(
     botStatusByTabType[selected],
@@ -91,7 +91,7 @@ export function Automations() {
       </div>
 
       <Virtuoso
-        style={{ height: 700 }}
+        style={{ height: 750 }}
         data={bots.filter((bot) => (isHiddedPlanedBots ? !bot.planId : true))}
         itemContent={(_, bot) => (
           <Accordion isCompact variant="splitted">
@@ -104,7 +104,13 @@ export function Automations() {
         components={{
           Footer: () => (
             <div className="flex w-full items-center justify-center">
-              {hasMore && loading ? <Spinner color="white" size="lg" /> : null}
+              {hasMore === false ? (
+                <span className="text-neutral-400">
+                  There is no more data to display.
+                </span>
+              ) : loading ? (
+                <Spinner color="warning" size="lg" />
+              ) : null}
             </div>
           ),
         }}

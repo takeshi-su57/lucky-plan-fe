@@ -165,11 +165,11 @@ export function getPlanForwardDetails(
 }
 
 export function useGetPlansByStatus(status: PlanStatus) {
-  const { data } = useQuery(GET_PLANS_BY_STATUS_DOCUMENT, {
+  const { data, loading } = useQuery(GET_PLANS_BY_STATUS_DOCUMENT, {
     variables: { status },
   });
 
-  return useMemo(() => {
+  const plans = useMemo(() => {
     if (!data) {
       return [];
     }
@@ -177,6 +177,8 @@ export function useGetPlansByStatus(status: PlanStatus) {
       .map(getPlanForwardShallowDetails)
       .sort((a, b) => b.id - a.id);
   }, [data]);
+
+  return { plans, loading };
 }
 
 export function useGetPlanById(id: number) {
