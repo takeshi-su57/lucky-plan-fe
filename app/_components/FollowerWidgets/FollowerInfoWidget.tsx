@@ -55,18 +55,20 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
     .map((trade) => {
       const data = JSON.parse(trade.params);
 
-      const currentPrice = prices?.[data?.pairIndex || 0] || 0;
+      const currentPrice = prices?.[data?.pairIndex || 0];
       const openPrice = data?.openPrice ? Number(data.openPrice) / 1e10 : 0;
       const collateralAmount = data?.collateralAmount
         ? Number(data.collateralAmount) / 1e6
         : 0;
 
-      const pnlPercentage = getPNLPercentage({
-        closePrice: currentPrice,
-        openPrice,
-        leverage: data.leverage / 1000,
-        long: data.long,
-      });
+      const pnlPercentage = currentPrice
+        ? getPNLPercentage({
+            closePrice: currentPrice,
+            openPrice,
+            leverage: data.leverage / 1000,
+            long: data.long,
+          })
+        : 0;
 
       return {
         pnls: (collateralAmount * pnlPercentage) / 100,
@@ -133,7 +135,7 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
                 summary.pnls === 0 && "text-neutral-400",
               )}
             >
-              {`$${getPriceStr(summary.pnls)}`}
+              {`$${getPriceStr(summary.pnls, 2)}`}
             </span>
           </div>
         )}
