@@ -44,8 +44,11 @@ export function Sidebar() {
   return (
     <div className="flex flex-col gap-1">
       <Link href="#">
-        <div className="flex items-center justify-center gap-2 border-b border-neutral-800 p-2">
+        <div className="flex items-center gap-2 border-b border-neutral-800 p-2 px-6">
           <Image src={logoSrc} alt="Logo" className="h-14 w-14" />
+          <h6 className="text-xl font-bold uppercase text-green-400/80">
+            Lucky On Gains
+          </h6>
         </div>
       </Link>
 
