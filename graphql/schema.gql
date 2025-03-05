@@ -393,13 +393,13 @@ type Mutation {
   initializePnlSnapshot: Boolean!
   liveBot(id: Int!): BotBackwardDetails!
   pauseSystem: Boolean!
-  performTask(id: Int!): TaskBackwardDetails!
+  performTask(id: Int!): Boolean!
   removeStrategy(id: Int!): Strategy!
   removeTagFromUser(input: ChangeUserTagInput!): User!
   resumeSystem: Boolean!
   startPlan(id: Int!): PlanForwardDetails!
   stopBot(id: Int!): BotBackwardDetails!
-  stopTask(id: Int!): TaskBackwardDetails
+  stopTask(id: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): PlanForwardDetails!
   updateStrategyMetadata(
     input: UpdateStrategyMetadataInput!
@@ -610,7 +610,8 @@ type Subscription {
   followerDetailsUpdated(contractId: Int!): [FollowerDetail!]!
   missionAdded: [MissionBackwardDetails!]!
   missionUpdated: [MissionBackwardDetails!]!
-  taskAdded: [TaskBackwardDetails!]!
+  newLog(checked: Boolean!, severity: LogSeverity): Log!
+  taskCreated: [TaskBackwardDetails!]!
   taskUpdated: [TaskBackwardDetails!]!
 }
 
