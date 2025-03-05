@@ -77,6 +77,8 @@ const cache = new InMemoryCache({
       fields: {
         getPnlSnapshots: relayStylePagination(["contractId", "kind"]),
         getBotsByStatus: relayStylePagination(["status"]),
+        getPlansByStatus: relayStylePagination(["status"]),
+        allLogs: relayStylePagination(["checked", "severity"]),
       },
     },
     TagCategory: { keyFields: ["id"] },
@@ -162,6 +164,9 @@ const cache = new InMemoryCache({
       keyFields: ["id"],
     },
     TradeHistory: {
+      keyFields: ["id"],
+    },
+    Log: {
       keyFields: ["id"],
     },
   },

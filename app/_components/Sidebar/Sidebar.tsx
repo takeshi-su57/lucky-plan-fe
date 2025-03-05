@@ -27,7 +27,12 @@ export const links = [
   },
   {
     id: "settings",
-    label: "Settings",
+    label: "Setting",
+    title: "",
+  },
+  {
+    id: "logs",
+    label: "Log",
     title: "",
     showDivider: true,
   },
