@@ -71,24 +71,28 @@ export default function Page() {
       </div>
 
       <Virtuoso
-        style={{ height: 700 }}
+        style={{ height: 700, width: "100%" }}
         data={logs}
         itemContent={(_, log) => (
           <div
             className={twMerge(
-              "flex flex-col gap-2 border-t border-neutral-400/20 p-2",
+              "flex w-full items-start gap-2 border-t border-neutral-400/20 p-2",
             )}
           >
-            <div className="flex w-full items-center gap-2">
+            <div className="shrink-0">
               <Chip variant="flat" color={logSeverityColors[log.severity]}>
                 {log.severity} {log.id}
               </Chip>
+            </div>
 
-              <div className="flex-1 text-sm text-neutral-400">
-                {log.summary}
-                <p className="text-xs text-neutral-400">{log.details}</p>
-              </div>
+            <div className="flex-1 text-sm text-neutral-400">
+              <span>{log.summary}</span>
+              <p className="w-full break-all py-2 text-xs text-neutral-400">
+                {log.details}
+              </p>
+            </div>
 
+            <div className="shrink-0">
               <Chip variant="flat" color="default">
                 {dayjs(new Date(log.timestamp)).format("MMM D, YYYY h:mm A")}
               </Chip>

@@ -6,6 +6,10 @@ import { queryClient } from "../providers";
 export const GET_PRICES = "GET_PRICES";
 
 function connectToPriceServer() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
   const websocket = new WebSocket("wss://backend-pricing.eu.gains.trade/v3");
 
   websocket.onmessage = (event) => {
