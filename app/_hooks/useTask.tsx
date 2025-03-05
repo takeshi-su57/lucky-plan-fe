@@ -16,7 +16,11 @@ import {
 } from "@/graphql/gql/graphql";
 import { getFragmentData, graphql } from "@/gql/index";
 
-import { getMissionBackwardDetails } from "./useMission";
+import {
+  getMissionBackwardDetails,
+  MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+} from "./useMission";
+import { TaskMessage } from "@/app-components/TaskWidgets/TaskMessage";
 
 export const ACTION_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment ActionInfo on Action {
@@ -88,23 +92,19 @@ export const GET_ALERT_TASKS_DOCUMENT = graphql(`
 
 export const PERFORM_TASK_DOCUMENT = graphql(`
   mutation performTask($id: Int!) {
-    performTask(id: $id) {
-      ...TaskBackwardDetailsInfo
-    }
+    performTask(id: $id)
   }
 `);
 
 export const STOP_TASK_DOCUMENT = graphql(`
   mutation stopTask($id: Int!) {
-    stopTask(id: $id) {
-      ...TaskBackwardDetailsInfo
-    }
+    stopTask(id: $id)
   }
 `);
 
-export const TASK_ADDED_SUBSCRIPTION_DOCUMENT = graphql(`
-  subscription taskAdded {
-    taskAdded {
+export const TASK_CREATED_SUBSCRIPTION_DOCUMENT = graphql(`
+  subscription taskCreated {
+    taskCreated {
       ...TaskBackwardDetailsInfo
     }
   }
@@ -178,7 +178,7 @@ export function getTaskForwardDetails(
 }
 
 export function useGetAlertTasks() {
-  const { data } = useQuery(GET_ALERT_TASKS_DOCUMENT);
+  const { data } = useQuery(GET_ALERT_TASKS_DOCUMENT, { pollInterval: 60_000 });
 
   return useMemo(() => {
     return (data?.getAlertTasks || []).map(getTaskBackwardDetails);
@@ -187,7 +187,7 @@ export function useGetAlertTasks() {
 
 export function useSubscribeTask() {
   const { data: newData, error: error1 } = useSubscription(
-    TASK_ADDED_SUBSCRIPTION_DOCUMENT,
+    TASK_CREATED_SUBSCRIPTION_DOCUMENT,
   );
   const { data: updatedData, error: error2 } = useSubscription(
     TASK_UPDATED_SUBSCRIPTION_DOCUMENT,
@@ -200,25 +200,17 @@ export function useSubscribeTask() {
     if (updatedData && !error2) {
       const taskInfos = updatedData.taskUpdated.map(getTaskBackwardDetails);
 
-      enqueueSnackbar("Tasks Updated!", {
-        variant: "info",
+      taskInfos.forEach((taskInfo) => {
+        enqueueSnackbar(<TaskMessage task={taskInfo} />, {
+          variant: "info",
+        });
       });
 
       taskInfos.forEach((taskInfo) => {
         client.cache.writeFragment({
           id: client.cache.identify({
-            __typename: taskInfo.__typename,
-            id: taskInfo.id,
-          }),
-          fragment: TASK_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
-          fragmentName: "TaskBackwardDetailsInfo",
-          data: taskInfo,
-        });
-
-        client.cache.writeFragment({
-          id: client.cache.identify({
             __typename: "TaskForwardDetails",
-            id: taskInfo.mission.id,
+            id: taskInfo.id,
           }),
           fragment: TASK_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
           fragmentName: "TaskForwardDetailsInfo",
@@ -240,44 +232,51 @@ export function useSubscribeTask() {
 
   useEffect(() => {
     if (newData && !error1) {
-      const taskInfos = newData.taskAdded.map(getTaskBackwardDetails);
+      const taskInfos = newData.taskCreated.map(getTaskBackwardDetails);
 
-      enqueueSnackbar("New Tasks Created!", {
-        variant: "info",
+      taskInfos.forEach((taskInfo) => {
+        enqueueSnackbar(<TaskMessage task={taskInfo} />, {
+          variant: "info",
+        });
       });
 
       taskInfos.forEach((taskInfo) => {
-        client.cache.updateQuery(
-          {
-            query: GET_ALERT_TASKS_DOCUMENT,
-            variables: {},
-          },
-          (data) => {
-            if (data && data.getAlertTasks.length > 0) {
-              const alreadyExists = data.getAlertTasks.filter(
-                (task) =>
-                  taskInfo.id ===
-                  getFragmentData(
-                    TASK_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
-                    task,
-                  ).id,
-              );
+        const mission = client.cache.readFragment({
+          id: client.cache.identify({
+            __typename: "MissionForwardDetails",
+            id: taskInfo.missionId,
+          }),
+          fragment: MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          fragmentName: "MissionForwardDetailsInfo",
+        });
 
-              if (alreadyExists.length > 0) {
-                return data;
-              }
-
-              return {
-                ...data,
-                getAlertTasks: [...data.getAlertTasks, taskInfo],
-              };
-            } else {
-              return {
-                getAlertTasks: [taskInfo],
-              };
-            }
-          },
-        );
+        if (mission) {
+          client.cache.writeFragment({
+            id: client.cache.identify({
+              __typename: "MissionForwardDetails",
+              id: taskInfo.missionId,
+            }),
+            fragment: MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+            fragmentName: "MissionForwardDetailsInfo",
+            data: {
+              ...mission,
+              tasks: [
+                ...mission.tasks,
+                {
+                  __typename: "TaskForwardDetails",
+                  action: taskInfo.action,
+                  actionId: taskInfo.actionId,
+                  createdAt: taskInfo.createdAt,
+                  followerActions: taskInfo.followerActions,
+                  id: taskInfo.id,
+                  logs: taskInfo.logs,
+                  missionId: taskInfo.missionId,
+                  status: taskInfo.status,
+                },
+              ],
+            },
+          });
+        }
       });
     }
   }, [client.cache, enqueueSnackbar, error1, newData]);
@@ -296,6 +295,12 @@ export function usePerformTask() {
         variant: "success",
       });
     }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at perform task!", {
+        variant: "error",
+      });
+    }
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return performTask;
@@ -310,6 +315,12 @@ export function useStopTask() {
     if (newData?.stopTask && !error) {
       enqueueSnackbar("Success at stop task!", {
         variant: "success",
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at stop task!", {
+        variant: "error",
       });
     }
   }, [client.cache, newData, error, enqueueSnackbar]);

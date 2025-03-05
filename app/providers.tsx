@@ -28,6 +28,15 @@ import {
 import { createClient } from "graphql-ws";
 
 import "@rainbow-me/rainbowkit/styles.css";
+import { useSubscribeTask } from "@/app-hooks/useTask";
+
+import {
+  SuccessSnackbar,
+  DefaultSnackbar,
+  ErrorSnackbar,
+  WarningSnackbar,
+  InfoSnackbar,
+} from "@/components/snackbars";
 
 const httpLink = new HttpLink({
   uri: `${process.env.NEXT_PUBLIC_LUCKY_PLAN_GRAPHQL_API}`,
@@ -204,8 +213,19 @@ export function Providers({ children }: { children: ReactNode }) {
         >
           <ApolloProvider client={apolloClient}>
             <NextUIProvider className="overflow-hidden">
-              <SnackbarProvider autoHideDuration={5000} maxSnack={5}>
-                {children}
+              <SnackbarProvider
+                Components={{
+                  success: SuccessSnackbar,
+                  warning: WarningSnackbar,
+                  info: InfoSnackbar,
+                  error: ErrorSnackbar,
+                  default: DefaultSnackbar,
+                }}
+                autoHideDuration={30000}
+                maxSnack={15}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              >
+                <SubscriptionWrapper>{children}</SubscriptionWrapper>
               </SnackbarProvider>
             </NextUIProvider>
           </ApolloProvider>
@@ -213,4 +233,10 @@ export function Providers({ children }: { children: ReactNode }) {
       </QueryClientProvider>
     </WagmiProvider>
   );
+}
+
+export function SubscriptionWrapper({ children }: { children: ReactNode }) {
+  useSubscribeTask();
+
+  return children;
 }

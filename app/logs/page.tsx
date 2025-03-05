@@ -104,8 +104,8 @@ export default function Page() {
           Footer: () => (
             <div className="flex w-full items-center justify-center">
               {hasMore === false ? (
-                <span className="text-neutral-400">
-                  There is no more logs to display.
+                <span className="font-sans text-neutral-400/40">
+                  No More Results Available
                 </span>
               ) : loading ? (
                 <Spinner color="primary" size="lg" />
