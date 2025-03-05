@@ -75,30 +75,34 @@ export function MissionSummary({
         </span>
 
         <ContractPnl
-          label="Leader PnL"
+          label="Leader"
           contractId={leaderContractId}
-          actions={mission.tasks.map((task) => task.action)}
+          finished={false}
+          actions={[mission.tasks.map((task) => task.action)]}
         />
 
         <ContractPnl
-          label="Follower PnL"
+          label="Follower"
           contractId={followerContractId}
-          actions={mission.tasks
-            .map((task) => {
-              if (task.followerActions.length === 0) {
-                return null;
-              }
+          finished={false}
+          actions={[
+            mission.tasks
+              .map((task) => {
+                if (task.followerActions.length === 0) {
+                  return null;
+                }
 
-              const followerAction =
-                task.followerActions[task.followerActions.length - 1];
+                const followerAction =
+                  task.followerActions[task.followerActions.length - 1];
 
-              if (!followerAction) {
-                return null;
-              }
+                if (!followerAction) {
+                  return null;
+                }
 
-              return followerAction.action;
-            })
-            .filter((action) => action !== null)}
+                return followerAction.action;
+              })
+              .filter((action) => action !== null),
+          ]}
         />
 
         <div className="flex flex-row items-center gap-3 font-mono">

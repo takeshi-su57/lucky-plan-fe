@@ -1,4 +1,4 @@
-import { Action, TradeCollateral, TradePair } from "@/graphql/gql/graphql";
+import { Action, TradeCollateral } from "@/graphql/gql/graphql";
 import {
   PendingOrderType,
   PersonalTradeHistory,
@@ -8,8 +8,7 @@ import {
 export function convertTradeActionToHistory(
   action: Action,
   collaterals: TradeCollateral[],
-  pairs: TradePair[],
-): PersonalTradeHistory | null {
+): (Omit<PersonalTradeHistory, "pair"> & { pairIndex: number }) | null {
   const args = JSON.parse(action.args);
 
   switch (action.name) {
@@ -22,11 +21,9 @@ export function convertTradeActionToHistory(
         (c) => c.collateralIndex === args.collateralIndex,
       );
 
-      const pair = pairs.find((p) => p.pairIndex === args.pairIndex);
-
       const leverage = Number(args.values.newLeverage) / 1000;
 
-      if (!collateral || !pair) {
+      if (!collateral) {
         return null;
       }
 
@@ -44,7 +41,7 @@ export function convertTradeActionToHistory(
         leverageDelta: Number(args.leverageDelta) / 1e3,
         long: Number(args.long),
         marketPrice: Number(args.oraclePrice) / 1e10,
-        pair: `${pair.from || ""}/${pair.to || ""}`,
+        pairIndex: args.pairIndex,
         pnl: Number(
           Number(args.values.borrowingFeeCollateral) /
             Number(collateral.precision),
@@ -72,11 +69,9 @@ export function convertTradeActionToHistory(
         (c) => c.collateralIndex === args.collateralIndex,
       );
 
-      const pair = pairs.find((p) => p.pairIndex === args.pairIndex);
-
       const leverage = Number(args.values.newLeverage) / 1000;
 
-      if (!collateral || !pair) {
+      if (!collateral) {
         return null;
       }
 
@@ -94,7 +89,7 @@ export function convertTradeActionToHistory(
         leverageDelta: Number(args.leverageDelta) / 1e3,
         long: Number(args.long),
         marketPrice: Number(args.oraclePrice) / 1e10,
-        pair: `${pair.from || ""}/${pair.to || ""}`,
+        pairIndex: args.pairIndex,
         pnl: Number(
           Number(args.values.borrowingFeeCollateral) /
             Number(collateral.precision),
@@ -122,9 +117,7 @@ export function convertTradeActionToHistory(
         (c) => c.collateralIndex === args.collateralIndex,
       );
 
-      const pair = pairs.find((p) => p.pairIndex === args.pairIndex);
-
-      if (!collateral || !pair) {
+      if (!collateral) {
         return null;
       }
 
@@ -144,7 +137,7 @@ export function convertTradeActionToHistory(
         leverageDelta: null,
         long: 0,
         marketPrice: null,
-        pair: `${pair.from || ""}/${pair.to || ""}`,
+        pairIndex: args.pairIndex,
         pnl: 0,
         pnl_net: 0,
         price: Number(args.values.oraclePrice) / 1e10,
@@ -162,9 +155,7 @@ export function convertTradeActionToHistory(
         (c) => c.collateralIndex === args.t.collateralIndex,
       );
 
-      const pair = pairs.find((p) => p.pairIndex === args.t.pairIndex);
-
-      if (!collateral || !pair) {
+      if (!collateral) {
         return null;
       }
 
@@ -190,7 +181,7 @@ export function convertTradeActionToHistory(
         leverageDelta: null,
         long: Number(args.t.long),
         marketPrice: Number(args.marketPrice) / 1e10,
-        pair: `${pair.from || ""}/${pair.to || ""}`,
+        pairIndex: args.t.pairIndex,
         pnl: pnl,
         pnl_net: pnl,
         price: Number(args.oraclePrice) / 1e10,
@@ -207,9 +198,7 @@ export function convertTradeActionToHistory(
         (c) => c.collateralIndex === args.t.collateralIndex,
       );
 
-      const pair = pairs.find((p) => p.pairIndex === args.t.pairIndex);
-
-      if (!collateral || !pair) {
+      if (!collateral) {
         return null;
       }
 
@@ -245,7 +234,7 @@ export function convertTradeActionToHistory(
         leverageDelta: null,
         long: Number(args.t.long),
         marketPrice: Number(args.marketPrice) / 1e10,
-        pair: `${pair.from || ""}/${pair.to || ""}`,
+        pairIndex: args.t.pairIndex,
         pnl: pnl,
         pnl_net: pnl,
         price: Number(args.oraclePrice) / 1e10,

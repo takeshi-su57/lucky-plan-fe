@@ -110,17 +110,19 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
 
         <div className="flex flex-row items-center gap-3 font-mono">
           <ContractPnl
-            label="Leaders PnL"
+            label="Leader"
             contractId={bot.leaderContractId}
-            actions={bot.missions.flatMap((mission) =>
+            finished={false}
+            actions={bot.missions.map((mission) =>
               mission.tasks.map((task) => task.action),
             )}
           />
 
           <ContractPnl
-            label="Followers PnL"
+            label="Follower"
             contractId={bot.followerContractId}
-            actions={bot.missions.flatMap((mission) =>
+            finished={false}
+            actions={bot.missions.map((mission) =>
               mission.tasks
                 .map((task) => {
                   if (task.followerActions.length === 0) {

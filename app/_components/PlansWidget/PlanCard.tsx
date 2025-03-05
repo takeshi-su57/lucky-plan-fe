@@ -120,7 +120,7 @@ export function PlanCard({ plan }: PlanCardProps) {
   ];
 
   return (
-    <div className="pr-4">
+    <div className="select-none pr-4">
       <Card>
         <CardHeader className="flex flex-row items-start gap-2 p-3">
           <div className="flex flex-1 flex-col">
@@ -172,62 +172,65 @@ export function PlanCard({ plan }: PlanCardProps) {
 
             <Divider />
 
-            <div className="flex items-center justify-between">
-              <div className="flex flex-1 flex-col gap-2">
-                <span className="text-xs text-neutral-400">Leaders Pnl</span>
+            <span className="text-xs text-neutral-400">
+              Leader PnL Overview
+            </span>
 
-                {(allContracts || []).map((contract) => (
-                  <ContractPnl
-                    key={contract.id}
-                    showZero
-                    label={`Chain (${contract.chainId})`}
-                    contractId={contract.id}
-                    actions={plan.bots
-                      .filter((bot) => bot.leaderContractId === contract.id)
-                      .flatMap((bot) =>
-                        bot.missions.flatMap((mission) =>
-                          mission.tasks.map((task) => task.action),
-                        ),
-                      )}
-                  />
-                ))}
-              </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {(allContracts || []).map((contract) => (
+                <ContractPnl
+                  key={contract.id}
+                  label={`Chain (${contract.chainId})`}
+                  contractId={contract.id}
+                  finished={plan.status === PlanStatus.Finished}
+                  actions={plan.bots
+                    .filter((bot) => bot.leaderContractId === contract.id)
+                    .flatMap((bot) =>
+                      bot.missions.map((mission) =>
+                        mission.tasks.map((task) => task.action),
+                      ),
+                    )}
+                />
+              ))}
+            </div>
 
-              <div className="flex flex-1 flex-col gap-2">
-                <span className="text-xs text-neutral-400">Followers Pnl</span>
-                {(allContracts || []).map((contract) => (
-                  <ContractPnl
-                    key={contract.id}
-                    showZero
-                    label={`Chain (${contract.chainId})`}
-                    contractId={contract.id}
-                    actions={plan.bots
-                      .filter((bot) => bot.followerContractId === contract.id)
-                      .flatMap((bot) =>
-                        bot.missions.flatMap((mission) =>
-                          mission.tasks
-                            .map((task) => {
-                              if (task.followerActions.length === 0) {
-                                return null;
-                              }
+            <span className="text-xs text-neutral-400">
+              Follower PnL Overview
+            </span>
 
-                              const followerAction =
-                                task.followerActions[
-                                  task.followerActions.length - 1
-                                ];
+            <div className="flex flex-wrap items-center gap-2">
+              {(allContracts || []).map((contract) => (
+                <ContractPnl
+                  key={contract.id}
+                  label={`Chain (${contract.chainId})`}
+                  contractId={contract.id}
+                  finished={plan.status === PlanStatus.Finished}
+                  actions={plan.bots
+                    .filter((bot) => bot.followerContractId === contract.id)
+                    .flatMap((bot) =>
+                      bot.missions.map((mission) =>
+                        mission.tasks
+                          .map((task) => {
+                            if (task.followerActions.length === 0) {
+                              return null;
+                            }
 
-                              if (!followerAction) {
-                                return null;
-                              }
+                            const followerAction =
+                              task.followerActions[
+                                task.followerActions.length - 1
+                              ];
 
-                              return followerAction.action;
-                            })
-                            .filter((action) => action !== null),
-                        ),
-                      )}
-                  />
-                ))}
-              </div>
+                            if (!followerAction) {
+                              return null;
+                            }
+
+                            return followerAction.action;
+                          })
+                          .filter((action) => action !== null),
+                      ),
+                    )}
+                />
+              ))}
             </div>
 
             <div className="flex flex-row items-center gap-3 font-mono">

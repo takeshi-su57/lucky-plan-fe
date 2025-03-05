@@ -1,10 +1,13 @@
 "use client";
 
-import { useGetPrices } from "@/app/_hooks/useGetPrices";
-import { getPNLPercentage } from "@/utils";
-import { getPercentageStr, getPriceStr } from "@/utils/price";
 import { Skeleton } from "@nextui-org/react";
 import { twMerge } from "tailwind-merge";
+
+import { useGetPrices } from "@/app-hooks/useGetPrices";
+import { LabeledChip } from "@/components/chips/LabeledChip";
+
+import { getPNLPercentage } from "@/utils";
+import { getPercentageStr, getPriceStr } from "@/utils/price";
 
 export type PositionTradeStatusProps = {
   collateralAmount: number;
@@ -56,19 +59,13 @@ export function PositionTradeStatus({
         <span className={twMerge("text-base font-bold")}>{`${leverage}x`}</span>
       </div>
 
-      <div className="flex flex-row items-center gap-2 text-neutral-400">
-        <span className="text-xs">Unrealized PNL:</span>
-        <span
-          className={twMerge(
-            "text-base font-bold",
-            pnlPercentage > 0 && "text-green-700",
-            pnlPercentage < 0 && "text-red-700",
-            pnlPercentage === 0 && "text-neutral-400",
-          )}
-        >
-          {`$${getPriceStr(pnl, 2)}  (${getPercentageStr(pnlPercentage)} %)`}
-        </span>
-      </div>
+      <LabeledChip
+        label="uPnL"
+        value={`$${getPriceStr(pnl, 2)}  (${getPercentageStr(pnlPercentage)} %)`}
+        unit="$"
+        isPrefix={true}
+        color={pnl > 0 ? "warning" : "danger"}
+      />
     </div>
   );
 }

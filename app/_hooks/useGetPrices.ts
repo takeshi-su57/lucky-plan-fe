@@ -26,10 +26,12 @@ function connectToPriceServer() {
   };
 
   websocket.onclose = () => {
+    console.log("websocket disconnect");
     setTimeout(() => connectToPriceServer(), 60_000);
   };
 
   websocket.onerror = () => {
+    console.log("websocket has errors");
     websocket.close();
   };
 }
