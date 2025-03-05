@@ -1,10 +1,11 @@
 "use client";
 
 import { Address } from "viem";
-import { twMerge } from "tailwind-merge";
 import { Chip, Skeleton } from "@nextui-org/react";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
+import { LabeledChip } from "@/components/chips/LabeledChip";
+
 import {
   useGetTradedOrders,
   useGetPendingOrders,
@@ -55,18 +56,20 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
     .map((trade) => {
       const data = JSON.parse(trade.params);
 
-      const currentPrice = prices?.[data?.pairIndex || 0] || 0;
+      const currentPrice = prices?.[data?.pairIndex || 0];
       const openPrice = data?.openPrice ? Number(data.openPrice) / 1e10 : 0;
       const collateralAmount = data?.collateralAmount
         ? Number(data.collateralAmount) / 1e6
         : 0;
 
-      const pnlPercentage = getPNLPercentage({
-        closePrice: currentPrice,
-        openPrice,
-        leverage: data.leverage / 1000,
-        long: data.long,
-      });
+      const pnlPercentage = currentPrice
+        ? getPNLPercentage({
+            closePrice: currentPrice,
+            openPrice,
+            leverage: data.leverage / 1000,
+            long: data.long,
+          })
+        : 0;
 
       return {
         pnls: (collateralAmount * pnlPercentage) / 100,
@@ -123,28 +126,23 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
 
       <div className="flex items-center gap-4">
         {counts > 0 && (
-          <div className="flex flex-row items-center gap-2 text-neutral-400">
-            <span className="text-xs">Unrealized PNL:</span>
-            <span
-              className={twMerge(
-                "text-base font-bold",
-                summary.pnls > 0 && "text-green-700",
-                summary.pnls < 0 && "text-red-700",
-                summary.pnls === 0 && "text-neutral-400",
-              )}
-            >
-              {`$${getPriceStr(summary.pnls)}`}
-            </span>
-          </div>
+          <LabeledChip
+            label="uPnL"
+            value={getPriceStr(summary.pnls, 2)}
+            unit="$"
+            isPrefix={true}
+            color={summary.pnls > 0 ? "warning" : "danger"}
+          />
         )}
 
         {counts > 0 && (
-          <div className="flex flex-row items-center gap-2 text-neutral-400">
-            <span className="text-xs">Size:</span>
-            <span className={twMerge("text-base font-bold")}>
-              {`$${getPriceStr(summary.size)}`}
-            </span>
-          </div>
+          <LabeledChip
+            label="Size"
+            value={getPriceStr(summary.size)}
+            unit="$"
+            isPrefix={true}
+            color="default"
+          />
         )}
       </div>
     </div>
