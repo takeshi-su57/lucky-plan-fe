@@ -266,6 +266,42 @@ input GetUserTransactionCountsInput {
   startedAt: DateTime
 }
 
+type Log {
+  checked: Boolean!
+  details: String
+  id: Int!
+  severity: LogSeverity!
+  summary: String!
+  timestamp: DateTime!
+}
+
+enum LogSeverity {
+  Alert
+  Critical
+  Debug
+  Default
+  Emergency
+  Error
+  Info
+  Notice
+  Warning
+}
+
+type LogsConnection {
+  edges: [LogsEdge!]!
+  pageInfo: LogsPageInfo!
+}
+
+type LogsEdge {
+  cursor: Int!
+  node: Log!
+}
+
+type LogsPageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
 type Mission {
   achievePositionId: Int
   botId: Int!
@@ -338,6 +374,7 @@ type Mutation {
   ): ContractExecutionResult!
   changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changePassword(input: ChangePasswordInput!): Boolean!
+  checkLog(id: Int!): Log!
   closeMission(id: Int!, isForce: Boolean!): MissionBackwardDetails!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
   createBot(input: CreateBotInput!): BotBackwardDetails!
@@ -486,6 +523,12 @@ type PositionInfo {
 }
 
 type Query {
+  allLogs(
+    after: Int
+    checked: Boolean!
+    first: Int!
+    severity: LogSeverity
+  ): LogsConnection!
   findContract(id: Int!): Contract!
   findStrategy(id: Int!): Strategy
   findStrategyMetadata(key: String!): StrategyMetadata!
@@ -500,6 +543,7 @@ type Query {
   getAllUsers: [User!]!
   getBotsByStatus(after: Int, first: Int!, status: BotStatus!): BotConnection!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
+  getLogsSeverityCounts: [SeverityCount!]!
   getPendingOrders(address: String!, contractId: Int!): [FollowerPendingOrder!]!
   getPlanById(id: Int!): PlanForwardDetails
   getPlansByStatus(
@@ -536,6 +580,11 @@ type Query {
 type ServerTime {
   timestamp: Float!
   timezone: String!
+}
+
+type SeverityCount {
+  counts: Int!
+  severity: LogSeverity!
 }
 
 type Strategy {

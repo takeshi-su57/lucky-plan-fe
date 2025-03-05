@@ -32,10 +32,12 @@ export default function RootLayout({
   children,
   topbar,
   sidebar,
+  statusbar,
 }: Readonly<{
   children: React.ReactNode;
   topbar: React.ReactNode;
   sidebar: React.ReactNode;
+  statusbar: React.ReactNode;
 }>) {
   return (
     <html lang="en">
@@ -47,16 +49,22 @@ export default function RootLayout({
         )}
       >
         <Providers>
-          <div className="flex h-screen w-screen bg-neutral-900 font-sans">
-            <div className="flex h-full w-[300px] flex-col overflow-auto border-r border-neutral-800">
-              {sidebar}
+          <div className="flex h-screen w-screen flex-col bg-neutral-900 font-sans">
+            <div className="flex w-full flex-1">
+              <div className="flex h-full w-[300px] flex-col overflow-auto border-r border-neutral-800">
+                {sidebar}
+              </div>
+
+              <div className="relative flex flex-1 flex-col overflow-auto">
+                <div className="sticky top-0 z-50 w-full border-b border-neutral-800 bg-neutral-900 p-4">
+                  {topbar}
+                </div>
+                <div className="relative z-0 w-full flex-1 p-4">{children}</div>
+              </div>
             </div>
 
-            <div className="relative flex flex-1 flex-col overflow-auto">
-              <div className="sticky top-0 z-50 w-full border-b border-neutral-800 bg-neutral-900 p-4">
-                {topbar}
-              </div>
-              <div className="relative z-0 w-full flex-1 p-4">{children}</div>
+            <div className="flex w-full border-t border-neutral-400/20 p-2">
+              {statusbar}
             </div>
           </div>
         </Providers>
