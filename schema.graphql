@@ -584,6 +584,7 @@ type Subscription {
   followerDetailsUpdated(contractId: Int!): [FollowerDetail!]!
   missionAdded: [MissionBackwardDetails!]!
   missionUpdated: [MissionBackwardDetails!]!
+  newLog(checked: Boolean!, severity: LogSeverity): Log!
   taskAdded: [TaskBackwardDetails!]!
   taskUpdated: [TaskBackwardDetails!]!
 }

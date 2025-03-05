@@ -66,8 +66,16 @@ export const CHECK_LOG_DOCUMENT = graphql(`
   }
 `);
 
+export const SUBSCRIBE_NEW_LOG_DOCUMENT = graphql(`
+  subscription newLog($checked: Boolean!, $severity: LogSeverity) {
+    newLog(checked: $checked, severity: $severity) {
+      ...LogInfo
+    }
+  }
+`);
+
 export function useGetLogs(severity: LogSeverity | null, checked: boolean) {
-  const [query, { data, fetchMore, loading, error }] =
+  const [query, { data, fetchMore, loading, error, subscribeToMore }] =
     useLazyQuery(GET_LOGS_DOCUMENT);
 
   useEffect(() => {
@@ -79,6 +87,38 @@ export function useGetLogs(severity: LogSeverity | null, checked: boolean) {
       },
     });
   }, [query, severity, checked]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToMore({
+      document: SUBSCRIBE_NEW_LOG_DOCUMENT,
+      variables: { checked, severity },
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+
+        const newLog = getFragmentData(
+          LOG_INFO_FRAGMENT_DOCUMENT,
+          subscriptionData.data.newLog,
+        );
+
+        return {
+          ...prev,
+          allLogs: {
+            ...prev.allLogs,
+            edges: [
+              {
+                __typename: "LogsEdge",
+                cursor: newLog.id,
+                node: newLog,
+              },
+              ...prev.allLogs.edges,
+            ],
+          },
+        };
+      },
+    });
+
+    return () => unsubscribe();
+  }, [subscribeToMore, checked, severity]);
 
   const logs = useMemo(() => {
     if (!data) {

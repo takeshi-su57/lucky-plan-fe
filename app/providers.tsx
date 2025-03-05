@@ -169,6 +169,9 @@ const cache = new InMemoryCache({
     Log: {
       keyFields: ["id"],
     },
+    LogsEdge: {
+      keyFields: ["cursor"],
+    },
   },
 });
 
