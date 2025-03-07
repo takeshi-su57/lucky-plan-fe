@@ -455,7 +455,7 @@ export function useSubscribeBot() {
       });
 
       botInfos.forEach((botInfo) => {
-        const botForwardDetails = client.cache.writeFragment({
+        client.cache.writeFragment({
           id: client.cache.identify({
             __typename: "BotForwardDetails",
             id: botInfo.id,
@@ -486,6 +486,44 @@ export function useSubscribeBot() {
             missions: [],
           },
         });
+
+        const botForwardDetails = client.cache.readFragment({
+          id: client.cache.identify({
+            __typename: "BotForwardDetails",
+            id: botInfo.id,
+          }),
+          fragment: BOT_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          fragmentName: "BotForwardDetailsInfo",
+        });
+
+        if (botForwardDetails) {
+          client.cache.updateQuery(
+            {
+              query: GET_BOTS_BY_STATUS_DOCUMENT,
+              variables: {
+                status: BotStatus.Created,
+                first: 20,
+              },
+            },
+            (oldData) => {
+              if (oldData) {
+                return {
+                  ...oldData,
+                  getBotsByStatus: {
+                    ...oldData.getBotsByStatus,
+                    edges: oldData.getBotsByStatus.edges.map((edge) =>
+                      edge.cursor === botInfo.id
+                        ? { ...edge, node: botForwardDetails }
+                        : edge,
+                    ),
+                  },
+                };
+              } else {
+                return oldData;
+              }
+            },
+          );
+        }
 
         const planForwardDetails = client.cache.readFragment({
           id: client.cache.identify({
@@ -523,52 +561,14 @@ export function useCreateBot() {
 
   useEffect(() => {
     if (newData && !error) {
-      const botInfo = getBotBackwardDetails(newData.createBot);
-
       enqueueSnackbar("Success at creating new bot!", {
         variant: "success",
       });
+    }
 
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: "BotBackwardDetails",
-          id: botInfo.id,
-        }),
-        fragment: BOT_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
-        fragmentName: "BotBackwardDetailsInfo",
-        data: botInfo,
-      });
-
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: "BotForwardDetails",
-          id: botInfo.id,
-        }),
-        fragment: BOT_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
-        fragmentName: "BotForwardDetailsInfo",
-        data: {
-          __typename: "BotForwardDetails",
-          endedAt: botInfo.endedAt,
-          follower: botInfo.follower,
-          followerAddress: botInfo.followerAddress,
-          followerContract: botInfo.followerContract,
-          followerContractId: botInfo.followerContractId,
-          followerEndedBlock: botInfo.followerEndedBlock,
-          followerStartedBlock: botInfo.followerStartedBlock,
-          id: botInfo.id,
-          leaderAddress: botInfo.leaderAddress,
-          leaderCollateralBaseline: botInfo.leaderCollateralBaseline,
-          leaderContract: botInfo.leaderContract,
-          leaderContractId: botInfo.leaderContractId,
-          leaderEndedBlock: botInfo.leaderEndedBlock,
-          leaderStartedBlock: botInfo.leaderStartedBlock,
-          missions: [],
-          planId: botInfo.planId,
-          startedAt: botInfo.startedAt,
-          status: botInfo.status,
-          strategy: botInfo.strategy,
-          strategyId: botInfo.strategyId,
-        },
+    if (newData && error) {
+      enqueueSnackbar("Error at creating new bots!", {
+        variant: "error",
       });
     }
   }, [client.cache, newData, error, enqueueSnackbar]);

@@ -5,6 +5,7 @@ import {
   useLazyQuery,
   useMutation,
   useQuery,
+  useSubscription,
 } from "@apollo/client";
 
 import { getFragmentData, graphql } from "@/gql/index";
@@ -16,6 +17,7 @@ import {
   PlanStatus,
 } from "@/graphql/gql/graphql";
 import { getBotForwardDetails } from "./useAutomation";
+import { PlanMessage } from "../_components/PlansWidget/PlanMessage";
 
 export const PLAN_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment PlanInfo on Plan {
@@ -74,7 +76,7 @@ export const GET_PLAN_BY_ID_DOCUMENT = graphql(`
 export const CREATE_PLAN_DOCUMENT = graphql(`
   mutation createPlan($createPlanInput: CreatePlanInput!) {
     createPlan(createPlanInput: $createPlanInput) {
-      ...PlanForwardDetailsInfo
+      ...PlanInfo
     }
   }
 `);
@@ -82,7 +84,7 @@ export const CREATE_PLAN_DOCUMENT = graphql(`
 export const UPDATE_PLAN_DOCUMENT = graphql(`
   mutation updatePlan($updatePlanInput: UpdatePlanInput!) {
     updatePlan(updatePlanInput: $updatePlanInput) {
-      ...PlanForwardDetailsInfo
+      ...PlanInfo
     }
   }
 `);
@@ -95,17 +97,13 @@ export const DELETE_PLAN_DOCUMENT = graphql(`
 
 export const START_PLAN_DOCUMENT = graphql(`
   mutation startPlan($id: Int!) {
-    startPlan(id: $id) {
-      ...PlanForwardDetailsInfo
-    }
+    startPlan(id: $id)
   }
 `);
 
 export const END_PLAN_DOCUMENT = graphql(`
   mutation endPlan($id: Int!) {
-    endPlan(id: $id) {
-      ...PlanForwardDetailsInfo
-    }
+    endPlan(id: $id)
   }
 `);
 
@@ -113,6 +111,22 @@ export const ADD_BOTS_TO_PLAN_DOCUMENT = graphql(`
   mutation addBotsToPlan($botIds: [Int!]!, $planId: Int!) {
     addBotsToPlan(botIds: $botIds, planId: $planId) {
       ...PlanForwardDetailsInfo
+    }
+  }
+`);
+
+export const PLAN_CREATED_SUBSCRIPTION_DOCUMENT = graphql(`
+  subscription planCreated {
+    planCreated {
+      ...PlanInfo
+    }
+  }
+`);
+
+export const PLAN_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
+  subscription planUpdated {
+    planUpdated {
+      ...PlanInfo
     }
   }
 `);
@@ -180,6 +194,192 @@ export function useGetPlansByStatus(status: PlanStatus) {
   };
 }
 
+export function useSubscribePlan() {
+  const { data: newData, error: error1 } = useSubscription(
+    PLAN_CREATED_SUBSCRIPTION_DOCUMENT,
+  );
+  const { data: updatedData, error: error2 } = useSubscription(
+    PLAN_UPDATED_SUBSCRIPTION_DOCUMENT,
+  );
+
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (updatedData && !error2) {
+      const planInfo = getFragmentData(
+        PLAN_INFO_FRAGMENT_DOCUMENT,
+        updatedData.planUpdated,
+      );
+
+      enqueueSnackbar(<PlanMessage plan={planInfo} />, {
+        variant: "info",
+      });
+
+      const oldPlanForwardDetails = client.cache.readFragment({
+        id: client.cache.identify({
+          __typename: "PlanForwardDetails",
+          id: planInfo.id,
+        }),
+        fragment: PLAN_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "PlanForwardDetailsInfo",
+      });
+
+      if (oldPlanForwardDetails) {
+        const updatedPlanForwardDetails = {
+          ...oldPlanForwardDetails,
+          description: planInfo.description,
+          endedAt: planInfo.endedAt,
+          id: planInfo.id,
+          scheduledEnd: planInfo.scheduledEnd,
+          scheduledStart: planInfo.scheduledStart,
+          startedAt: planInfo.startedAt,
+          status: planInfo.status,
+          title: planInfo.title,
+        };
+
+        client.cache.writeFragment({
+          id: client.cache.identify({
+            __typename: "PlanForwardDetails",
+            id: planInfo.id,
+          }),
+          fragment: PLAN_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+          fragmentName: "PlanForwardDetailsInfo",
+          data: updatedPlanForwardDetails,
+        });
+
+        if (oldPlanForwardDetails.status !== updatedPlanForwardDetails.status) {
+          // remove from old status query
+          client.cache.updateQuery(
+            {
+              query: GET_PLANS_BY_STATUS_DOCUMENT,
+              variables: {
+                status: oldPlanForwardDetails.status,
+                first: 20,
+              },
+            },
+            (oldData) => {
+              if (oldData) {
+                return {
+                  ...oldData,
+                  getPlansByStatus: {
+                    ...oldData.getPlansByStatus,
+                    edges: oldData.getPlansByStatus.edges.filter(
+                      (edge) => edge.cursor !== updatedPlanForwardDetails.id,
+                    ),
+                  },
+                };
+              } else {
+                return oldData;
+              }
+            },
+          );
+
+          // add to new status query
+          client.cache.updateQuery(
+            {
+              query: GET_PLANS_BY_STATUS_DOCUMENT,
+              variables: {
+                status: updatedPlanForwardDetails.status,
+                first: 20,
+              },
+            },
+            (oldData) => {
+              if (oldData) {
+                return {
+                  ...oldData,
+                  getPlansByStatus: {
+                    ...oldData.getPlansByStatus,
+                    edges: oldData.getPlansByStatus.edges.map((edge) =>
+                      edge.cursor === updatedPlanForwardDetails.id
+                        ? { ...edge, node: updatedPlanForwardDetails }
+                        : edge,
+                    ),
+                  },
+                };
+              } else {
+                return oldData;
+              }
+            },
+          );
+        }
+      }
+    }
+  }, [client.cache, enqueueSnackbar, error1, error2, newData, updatedData]);
+
+  useEffect(() => {
+    if (newData && !error1) {
+      const planInfo = getFragmentData(
+        PLAN_INFO_FRAGMENT_DOCUMENT,
+        newData.planCreated,
+      );
+
+      enqueueSnackbar(<PlanMessage plan={planInfo} />, {
+        variant: "info",
+      });
+
+      client.cache.writeFragment({
+        id: client.cache.identify({
+          __typename: "PlanForwardDetails",
+          id: planInfo.id,
+        }),
+        fragment: PLAN_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "PlanForwardDetailsInfo",
+        data: {
+          __typename: "PlanForwardDetails",
+          description: planInfo.description,
+          endedAt: planInfo.endedAt,
+          id: planInfo.id,
+          scheduledEnd: planInfo.scheduledEnd,
+          scheduledStart: planInfo.scheduledStart,
+          startedAt: planInfo.startedAt,
+          status: planInfo.status,
+          title: planInfo.title,
+          bots: [],
+        },
+      });
+
+      const planForwardDetails = client.cache.readFragment({
+        id: client.cache.identify({
+          __typename: "PlanForwardDetails",
+          id: planInfo.id,
+        }),
+        fragment: PLAN_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "PlanForwardDetailsInfo",
+      });
+
+      if (planForwardDetails) {
+        client.cache.updateQuery(
+          {
+            query: GET_PLANS_BY_STATUS_DOCUMENT,
+            variables: {
+              status: PlanStatus.Created,
+              first: 20,
+            },
+          },
+          (oldData) => {
+            if (oldData) {
+              return {
+                ...oldData,
+                getPlansByStatus: {
+                  ...oldData.getPlansByStatus,
+                  edges: oldData.getPlansByStatus.edges.map((edge) =>
+                    edge.cursor === planForwardDetails.id
+                      ? { ...edge, node: planForwardDetails }
+                      : edge,
+                  ),
+                },
+              };
+            } else {
+              return oldData;
+            }
+          },
+        );
+      }
+    }
+  }, [client.cache, enqueueSnackbar, error1, newData]);
+}
+
 export function useGetPlanById(id: number) {
   const { data } = useQuery(GET_PLAN_BY_ID_DOCUMENT, {
     variables: { id },
@@ -229,10 +429,36 @@ export function useDeletePlan() {
       enqueueSnackbar("Success at deleting plan!", {
         variant: "success",
       });
+
+      // remove from old status query
+      client.cache.updateQuery(
+        {
+          query: GET_PLANS_BY_STATUS_DOCUMENT,
+          variables: {
+            status: PlanStatus.Created,
+            first: 20,
+          },
+        },
+        (oldData) => {
+          if (oldData) {
+            return {
+              ...oldData,
+              getPlansByStatus: {
+                ...oldData.getPlansByStatus,
+                edges: oldData.getPlansByStatus.edges.filter(
+                  (edge) => edge.cursor !== newData.deletePlan,
+                ),
+              },
+            };
+          } else {
+            return oldData;
+          }
+        },
+      );
     }
 
     if (newData && error) {
-      enqueueSnackbar("Error at creating new plan!", {
+      enqueueSnackbar("Error at deleting plan!", {
         variant: "error",
       });
     }
@@ -300,6 +526,18 @@ export function useAddBotsToPlan() {
     if (newData && !error) {
       enqueueSnackbar("Success at adding bots to plan!", {
         variant: "success",
+      });
+
+      const planForwardDetails = getPlanForwardDetails(newData.addBotsToPlan);
+
+      client.cache.writeFragment({
+        id: client.cache.identify({
+          __typename: "PlanForwardDetails",
+          id: planForwardDetails.id,
+        }),
+        fragment: PLAN_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "PlanForwardDetailsInfo",
+        data: planForwardDetails,
       });
     }
 
