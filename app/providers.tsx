@@ -29,6 +29,7 @@ import { createClient } from "graphql-ws";
 
 import "@rainbow-me/rainbowkit/styles.css";
 import { useSubscribeTask } from "@/app-hooks/useTask";
+import { useSubscribeMission } from "@/app-hooks/useMission";
 
 import {
   SuccessSnackbar,
@@ -37,6 +38,7 @@ import {
   WarningSnackbar,
   InfoSnackbar,
 } from "@/components/snackbars";
+import { useSubscribeBot } from "./_hooks/useAutomation";
 
 const httpLink = new HttpLink({
   uri: `${process.env.NEXT_PUBLIC_LUCKY_PLAN_GRAPHQL_API}`,
@@ -237,6 +239,8 @@ export function Providers({ children }: { children: ReactNode }) {
 
 export function SubscriptionWrapper({ children }: { children: ReactNode }) {
   useSubscribeTask();
+  useSubscribeMission();
+  useSubscribeBot();
 
   return children;
 }

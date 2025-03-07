@@ -372,32 +372,32 @@ type Mutation {
   changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changePassword(input: ChangePasswordInput!): Boolean!
   checkLog(id: Int!): Log!
-  closeMission(id: Int!, isForce: Boolean!): MissionBackwardDetails!
+  closeMission(id: Int!, isForce: Boolean!): Boolean!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
   createBot(input: CreateBotInput!): BotBackwardDetails!
   createContract(input: CreateContractInput!): Contract!
-  createPlan(createPlanInput: CreatePlanInput!): PlanForwardDetails!
+  createPlan(createPlanInput: CreatePlanInput!): Plan!
   createStrategy(input: CreateStrategyInput!): Strategy!
-  deleteBot(id: Int!): [BotBackwardDetails!]!
+  deleteBot(id: Int!): BotBackwardDetails!
   deleteCategory(id: Int!): TagCategory!
   deletePlan(id: Int!): Int!
   deleteTag(tag: String!): Tag!
   dynamicSnapshotBuild(dateStr: String!): PnlSnapshotInitializedFlag
-  endPlan(id: Int!): PlanForwardDetails!
+  endPlan(id: Int!): Boolean!
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
-  ignoreMission(id: Int!): MissionBackwardDetails!
+  ignoreMission(id: Int!): Boolean!
   initializePnlSnapshot: Boolean!
-  liveBot(id: Int!): BotBackwardDetails!
+  liveBot(id: Int!): Boolean!
   pauseSystem: Boolean!
   performTask(id: Int!): Boolean!
   removeStrategy(id: Int!): Strategy!
   removeTagFromUser(input: ChangeUserTagInput!): User!
   resumeSystem: Boolean!
-  startPlan(id: Int!): PlanForwardDetails!
-  stopBot(id: Int!): BotBackwardDetails!
+  startPlan(id: Int!): Boolean!
+  stopBot(id: Int!): Boolean!
   stopTask(id: Int!): Boolean!
-  updatePlan(updatePlanInput: UpdatePlanInput!): PlanForwardDetails!
+  updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
   updateStrategyMetadata(input: UpdateStrategyMetadataInput!, key: String!): StrategyMetadata!
   upsertCategory(input: TagCategoryInput!): TagCategory!
   upsertTag(input: TagInput!): Tag!
@@ -581,10 +581,14 @@ type StrategyMetadata {
 }
 
 type Subscription {
+  botCreated: [BotBackwardDetails!]!
+  botUpdated: [BotBackwardDetails!]!
   followerDetailsUpdated(contractId: Int!): [FollowerDetail!]!
-  missionAdded: [MissionBackwardDetails!]!
+  missionCreated: [MissionBackwardDetails!]!
   missionUpdated: [MissionBackwardDetails!]!
   newLog(checked: Boolean!, severity: LogSeverity): Log!
+  planCreated: Plan!
+  planUpdated: Plan!
   taskCreated: [TaskBackwardDetails!]!
   taskUpdated: [TaskBackwardDetails!]!
 }
@@ -702,9 +706,11 @@ type TradeTransactionCount {
 
 input UpdatePlanInput {
   description: String
+  endedAt: DateTime
   id: Int!
   scheduledEnd: DateTime
   scheduledStart: DateTime
+  startedAt: DateTime
   status: PlanStatus!
   title: String
 }
