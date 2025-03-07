@@ -200,27 +200,37 @@ export function useSubscribeMission() {
       });
 
       missionInfos.forEach((missionInfo) => {
-        client.cache.writeFragment({
+        const missionForwardDetails = client.cache.readFragment({
           id: client.cache.identify({
             __typename: "MissionForwardDetails",
             id: missionInfo.id,
           }),
           fragment: MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
           fragmentName: "MissionForwardDetailsInfo",
-          data: {
-            __typename: "MissionForwardDetails",
-            achievePosition: missionInfo.achievePosition,
-            achievePositionId: missionInfo.achievePositionId,
-            botId: missionInfo.botId,
-            createdAt: missionInfo.createdAt,
-            id: missionInfo.id,
-            status: missionInfo.status,
-            targetPosition: missionInfo.targetPosition,
-            targetPositionId: missionInfo.targetPositionId,
-            tasks: [],
-            updatedAt: missionInfo.updatedAt,
-          },
         });
+
+        if (missionForwardDetails) {
+          client.cache.writeFragment({
+            id: client.cache.identify({
+              __typename: "MissionForwardDetails",
+              id: missionInfo.id,
+            }),
+            fragment: MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+            fragmentName: "MissionForwardDetailsInfo",
+            data: {
+              ...missionForwardDetails,
+              achievePosition: missionInfo.achievePosition,
+              achievePositionId: missionInfo.achievePositionId,
+              botId: missionInfo.botId,
+              createdAt: missionInfo.createdAt,
+              id: missionInfo.id,
+              status: missionInfo.status,
+              targetPosition: missionInfo.targetPosition,
+              targetPositionId: missionInfo.targetPositionId,
+              updatedAt: missionInfo.updatedAt,
+            },
+          });
+        }
       });
     }
   }, [client.cache, enqueueSnackbar, error1, error2, newData, updatedData]);
@@ -240,7 +250,7 @@ export function useSubscribeMission() {
       missionInfos.forEach((missionInfo) => {
         const bot = client.cache.readFragment({
           id: client.cache.identify({
-            __typename: "MissionForwardDetails",
+            __typename: "BotForwardDetails",
             id: missionInfo.botId,
           }),
           fragment: BOT_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
@@ -285,7 +295,6 @@ export function useCloseMission() {
   const [closeMission, { data: newData, error }] = useMutation(
     CLOSE_MISSION_DOCUMENT,
   );
-  const client = useApolloClient();
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
@@ -300,7 +309,7 @@ export function useCloseMission() {
         variant: "error",
       });
     }
-  }, [client.cache, newData, error, enqueueSnackbar]);
+  }, [newData, error, enqueueSnackbar]);
 
   return closeMission;
 }
@@ -309,7 +318,6 @@ export function useIgnoreMission() {
   const [ignoreMission, { data: newData, error }] = useMutation(
     IGNORE_MISSION_DOCUMENT,
   );
-  const client = useApolloClient();
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
@@ -324,7 +332,7 @@ export function useIgnoreMission() {
         variant: "error",
       });
     }
-  }, [client.cache, newData, error, enqueueSnackbar]);
+  }, [newData, error, enqueueSnackbar]);
 
   return ignoreMission;
 }

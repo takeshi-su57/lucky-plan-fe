@@ -378,7 +378,7 @@ type Mutation {
   createContract(input: CreateContractInput!): Contract!
   createPlan(createPlanInput: CreatePlanInput!): PlanForwardDetails!
   createStrategy(input: CreateStrategyInput!): Strategy!
-  deleteBot(id: Int!): [BotBackwardDetails!]!
+  deleteBot(id: Int!): BotBackwardDetails!
   deleteCategory(id: Int!): TagCategory!
   deletePlan(id: Int!): Int!
   deleteTag(tag: String!): Tag!
@@ -388,14 +388,14 @@ type Mutation {
   getToken(input: GetTokenInput!): GetTokenResponse!
   ignoreMission(id: Int!): Boolean!
   initializePnlSnapshot: Boolean!
-  liveBot(id: Int!): BotBackwardDetails!
+  liveBot(id: Int!): Boolean!
   pauseSystem: Boolean!
   performTask(id: Int!): Boolean!
   removeStrategy(id: Int!): Strategy!
   removeTagFromUser(input: ChangeUserTagInput!): User!
   resumeSystem: Boolean!
   startPlan(id: Int!): PlanForwardDetails!
-  stopBot(id: Int!): BotBackwardDetails!
+  stopBot(id: Int!): Boolean!
   stopTask(id: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): PlanForwardDetails!
   updateStrategyMetadata(input: UpdateStrategyMetadataInput!, key: String!): StrategyMetadata!
@@ -581,6 +581,8 @@ type StrategyMetadata {
 }
 
 type Subscription {
+  botCreated: [BotBackwardDetails!]!
+  botUpdated: [BotBackwardDetails!]!
   followerDetailsUpdated(contractId: Int!): [FollowerDetail!]!
   missionCreated: [MissionBackwardDetails!]!
   missionUpdated: [MissionBackwardDetails!]!
