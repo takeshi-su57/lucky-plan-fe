@@ -7,7 +7,7 @@ export function Statusbar() {
   const { data } = useGetSystemStatus();
 
   return (
-    <div className="sticky flex items-center justify-between">
+    <div className="sticky bottom-0 flex items-center justify-between">
       <div className="flex flex-row items-center gap-2">
         <div className="relative flex items-center justify-center">
           <div
