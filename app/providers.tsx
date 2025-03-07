@@ -29,6 +29,7 @@ import { createClient } from "graphql-ws";
 
 import "@rainbow-me/rainbowkit/styles.css";
 import { useSubscribeTask } from "@/app-hooks/useTask";
+import { useSubscribeMission } from "@/app-hooks/useMission";
 
 import {
   SuccessSnackbar,
@@ -237,6 +238,7 @@ export function Providers({ children }: { children: ReactNode }) {
 
 export function SubscriptionWrapper({ children }: { children: ReactNode }) {
   useSubscribeTask();
+  useSubscribeMission();
 
   return children;
 }

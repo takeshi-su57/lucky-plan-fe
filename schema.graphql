@@ -372,7 +372,7 @@ type Mutation {
   changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changePassword(input: ChangePasswordInput!): Boolean!
   checkLog(id: Int!): Log!
-  closeMission(id: Int!, isForce: Boolean!): MissionBackwardDetails!
+  closeMission(id: Int!, isForce: Boolean!): Boolean!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
   createBot(input: CreateBotInput!): BotBackwardDetails!
   createContract(input: CreateContractInput!): Contract!
@@ -386,7 +386,7 @@ type Mutation {
   endPlan(id: Int!): PlanForwardDetails!
   generateNewFollower: Follower!
   getToken(input: GetTokenInput!): GetTokenResponse!
-  ignoreMission(id: Int!): MissionBackwardDetails!
+  ignoreMission(id: Int!): Boolean!
   initializePnlSnapshot: Boolean!
   liveBot(id: Int!): BotBackwardDetails!
   pauseSystem: Boolean!
@@ -582,7 +582,7 @@ type StrategyMetadata {
 
 type Subscription {
   followerDetailsUpdated(contractId: Int!): [FollowerDetail!]!
-  missionAdded: [MissionBackwardDetails!]!
+  missionCreated: [MissionBackwardDetails!]!
   missionUpdated: [MissionBackwardDetails!]!
   newLog(checked: Boolean!, severity: LogSeverity): Log!
   taskCreated: [TaskBackwardDetails!]!
