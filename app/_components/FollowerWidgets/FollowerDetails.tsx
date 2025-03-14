@@ -14,7 +14,7 @@ import {
 } from "@nextui-org/react";
 import { Address } from "viem";
 
-import { UserTradeHistory } from "@/app/_components/WalletAccountWidgets/WalletAccountTradeHistory";
+import { WalletAccountTradeHistory } from "@/app/_components/WalletAccountWidgets/WalletAccountTradeHistory";
 
 import { ShowPrivateKeyModal } from "./ShowPrivateKeyModal";
 import {
@@ -152,7 +152,7 @@ export function FollowerDetails({
       {selected === "chart" ? (
         <Card>
           <CardBody>
-            <UserTradeHistory
+            <WalletAccountTradeHistory
               address={follower.address as Address}
               contractId={follower.contractId.toString()}
               mode={mode}
