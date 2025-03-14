@@ -1,6 +1,5 @@
 "use client";
 
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Chip, Badge } from "@nextui-org/react";
 import { TaskStatus } from "@/graphql/gql/graphql";
 
@@ -9,6 +8,7 @@ import { useGetAllContracts } from "@/app-hooks/useContract";
 import { useGetAlertTasks } from "@/app-hooks/useTask";
 
 import { LabeledChip } from "@/components/chips/LabeledChip";
+import WalletConnectButton from "./WalletConnectButton";
 
 export function Topbar() {
   const contracts = useGetAllContracts();
@@ -82,13 +82,7 @@ export function Topbar() {
           </Badge>
         ) : null}
 
-        <ConnectButton
-          accountStatus={{
-            smallScreen: "avatar",
-            largeScreen: "full",
-          }}
-          chainStatus="icon"
-        />
+        <WalletConnectButton />
       </div>
     </div>
   );

@@ -6,8 +6,14 @@ import { ControlPanel } from "../_components/SettingsWidget/ControlPanel";
 import { StrategyPanel } from "../_components/SettingsWidget/StrategyPanel";
 import { ContractPanel } from "../_components/SettingsWidget/ContractPanel";
 import { PnlSnapshotPanel } from "../_components/SettingsWidget/PnlSnapshotPanel";
+import { UsersPanel } from "../_components/SettingsWidget/UsersPanel";
 
-type TabType = "contracts" | "strategies" | "pnlSnapshot" | "controls";
+type TabType =
+  | "contracts"
+  | "strategies"
+  | "pnlSnapshot"
+  | "users"
+  | "controls";
 
 export default function Page() {
   const [selected, setSelected] = useState<TabType>("contracts");
@@ -23,6 +29,7 @@ export default function Page() {
           <Tab key="contracts" title="Contracts" />
           <Tab key="strategies" title="Strategies" />
           <Tab key="pnlSnapshot" title="Pnl Snapshot" />
+          <Tab key="users" title="Users" />
           <Tab key="controls" title="Controls" />
         </Tabs>
       </div>
@@ -30,6 +37,7 @@ export default function Page() {
       {selected === "contracts" && <ContractPanel />}
       {selected === "strategies" && <StrategyPanel />}
       {selected === "pnlSnapshot" && <PnlSnapshotPanel />}
+      {selected === "users" && <UsersPanel />}
       {selected === "controls" && <ControlPanel />}
     </div>
   );

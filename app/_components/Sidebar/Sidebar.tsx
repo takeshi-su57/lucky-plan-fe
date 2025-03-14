@@ -13,7 +13,7 @@ export const links = [
   { id: "plans", label: "Plan", title: "" },
   { id: "automations", label: "Automation", title: "" },
   { id: "followers", label: "Follower", title: "", showDivider: true },
-  { id: "users", label: "User", title: "" },
+  { id: "traders", label: "Trader", title: "" },
   {
     id: "leaderboards",
     label: "Leaderboard",

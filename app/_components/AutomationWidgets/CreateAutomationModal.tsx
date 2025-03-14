@@ -29,7 +29,7 @@ import {
   useGetAllTradePairs,
 } from "@/app-hooks/useContract";
 import { useBatchCreateBots } from "@/app-hooks/useAutomation";
-import { useGetUsersByTags } from "@/app-hooks/useUser";
+import { useGetWalletAccountsByTags } from "@/app/_hooks/useWalletAccount";
 import { useGetAllStrategyMetadata } from "@/app-hooks/useStrategy";
 import { useGetAllTags } from "@/app-hooks/useTag";
 import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHistories";
@@ -69,7 +69,7 @@ export function CreateAutomationModal({
   const [showAllActivity, setShowAllActivity] = useState(false);
 
   const selectedValue = useMemo(() => Array.from(selectedTags), [selectedTags]);
-  const allLeaders = useGetUsersByTags(selectedValue as string[]);
+  const allLeaders = useGetWalletAccountsByTags(selectedValue as string[]);
 
   const [leaderAddress, setLeaderAddress] = useState<string | null>(null);
   const [leaderContractId, setLeaderContractId] = useState<string | null>(null);
