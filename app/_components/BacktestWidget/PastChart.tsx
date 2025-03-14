@@ -10,7 +10,7 @@ import { FaTrash } from "react-icons/fa";
 import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHistories";
 import { useGetAllContracts } from "@/app-hooks/useContract";
 
-import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget";
+import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget/HistoriesWidget";
 import {
   BacktestParameters,
   getFollowerCollateralBaseline,
@@ -56,13 +56,12 @@ export function PastChart({
       return allHistories || [];
     }
 
-    const { sumIn, countIn } = getHistoriesChartData(
-      allHistories || [],
-      showAllActivity ? "show_all_activity" : "show_only_valid_activity",
-      {
+    const { sumIn, countIn } = getHistoriesChartData(allHistories || [], {
+      mode: showAllActivity ? "show_all_activity" : "show_only_valid_activity",
+      range: {
         to: endDate,
       },
-    );
+    });
 
     const leaderCollateralBaseline = countIn > 0 ? sumIn / countIn : 0;
     const followerCollateralBaseline = getFollowerCollateralBaseline(

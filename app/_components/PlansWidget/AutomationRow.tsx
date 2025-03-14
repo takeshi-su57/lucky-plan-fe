@@ -1,10 +1,10 @@
-import { BotDetails } from "@/graphql/gql/graphql";
+import { BotForwardDetails } from "@/graphql/gql/graphql";
 import { shrinkAddress } from "@/utils";
 import { Button, Checkbox, Chip, Divider } from "@nextui-org/react";
 import { Address } from "viem";
 
 export type AutomationRowProps = {
-  bot: BotDetails;
+  bot: BotForwardDetails;
   isSelected: boolean;
   isShowChart: boolean;
   onChangeSelection: (botId: number, isSelected: boolean) => void;

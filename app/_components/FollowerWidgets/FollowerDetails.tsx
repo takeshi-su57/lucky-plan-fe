@@ -14,7 +14,7 @@ import {
 } from "@nextui-org/react";
 import { Address } from "viem";
 
-import { UserTradeHistory } from "@/app-components/UserWidgets/UserTradeHistory";
+import { UserTradeHistory } from "@/app/_components/WalletAccountWidgets/WalletAccountTradeHistory";
 
 import { ShowPrivateKeyModal } from "./ShowPrivateKeyModal";
 import {
@@ -169,6 +169,7 @@ export function FollowerDetails({
                   <PositionSummary
                     index={trade.index}
                     mission={trade.mission}
+                    params={trade.params}
                   />
                 }
               >

@@ -1,11 +1,11 @@
 "use client";
 
-import { useGetAllCategories, useGetAllTags } from "@/app/_hooks/useTag";
+import { useGetAllCategories, useGetAllTags } from "@/app-hooks/useTag";
 import {
-  useAddTagToUser,
+  useAddTagToWalletAccount,
   useGetTagsByAddress,
-  useRemoveTagFromUser,
-} from "@/app/_hooks/useUser";
+  useRemoveTagFromWalletAccount,
+} from "@/app-hooks/useWalletAccount";
 import { Tag, TagCategory, TagInfoFragment } from "@/graphql/gql/graphql";
 import {
   Button,
@@ -28,8 +28,8 @@ export function TagsWidget({ address }: TagsWidgetProps) {
   const allTags = useGetAllTags();
   const tags = useGetTagsByAddress(address);
 
-  const mutateAddTagToUser = useAddTagToUser();
-  const mutateRemoveTagFromUser = useRemoveTagFromUser();
+  const mutateAddTagToUser = useAddTagToWalletAccount();
+  const mutateRemoveTagFromUser = useRemoveTagFromWalletAccount();
 
   const handleRemoveTag = (tag: TagInfoFragment) => {
     mutateRemoveTagFromUser({

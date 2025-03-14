@@ -2,9 +2,15 @@
 
 import { Badge, Chip } from "@nextui-org/react";
 import dayjs from "dayjs";
+import {
+  MissionStatus,
+  MissionForwardDetails,
+  TaskStatus,
+} from "@/graphql/gql/graphql";
 
-import { MissionStatus, Mission, TaskStatus } from "@/graphql/gql/graphql";
-import { useGetTasksByStatus } from "@/app/_hooks/useTask";
+import { useGetAlertTasks } from "@/app-hooks/useTask";
+
+import { ContractPnl } from "./ContractPnl";
 
 const colorsByMissionStatus: Record<
   MissionStatus,
@@ -19,50 +25,37 @@ const colorsByMissionStatus: Record<
 };
 
 export type MissionSummaryProps = {
-  mission: Mission;
-  isHideAlertForClosedMissions: boolean;
+  mission: MissionForwardDetails;
+  leaderContractId: number;
+  followerContractId: number;
 };
 
 export function MissionSummary({
   mission,
-  isHideAlertForClosedMissions,
+  leaderContractId,
+  followerContractId,
 }: MissionSummaryProps) {
-  const { satistic: createdStatistic } = useGetTasksByStatus(
-    TaskStatus.Created,
-    isHideAlertForClosedMissions,
-  );
-  const { satistic: awaitedStatistic } = useGetTasksByStatus(
-    TaskStatus.Await,
-    isHideAlertForClosedMissions,
-  );
-  const { satistic: initiatedStatistic } = useGetTasksByStatus(
-    TaskStatus.Initiated,
-    isHideAlertForClosedMissions,
-  );
-  const { satistic: failedStatistic } = useGetTasksByStatus(
-    TaskStatus.Failed,
-    isHideAlertForClosedMissions,
+  const alertTasks = useGetAlertTasks();
+
+  const missionTasks = alertTasks.filter(
+    (task) => task.missionId === mission.id,
   );
 
-  const createdCount =
-    (createdStatistic[mission.botId] &&
-      createdStatistic[mission.botId][mission.id]) ||
-    0;
+  const createdCount = missionTasks.filter(
+    (task) => task.status === TaskStatus.Created,
+  ).length;
 
-  const awaitedCount =
-    (awaitedStatistic[mission.botId] &&
-      awaitedStatistic[mission.botId][mission.id]) ||
-    0;
+  const awaitedCount = missionTasks.filter(
+    (task) => task.status === TaskStatus.Await,
+  ).length;
 
-  const initiatedCount =
-    (initiatedStatistic[mission.botId] &&
-      initiatedStatistic[mission.botId][mission.id]) ||
-    0;
+  const initiatedCount = missionTasks.filter(
+    (task) => task.status === TaskStatus.Initiated,
+  ).length;
 
-  const failedCount =
-    (failedStatistic[mission.botId] &&
-      failedStatistic[mission.botId][mission.id]) ||
-    0;
+  const failedCount = missionTasks.filter(
+    (task) => task.status === TaskStatus.Failed,
+  ).length;
 
   return (
     <div className="flex w-full items-center justify-between gap-6">
@@ -80,6 +73,37 @@ export function MissionSummary({
         <span className="text-xs text-neutral-600">
           {dayjs(new Date(mission.createdAt)).format("YYYY/MM/DD hh:mm:ss")}
         </span>
+
+        <ContractPnl
+          label="Leader"
+          contractId={leaderContractId}
+          finished={false}
+          actions={[mission.tasks.map((task) => task.action)]}
+        />
+
+        <ContractPnl
+          label="Follower"
+          contractId={followerContractId}
+          finished={false}
+          actions={[
+            mission.tasks
+              .map((task) => {
+                if (task.followerActions.length === 0) {
+                  return null;
+                }
+
+                const followerAction =
+                  task.followerActions[task.followerActions.length - 1];
+
+                if (!followerAction) {
+                  return null;
+                }
+
+                return followerAction.action;
+              })
+              .filter((action) => action !== null),
+          ]}
+        />
 
         <div className="flex flex-row items-center gap-3 font-mono">
           {createdCount > 0 ? (

@@ -9,16 +9,18 @@ import {
   CardBody,
   Checkbox,
   Divider,
-  Progress,
   Tab,
   Tabs,
 } from "@nextui-org/react";
 
-import { BotStatus, MissionStatus } from "@/graphql/gql/graphql";
+import {
+  BotStatus,
+  MissionStatus,
+  BotForwardDetails,
+} from "@/graphql/gql/graphql";
 
 import {
   useDeleteBot,
-  useGetBot,
   useLiveBot,
   useStopBot,
 } from "@/app-hooks/useAutomation";
@@ -29,21 +31,19 @@ import { useCloseMission } from "@/app/_hooks/useMission";
 import { AutomationGridChart } from "../PlansWidget/AutomationChart";
 import { useGetPersonalTradeHistories } from "@/app/_hooks/useGetPersonalTradeHistories";
 
+import { ContractPnl } from "../MissionWidgets/ContractPnl";
+
 type TabType = "chart" | "missions";
 
 export type AutomationDetailsProps = {
-  botId: number;
+  bot: BotForwardDetails;
   isChatFirst: boolean;
-  isHideAlertForClosedMissions: boolean;
 };
 
 export function AutomationDetails({
-  botId,
+  bot,
   isChatFirst,
-  isHideAlertForClosedMissions,
 }: AutomationDetailsProps) {
-  const { bot, loading, error } = useGetBot(botId);
-
   const liveBot = useLiveBot();
   const stopBot = useStopBot();
   const deleteBot = useDeleteBot();
@@ -76,26 +76,26 @@ export function AutomationDetails({
   const handleDelete = useCallback(() => {
     deleteBot({
       variables: {
-        id: botId,
+        id: bot.id,
       },
     });
-  }, [botId, deleteBot]);
+  }, [bot.id, deleteBot]);
 
   const handleLive = useCallback(() => {
     liveBot({
       variables: {
-        id: botId,
+        id: bot.id,
       },
     });
-  }, [botId, liveBot]);
+  }, [bot.id, liveBot]);
 
   const handleStop = useCallback(() => {
     stopBot({
       variables: {
-        id: botId,
+        id: bot.id,
       },
     });
-  }, [botId, stopBot]);
+  }, [bot.id, stopBot]);
 
   const handleCloseAllMissions = useCallback(async () => {
     const openedMissions = (bot?.missions || []).filter(
@@ -112,23 +112,7 @@ export function AutomationDetails({
     });
 
     await Promise.all(promise);
-  }, [bot?.missions, closeMission]);
-
-  if (loading) {
-    return <Progress isIndeterminate className="w-full flex-1" size="sm" />;
-  }
-
-  if (error) {
-    return (
-      <span className="text-bold text-base text-red-400">
-        Oops, There is an issue, Please check your network.
-      </span>
-    );
-  }
-
-  if (!bot) {
-    return null;
-  }
+  }, [bot.missions, closeMission]);
 
   return (
     <div className="flex flex-col gap-6 border-t border-t-neutral-400/20 py-6">
@@ -163,36 +147,68 @@ export function AutomationDetails({
           ) : null}
         </div>
 
-        {bot.status === BotStatus.Created ? (
-          <div className="flex items-center gap-2">
-            <Button onClick={handleDelete} color="default">
-              Delete
-            </Button>
-            <Button onClick={handleLive} color="danger">
-              Live
-            </Button>
-          </div>
-        ) : null}
+        <div className="flex items-center gap-3">
+          <ContractPnl
+            label="Leader"
+            contractId={bot.leaderContractId}
+            finished={false}
+            actions={bot.missions.map((mission) =>
+              mission.tasks.map((task) => task.action),
+            )}
+          />
 
-        {bot.status === BotStatus.Live ? (
-          <div className="flex items-center gap-2">
-            <Button onClick={handleStop} color="primary">
-              Stop
+          <ContractPnl
+            label="Follower"
+            contractId={bot.followerContractId}
+            finished={false}
+            actions={bot.missions.map((mission) =>
+              mission.tasks
+                .map((task) => {
+                  if (task.followerActions.length === 0) {
+                    return null;
+                  }
+
+                  const followerAction =
+                    task.followerActions[task.followerActions.length - 1];
+
+                  if (!followerAction) {
+                    return null;
+                  }
+
+                  return followerAction.action;
+                })
+                .filter((action) => action !== null),
+            )}
+          />
+
+          {bot.status === BotStatus.Created ? (
+            <div className="flex items-center gap-2">
+              <Button onClick={handleDelete} color="default">
+                Delete
+              </Button>
+              <Button onClick={handleLive} color="danger">
+                Live
+              </Button>
+            </div>
+          ) : null}
+          {bot.status === BotStatus.Live ? (
+            <div className="flex items-center gap-2">
+              <Button onClick={handleStop} color="primary">
+                Stop
+              </Button>
+            </div>
+          ) : null}
+          {bot.status === BotStatus.Stop ? (
+            <Button color="danger" onClick={handleCloseAllMissions}>
+              Close All Missions
             </Button>
-          </div>
-        ) : null}
-
-        {bot.status === BotStatus.Stop ? (
-          <Button color="danger" onClick={handleCloseAllMissions}>
-            Close All Missions
-          </Button>
-        ) : null}
-
-        {bot.status === BotStatus.Dead ? (
-          <Button isIconOnly disabled variant="flat">
-            <FaCopy />
-          </Button>
-        ) : null}
+          ) : null}
+          {bot.status === BotStatus.Dead ? (
+            <Button isIconOnly disabled variant="flat">
+              <FaCopy />
+            </Button>
+          ) : null}
+        </div>
       </div>
 
       {selected === "chart" ? (
@@ -204,8 +220,10 @@ export function AutomationDetails({
               range={
                 showOnlyAutomationHistory
                   ? {
-                      from: new Date(bot.startedAt) || new Date(),
-                      to: new Date(bot.endedAt) || new Date(),
+                      from: bot.startedAt
+                        ? new Date(bot.startedAt)
+                        : new Date(),
+                      to: bot.endedAt ? new Date(bot.endedAt) : new Date(),
                     }
                   : undefined
               }
@@ -220,8 +238,10 @@ export function AutomationDetails({
               range={
                 showOnlyAutomationHistory
                   ? {
-                      from: new Date(bot.startedAt) || new Date(),
-                      to: new Date(bot.endedAt) || new Date(),
+                      from: bot.startedAt
+                        ? new Date(bot.startedAt)
+                        : new Date(),
+                      to: bot.endedAt ? new Date(bot.endedAt) : new Date(),
                     }
                   : undefined
               }
@@ -245,11 +265,12 @@ export function AutomationDetails({
                 title={
                   <MissionSummary
                     mission={mission}
-                    isHideAlertForClosedMissions={isHideAlertForClosedMissions}
+                    leaderContractId={bot.leaderContractId}
+                    followerContractId={bot.followerContractId}
                   />
                 }
               >
-                <MissionDetails missionId={mission.id} />
+                <MissionDetails mission={mission} />
               </AccordionItem>
             ))}
         </Accordion>

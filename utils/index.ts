@@ -410,3 +410,38 @@ export function convertMillisToReadableTime(milliseconds: number): string {
 export function getServerTimezone() {
   return process.env.NEXT_PUBLIC_SERVER_TIME_ZONE;
 }
+
+export function getPNLPercentage(params: {
+  long: boolean;
+  closePrice: number;
+  openPrice: number;
+  leverage: number;
+}) {
+  const p =
+    params.openPrice > 0
+      ? ((params.long
+          ? params.closePrice - params.openPrice
+          : params.openPrice - params.closePrice) *
+          100 *
+          params.leverage) /
+        params.openPrice
+      : 0;
+
+  return p > 900 ? 900 : p;
+}
+
+export function getWeekDateStr(date: Date) {
+  const year = date.getFullYear();
+  const month = date.toLocaleString("en-US", { month: "short" });
+  const weekNumber = Math.ceil(date.getDate() / 7);
+  const suffix =
+    weekNumber === 1
+      ? "st"
+      : weekNumber === 2
+        ? "nd"
+        : weekNumber === 3
+          ? "rd"
+          : "th";
+
+  return `${year} ${month} ${weekNumber}${suffix} Week`;
+}

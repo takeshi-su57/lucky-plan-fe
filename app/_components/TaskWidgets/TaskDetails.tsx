@@ -1,56 +1,57 @@
 "use client";
 
 import { useCallback } from "react";
-import { Button, Progress } from "@nextui-org/react";
-import { TaskStatus } from "@/graphql/gql/graphql";
+import { Button } from "@nextui-org/react";
+import {
+  MissionStatus,
+  TaskForwardDetails,
+  TaskStatus,
+} from "@/graphql/gql/graphql";
 
-import { useGetTask } from "@/app-hooks/useTask";
-import { usePerformTask } from "@/app/_hooks/useTask";
+import { useStopTask } from "@/app-hooks/useTask";
+import { usePerformTask } from "@/app-hooks/useTask";
 
 import { ActionView } from "@/app-components/ActionsWidget/ActionView";
+
 import { TaskLogView } from "./TaskLogView";
 
 export type TaskDetailsProps = {
-  taskId: number;
+  task: TaskForwardDetails;
+  missionStatus: MissionStatus;
 };
 
-export function TaskDetails({ taskId }: TaskDetailsProps) {
-  const { task, loading, error } = useGetTask(taskId);
-
+export function TaskDetails({ task, missionStatus }: TaskDetailsProps) {
   const performTask = usePerformTask();
+  const stopTask = useStopTask();
 
   const handlePerformTask = useCallback(() => {
     performTask({
       variables: {
-        id: taskId,
+        id: task.id,
       },
     });
-  }, [performTask, taskId]);
+  }, [performTask, task.id]);
 
-  if (loading) {
-    return <Progress isIndeterminate className="w-full flex-1" size="sm" />;
-  }
-
-  if (error) {
-    return (
-      <span className="text-bold text-base text-red-400">
-        Oops, There is an issue, Please check your network.
-      </span>
-    );
-  }
-
-  if (!task) {
-    return null;
-  }
+  const handleStopTask = useCallback(() => {
+    stopTask({
+      variables: {
+        id: task.id,
+      },
+    });
+  }, [stopTask, task.id]);
 
   return (
     <div className="flex flex-col gap-6 border-t border-t-neutral-400/20 py-6 text-neutral-400">
-      {task.status !== TaskStatus.Await &&
+      {missionStatus === MissionStatus.Opened &&
+      task.status !== TaskStatus.Await &&
       task.status !== TaskStatus.Stopped &&
       task.status !== TaskStatus.Completed ? (
         <div className="flex items-center gap-2">
-          <Button onClick={handlePerformTask} color="primary">
+          <Button onClick={handlePerformTask} size="sm" color="primary">
             Perform
+          </Button>
+          <Button onClick={handleStopTask} size="sm" color="danger">
+            Stop
           </Button>
         </div>
       ) : null}
@@ -67,7 +68,7 @@ export function TaskDetails({ taskId }: TaskDetailsProps) {
             <span className="px-2 text-base">Follower</span>
 
             {task.followerActions.map((action) => (
-              <ActionView key={action.id} action={action} />
+              <ActionView key={action.id} action={action.action} />
             ))}
           </div>
         </div>

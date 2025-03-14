@@ -363,7 +363,7 @@ export function FollowerStrategyForm({
               address={params.leaderAddress}
               followerHistories={followerHistories}
               leaderHistories={originalHistories || []}
-              hideTags
+              hideTags={false}
             />
           )}
         </div>

@@ -167,6 +167,16 @@ export const BUILD_PNL_SNAPSHOTS_DOCUMENT = graphql(`
   }
 `);
 
+export const DYNAMIC_SNAPSHOT_BUILD_DOCUMENT = graphql(`
+  mutation dynamicSnapshotBuild($dateStr: String!) {
+    dynamicSnapshotBuild(dateStr: $dateStr) {
+      id
+      dateStr
+      isInit
+    }
+  }
+`);
+
 function getPersonalTradeHistory(history: TradeHistory): PersonalTradeHistory {
   return {
     action: history.action as unknown as TradeActionType,
@@ -349,19 +359,19 @@ export function useIsPnlSnapshotInitialized(dateStr: string) {
 
 export function useBuildPnlSnapshots() {
   const [buildPnlSnapshots, { data, error, loading }] = useMutation(
-    BUILD_PNL_SNAPSHOTS_DOCUMENT,
+    DYNAMIC_SNAPSHOT_BUILD_DOCUMENT,
   );
 
   const client = useApolloClient();
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
-    if (data?.buildPnlSnapshots && !error) {
+    if (data?.dynamicSnapshotBuild && !error) {
       enqueueSnackbar("Success at building PNL snapshots!", {
         variant: "success",
       });
 
-      const pnlSnapshotInitializedFlag = data.buildPnlSnapshots;
+      const pnlSnapshotInitializedFlag = data.dynamicSnapshotBuild;
 
       client.cache.updateQuery(
         {

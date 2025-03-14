@@ -8,7 +8,6 @@ import {
   AutocompleteItem,
   Accordion,
   AccordionItem,
-  Chip,
   Select,
   SelectItem,
   Switch,
@@ -32,6 +31,7 @@ import { FollowerInfoWidget } from "@/app-components/FollowerWidgets/FollowerInf
 import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 import { FollowerDetails } from "@/app-components/FollowerWidgets/FollowerDetails";
 import { getPriceStr } from "@/utils/price";
+import { LabeledChip } from "@/components/chips/LabeledChip";
 
 export function Followers() {
   const searchParams = useSearchParams();
@@ -199,24 +199,39 @@ export function Followers() {
         </div>
 
         <div className="flex items-center gap-4">
-          <Chip>
-            {`${(
-              followers
-                .map((item) => item.ethBalance)
-                .reduce((acc, item) => acc + item, 0) / 1e18
-            ).toFixed(8)} ETH`}
-          </Chip>
-
-          <Chip>
-            {`${(
+          <LabeledChip
+            label="Gas"
+            value={(
               followers
                 .map((item) => item.usdcBalance)
                 .reduce((acc, item) => acc + item, 0) / 1e6
-            ).toFixed(2)} USDC`}
-          </Chip>
+            ).toFixed(2)}
+            unit="ETH"
+          />
 
-          <Chip color="warning">{`${getPriceStr(totalEarned)} USDC`}</Chip>
-          <Chip color="danger">{`${getPriceStr(totalLost)} USDC`}</Chip>
+          <LabeledChip
+            label="Collateral"
+            value={(
+              followers
+                .map((item) => item.usdcBalance)
+                .reduce((acc, item) => acc + item, 0) / 1e6
+            ).toFixed(2)}
+            unit="USDC"
+          />
+
+          <LabeledChip
+            label="Earned"
+            value={getPriceStr(totalEarned)}
+            unit="USDC"
+            color="warning"
+          />
+
+          <LabeledChip
+            label="Lost"
+            value={getPriceStr(totalLost)}
+            unit="USDC"
+            color="danger"
+          />
 
           <Button
             isIconOnly

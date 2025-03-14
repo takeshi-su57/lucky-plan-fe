@@ -36,7 +36,7 @@ export function RightDrawer({ children, classNames, ...props }: ModalProps) {
         {
           wrapper: "justify-end",
           base: "!m-0 max-w-[640px] h-screen gap-8 overflow-visible font-sans scale-100",
-          body: "gap-6 bg-white px-[34px] py-[38px]",
+          body: "gap-6 bg-neutral-900 px-[34px] py-[38px]",
           closeButton:
             "top-4 right-4 bg-neutral-300 text-neutral-900 hover:bg-neutral-400",
         },

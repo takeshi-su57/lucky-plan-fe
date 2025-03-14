@@ -3,7 +3,7 @@
 import { Chip } from "@nextui-org/react";
 import dayjs from "dayjs";
 
-import { TaskShallowDetails, TaskStatus } from "@/graphql/gql/graphql";
+import { TaskForwardDetails, TaskStatus } from "@/graphql/gql/graphql";
 import { PendingOrderType } from "@/types";
 
 const colorsByTaskStatus: Record<
@@ -19,7 +19,7 @@ const colorsByTaskStatus: Record<
 };
 
 export type TaskSummaryProps = {
-  task: TaskShallowDetails;
+  task: TaskForwardDetails;
 };
 
 export function TaskSummary({ task }: TaskSummaryProps) {

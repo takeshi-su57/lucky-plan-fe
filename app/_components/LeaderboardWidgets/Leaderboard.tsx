@@ -21,7 +21,7 @@ import { useGetAllContracts } from "@/app-hooks/useContract";
 import { useGetPnlSnapshots } from "@/app-hooks/useHistory";
 
 import { shrinkAddress } from "@/utils";
-import { HistoriesWidget } from "./HistoriesWidget";
+import { HistoriesWidget } from "./HistoriesWidget/HistoriesWidget";
 
 export type LeaderboardProps = {
   selectionLabel?: string;
@@ -190,7 +190,19 @@ export function Leaderboard({
               />
             )}
             endReached={() => hasMore && !loading && fetchMore()}
-            components={{ Footer: () => <Spinner color="white" size="sm" /> }}
+            components={{
+              Footer: () => (
+                <div className="flex w-full items-center justify-center">
+                  {hasMore === false ? (
+                    <span className="font-sans text-neutral-400/40">
+                      No More Results Available
+                    </span>
+                  ) : loading ? (
+                    <Spinner color="warning" size="lg" />
+                  ) : null}
+                </div>
+              ),
+            }}
           />
         </CardBody>
       </Card>

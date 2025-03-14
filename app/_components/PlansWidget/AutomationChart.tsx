@@ -25,7 +25,7 @@ export function AutomationGridChart({
   range,
 }: AutomationChartProps) {
   const { pnlChartData, inOutChartData, inChartData, outChartData } = useMemo(
-    () => getHistoriesChartData(histories || [], mode, range),
+    () => getHistoriesChartData(histories || [], { mode, range }),
     [histories, mode, range],
   );
 
@@ -43,7 +43,7 @@ export function AutomationGridChart({
         <span className="text-base font-bold">{title}</span>
 
         <div className="flex flex-row items-center gap-8">
-          <span>Total Invested: {getPriceStr(-totalInvested)} USDC USDC</span>
+          <span>Invested: {getPriceStr(-totalInvested)} USDC USDC</span>
           <span>Total PnL: {getPriceStr(totalPnl)} USDC</span>
           <span>Remain balance: {getPriceStr(remainBalance)} USDC</span>
         </div>

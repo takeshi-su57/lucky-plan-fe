@@ -8,7 +8,14 @@ import {
   darkTheme,
 } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
-import { mainnet, polygon, optimism, arbitrum, base } from "wagmi/chains";
+import {
+  mainnet,
+  polygon,
+  arbitrum,
+  base,
+  apeChain,
+  arbitrumSepolia,
+} from "wagmi/chains";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SnackbarProvider } from "notistack";
@@ -28,6 +35,18 @@ import {
 import { createClient } from "graphql-ws";
 
 import "@rainbow-me/rainbowkit/styles.css";
+import { useSubscribeTask } from "@/app-hooks/useTask";
+import { useSubscribeMission } from "@/app-hooks/useMission";
+
+import {
+  SuccessSnackbar,
+  DefaultSnackbar,
+  ErrorSnackbar,
+  WarningSnackbar,
+  InfoSnackbar,
+} from "@/components/snackbars";
+import { useSubscribeBot } from "@/app-hooks/useAutomation";
+import { LOCAL_USER_JWT_KEY } from "@/app-hooks/useUserJWT";
 
 const httpLink = new HttpLink({
   uri: `${process.env.NEXT_PUBLIC_LUCKY_PLAN_GRAPHQL_API}`,
@@ -61,12 +80,13 @@ const splitLink = split(
 
 const authLink = setContext((_, { headers }) => {
   // get the authentication token from local storage if it exists
-  const token = localStorage.getItem("token");
+  const userJWTStr = localStorage.getItem(LOCAL_USER_JWT_KEY);
+
   // return the headers to the context so httpLink can read them
   return {
     headers: {
       ...headers,
-      authorization: token ? `Bearer ${token}` : "",
+      authorization: userJWTStr ? `Bearer ${userJWTStr}` : "",
     },
   };
 });
@@ -76,6 +96,9 @@ const cache = new InMemoryCache({
     Query: {
       fields: {
         getPnlSnapshots: relayStylePagination(["contractId", "kind"]),
+        getBotsByStatus: relayStylePagination(["status"]),
+        getPlansByStatus: relayStylePagination(["status"]),
+        allLogs: relayStylePagination(["checked", "severity"]),
       },
     },
     TagCategory: { keyFields: ["id"] },
@@ -100,34 +123,55 @@ const cache = new InMemoryCache({
     Contract: {
       keyFields: ["id"],
     },
-    Bot: {
+    Plan: {
+      keyFields: ["id"],
+    },
+    PlanForwardShallowDetails: {
+      keyFields: ["id"],
+    },
+    PlanForwardDetails: {
       keyFields: ["id"],
     },
     BotDetails: {
       keyFields: ["id"],
     },
-    PlanDetails: {
+    BotForwardShallowDetails: {
       keyFields: ["id"],
+    },
+    BotForwardDetails: {
+      keyFields: ["id"],
+    },
+    BotBackwardDetails: {
+      keyFields: ["id"],
+    },
+    BotEdge: {
+      keyFields: ["cursor"],
     },
     Position: {
-      keyFields: ["id"],
-    },
-    MissionShallowDetails: {
       keyFields: ["id"],
     },
     Mission: {
       keyFields: ["id"],
     },
-    TaskShallowDetails: {
+    MissionDetails: {
       keyFields: ["id"],
     },
-    TaskWithActions: {
+    MissionBackwardDetails: {
+      keyFields: ["id"],
+    },
+    MissionForwardDetails: {
+      keyFields: ["id"],
+    },
+    TaskBackwardDetails: {
+      keyFields: ["id"],
+    },
+    TaskForwardDetails: {
       keyFields: ["id"],
     },
     Action: {
       keyFields: ["id"],
     },
-    FollowerAction: {
+    FollowerActionDetails: {
       keyFields: ["id"],
     },
     PnlSnapshotDetails: {
@@ -142,6 +186,12 @@ const cache = new InMemoryCache({
     TradeHistory: {
       keyFields: ["id"],
     },
+    Log: {
+      keyFields: ["id"],
+    },
+    LogsEdge: {
+      keyFields: ["cursor"],
+    },
   },
 });
 
@@ -155,7 +205,7 @@ export const queryClient = new QueryClient();
 const config = getDefaultConfig({
   appName: "LuckyPlan",
   projectId: "aa850d82c6ce67f82647ab0498e00c8a",
-  chains: [mainnet, polygon, optimism, arbitrum, base],
+  chains: [mainnet, polygon, arbitrum, base, apeChain, arbitrumSepolia],
   ssr: true, // If your dApp uses server side rendering (SSR)
 });
 
@@ -174,8 +224,19 @@ export function Providers({ children }: { children: ReactNode }) {
         >
           <ApolloProvider client={apolloClient}>
             <NextUIProvider className="overflow-hidden">
-              <SnackbarProvider autoHideDuration={5000} maxSnack={5}>
-                {children}
+              <SnackbarProvider
+                Components={{
+                  success: SuccessSnackbar,
+                  warning: WarningSnackbar,
+                  info: InfoSnackbar,
+                  error: ErrorSnackbar,
+                  default: DefaultSnackbar,
+                }}
+                autoHideDuration={30000}
+                maxSnack={15}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              >
+                <SubscriptionWrapper>{children}</SubscriptionWrapper>
               </SnackbarProvider>
             </NextUIProvider>
           </ApolloProvider>
@@ -183,4 +244,12 @@ export function Providers({ children }: { children: ReactNode }) {
       </QueryClientProvider>
     </WagmiProvider>
   );
+}
+
+export function SubscriptionWrapper({ children }: { children: ReactNode }) {
+  useSubscribeTask();
+  useSubscribeMission();
+  useSubscribeBot();
+
+  return children;
 }
