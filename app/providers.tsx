@@ -8,7 +8,14 @@ import {
   darkTheme,
 } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
-import { mainnet, polygon, optimism, arbitrum, base } from "wagmi/chains";
+import {
+  mainnet,
+  polygon,
+  arbitrum,
+  base,
+  apeChain,
+  arbitrumSepolia,
+} from "wagmi/chains";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SnackbarProvider } from "notistack";
@@ -38,7 +45,8 @@ import {
   WarningSnackbar,
   InfoSnackbar,
 } from "@/components/snackbars";
-import { useSubscribeBot } from "./_hooks/useAutomation";
+import { useSubscribeBot } from "@/app-hooks/useAutomation";
+import { LOCAL_USER_JWT_KEY } from "@/app-hooks/useUserJWT";
 
 const httpLink = new HttpLink({
   uri: `${process.env.NEXT_PUBLIC_LUCKY_PLAN_GRAPHQL_API}`,
@@ -72,12 +80,13 @@ const splitLink = split(
 
 const authLink = setContext((_, { headers }) => {
   // get the authentication token from local storage if it exists
-  const token = localStorage.getItem("token");
+  const userJWTStr = localStorage.getItem(LOCAL_USER_JWT_KEY);
+
   // return the headers to the context so httpLink can read them
   return {
     headers: {
       ...headers,
-      authorization: token ? `Bearer ${token}` : "",
+      authorization: userJWTStr ? `Bearer ${userJWTStr}` : "",
     },
   };
 });
@@ -196,7 +205,7 @@ export const queryClient = new QueryClient();
 const config = getDefaultConfig({
   appName: "LuckyPlan",
   projectId: "aa850d82c6ce67f82647ab0498e00c8a",
-  chains: [mainnet, polygon, optimism, arbitrum, base],
+  chains: [mainnet, polygon, arbitrum, base, apeChain, arbitrumSepolia],
   ssr: true, // If your dApp uses server side rendering (SSR)
 });
 
