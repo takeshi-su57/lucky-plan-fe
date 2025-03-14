@@ -18,17 +18,17 @@ import type { Selection } from "@nextui-org/react";
 import { Virtuoso } from "react-virtuoso";
 import { Address } from "viem";
 
-import { useGetUsersByTags } from "@/app/_hooks/useUser";
-import { UserTradeHistory } from "@/app-components/UserWidgets/UserTradeHistory";
+import { useGetWalletAccountsByTags } from "@/app-hooks/useWalletAccount";
 import { useGetAllTags } from "@/app-hooks/useTag";
 import { useGetAllContracts } from "@/app-hooks/useContract";
 
 import { shrinkAddress } from "@/utils";
-import { CreateUserModal } from "@/app-components/UserWidgets/CreateUserModal";
+import { WalletAccountTradeHistory } from "./WalletAccountTradeHistory";
+import { CreateWalletAccountModal } from "./CreateWalletAccountModal";
 import { FaPlus } from "react-icons/fa";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export function Users() {
+export function WalletAccounts() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -47,7 +47,7 @@ export function Users() {
 
   const selectedValue = useMemo(() => Array.from(selectedTags), [selectedTags]);
 
-  const allUsers = useGetUsersByTags(selectedValue as string[]);
+  const allUsers = useGetWalletAccountsByTags(selectedValue as string[]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -163,7 +163,7 @@ export function Users() {
               style={{ height: 700 }}
               data={allUsers}
               itemContent={(_, snapshot) => (
-                <UserTradeHistory
+                <WalletAccountTradeHistory
                   address={snapshot.address as Address}
                   contractId={contractId}
                   mode={
@@ -178,7 +178,7 @@ export function Users() {
         </CardBody>
       </Card>
 
-      <CreateUserModal
+      <CreateWalletAccountModal
         isOpen={isOpen}
         onClose={onClose}
         onOpenChange={onOpenChange}

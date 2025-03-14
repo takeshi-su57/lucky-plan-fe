@@ -2,6 +2,10 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type AccessToken {
+  accessToken: String!
+}
+
 type Action {
   args: String!
   blockNumber: Int!
@@ -115,11 +119,6 @@ input CancelOrderAfterTimeoutInput {
 input ChangeContractStatusInput {
   id: Int!
   status: String!
-}
-
-input ChangePasswordInput {
-  newPassword: String!
-  oldPassword: String!
 }
 
 input ChangeUserTagInput {
@@ -247,14 +246,6 @@ input GetFollowerByAddressInput {
   address: String!
 }
 
-input GetTokenInput {
-  password: String!
-}
-
-type GetTokenResponse {
-  accessToken: String!
-}
-
 input GetUserByAddressInput {
   address: String!
 }
@@ -362,8 +353,8 @@ enum MissionStatus {
 
 type Mutation {
   addBotsToPlan(botIds: [Int!]!, planId: Int!): PlanForwardDetails!
-  addTagToUser(input: ChangeUserTagInput!): User!
-  addUser(input: AddUserInput!): User!
+  addTagToWalletAccount(input: ChangeUserTagInput!): WalletAccount!
+  addWalletAccount(input: AddUserInput!): WalletAccount!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
   buildPnlSnapshots(
     dateStr: String!
@@ -373,7 +364,7 @@ type Mutation {
     input: CancelOrderAfterTimeoutInput!
   ): ContractExecutionResult!
   changeContractStatus(input: ChangeContractStatusInput!): Contract!
-  changePassword(input: ChangePasswordInput!): Boolean!
+  changeUserPermission(address: String!, permission: String!): User!
   checkLog(id: Int!): Log!
   closeMission(id: Int!, isForce: Boolean!): Boolean!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
@@ -388,14 +379,18 @@ type Mutation {
   dynamicSnapshotBuild(dateStr: String!): PnlSnapshotInitializedFlag
   endPlan(id: Int!): Boolean!
   generateNewFollower: Follower!
-  getToken(input: GetTokenInput!): GetTokenResponse!
+  getToken(
+    signature: String!
+    timestamp: String!
+    walletAddress: String!
+  ): AccessToken!
   ignoreMission(id: Int!): Boolean!
   initializePnlSnapshot: Boolean!
   liveBot(id: Int!): Boolean!
   pauseSystem: Boolean!
   performTask(id: Int!): Boolean!
   removeStrategy(id: Int!): Strategy!
-  removeTagFromUser(input: ChangeUserTagInput!): User!
+  removeTagFromWalletAccount(input: ChangeUserTagInput!): WalletAccount!
   resumeSystem: Boolean!
   startPlan(id: Int!): Boolean!
   stopBot(id: Int!): Boolean!
@@ -541,6 +536,7 @@ type Query {
   getAllStrategyMetadata: [StrategyMetadata!]!
   getAllTags: [Tag!]!
   getAllUsers: [User!]!
+  getAllWalletAccounts: [WalletAccount!]!
   getBotsByStatus(after: Int, first: Int!, status: BotStatus!): BotConnection!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
   getLogsSeverityCounts: [SeverityCount!]!
@@ -569,10 +565,10 @@ type Query {
     contractIds: [Int!]!
   ): TradeTransactionCount!
   getTrades(address: String!, contractId: Int!): [FollowerTrade!]!
-  getUserByAddress(input: GetUserByAddressInput!): User!
   getUserTransactionCounts(
     inputs: [GetUserTransactionCountsInput!]!
   ): [TradeTransactionCount!]!
+  getWalletAccountByAddress(input: GetUserByAddressInput!): WalletAccount!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
   systemStatus: Boolean!
 }
@@ -747,6 +743,17 @@ input UpdateStrategyMetadataInput {
 }
 
 type User {
+  address: String!
+  permission: UserPermission!
+}
+
+enum UserPermission {
+  Admin
+  Trader
+  Trial
+}
+
+type WalletAccount {
   address: String!
   tags: [Tag!]!
 }

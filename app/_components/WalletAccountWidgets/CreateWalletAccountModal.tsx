@@ -6,20 +6,20 @@ import { StandardModal } from "@/components/modals/StandardModal";
 
 import { Button, Input } from "@nextui-org/react";
 
-import { useAddNewUser } from "@/app/_hooks/useUser";
+import { useAddNewUser } from "@/app-hooks/useWalletAccount";
 import { isAddress } from "viem";
 
-export type CreateUserModalProps = {
+export type CreateWalletAccountModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onOpenChange: (value: boolean) => void;
 };
 
-export function CreateUserModal({
+export function CreateWalletAccountModal({
   isOpen,
   onClose,
   onOpenChange,
-}: CreateUserModalProps) {
+}: CreateWalletAccountModalProps) {
   const mutateByAddUser = useAddNewUser();
 
   const [address, setAddress] = useState("");
