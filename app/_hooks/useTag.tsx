@@ -11,15 +11,18 @@ export const TAG_CATEGORY_INFO_FRAGMENT_DOCUMENT = graphql(`
     id
     category
     description
+    userId
   }
 `);
 
 export const TAG_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment TagInfo on Tag {
+    id
     tag
     description
     color
     categoryId
+    userId
   }
 `);
 

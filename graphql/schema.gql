@@ -35,8 +35,8 @@ type BotBackwardDetails {
   leaderContractId: Int!
   leaderEndedBlock: Int
   leaderStartedBlock: Int
-  plan: Plan
-  planId: Int
+  plan: Plan!
+  planId: Int!
   startedAt: DateTime
   status: BotStatus!
   strategy: Strategy!
@@ -63,7 +63,7 @@ type BotDetails {
   leaderContractId: Int!
   leaderEndedBlock: Int
   leaderStartedBlock: Int
-  planId: Int
+  planId: Int!
   startedAt: DateTime
   status: BotStatus!
   strategy: Strategy!
@@ -91,7 +91,7 @@ type BotForwardDetails {
   leaderEndedBlock: Int
   leaderStartedBlock: Int
   missions: [MissionForwardDetails!]!
-  planId: Int
+  planId: Int!
   startedAt: DateTime
   status: BotStatus!
   strategy: Strategy!
@@ -114,11 +114,6 @@ input CancelOrderAfterTimeoutInput {
   address: String!
   contractId: Int!
   index: Int!
-}
-
-input ChangeContractStatusInput {
-  id: Int!
-  status: String!
 }
 
 input ChangeUserTagInput {
@@ -161,7 +156,7 @@ input CreateBotAndStrategyInput {
   leaderAddress: String!
   leaderCollateralBaseline: Int!
   leaderContractId: Int!
-  planId: Int
+  planId: Int!
   strategy: CreateStrategyInput!
 }
 
@@ -171,15 +166,8 @@ input CreateBotInput {
   leaderAddress: String!
   leaderCollateralBaseline: Int!
   leaderContractId: Int!
-  planId: Int
+  planId: Int!
   strategyId: Int!
-}
-
-input CreateContractInput {
-  address: String!
-  chainId: Int!
-  description: String!
-  lastBlockNumber: Int!
 }
 
 input CreatePlanInput {
@@ -210,6 +198,7 @@ type Follower {
   accountIndex: Int!
   address: String!
   publicKey: String!
+  userId: String!
 }
 
 type FollowerActionDetails {
@@ -227,6 +216,7 @@ type FollowerDetail {
   pnlSnapshots: [PnlSnapshot!]!
   publicKey: String!
   usdcBalance: String
+  userId: String!
 }
 
 type FollowerPendingOrder {
@@ -352,7 +342,6 @@ enum MissionStatus {
 }
 
 type Mutation {
-  addBotsToPlan(botIds: [Int!]!, planId: Int!): PlanForwardDetails!
   addTagToWalletAccount(input: ChangeUserTagInput!): WalletAccount!
   addWalletAccount(input: AddUserInput!): WalletAccount!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
@@ -363,15 +352,12 @@ type Mutation {
   cancelOrderAfterTimeout(
     input: CancelOrderAfterTimeoutInput!
   ): ContractExecutionResult!
-  changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changeUserPermission(address: String!, permission: String!): User!
   checkLog(id: Int!): Log!
   closeMission(id: Int!, isForce: Boolean!): Boolean!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
   createBot(input: CreateBotInput!): BotBackwardDetails!
-  createContract(input: CreateContractInput!): Contract!
   createPlan(createPlanInput: CreatePlanInput!): Plan!
-  createStrategy(input: CreateStrategyInput!): Strategy!
   deleteBot(id: Int!): BotBackwardDetails!
   deleteCategory(id: Int!): TagCategory!
   deletePlan(id: Int!): Int!
@@ -389,17 +375,12 @@ type Mutation {
   liveBot(id: Int!): Boolean!
   pauseSystem: Boolean!
   performTask(id: Int!): Boolean!
-  removeStrategy(id: Int!): Strategy!
   removeTagFromWalletAccount(input: ChangeUserTagInput!): WalletAccount!
   resumeSystem: Boolean!
   startPlan(id: Int!): Boolean!
   stopBot(id: Int!): Boolean!
   stopTask(id: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
-  updateStrategyMetadata(
-    input: UpdateStrategyMetadataInput!
-    key: String!
-  ): StrategyMetadata!
   upsertCategory(input: TagCategoryInput!): TagCategory!
   upsertTag(input: TagInput!): Tag!
   withdrawAllETH(input: WithdrawAllInput!): Boolean!
@@ -415,6 +396,7 @@ type Plan {
   startedAt: DateTime
   status: PlanStatus!
   title: String!
+  userId: String!
 }
 
 type PlanConnection {
@@ -437,6 +419,7 @@ type PlanForwardDetails {
   startedAt: DateTime
   status: PlanStatus!
   title: String!
+  userId: String!
 }
 
 type PlanPageInfo {
@@ -605,7 +588,6 @@ type StrategyMetadata {
 type Subscription {
   botCreated: [BotBackwardDetails!]!
   botUpdated: [BotBackwardDetails!]!
-  followerDetailsUpdated(contractId: Int!): [FollowerDetail!]!
   missionCreated: [MissionBackwardDetails!]!
   missionUpdated: [MissionBackwardDetails!]!
   newLog(checked: Boolean!, severity: LogSeverity): Log!
@@ -619,13 +601,16 @@ type Tag {
   categoryId: Int
   color: String!
   description: String!
+  id: Int!
   tag: String!
+  userId: String!
 }
 
 type TagCategory {
   category: String!
   description: String!
   id: Int!
+  userId: String!
 }
 
 input TagCategoryInput {
@@ -737,11 +722,6 @@ input UpdatePlanInput {
   title: String
 }
 
-input UpdateStrategyMetadataInput {
-  description: String
-  title: String
-}
-
 type User {
   address: String!
   permission: UserPermission!
@@ -755,7 +735,9 @@ enum UserPermission {
 
 type WalletAccount {
   address: String!
+  id: Int!
   tags: [Tag!]!
+  userId: String!
 }
 
 input WithdrawAllInput {

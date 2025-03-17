@@ -86,7 +86,7 @@ const authLink = setContext((_, { headers }) => {
   return {
     headers: {
       ...headers,
-      authorization: userJWTStr ? `Bearer ${userJWTStr}` : "",
+      authorization: userJWTStr ? `Bearer ${JSON.parse(userJWTStr)}` : "",
     },
   };
 });

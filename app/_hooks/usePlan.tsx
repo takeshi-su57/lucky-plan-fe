@@ -29,6 +29,7 @@ export const PLAN_INFO_FRAGMENT_DOCUMENT = graphql(`
     scheduledEnd
     startedAt
     endedAt
+    userId
   }
 `);
 
@@ -42,6 +43,7 @@ export const PLAN_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     scheduledEnd
     startedAt
     endedAt
+    userId
     bots {
       ...BotForwardDetailsInfo
     }
@@ -104,14 +106,6 @@ export const START_PLAN_DOCUMENT = graphql(`
 export const END_PLAN_DOCUMENT = graphql(`
   mutation endPlan($id: Int!) {
     endPlan(id: $id)
-  }
-`);
-
-export const ADD_BOTS_TO_PLAN_DOCUMENT = graphql(`
-  mutation addBotsToPlan($botIds: [Int!]!, $planId: Int!) {
-    addBotsToPlan(botIds: $botIds, planId: $planId) {
-      ...PlanForwardDetailsInfo
-    }
   }
 `);
 
@@ -335,6 +329,7 @@ export function useSubscribePlan() {
           startedAt: planInfo.startedAt,
           status: planInfo.status,
           title: planInfo.title,
+          userId: planInfo.userId,
           bots: [],
         },
       });
@@ -512,41 +507,4 @@ export function useEndPlan() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return { endPlan, loading };
-}
-
-export function useAddBotsToPlan() {
-  const [addBotsToPlan, { data: newData, error, loading }] = useMutation(
-    ADD_BOTS_TO_PLAN_DOCUMENT,
-  );
-
-  const client = useApolloClient();
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (newData && !error) {
-      enqueueSnackbar("Success at adding bots to plan!", {
-        variant: "success",
-      });
-
-      const planForwardDetails = getPlanForwardDetails(newData.addBotsToPlan);
-
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: "PlanForwardDetails",
-          id: planForwardDetails.id,
-        }),
-        fragment: PLAN_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
-        fragmentName: "PlanForwardDetailsInfo",
-        data: planForwardDetails,
-      });
-    }
-
-    if (newData && error) {
-      enqueueSnackbar("Error at adding bots to plan!", {
-        variant: "error",
-      });
-    }
-  }, [client.cache, newData, error, enqueueSnackbar]);
-
-  return { addBotsToPlan, loading };
 }

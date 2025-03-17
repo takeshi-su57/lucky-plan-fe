@@ -17,16 +17,14 @@ import { PersonalTradeHistory, VirtualBotParams } from "@/types";
 import { PlanCreationOverview } from "./PlanCreationOverview";
 import { transformHistories } from "@/utils/historiesChart";
 
-import { BOT_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT } from "@/app-hooks/useAutomation";
 import { PLAN_INFO_FRAGMENT_DOCUMENT } from "@/app-hooks/usePlan";
 
 import { useBatchCreateBots } from "@/app-hooks/useAutomation";
-import { useAddBotsToPlan, useCreatePlan } from "@/app-hooks/usePlan";
+import { useCreatePlan } from "@/app-hooks/usePlan";
 
 export function PlanCreationPanel() {
   const { createPlan, loading: createPlanLoading } = useCreatePlan();
   const { batchCreateBots, loading: createBotsLoading } = useBatchCreateBots();
-  const { addBotsToPlan, loading: addBotsLoading } = useAddBotsToPlan();
 
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -70,9 +68,10 @@ export function PlanCreationPanel() {
         planData.createPlan,
       ).id;
 
-      const { data } = await batchCreateBots({
+      await batchCreateBots({
         variables: {
           input: virtualBotParams.map((item) => ({
+            planId: +planId,
             followerContractId: item.followerContract!.contractId,
             leaderAddress: item.leaderAddress,
             leaderCollateralBaseline: item.leaderCollateralBaseline,
@@ -91,24 +90,6 @@ export function PlanCreationPanel() {
           })),
         },
       });
-
-      if (!data || !data.batchCreateBots) {
-        return;
-      }
-
-      const newBotIds = data?.batchCreateBots?.map(
-        (bot) =>
-          getFragmentData(BOT_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT, bot).id,
-      );
-
-      if (newBotIds) {
-        await addBotsToPlan({
-          variables: {
-            botIds: newBotIds,
-            planId: +planId,
-          },
-        });
-      }
     }
   };
 
@@ -247,7 +228,7 @@ export function PlanCreationPanel() {
       description: `Create the plan.`,
       content: (
         <SaveStep
-          loading={createBotsLoading || addBotsLoading || createPlanLoading}
+          loading={createBotsLoading || createPlanLoading}
           onPrevStep={() => setCurrentStep(4)}
           onReset={handleInitialize}
           onSave={handleSaveVirtualBots}

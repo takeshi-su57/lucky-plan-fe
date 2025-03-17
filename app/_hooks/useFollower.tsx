@@ -5,7 +5,6 @@ import {
   useLazyQuery,
   useMutation,
   useQuery,
-  useSubscription,
 } from "@apollo/client";
 
 import { getFragmentData, graphql } from "@/gql/index";
@@ -18,6 +17,7 @@ import { PNL_SNAPSHOT_INFO_FRAGMENT_DOCUMENT } from "./useHistory";
 
 export const FOLLOWER_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment FollowerInfo on Follower {
+    userId
     address
     accountIndex
     publicKey
@@ -29,6 +29,7 @@ export const FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     address
     accountIndex
     publicKey
+    userId
     ethBalance
     usdcBalance
     contractId
@@ -133,14 +134,6 @@ export const WITHDRAW_ALL_ETH_DOCUMENT = graphql(`
   }
 `);
 
-export const FOLLOWER_DETAILS_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
-  subscription followerDetailsUpdated($contractId: Int!) {
-    followerDetailsUpdated(contractId: $contractId) {
-      ...FollowerDetailInfo
-    }
-  }
-`);
-
 export function useGetAllFollowers() {
   const { data } = useQuery(GET_ALL_FOLLOWERS_DOCUMENT, {
     variables: {},
@@ -185,90 +178,6 @@ export function useGetAllFollowerDetails(contractId: string | null) {
       })
       .sort((a, b) => a.accountIndex - b.accountIndex);
   }, [data]);
-}
-
-export function useSubscribeFollowerDetailUpdated(contractId: string | null) {
-  const { data, error } = useSubscription(
-    FOLLOWER_DETAILS_UPDATED_SUBSCRIPTION_DOCUMENT,
-    {
-      variables:
-        contractId !== null
-          ? {
-              contractId: +contractId,
-            }
-          : undefined,
-    },
-  );
-
-  const client = useApolloClient();
-
-  useEffect(() => {
-    if (data && !error) {
-      const followerDetailInfos = data.followerDetailsUpdated.map((follower) =>
-        getFragmentData(FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT, follower),
-      );
-
-      followerDetailInfos.forEach((follower) => {
-        const id = client.cache.identify({
-          __typename: follower.__typename,
-          address: follower.address,
-          contractId: follower.contractId,
-        });
-
-        const fragment = client.cache.readFragment({
-          id,
-          fragment: FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT,
-          fragmentName: "FollowerDetailInfo",
-        });
-
-        if (fragment) {
-          client.cache.writeFragment({
-            id,
-            fragment: FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT,
-            fragmentName: "FollowerDetailInfo",
-            data: follower,
-          });
-        } else {
-          client.cache.updateQuery(
-            {
-              query: GET_ALL_FOLLOWER_DETAILS_DOCUMENT,
-              variables: {
-                contractId: follower.contractId,
-              },
-            },
-            (data) => {
-              if (data && data.getAllFollowerDetails.length > 0) {
-                const alreadyExists = data.getAllFollowerDetails.filter(
-                  (item) =>
-                    follower.address ===
-                    getFragmentData(
-                      FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT,
-                      item,
-                    ).address,
-                );
-
-                if (alreadyExists.length > 0) {
-                  return data;
-                }
-
-                return {
-                  ...data,
-                  getAllFollowerDetails: [
-                    ...data.getAllFollowerDetails,
-                    follower,
-                  ],
-                };
-              } else {
-                return {
-                  getAllFollowerDetails: [follower],
-                };
-              }
-            },
-          );
-        }
-      });
-    }
-  }, [client.cache, data, error]);
 }
 
 export function useGetPendingOrders(address: string, contractId: number) {

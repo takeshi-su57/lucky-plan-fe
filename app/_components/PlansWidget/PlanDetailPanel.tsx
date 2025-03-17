@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useDisclosure, Button, Chip, Tab, Tabs } from "@nextui-org/react";
+import { Button, Chip, Tab, Tabs } from "@nextui-org/react";
 import dayjs from "dayjs";
 import { useSearchParams, useRouter } from "next/navigation";
 import { PlanStatus } from "@/graphql/gql/graphql";
@@ -16,8 +16,7 @@ import { chipColorsByPlanStatus } from "./PlanCard";
 
 import { PlanAutomations } from "./PlanAutomations";
 import { RealResultView } from "./RealResultView";
-import { FaPlus } from "react-icons/fa";
-import { CreateAutomationModal } from "../AutomationWidgets/CreateAutomationModal";
+
 import { getSortedPartialHistories } from "@/utils/historiesChart";
 
 type TabType = "overview" | "automations";
@@ -34,8 +33,6 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
   const { endPlan, loading: endPlanLoading } = useEndPlan();
 
   const plan = useGetPlanById(+planId);
-
-  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   const [selectedBotIds, setSelectedBotIds] = useState<Record<number, boolean>>(
     {},
@@ -216,10 +213,6 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
             <Tab key="overview" title="Overview" />
             <Tab key="automations" title="Automations" />
           </Tabs>
-
-          <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>
-            <FaPlus />
-          </Button>
         </div>
       </div>
 
@@ -237,13 +230,6 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
           onToggleChart={handleChartToggle}
         />
       )}
-
-      <CreateAutomationModal
-        planId={null}
-        isOpen={isOpen}
-        onClose={onClose}
-        onOpenChange={onOpenChange}
-      />
     </div>
   );
 }
