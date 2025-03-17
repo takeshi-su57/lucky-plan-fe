@@ -1,0 +1,705 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import {
+  Autocomplete,
+  AutocompleteItem,
+  Button,
+  DropdownTrigger,
+  Dropdown,
+  DropdownMenu,
+  DropdownItem,
+  DateRangePicker,
+  Switch,
+} from "@nextui-org/react";
+import type { Selection } from "@nextui-org/react";
+import { Address } from "viem";
+import type { RangeValue } from "@react-types/shared";
+import type { DateValue } from "@react-types/datepicker";
+import { now } from "@internationalized/date";
+import { Virtuoso } from "react-virtuoso";
+
+import { getServerTimezone } from "@/utils";
+import { StandardModal } from "@/components/modals/StandardModal";
+
+import {
+  useGetAllContracts,
+  useGetAllTradePairs,
+} from "@/app-hooks/useContract";
+import { useBatchCreateBots } from "@/app-hooks/useAutomation";
+import { useGetWalletAccountsByTags } from "@/app/_hooks/useWalletAccount";
+import { useGetAllTags } from "@/app-hooks/useTag";
+import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHistories";
+
+import { shrinkAddress } from "@/utils";
+import { NumericInput } from "@/components/inputs/NumericInput";
+
+import LineChart from "@/components/charts/LineChart";
+import {
+  getHistoriesChartData,
+  transformHistories,
+} from "@/utils/historiesChart";
+import { PairChip } from "../LeaderboardWidgets/PairChip";
+
+export type CreateAutomationModalProps = {
+  planId: number;
+  isOpen: boolean;
+  onClose: () => void;
+  onOpenChange: (value: boolean) => void;
+};
+
+export function CreateAutomationModal({
+  planId,
+  isOpen,
+  onClose,
+  onOpenChange,
+}: CreateAutomationModalProps) {
+  const { batchCreateBots, loading: createBotsLoading } = useBatchCreateBots();
+
+  const allTags = useGetAllTags();
+  const allContracts = useGetAllContracts();
+
+  const [selectedTags, setSelectedTags] = useState<Selection>(
+    new Set(["LEADER"]),
+  );
+  const [showAllActivity, setShowAllActivity] = useState(false);
+
+  const selectedValue = useMemo(() => Array.from(selectedTags), [selectedTags]);
+  const allLeaders = useGetWalletAccountsByTags(selectedValue as string[]);
+
+  const [leaderAddress, setLeaderAddress] = useState<string | null>(null);
+  const [leaderContractId, setLeaderContractId] = useState<string | null>(null);
+  const [followerContractId, setFollowerContractId] = useState<string | null>(
+    null,
+  );
+  const [leaderCollateralBaseline, setLeaderCollateralBaseline] =
+    useState<string>("");
+
+  const [maxCollateral, setMaxCollateral] = useState("");
+  const [minCollateral, setMinCollateral] = useState("");
+  const [collateralBaseline, setCollateralBaseline] = useState("");
+  const [maxLeverage, setMaxLeverage] = useState("200");
+  const [minLeverage, setMinLeverage] = useState("1.1");
+
+  const [range, setRange] = useState<RangeValue<DateValue> | null>({
+    start: now(getServerTimezone()).subtract({ months: 3 }),
+    end: now(getServerTimezone()),
+  });
+
+  const followerAvailableTradePairs = useGetAllTradePairs(
+    followerContractId ? +followerContractId : undefined,
+  );
+
+  const leaderContract = leaderContractId
+    ? allContracts.find((item) => item.id === +leaderContractId)
+    : null;
+
+  const { data: originalHistories } = useGetPersonalTradeHistories(
+    leaderContract?.backendUrl || null,
+    leaderAddress || null,
+  );
+
+  let maxCollateralHelper = "";
+  let minCollateralHelper = "";
+  let collateralBaselineHelper = "";
+  let maxLeverageHelper = "";
+  let minLeverageHelper = "";
+
+  if (Number.isNaN(+maxCollateral)) {
+    maxCollateralHelper = "Invalid max collateral";
+  } else {
+    if (+maxCollateral < 5) {
+      maxCollateralHelper = "Too small max collateral";
+    }
+  }
+
+  if (Number.isNaN(+minCollateral)) {
+    minCollateralHelper = "Invalid min collateral";
+  } else {
+    if (+minCollateral > +maxCollateral) {
+      minCollateralHelper = "Too big min collateral";
+    }
+
+    if (+minCollateral < 5) {
+      minCollateralHelper = "Too small min collateral";
+    }
+  }
+
+  if (Number.isNaN(+collateralBaseline)) {
+    collateralBaselineHelper = "Invalid collateral baseline";
+  } else {
+    if (+collateralBaseline > +maxCollateral) {
+      collateralBaselineHelper = "Too big collateral baseline";
+    }
+
+    if (+collateralBaseline < +minCollateral) {
+      collateralBaselineHelper = "Too small collateral baseline";
+    }
+  }
+
+  if (Number.isNaN(+maxLeverage)) {
+    maxLeverageHelper = "Invalid max leverage";
+  } else {
+    if (+maxLeverage > 200) {
+      maxLeverageHelper = "Too big max leverage";
+    }
+
+    if (+maxLeverage < 1.1) {
+      maxLeverageHelper = "Too small max leverage";
+    }
+  }
+
+  if (Number.isNaN(+minLeverage)) {
+    minLeverageHelper = "Invalid min leverage";
+  } else {
+    if (+minLeverage > +maxLeverage) {
+      minLeverageHelper = "Too big min leverage";
+    }
+
+    if (+minLeverage < 1.1) {
+      minLeverageHelper = "Too small min leverage";
+    }
+  }
+
+  const isDisabled =
+    !leaderAddress ||
+    !leaderContractId ||
+    !followerContractId ||
+    !leaderCollateralBaseline;
+
+  const isDisabledStrategy =
+    maxCollateralHelper.trim() !== "" ||
+    minCollateralHelper.trim() !== "" ||
+    maxLeverageHelper.trim() !== "" ||
+    minLeverageHelper.trim() !== "";
+
+  const handleConfirm = () => {
+    if (isDisabled) {
+      return;
+    }
+
+    if (
+      maxCollateral.trim() === "" ||
+      minCollateral.trim() === "" ||
+      collateralBaseline.trim() === "" ||
+      maxLeverage.trim() === "" ||
+      minLeverage.trim() === ""
+    ) {
+      return;
+    }
+
+    batchCreateBots({
+      variables: {
+        input: [
+          {
+            leaderAddress,
+            planId,
+            leaderContractId: +leaderContractId,
+            followerContractId: +followerContractId,
+            leaderCollateralBaseline: Math.floor(+leaderCollateralBaseline),
+            strategy: {
+              strategyKey: "scaleCopy",
+              ratio: +100,
+              lifeTime: 365 * 24 * 60,
+              maxCollateral: +maxCollateral,
+              minCollateral: +minCollateral,
+              collateralBaseline: +collateralBaseline,
+              maxLeverage: Math.floor(+maxLeverage * 1000),
+              minLeverage: Math.floor(+minLeverage * 1000),
+              params: "{}",
+            },
+          },
+        ],
+      },
+    });
+
+    setLeaderAddress(null);
+    setLeaderCollateralBaseline("");
+
+    onClose();
+  };
+
+  const {
+    tradePairs: originalTradePairs,
+    pnlChartData: originalPNLChartData,
+    inOutChartData: originalInOutChartData,
+    inChartData: originalInChartData,
+    outChartData: originalOutChartData,
+    minIn: originalMinIn,
+    maxIn: originalMaxIn,
+    sumIn: originalSumIn,
+    countIn: originalCountIn,
+  } = useMemo(
+    () =>
+      getHistoriesChartData(originalHistories || [], {
+        mode: showAllActivity
+          ? "show_all_activity"
+          : "show_only_valid_activity",
+        range: range
+          ? {
+              from: range.start.toDate(getServerTimezone()),
+              to: range.end.toDate(getServerTimezone()),
+            }
+          : undefined,
+      }),
+    [originalHistories, range, showAllActivity],
+  );
+
+  const {
+    tradePairs: calculatedTradePairs,
+    pnlChartData: calculatedPNLChartData,
+    inOutChartData: calculatedInOutChartData,
+    inChartData: calculatedInChartData,
+    outChartData: calculatedOutChartData,
+    minIn: calculatedMinIn,
+
+    maxIn: calculatedMaxIn,
+    sumIn: calculatedSumIn,
+    countIn: calculatedCountIn,
+  } = useMemo(() => {
+    const baseline = Math.floor(+collateralBaseline);
+
+    if (!originalHistories || Number.isNaN(baseline)) {
+      return {
+        pnlChartData: [],
+        inOutChartData: [],
+        inChartData: [],
+        outChartData: [],
+        minIn: 0,
+        maxIn: 0,
+        sumIn: 0,
+        countIn: 0,
+        tradePairs: [],
+      };
+    }
+
+    const transformedHistories = transformHistories(
+      originalHistories,
+      baseline,
+      {
+        strategyKey: "scaleCopy",
+        ratio: 100,
+        collateralBaseline: +collateralBaseline,
+      },
+    );
+
+    const availablePairNames = followerAvailableTradePairs.map((item) =>
+      `${item.from}/${item.to}`.toLowerCase(),
+    );
+
+    return getHistoriesChartData(transformedHistories, {
+      mode: showAllActivity ? "show_all_activity" : "show_only_valid_activity",
+      supportedPairs: availablePairNames,
+      range: range
+        ? {
+            from: range.start.toDate(getServerTimezone()),
+            to: range.end.toDate(getServerTimezone()),
+          }
+        : undefined,
+    });
+  }, [
+    collateralBaseline,
+    originalHistories,
+    followerAvailableTradePairs,
+    showAllActivity,
+    range,
+  ]);
+
+  let rangeHelper = "";
+
+  if (range === null) {
+    rangeHelper = "Please select a valid date range";
+  }
+
+  return (
+    <StandardModal
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      backdrop="blur"
+      classNames={{ base: "max-w-[1100px]" }}
+    >
+      <div className="flex w-full flex-col gap-8">
+        <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          Create New Automation
+        </h1>
+
+        <div className="flex w-full gap-8">
+          <div className="flex w-[200px] flex-col gap-8">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex w-full items-center justify-between gap-2">
+                <span className="text-xs text-neutral-400">Filter:</span>
+
+                <div>
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <Button
+                        className="capitalize"
+                        size="sm"
+                        variant="bordered"
+                      >
+                        {selectedValue.length > 0
+                          ? selectedValue
+                              .filter((item) => item.toString().trim() !== "")
+                              .join(", ")
+                          : "Select Tags"}
+                      </Button>
+                    </DropdownTrigger>
+
+                    <DropdownMenu
+                      closeOnSelect={false}
+                      selectedKeys={selectedTags}
+                      selectionMode="multiple"
+                      variant="flat"
+                      onSelectionChange={setSelectedTags}
+                    >
+                      {allTags.map((tag) => (
+                        <DropdownItem key={tag.tag}>
+                          <div className="flex items-center gap-2">
+                            {tag.tag}
+                            <span
+                              className="h-5 w-10"
+                              style={{ background: tag.color }}
+                            />
+                          </div>
+                        </DropdownItem>
+                      ))}
+                    </DropdownMenu>
+                  </Dropdown>
+                </div>
+              </div>
+
+              <Autocomplete
+                label="Leader"
+                variant="underlined"
+                defaultItems={allLeaders}
+                placeholder="Search leader"
+                selectedKey={leaderAddress}
+                onSelectionChange={(key) =>
+                  setLeaderAddress(key as string | null)
+                }
+              >
+                {(item) => (
+                  <AutocompleteItem
+                    className="font-mono"
+                    key={item.address}
+                    textValue={shrinkAddress(item.address as Address)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>{shrinkAddress(item.address as Address)}</span>
+                    </div>
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
+
+              <Autocomplete
+                label="Leader Contract"
+                variant="underlined"
+                defaultItems={allContracts}
+                placeholder="Search contract"
+                selectedKey={leaderContractId}
+                onSelectionChange={(key) =>
+                  setLeaderContractId(key as string | null)
+                }
+              >
+                {(item) => (
+                  <AutocompleteItem
+                    key={item.id}
+                    className="font-mono"
+                    textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
+                  >
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <span className="text-small">
+                          Chain: {item.chainId}
+                        </span>
+                        <span className="text-small">
+                          {item.isTestnet ? "(Testnet)" : ""}
+                        </span>
+                      </div>
+                      <span className="text-small">
+                        Contract: {shrinkAddress(item.address as Address)}
+                      </span>
+                      <span className="text-tiny text-default-400">
+                        {item.description}
+                      </span>
+                    </div>
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
+
+              <Autocomplete
+                label="Follower Contract"
+                variant="underlined"
+                // hide ape contract as a follower contract
+                defaultItems={allContracts.filter(
+                  (item) => item.chainId !== 33139,
+                )}
+                placeholder="Search contract"
+                selectedKey={followerContractId}
+                onSelectionChange={(key) =>
+                  setFollowerContractId(key as string | null)
+                }
+              >
+                {(item) => (
+                  <AutocompleteItem
+                    key={item.id}
+                    className="font-mono"
+                    textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
+                  >
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <span className="text-small">
+                          Chain: {item.chainId}
+                        </span>
+                        <span className="text-small">
+                          {item.isTestnet ? "(Testnet)" : ""}
+                        </span>
+                      </div>
+                      <span className="text-small">
+                        Contract: {shrinkAddress(item.address as Address)}
+                      </span>
+                      <span className="text-tiny text-default-400">
+                        {item.description}
+                      </span>
+                    </div>
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
+
+              <NumericInput
+                amount={leaderCollateralBaseline}
+                onChange={setLeaderCollateralBaseline}
+                label="Leader Collateral Baseline"
+              />
+
+              <NumericInput
+                amount={maxCollateral}
+                onChange={setMaxCollateral}
+                label="Max Collateral"
+                errorMessage={maxCollateralHelper}
+                isInvalid={maxCollateralHelper.trim() !== ""}
+              />
+
+              <NumericInput
+                amount={minCollateral}
+                onChange={setMinCollateral}
+                label="Min Collateral"
+                isDisabled={maxCollateralHelper.trim() !== ""}
+                errorMessage={minCollateralHelper}
+                isInvalid={minCollateralHelper.trim() !== ""}
+              />
+
+              <NumericInput
+                amount={collateralBaseline}
+                onChange={setCollateralBaseline}
+                label="Collateral Baseline"
+                isDisabled={minCollateralHelper.trim() !== ""}
+                errorMessage={collateralBaselineHelper}
+                isInvalid={collateralBaselineHelper.trim() !== ""}
+              />
+
+              <NumericInput
+                amount={maxLeverage}
+                onChange={setMaxLeverage}
+                label="Max Leverage"
+                errorMessage={maxLeverageHelper}
+                isInvalid={maxLeverageHelper.trim() !== ""}
+              />
+
+              <NumericInput
+                amount={minLeverage}
+                onChange={setMinLeverage}
+                label="Min Leverage"
+                isDisabled={maxLeverageHelper.trim() !== ""}
+                errorMessage={minLeverageHelper}
+                isInvalid={minLeverageHelper.trim() !== ""}
+              />
+            </div>
+
+            <Button
+              onClick={handleConfirm}
+              color="primary"
+              isDisabled={isDisabled || isDisabledStrategy || createBotsLoading}
+              isLoading={createBotsLoading}
+            >
+              Save
+            </Button>
+          </div>
+
+          <div className="flex flex-1 flex-col gap-6">
+            <div className="flex items-center justify-between">
+              <DateRangePicker
+                label="Back Test Duration"
+                visibleMonths={2}
+                value={range}
+                onChange={setRange}
+                maxValue={now(getServerTimezone())}
+                errorMessage={rangeHelper}
+                className="w-fit"
+              />
+
+              <Switch
+                isSelected={showAllActivity}
+                onValueChange={setShowAllActivity}
+                size="sm"
+              >
+                {showAllActivity
+                  ? "Show All Activities"
+                  : "Show Valid Activities"}
+              </Switch>
+            </div>
+
+            {originalTradePairs.length > 0 && (
+              <span className="text-xl font-bold">
+                Leader - {originalTradePairs.length} Pairs
+              </span>
+            )}
+
+            {leaderContractId && (
+              <Virtuoso
+                style={{ height: 55, width: 800, overflowY: "hidden" }}
+                data={originalTradePairs}
+                horizontalDirection
+                itemContent={(_, data) => (
+                  <div className="mr-4">
+                    <PairChip
+                      key={data[0]}
+                      contractId={+leaderContractId}
+                      pairName={data[0]}
+                      count={data[1]}
+                    />
+                  </div>
+                )}
+              />
+            )}
+
+            {calculatedTradePairs.length > 0 && (
+              <span className="text-xl font-bold">
+                Follower - {calculatedTradePairs.length} Pairs
+              </span>
+            )}
+
+            {followerContractId && (
+              <Virtuoso
+                style={{ height: 55, width: 800, overflowY: "hidden" }}
+                data={calculatedTradePairs}
+                horizontalDirection
+                itemContent={(_, data) => (
+                  <div className="mr-4">
+                    <PairChip
+                      key={data[0]}
+                      contractId={+followerContractId}
+                      pairName={data[0]}
+                      count={data[1]}
+                    />
+                  </div>
+                )}
+              />
+            )}
+
+            <div className="flex w-full gap-6">
+              <div className="flex flex-1 flex-col gap-4">
+                <span className="text-xl font-bold">Original</span>
+
+                <div className="flex flex-col gap-4 text-xs text-neutral-400">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="flex-1">
+                      Min In: {originalMinIn.toFixed(2)}
+                    </span>
+                    <span className="flex-1">
+                      Max In: {originalMaxIn.toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="flex-1">
+                      Avg In:{" "}
+                      {(originalCountIn > 0
+                        ? originalSumIn / originalCountIn
+                        : 0
+                      ).toFixed(2)}
+                    </span>
+                    <span className="flex-1">Count In: {originalCountIn}</span>
+                  </div>
+                </div>
+
+                <LineChart
+                  title="PNL"
+                  data={originalPNLChartData}
+                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+                />
+                <LineChart
+                  title="In/Out"
+                  data={originalInOutChartData}
+                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+                />
+                <LineChart
+                  title="Out"
+                  data={originalOutChartData}
+                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+                />
+                <LineChart
+                  title="In"
+                  data={originalInChartData}
+                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+                />
+              </div>
+
+              <div className="flex flex-1 flex-col gap-4">
+                <span className="text-xl font-bold">Calculated</span>
+
+                <div className="flex flex-col gap-4 text-xs text-neutral-400">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="flex-1">
+                      Min In: {calculatedMinIn.toFixed(2)}
+                    </span>
+                    <span className="flex-1">
+                      Max In: {calculatedMaxIn.toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="flex-1">
+                      Avg In:{" "}
+                      {(calculatedCountIn > 0
+                        ? calculatedSumIn / calculatedCountIn
+                        : 0
+                      ).toFixed(2)}
+                    </span>
+                    <span className="flex-1">
+                      Count In: {calculatedCountIn}
+                    </span>
+                  </div>
+                </div>
+
+                <LineChart
+                  title="PNL"
+                  data={calculatedPNLChartData}
+                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+                />
+
+                <LineChart
+                  title="In/Out"
+                  data={calculatedInOutChartData}
+                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+                />
+
+                <LineChart
+                  title="Out"
+                  data={calculatedOutChartData}
+                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+                />
+
+                <LineChart
+                  title="In"
+                  data={calculatedInChartData}
+                  className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </StandardModal>
+  );
+}

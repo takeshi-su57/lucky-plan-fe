@@ -11,7 +11,8 @@ import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 import {
   useGetPnlSnapshotInitializedFlag,
   useBuildPnlSnapshots,
-} from "@/app/_hooks/useHistory";
+  useInitializePnlSnapshot,
+} from "@/app-hooks/useHistory";
 
 const columns: TableColumnProps[] = [
   {
@@ -28,6 +29,8 @@ export function PnlSnapshotPanel() {
   const { data } = useGetPnlSnapshotInitializedFlag();
   const { buildPnlSnapshots, loading: buildPnlSnapshotsLoading } =
     useBuildPnlSnapshots();
+  const { initializePnlSnapshot, loading: initializePnlSnapshotLoading } =
+    useInitializePnlSnapshot();
 
   const [selectedDate, setSelectedDate] = useState<DateValue | null>(
     parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
@@ -43,6 +46,18 @@ export function PnlSnapshotPanel() {
         dateStr: dayjs(selectedDate.toDate(getServerTimezone())).format(
           "YYYY-MM-DD",
         ),
+      },
+    });
+  };
+
+  const handleInitializePnlSnapshot = () => {
+    if (!selectedDate) {
+      return;
+    }
+
+    initializePnlSnapshot({
+      variables: {
+        beginingDate: selectedDate.toDate(getServerTimezone()),
       },
     });
   };
@@ -99,9 +114,22 @@ export function PnlSnapshotPanel() {
             onClick={handleForceBuildPnlSnapshots}
             isLoading={buildPnlSnapshotsLoading}
             color="primary"
-            isDisabled={buildPnlSnapshotsLoading}
+            isDisabled={
+              buildPnlSnapshotsLoading || initializePnlSnapshotLoading
+            }
           >
             {exists ? "Re-Run" : "Build"}
+          </Button>
+
+          <Button
+            onClick={handleInitializePnlSnapshot}
+            isLoading={initializePnlSnapshotLoading}
+            color="primary"
+            isDisabled={
+              buildPnlSnapshotsLoading || initializePnlSnapshotLoading
+            }
+          >
+            Sequence Initialization
           </Button>
         </div>
 

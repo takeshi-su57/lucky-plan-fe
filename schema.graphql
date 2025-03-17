@@ -364,7 +364,7 @@ type Mutation {
   generateNewFollower: Follower!
   getToken(signature: String!, timestamp: String!, walletAddress: String!): AccessToken!
   ignoreMission(id: Int!): Boolean!
-  initializePnlSnapshot: Boolean!
+  initializePnlSnapshot(beginingDate: DateTime!): Boolean!
   liveBot(id: Int!): Boolean!
   pauseSystem: Boolean!
   performTask(id: Int!): Boolean!

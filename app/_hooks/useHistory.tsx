@@ -177,6 +177,12 @@ export const DYNAMIC_SNAPSHOT_BUILD_DOCUMENT = graphql(`
   }
 `);
 
+export const INITIALIZE_PNL_SNAPSHOT_DOCUMENT = graphql(`
+  mutation initializePnlSnapshot($beginingDate: DateTime!) {
+    initializePnlSnapshot(beginingDate: $beginingDate)
+  }
+`);
+
 function getPersonalTradeHistory(history: TradeHistory): PersonalTradeHistory {
   return {
     action: history.action as unknown as TradeActionType,
@@ -435,4 +441,27 @@ export function useBuildPnlSnapshots() {
   }, [data, error, enqueueSnackbar, client]);
 
   return { buildPnlSnapshots, loading };
+}
+
+export function useInitializePnlSnapshot() {
+  const [initializePnlSnapshot, { data, error, loading }] = useMutation(
+    INITIALIZE_PNL_SNAPSHOT_DOCUMENT,
+  );
+
+  const { refetch } = useGetPnlSnapshotInitializedFlag();
+
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data?.initializePnlSnapshot && !error) {
+      enqueueSnackbar("Success at initializing PNL snapshots!", {
+        variant: "success",
+      });
+
+      refetch();
+    }
+  }, [data, error, enqueueSnackbar, client, refetch]);
+
+  return { initializePnlSnapshot, loading };
 }

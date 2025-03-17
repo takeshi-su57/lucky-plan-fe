@@ -54,6 +54,7 @@ const documents = {
     "\n  query isPnlSnapshotInitialized($dateStr: String!) {\n    isPnlSnapshotInitialized(dateStr: $dateStr) {\n      id\n      dateStr\n      isInit\n    }\n  }\n": types.IsPnlSnapshotInitializedDocument,
     "\n  mutation buildPnlSnapshots($dateStr: String!, $isForceBuild: Boolean!) {\n    buildPnlSnapshots(dateStr: $dateStr, isForceBuild: $isForceBuild) {\n      id\n      dateStr\n      isInit\n    }\n  }\n": types.BuildPnlSnapshotsDocument,
     "\n  mutation dynamicSnapshotBuild($dateStr: String!) {\n    dynamicSnapshotBuild(dateStr: $dateStr) {\n      id\n      dateStr\n      isInit\n    }\n  }\n": types.DynamicSnapshotBuildDocument,
+    "\n  mutation initializePnlSnapshot($beginingDate: DateTime!) {\n    initializePnlSnapshot(beginingDate: $beginingDate)\n  }\n": types.InitializePnlSnapshotDocument,
     "\n  fragment LogInfo on Log {\n    id\n    severity\n    summary\n    details\n    timestamp\n    checked\n  }\n": types.LogInfoFragmentDoc,
     "\n  query allLogs(\n    $severity: LogSeverity\n    $checked: Boolean!\n    $first: Int!\n    $after: Int\n  ) {\n    allLogs(\n      severity: $severity\n      checked: $checked\n      first: $first\n      after: $after\n    ) {\n      edges {\n        cursor\n        node {\n          ...LogInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n": types.AllLogsDocument,
     "\n  query getLogsSeverityCounts {\n    getLogsSeverityCounts {\n      severity\n      counts\n    }\n  }\n": types.GetLogsSeverityCountsDocument,
@@ -287,6 +288,10 @@ export function graphql(source: "\n  mutation buildPnlSnapshots($dateStr: String
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation dynamicSnapshotBuild($dateStr: String!) {\n    dynamicSnapshotBuild(dateStr: $dateStr) {\n      id\n      dateStr\n      isInit\n    }\n  }\n"): (typeof documents)["\n  mutation dynamicSnapshotBuild($dateStr: String!) {\n    dynamicSnapshotBuild(dateStr: $dateStr) {\n      id\n      dateStr\n      isInit\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation initializePnlSnapshot($beginingDate: DateTime!) {\n    initializePnlSnapshot(beginingDate: $beginingDate)\n  }\n"): (typeof documents)["\n  mutation initializePnlSnapshot($beginingDate: DateTime!) {\n    initializePnlSnapshot(beginingDate: $beginingDate)\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
