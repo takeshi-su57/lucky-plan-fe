@@ -28,6 +28,7 @@ import { getMissionForwardDetails } from "./useMission";
 import { CONTRACT_INFO_FRAGMENT_DOCUMENT } from "./useContract";
 import { STRATEGY_INFO_FRAGMENT_DOCUMENT } from "./useStrategy";
 import { AutomationMessage } from "../_components/AutomationWidgets/AutomationMessage";
+import { useAccount } from "wagmi";
 
 export const BOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment BotDetailsInfo on BotDetails {
@@ -185,16 +186,16 @@ export const STOP_BOT_DOCUMENT = graphql(`
 `);
 
 export const BOT_CREATED_SUBSCRIPTION_DOCUMENT = graphql(`
-  subscription botCreated {
-    botCreated {
+  subscription botCreated($userId: String!) {
+    botCreated(userId: $userId) {
       ...BotBackwardDetailsInfo
     }
   }
 `);
 
 export const BOT_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
-  subscription botUpdated {
-    botUpdated {
+  subscription botUpdated($userId: String!) {
+    botUpdated(userId: $userId) {
       ...BotBackwardDetailsInfo
     }
   }
@@ -320,11 +321,23 @@ export function useGetBotsByStatus(status: BotStatus) {
 }
 
 export function useSubscribeBot() {
+  const { address } = useAccount();
+
   const { data: newData, error: error1 } = useSubscription(
     BOT_CREATED_SUBSCRIPTION_DOCUMENT,
+    {
+      variables: {
+        userId: address?.toLowerCase() ?? "",
+      },
+    },
   );
   const { data: updatedData, error: error2 } = useSubscription(
     BOT_UPDATED_SUBSCRIPTION_DOCUMENT,
+    {
+      variables: {
+        userId: address?.toLowerCase() ?? "",
+      },
+    },
   );
 
   const client = useApolloClient();

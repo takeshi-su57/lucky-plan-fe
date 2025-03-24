@@ -63,6 +63,12 @@ const wsLink = new GraphQLWsLink(
       console.error("WebSocket connection failed:", error);
     },
     shouldRetry: () => true,
+    connectionParams: () => {
+      const userJWTStr = localStorage.getItem(LOCAL_USER_JWT_KEY);
+      return {
+        authToken: userJWTStr ? `${JSON.parse(userJWTStr)}` : "",
+      };
+    },
   }),
 );
 

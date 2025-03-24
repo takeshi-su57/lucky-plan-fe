@@ -18,6 +18,7 @@ import {
 } from "@/graphql/gql/graphql";
 import { getBotForwardDetails } from "./useAutomation";
 import { PlanMessage } from "../_components/PlansWidget/PlanMessage";
+import { useAccount } from "wagmi";
 
 export const PLAN_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment PlanInfo on Plan {
@@ -110,16 +111,16 @@ export const END_PLAN_DOCUMENT = graphql(`
 `);
 
 export const PLAN_CREATED_SUBSCRIPTION_DOCUMENT = graphql(`
-  subscription planCreated {
-    planCreated {
+  subscription planCreated($userId: String!) {
+    planCreated(userId: $userId) {
       ...PlanInfo
     }
   }
 `);
 
 export const PLAN_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
-  subscription planUpdated {
-    planUpdated {
+  subscription planUpdated($userId: String!) {
+    planUpdated(userId: $userId) {
       ...PlanInfo
     }
   }
@@ -189,11 +190,23 @@ export function useGetPlansByStatus(status: PlanStatus) {
 }
 
 export function useSubscribePlan() {
+  const { address } = useAccount();
+
   const { data: newData, error: error1 } = useSubscription(
     PLAN_CREATED_SUBSCRIPTION_DOCUMENT,
+    {
+      variables: {
+        userId: address?.toLowerCase() ?? "",
+      },
+    },
   );
   const { data: updatedData, error: error2 } = useSubscription(
     PLAN_UPDATED_SUBSCRIPTION_DOCUMENT,
+    {
+      variables: {
+        userId: address?.toLowerCase() ?? "",
+      },
+    },
   );
 
   const client = useApolloClient();

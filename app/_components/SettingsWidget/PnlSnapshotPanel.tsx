@@ -58,6 +58,16 @@ export function PnlSnapshotPanel() {
     initializePnlSnapshot({
       variables: {
         beginingDate: selectedDate.toDate(getServerTimezone()),
+        isForceBuild: false,
+      },
+    });
+  };
+
+  const handleForceInitializePnlSnapshot = () => {
+    initializePnlSnapshot({
+      variables: {
+        beginingDate: new Date("2024-11-01"),
+        isForceBuild: true,
       },
     });
   };
@@ -130,6 +140,17 @@ export function PnlSnapshotPanel() {
             }
           >
             Sequence Initialization
+          </Button>
+
+          <Button
+            onClick={handleForceInitializePnlSnapshot}
+            isLoading={initializePnlSnapshotLoading}
+            color="primary"
+            isDisabled={
+              buildPnlSnapshotsLoading || initializePnlSnapshotLoading
+            }
+          >
+            Force Initialization
           </Button>
         </div>
 

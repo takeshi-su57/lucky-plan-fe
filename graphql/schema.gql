@@ -371,7 +371,10 @@ type Mutation {
     walletAddress: String!
   ): AccessToken!
   ignoreMission(id: Int!): Boolean!
-  initializePnlSnapshot(beginingDate: DateTime!): Boolean!
+  initializePnlSnapshot(
+    beginingDate: DateTime!
+    isForceBuild: Boolean!
+  ): Boolean!
   liveBot(id: Int!): Boolean!
   pauseSystem: Boolean!
   performTask(id: Int!): Boolean!
@@ -586,15 +589,15 @@ type StrategyMetadata {
 }
 
 type Subscription {
-  botCreated: [BotBackwardDetails!]!
-  botUpdated: [BotBackwardDetails!]!
-  missionCreated: [MissionBackwardDetails!]!
-  missionUpdated: [MissionBackwardDetails!]!
+  botCreated(userId: String!): [BotBackwardDetails!]!
+  botUpdated(userId: String!): [BotBackwardDetails!]!
+  missionCreated(userId: String!): [MissionBackwardDetails!]!
+  missionUpdated(userId: String!): [MissionBackwardDetails!]!
   newLog(checked: Boolean!, severity: LogSeverity): Log!
-  planCreated: Plan!
-  planUpdated: Plan!
-  taskCreated: [TaskBackwardDetails!]!
-  taskUpdated: [TaskBackwardDetails!]!
+  planCreated(userId: String!): Plan!
+  planUpdated(userId: String!): Plan!
+  taskCreated(userId: String!): [TaskBackwardDetails!]!
+  taskUpdated(userId: String!): [TaskBackwardDetails!]!
 }
 
 type Tag {

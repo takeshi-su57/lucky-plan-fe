@@ -178,8 +178,14 @@ export const DYNAMIC_SNAPSHOT_BUILD_DOCUMENT = graphql(`
 `);
 
 export const INITIALIZE_PNL_SNAPSHOT_DOCUMENT = graphql(`
-  mutation initializePnlSnapshot($beginingDate: DateTime!) {
-    initializePnlSnapshot(beginingDate: $beginingDate)
+  mutation initializePnlSnapshot(
+    $beginingDate: DateTime!
+    $isForceBuild: Boolean!
+  ) {
+    initializePnlSnapshot(
+      beginingDate: $beginingDate
+      isForceBuild: $isForceBuild
+    )
   }
 `);
 

@@ -45,29 +45,29 @@ export function PlanCreationPanel() {
   };
 
   const handleSaveVirtualBots = async () => {
-    if (virtualBotParams.length > 0) {
-      const { data: planData } = await createPlan({
-        variables: {
-          createPlanInput: {
-            title: planMetadata!.title,
-            description: planMetadata!.description,
-            scheduledStart:
-              planMetadata!.scheduleRange.start.toDate(getServerTimezone()),
-            scheduledEnd:
-              planMetadata!.scheduleRange.end.toDate(getServerTimezone()),
-          },
+    const { data: planData } = await createPlan({
+      variables: {
+        createPlanInput: {
+          title: planMetadata!.title,
+          description: planMetadata!.description,
+          scheduledStart:
+            planMetadata!.scheduleRange.start.toDate(getServerTimezone()),
+          scheduledEnd:
+            planMetadata!.scheduleRange.end.toDate(getServerTimezone()),
         },
-      });
+      },
+    });
 
-      if (!planData || !planData.createPlan) {
-        return;
-      }
+    if (!planData || !planData.createPlan) {
+      return;
+    }
 
-      const planId = getFragmentData(
-        PLAN_INFO_FRAGMENT_DOCUMENT,
-        planData.createPlan,
-      ).id;
+    const planId = getFragmentData(
+      PLAN_INFO_FRAGMENT_DOCUMENT,
+      planData.createPlan,
+    ).id;
 
+    if (virtualBotParams.length > 0) {
       await batchCreateBots({
         variables: {
           input: virtualBotParams.map((item) => ({
