@@ -16,6 +16,7 @@ import {
 } from "./useAutomation";
 import { getTaskForwardDetails } from "./useTask";
 import { MissionMessage } from "../_components/MissionWidgets/MissionMessage";
+import { useAccount } from "wagmi";
 
 export const POSITION_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment PositionInfo on Position {
@@ -93,16 +94,16 @@ export const IGNORE_MISSION_DOCUMENT = graphql(`
 `);
 
 export const MISSION_CREATED_SUBSCRIPTION_DOCUMENT = graphql(`
-  subscription missionCreated {
-    missionCreated {
+  subscription missionCreated($userId: String!) {
+    missionCreated(userId: $userId) {
       ...MissionBackwardDetailsInfo
     }
   }
 `);
 
 export const MISSION_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
-  subscription missionUpdated {
-    missionUpdated {
+  subscription missionUpdated($userId: String!) {
+    missionUpdated(userId: $userId) {
       ...MissionBackwardDetailsInfo
     }
   }
@@ -177,11 +178,23 @@ export function getMissionForwardDetails(
 }
 
 export function useSubscribeMission() {
+  const { address } = useAccount();
+
   const { data: newData, error: error1 } = useSubscription(
     MISSION_CREATED_SUBSCRIPTION_DOCUMENT,
+    {
+      variables: {
+        userId: address?.toLowerCase() ?? "",
+      },
+    },
   );
   const { data: updatedData, error: error2 } = useSubscription(
     MISSION_UPDATED_SUBSCRIPTION_DOCUMENT,
+    {
+      variables: {
+        userId: address?.toLowerCase() ?? "",
+      },
+    },
   );
 
   const client = useApolloClient();

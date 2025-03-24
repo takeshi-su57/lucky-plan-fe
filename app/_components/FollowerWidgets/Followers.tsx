@@ -22,7 +22,6 @@ import {
   useGenerateFollower,
   useGetAllFollowerDetails,
   useGetAllFollowers,
-  useSubscribeFollowerDetailUpdated,
 } from "@/app-hooks/useFollower";
 import { useGetAllContracts } from "@/app-hooks/useContract";
 import { shrinkAddress } from "@/utils";
@@ -51,7 +50,6 @@ export function Followers() {
   const [showAllActivity, setShowAllActivity] = useState(false);
 
   const followerDetails = useGetAllFollowerDetails(contractId);
-  useSubscribeFollowerDetailUpdated(contractId);
 
   const handleGenerateFollower = () => {
     generateFollower({

@@ -1,25 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Tab,
-  Tabs,
-  Button,
-  useDisclosure,
-  Switch,
-  Spinner,
-} from "@nextui-org/react";
+import { Tab, Tabs, Switch, Spinner } from "@nextui-org/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Virtuoso } from "react-virtuoso";
 
 import { BotStatus } from "@/graphql/gql/graphql";
 
 import { useGetBotsByStatus } from "@/app-hooks/useAutomation";
 
-import { CreateAutomationModal } from "@/app-components/AutomationWidgets/CreateAutomationModal";
 import { AutomationSummary } from "@/app-components/AutomationWidgets/AutomationSummary";
 import { AutomationDetails } from "@/app-components/AutomationWidgets/AutomationDetails";
-import { FaPlus } from "react-icons/fa";
-import { Virtuoso } from "react-virtuoso";
+
 import { ModaledItems } from "@/components/modals/ModaledItems";
 
 type TabType = "created" | "live" | "stop" | "dead";
@@ -44,8 +36,6 @@ export function Automations() {
   const { bots, hasMore, loading, fetchMore } = useGetBotsByStatus(
     botStatusByTabType[selected],
   );
-
-  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   return (
     <div className="flex flex-col gap-6">
@@ -83,10 +73,6 @@ export function Automations() {
             Hide Planed Automations
           </Switch>
         </div>
-
-        <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>
-          <FaPlus />
-        </Button>
       </div>
 
       <Virtuoso
@@ -117,13 +103,6 @@ export function Automations() {
             </div>
           ),
         }}
-      />
-
-      <CreateAutomationModal
-        planId={null}
-        isOpen={isOpen}
-        onClose={onClose}
-        onOpenChange={onOpenChange}
       />
     </div>
   );

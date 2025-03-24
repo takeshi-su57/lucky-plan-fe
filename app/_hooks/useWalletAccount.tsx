@@ -14,6 +14,8 @@ import { TAG_INFO_FRAGMENT_DOCUMENT } from "./useTag";
 
 export const WALLET_ACCOUNT_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment WalletAccountInfo on WalletAccount {
+    id
+    userId
     address
     tags {
       ...TagInfo
