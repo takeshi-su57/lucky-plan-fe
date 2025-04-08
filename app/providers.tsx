@@ -105,6 +105,9 @@ const cache = new InMemoryCache({
         getBotsByStatus: relayStylePagination(["status"]),
         getPlansByStatus: relayStylePagination(["status"]),
         allLogs: relayStylePagination(["checked", "severity"]),
+        getTestingReport: relayStylePagination(),
+        getTestingReportV2: relayStylePagination(),
+        getTestingReportV3: relayStylePagination(),
       },
     },
     TagCategory: { keyFields: ["id"] },
@@ -184,6 +187,24 @@ const cache = new InMemoryCache({
       keyFields: ["id"],
     },
     PnlSnapshotDetailsEdge: {
+      keyFields: ["cursor"],
+    },
+    TestingReport: {
+      keyFields: ["id"],
+    },
+    TestingReportEdge: {
+      keyFields: ["cursor"],
+    },
+    TestingReportV2: {
+      keyFields: ["id"],
+    },
+    TestingReportV2Edge: {
+      keyFields: ["cursor"],
+    },
+    TestingReportV3: {
+      keyFields: ["id"],
+    },
+    TestingReportV3Edge: {
       keyFields: ["cursor"],
     },
     PnlSnapshotInitializedFlag: {

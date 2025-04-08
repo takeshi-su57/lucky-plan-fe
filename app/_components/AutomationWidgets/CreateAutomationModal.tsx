@@ -40,6 +40,7 @@ import {
   transformHistories,
 } from "@/utils/historiesChart";
 import { PairChip } from "../LeaderboardWidgets/PairChip";
+import dayjs from "dayjs";
 
 export type CreateAutomationModalProps = {
   planId: number;
@@ -625,22 +626,34 @@ export function CreateAutomationModal({
 
                 <LineChart
                   title="PNL"
-                  data={originalPNLChartData}
+                  data={originalPNLChartData.map((item) => ({
+                    ...item,
+                    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+                  }))}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
                 <LineChart
                   title="In/Out"
-                  data={originalInOutChartData}
+                  data={originalInOutChartData.map((item) => ({
+                    ...item,
+                    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+                  }))}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
                 <LineChart
                   title="Out"
-                  data={originalOutChartData}
+                  data={originalOutChartData.map((item) => ({
+                    ...item,
+                    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+                  }))}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
                 <LineChart
                   title="In"
-                  data={originalInChartData}
+                  data={originalInChartData.map((item) => ({
+                    ...item,
+                    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+                  }))}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
               </div>
@@ -674,25 +687,37 @@ export function CreateAutomationModal({
 
                 <LineChart
                   title="PNL"
-                  data={calculatedPNLChartData}
+                  data={calculatedPNLChartData.map((item) => ({
+                    ...item,
+                    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+                  }))}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
 
                 <LineChart
                   title="In/Out"
-                  data={calculatedInOutChartData}
+                  data={calculatedInOutChartData.map((item) => ({
+                    ...item,
+                    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+                  }))}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
 
                 <LineChart
                   title="Out"
-                  data={calculatedOutChartData}
+                  data={calculatedOutChartData.map((item) => ({
+                    ...item,
+                    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+                  }))}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
 
                 <LineChart
                   title="In"
-                  data={calculatedInChartData}
+                  data={calculatedInChartData.map((item) => ({
+                    ...item,
+                    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+                  }))}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
               </div>
