@@ -359,6 +359,77 @@ export const GET_TESTING_REPORT_V3_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_WHOLE_COMPRESSED_HISTORIES_V4_DOCUMENT = graphql(`
+  query getWholeCompressedHistoriesV4(
+    $filterParams: [ExportFilterV3!]!
+    $ratio: Float!
+  ) {
+    getWholeCompressedHistoriesV4(filterParams: $filterParams, ratio: $ratio) {
+      accPnls {
+        pnl
+        in
+        out
+        inOut
+        date
+        positionCount
+        taskCount
+        traderCount
+      }
+      botCounts {
+        botCount
+        date
+      }
+      maxInvested
+      actionTypeCount
+      uniqueTraders
+      totalBots {
+        address
+        contractId
+        dateStr
+      }
+    }
+  }
+`);
+
+export const GET_TESTING_REPORT_V4_DOCUMENT = graphql(`
+  query getTestingReportV4($first: Int!, $after: Int) {
+    getTestingReportV4(first: $first, after: $after) {
+      edges {
+        cursor
+        node {
+          avgLoss
+          avgProfit
+          bottomAccProfit
+          calculatedR2
+          calculatedSlope
+          id
+          investedUSD
+          lossCount
+          maxCount
+          maxLoss
+          maxProfit
+          maxSize
+          minCount
+          minR2
+          minSize
+          peakAccProfit
+          profitCount
+          totalPositions
+          totalTasks
+          totalTraders
+          totalUSDPnl
+          totalUniqueTraders
+          usdPnls
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+`);
+
 export const GET_PNL_SNAPSHOTS_BY_ADDRESS_DOCUMENT = graphql(`
   query getPnlSnapshotsByAddress($address: String!, $dateStr: String!) {
     getPnlSnapshotsByAddress(address: $address, dateStr: $dateStr) {
@@ -827,6 +898,67 @@ export function useGetTestingReportV3() {
 
   return {
     hasMore: data?.getTestingReportV3.pageInfo.hasNextPage,
+    reports,
+    fetchMore: handleFetchMore,
+    loading,
+  };
+}
+
+export function useGetWholeCompressedHistoriesV4(
+  testParams: TestParamsV3[],
+  ratio: number,
+) {
+  const { data, loading } = useQuery(
+    GET_WHOLE_COMPRESSED_HISTORIES_V4_DOCUMENT,
+    {
+      variables: {
+        filterParams: testParams,
+        ratio,
+      },
+    },
+  );
+
+  return {
+    accPnls: data?.getWholeCompressedHistoriesV4.accPnls || [],
+    botCounts: data?.getWholeCompressedHistoriesV4.botCounts || [],
+    maxInvested: data?.getWholeCompressedHistoriesV4.maxInvested || 0,
+    actionTypeCount: data?.getWholeCompressedHistoriesV4.actionTypeCount || 0,
+    uniqueTraders: data?.getWholeCompressedHistoriesV4.uniqueTraders || [],
+    totalBots: data?.getWholeCompressedHistoriesV4?.totalBots || [],
+    loading,
+  };
+}
+
+export function useGetTestingReportV4() {
+  const { data, loading, fetchMore, error } = useQuery(
+    GET_TESTING_REPORT_V4_DOCUMENT,
+    {
+      variables: {
+        first: 20,
+      },
+    },
+  );
+
+  const reports = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+    return data.getTestingReportV4.edges.map((edge) => edge.node);
+  }, [data]);
+
+  const handleFetchMore = useCallback(() => {
+    if (data && !error) {
+      fetchMore({
+        variables: {
+          first: 20,
+          after: data.getTestingReportV4.pageInfo.endCursor,
+        },
+      });
+    }
+  }, [data, error, fetchMore]);
+
+  return {
+    hasMore: data?.getTestingReportV4.pageInfo.hasNextPage,
     reports,
     fetchMore: handleFetchMore,
     loading,

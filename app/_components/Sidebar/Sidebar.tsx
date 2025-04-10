@@ -76,6 +76,12 @@ export const links = [
     label: "Dev V3 Page",
     title: "",
     limited: "Public",
+  },
+  {
+    id: "dev-v4",
+    label: "Dev V4 Page",
+    title: "",
+    limited: "Public",
     showDivider: true,
   },
   {

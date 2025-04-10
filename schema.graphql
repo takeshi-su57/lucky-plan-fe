@@ -574,6 +574,7 @@ type Query {
   getTestingReport(after: Int, first: Int!): TestingReportConnection!
   getTestingReportV2(after: Int, first: Int!): TestingReportV2Connection!
   getTestingReportV3(after: Int, first: Int!): TestingReportV3Connection!
+  getTestingReportV4(after: Int, first: Int!): TestingReportV3Connection!
   getTradeCollaterals(contractId: Int!): [TradeCollateral!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getTradePairs(contractId: Int!): [TradePair!]!
@@ -584,6 +585,7 @@ type Query {
   getWholeCompressedHistories(filterParams: ExportFilter!): WholeCompressedHistories!
   getWholeCompressedHistoriesV2(filterParams: [ExportFilterV2!]!): WholeCompressedHistories!
   getWholeCompressedHistoriesV3(filterParams: [ExportFilterV3!]!): WholeCompressedHistories!
+  getWholeCompressedHistoriesV4(filterParams: [ExportFilterV3!]!, ratio: Float!): WholeCompressedHistories!
   getWholeResultHistories(filterParams: ExportFilter!): [TradeHistory!]!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
   systemStatus: Boolean!
@@ -826,6 +828,12 @@ type TestingReportV3PageInfo {
   hasNextPage: Boolean!
 }
 
+type TotalBot {
+  address: String!
+  contractId: Int!
+  dateStr: String!
+}
+
 enum TradeActionType {
   TradeClosedLIQ
   TradeClosedMarket
@@ -914,6 +922,7 @@ type WholeCompressedHistories {
   actionTypeCount: String
   botCounts: [BotCount!]!
   maxInvested: Float!
+  totalBots: [TotalBot!]!
   uniqueTraders: [String!]
 }
 
