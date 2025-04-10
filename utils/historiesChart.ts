@@ -8,7 +8,6 @@ export function getSortedPartialHistories(
     range?: { from?: Date; to?: Date };
   },
 ) {
-  const inRangeHistories: PersonalTradeHistory[] = [];
   const supportedPairsMap: Record<string, boolean> = {};
 
   if (filters.supportedPairs) {
@@ -17,34 +16,55 @@ export function getSortedPartialHistories(
     });
   }
 
-  histories
-    .sort((a, b) => a.block - b.block)
-    .forEach((history) => {
+  const sortedAndSupportedHistories = histories
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .filter((history) => {
       if (
         filters.supportedPairs &&
         !supportedPairsMap[history.pair.toLowerCase()]
       ) {
-        return;
+        return false;
       }
 
-      if (!filters.range) {
-        inRangeHistories.push(history);
-      } else {
-        if (filters.range.from && filters.range.from > new Date(history.date)) {
-          return;
-        }
-
-        if (filters.range.to && filters.range.to < new Date(history.date)) {
-          return;
-        }
-
-        inRangeHistories.push(history);
-      }
+      return true;
     });
+
+  const valideTradeIndexMap: Record<number, boolean> = {};
+
+  sortedAndSupportedHistories.forEach((history) => {
+    if (
+      filters.range &&
+      filters.range.from &&
+      filters.range.from > new Date(history.date)
+    ) {
+      return;
+    }
+
+    if (
+      filters.range &&
+      filters.range.to &&
+      filters.range.to < new Date(history.date)
+    ) {
+      return;
+    }
+
+    if (filters.mode === "show_all_activity") {
+      valideTradeIndexMap[history.tradeIndex] = true;
+    } else if (
+      history.action === TradeActionType.TradeOpenedMarket ||
+      history.action === TradeActionType.TradeOpenedLimit
+    ) {
+      valideTradeIndexMap[history.tradeIndex] = true;
+    }
+  });
 
   const historiesByTradeIndex: Record<number, PersonalTradeHistory[]> = {};
 
-  inRangeHistories.forEach((history) => {
+  sortedAndSupportedHistories.forEach((history) => {
+    if (!valideTradeIndexMap[history.tradeIndex]) {
+      return;
+    }
+
     if (!historiesByTradeIndex[history.tradeIndex]) {
       historiesByTradeIndex[history.tradeIndex] = [];
     }
@@ -52,33 +72,7 @@ export function getSortedPartialHistories(
     historiesByTradeIndex[history.tradeIndex].push(history);
   });
 
-  const validHistories = Object.values(historiesByTradeIndex).filter(
-    (histories) => {
-      const positionSetupAction = histories.find(
-        (history) =>
-          history.action === TradeActionType.TradeOpenedMarket ||
-          history.action === TradeActionType.TradeOpenedLimit,
-      );
-
-      if (filters.mode === "show_only_valid_activity" && !positionSetupAction) {
-        return false;
-      }
-
-      const positionCloseAction = histories.find(
-        (history) =>
-          history.action === TradeActionType.TradeClosedMarket ||
-          history.action === TradeActionType.TradeClosedLIQ ||
-          history.action === TradeActionType.TradeClosedSL ||
-          history.action === TradeActionType.TradeClosedTP,
-      );
-
-      if (filters.mode === "show_only_valid_activity" && !positionCloseAction) {
-        return false;
-      }
-
-      return true;
-    },
-  );
+  const validHistories = Object.values(historiesByTradeIndex);
 
   return {
     historiesGroupedByTradeIndex: validHistories
@@ -90,7 +84,9 @@ export function getSortedPartialHistories(
         collateralIndex: item[0].collateralIndex,
         actions: item,
       })),
-    sortedHistories: validHistories.flat().sort((a, b) => a.block - b.block),
+    sortedHistories: validHistories
+      .flat()
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
   };
 }
 

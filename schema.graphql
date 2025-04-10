@@ -4,6 +4,17 @@ schema {
   subscription: Subscription
 }
 
+type AccPnl {
+  date: DateTime!
+  in: Float!
+  inOut: Float!
+  out: Float!
+  pnl: Float!
+  positionCount: Int!
+  taskCount: Int!
+  traderCount: Int!
+}
+
 type AccessToken {
   accessToken: String!
 }
@@ -48,6 +59,11 @@ type BotBackwardDetails {
 type BotConnection {
   edges: [BotEdge!]!
   pageInfo: BotPageInfo!
+}
+
+type BotCount {
+  botCount: Int!
+  date: DateTime!
 }
 
 type BotDetails {
@@ -195,6 +211,29 @@ input CreateStrategyInput {
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
 scalar DateTime
+
+input ExportFilter {
+  closePositionCountsByPnlSnapshotKind: String!
+  maxR2: Float!
+  maxSlope: Float!
+  minR2: Float!
+  minSlope: Float!
+  recentTradedDays: Int!
+}
+
+input ExportFilterV2 {
+  maxSlope: Float!
+  minSlope: Float!
+  r2MinsByPnlSnapshotKind: String!
+}
+
+input ExportFilterV3 {
+  maxCount: Float!
+  maxSize: Float!
+  minCount: Float!
+  minR2: Float!
+  minSize: Float!
+}
 
 type Follower {
   accountIndex: Int!
@@ -461,6 +500,18 @@ type PnlSnapshotDetailsPageInfo {
   hasNextPage: Boolean!
 }
 
+type PnlSnapshotDevDetails {
+  accUSDPnl: Float!
+  address: String!
+  contractId: Int!
+  dateStr: String!
+  histories: [TradeHistory!]!
+  id: Int!
+  kind: PnlSnapshotKind!
+  regression: Regression!
+  statistic: Statistic!
+}
+
 type PnlSnapshotInitializedFlag {
   dateStr: String!
   id: Int!
@@ -509,8 +560,10 @@ type Query {
   getAllUsers: [User!]!
   getAllWalletAccounts: [WalletAccount!]!
   getBotsByStatus(after: Int, first: Int!, status: BotStatus!): BotConnection!
+  getDevPnlSnapshots(dateStr: String!, filterParams: ExportFilter!): [PnlSnapshotDevDetails!]!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
   getLogsSeverityCounts: [SeverityCount!]!
+  getMonthlyDevPnlSnapshots(dateStr: String!, filterParams: ExportFilter!): [TradeHistory!]!
   getPendingOrders(address: String!, contractId: Int!): [FollowerPendingOrder!]!
   getPlanById(id: Int!): PlanForwardDetails
   getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
@@ -518,6 +571,10 @@ type Query {
   getPnlSnapshots(after: Int, contractId: Int!, dateStr: String!, first: Int!, kind: PnlSnapshotKind!): PnlSnapshotDetailsConnection!
   getPnlSnapshotsByAddress(address: String!, dateStr: String!): [PnlSnapshot!]!
   getServerTime: ServerTime!
+  getTestingReport(after: Int, first: Int!): TestingReportConnection!
+  getTestingReportV2(after: Int, first: Int!): TestingReportV2Connection!
+  getTestingReportV3(after: Int, first: Int!): TestingReportV3Connection!
+  getTestingReportV4(after: Int, first: Int!): TestingReportV3Connection!
   getTradeCollaterals(contractId: Int!): [TradeCollateral!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getTradePairs(contractId: Int!): [TradePair!]!
@@ -525,8 +582,22 @@ type Query {
   getTrades(address: String!, contractId: Int!): [FollowerTrade!]!
   getUserTransactionCounts(inputs: [GetUserTransactionCountsInput!]!): [TradeTransactionCount!]!
   getWalletAccountByAddress(input: GetUserByAddressInput!): WalletAccount!
+  getWholeCompressedHistories(filterParams: ExportFilter!): WholeCompressedHistories!
+  getWholeCompressedHistoriesV2(filterParams: [ExportFilterV2!]!): WholeCompressedHistories!
+  getWholeCompressedHistoriesV3(filterParams: [ExportFilterV3!]!): WholeCompressedHistories!
+  getWholeCompressedHistoriesV4(filterParams: [ExportFilterV3!]!, ratio: Float!): WholeCompressedHistories!
+  getWholeResultHistories(filterParams: ExportFilter!): [TradeHistory!]!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
   systemStatus: Boolean!
+}
+
+type Regression {
+  chi2: Float!
+  intercept: Float!
+  r: Float!
+  r2: Float!
+  rmsd: Float!
+  slope: Float!
 }
 
 type ServerTime {
@@ -537,6 +608,11 @@ type ServerTime {
 type SeverityCount {
   counts: Int!
   severity: LogSeverity!
+}
+
+type Statistic {
+  averageIn: Float!
+  countIn: Int!
 }
 
 type Strategy {
@@ -630,6 +706,134 @@ enum TaskStatus {
   Stopped
 }
 
+type TestingReport {
+  avgLoss: Float!
+  avgProfit: Float!
+  bottomAccProfit: Float!
+  calculatedR2: Float!
+  calculatedSlope: Float!
+  closePositionCountsByPnlSnapshotKind: String!
+  id: Int!
+  investedUSD: Float!
+  lossCount: Int!
+  maxLoss: Float!
+  maxProfit: Float!
+  maxR2: Float!
+  maxSlope: Int!
+  minR2: Float!
+  minSlope: Int!
+  peakAccProfit: Float!
+  profitCount: Int!
+  recentTradedDays: Int!
+  totalPositions: Int!
+  totalTasks: Int!
+  totalTraders: Int!
+  totalUSDPnl: Float!
+  totalUniqueTraders: Int!
+  usdPnls: [Float!]!
+}
+
+type TestingReportConnection {
+  edges: [TestingReportEdge!]!
+  pageInfo: TestingReportPageInfo!
+}
+
+type TestingReportEdge {
+  cursor: Int!
+  node: TestingReport!
+}
+
+type TestingReportPageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
+type TestingReportV2 {
+  avgLoss: Float!
+  avgProfit: Float!
+  bottomAccProfit: Float!
+  calculatedR2: Float!
+  calculatedSlope: Float!
+  id: Int!
+  investedUSD: Float!
+  lossCount: Int!
+  maxLoss: Float!
+  maxProfit: Float!
+  maxSlope: Int!
+  minSlope: Int!
+  peakAccProfit: Float!
+  profitCount: Int!
+  r2MinsByPnlSnapshotKind: String!
+  totalPositions: Int!
+  totalTasks: Int!
+  totalTraders: Int!
+  totalUSDPnl: Float!
+  totalUniqueTraders: Int!
+  usdPnls: [Float!]!
+}
+
+type TestingReportV2Connection {
+  edges: [TestingReportV2Edge!]!
+  pageInfo: TestingReportV2PageInfo!
+}
+
+type TestingReportV2Edge {
+  cursor: Int!
+  node: TestingReportV2!
+}
+
+type TestingReportV2PageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
+type TestingReportV3 {
+  avgLoss: Float!
+  avgProfit: Float!
+  bottomAccProfit: Float!
+  calculatedR2: Float!
+  calculatedSlope: Float!
+  id: Int!
+  investedUSD: Float!
+  lossCount: Int!
+  maxCount: Int!
+  maxLoss: Float!
+  maxProfit: Float!
+  maxSize: Int!
+  minCount: Int!
+  minR2: String!
+  minSize: Int!
+  peakAccProfit: Float!
+  profitCount: Int!
+  totalPositions: Int!
+  totalTasks: Int!
+  totalTraders: Int!
+  totalUSDPnl: Float!
+  totalUniqueTraders: Int!
+  usdPnls: [Float!]!
+}
+
+type TestingReportV3Connection {
+  edges: [TestingReportV3Edge!]!
+  pageInfo: TestingReportV3PageInfo!
+}
+
+type TestingReportV3Edge {
+  cursor: Int!
+  node: TestingReportV3!
+}
+
+type TestingReportV3PageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
+type TotalBot {
+  address: String!
+  contractId: Int!
+  dateStr: String!
+}
+
 enum TradeActionType {
   TradeClosedLIQ
   TradeClosedMarket
@@ -711,6 +915,15 @@ type WalletAccount {
   id: Int!
   tags: [Tag!]!
   userId: String!
+}
+
+type WholeCompressedHistories {
+  accPnls: [AccPnl!]!
+  actionTypeCount: String
+  botCounts: [BotCount!]!
+  maxInvested: Float!
+  totalBots: [TotalBot!]!
+  uniqueTraders: [String!]
 }
 
 input WithdrawAllInput {

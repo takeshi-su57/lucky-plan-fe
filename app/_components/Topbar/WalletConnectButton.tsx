@@ -23,8 +23,6 @@ export default function WalletConnectButton() {
 
   const [isConnected, setIsConnected] = useState(false);
 
-  console.log(userJwtQuery.data, Date.now());
-
   useEffect(() => {
     if (
       chainId &&

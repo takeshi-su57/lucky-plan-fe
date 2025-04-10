@@ -60,6 +60,31 @@ export const links = [
     showDivider: true,
   },
   {
+    id: "dev",
+    label: "Dev Page",
+    title: "",
+    limited: "Public",
+  },
+  {
+    id: "dev-v2",
+    label: "Dev V2 Page",
+    title: "",
+    limited: "Public",
+  },
+  {
+    id: "dev-v3",
+    label: "Dev V3 Page",
+    title: "",
+    limited: "Public",
+  },
+  {
+    id: "dev-v4",
+    label: "Dev V4 Page",
+    title: "",
+    limited: "Public",
+    showDivider: true,
+  },
+  {
     id: "settings",
     label: "Setting",
     title: "",

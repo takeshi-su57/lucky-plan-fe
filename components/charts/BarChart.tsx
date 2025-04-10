@@ -1,28 +1,21 @@
 "use client";
 
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import Chart from "chart.js/auto";
 import { twMerge } from "tailwind-merge";
-import { Button, Checkbox, useDisclosure } from "@nextui-org/react";
-import { CheckboxGroup } from "@nextui-org/react";
+import { Button, useDisclosure } from "@nextui-org/react";
 import { StandardModal } from "../modals/StandardModal";
 
-export type LineChartProps = {
+export type BarChartProps = {
   title?: string;
   data: {
     value: number;
     label: string;
   }[];
   className?: string;
-  initialSelected?: string[];
 };
 
-export default function LineChart({
-  title,
-  data,
-  className,
-  initialSelected,
-}: LineChartProps) {
+export default function BarChart({ title, data, className }: BarChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const modalChartRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -31,8 +24,6 @@ export default function LineChart({
   const modalRef = useRef<Chart>();
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
-
-  const [selected, setSelected] = useState<string[]>(initialSelected || []);
 
   const drawChart = useCallback(() => {
     if (ref.current) {
@@ -57,21 +48,20 @@ export default function LineChart({
     const chartContainer = chartRef.current!;
 
     ref.current = new Chart(chartContainer, {
-      type: "line",
+      type: "bar",
       data: {
         labels: data.map((item) => item.label),
         datasets: [
           {
             label: "Amount",
             data: data.map((item) => item.value),
-            pointRadius: 0,
-            fill: {
-              target: "origin",
-              above: "#022c22", // Area will be red above the origin
-              below: "#450a0a", // And blue below the origin
-            },
+            backgroundColor: data.map((item) =>
+              item.value > 0
+                ? "oklch(0.448 0.119 151.328)"
+                : "oklch(0.505 0.213 27.518)",
+            ),
             borderWidth: 1,
-            borderColor: "#525252",
+            borderColor: data.map(() => "#fff"),
           },
         ],
       },
@@ -79,10 +69,10 @@ export default function LineChart({
         maintainAspectRatio: false,
         scales: {
           x: {
-            display: selected.includes("x"),
+            display: true,
           },
           y: {
-            display: selected.includes("y"),
+            display: true,
           },
         },
         plugins: {
@@ -92,7 +82,7 @@ export default function LineChart({
         },
       },
     });
-  }, [data, selected]);
+  }, [data]);
 
   useEffect(() => {
     if (!chartRef.current || !containerRef.current) {
@@ -199,18 +189,6 @@ export default function LineChart({
         <Button size="sm" variant="ghost" onPress={onOpen}>
           Details
         </Button>
-      </div>
-
-      <div className="absolute bottom-4 right-4 z-[1000] flex flex-row items-center justify-between gap-0">
-        <CheckboxGroup
-          color="warning"
-          value={selected}
-          onValueChange={setSelected}
-          orientation="horizontal"
-        >
-          <Checkbox value="x">X Scale</Checkbox>
-          <Checkbox value="y">Y Scale</Checkbox>
-        </CheckboxGroup>
       </div>
 
       <div
