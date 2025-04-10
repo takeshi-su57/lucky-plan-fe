@@ -11,6 +11,10 @@ export const GET_ALL_USERS_DOCUMENT = graphql(`
     getAllUsers {
       address
       permission
+      allowAuto
+      budget
+      ratio
+      followerContractId
     }
   }
 `);
@@ -36,6 +40,35 @@ export const CHANGE_USER_PERMISSION_DOCUMENT = graphql(`
     changeUserPermission(address: $address, permission: $permission) {
       address
       permission
+      allowAuto
+      budget
+      ratio
+      followerContractId
+    }
+  }
+`);
+
+export const ALLOW_AUTO_DOCUMENT = graphql(`
+  mutation allowAuto(
+    $address: String!
+    $allowAuto: Boolean!
+    $budget: Float!
+    $ratio: Float!
+    $followerContractId: Int!
+  ) {
+    allowAuto(
+      address: $address
+      allowAuto: $allowAuto
+      budget: $budget
+      ratio: $ratio
+      followerContractId: $followerContractId
+    ) {
+      address
+      permission
+      allowAuto
+      budget
+      ratio
+      followerContractId
     }
   }
 `);
@@ -52,9 +85,8 @@ export function useGetAllUsers() {
 }
 
 export function useChangeUserPermission() {
-  const [mutateChangeUserPermission, { data: newData, error }] = useMutation(
-    CHANGE_USER_PERMISSION_DOCUMENT,
-  );
+  const [mutateChangeUserPermission, { data: newData, error, loading }] =
+    useMutation(CHANGE_USER_PERMISSION_DOCUMENT);
 
   const client = useApolloClient();
   const { enqueueSnackbar } = useSnackbar();
@@ -104,5 +136,57 @@ export function useChangeUserPermission() {
     }
   }, [client.cache, newData, error, enqueueSnackbar]);
 
-  return mutateChangeUserPermission;
+  return { mutateChangeUserPermission, loading };
+}
+
+export function useAllowAuto() {
+  const [mutateAllowAuto, { data: newData, error, loading }] =
+    useMutation(ALLOW_AUTO_DOCUMENT);
+
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      enqueueSnackbar("Success at changing user allow auto!", {
+        variant: "success",
+      });
+
+      client.cache.updateQuery(
+        {
+          query: GET_ALL_USERS_DOCUMENT,
+          variables: {},
+        },
+        (data) => {
+          if (data && data.getAllUsers.length > 0) {
+            const exists = data.getAllUsers.find(
+              (user) => user.address === newData.allowAuto.address,
+            );
+
+            if (exists) {
+              return {
+                ...data,
+                getAllUsers: data.getAllUsers.map((user) =>
+                  user.address === newData.allowAuto.address
+                    ? newData.allowAuto
+                    : user,
+                ),
+              };
+            } else {
+              return {
+                ...data,
+                getAllUsers: [...data.getAllUsers, newData.allowAuto],
+              };
+            }
+          } else {
+            return {
+              getAllUsers: [newData.allowAuto],
+            };
+          }
+        },
+      );
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return { mutateAllowAuto, loading };
 }
