@@ -29,7 +29,7 @@ export function getSortedPartialHistories(
       return true;
     });
 
-  const valideTradeIndexMap: Record<number, boolean> = {};
+  const valideTradeIndexMap: Record<string, boolean> = {};
 
   sortedAndSupportedHistories.forEach((history) => {
     if (
@@ -49,27 +49,29 @@ export function getSortedPartialHistories(
     }
 
     if (filters.mode === "show_all_activity") {
-      valideTradeIndexMap[history.tradeIndex] = true;
+      valideTradeIndexMap[`${history.address}-${history.tradeIndex}`] = true;
     } else if (
       history.action === TradeActionType.TradeOpenedMarket ||
       history.action === TradeActionType.TradeOpenedLimit
     ) {
-      valideTradeIndexMap[history.tradeIndex] = true;
+      valideTradeIndexMap[`${history.address}-${history.tradeIndex}`] = true;
     }
   });
 
-  const historiesByTradeIndex: Record<number, PersonalTradeHistory[]> = {};
+  const historiesByTradeIndex: Record<string, PersonalTradeHistory[]> = {};
 
   sortedAndSupportedHistories.forEach((history) => {
-    if (!valideTradeIndexMap[history.tradeIndex]) {
+    if (!valideTradeIndexMap[`${history.address}-${history.tradeIndex}`]) {
       return;
     }
 
-    if (!historiesByTradeIndex[history.tradeIndex]) {
-      historiesByTradeIndex[history.tradeIndex] = [];
+    if (!historiesByTradeIndex[`${history.address}-${history.tradeIndex}`]) {
+      historiesByTradeIndex[`${history.address}-${history.tradeIndex}`] = [];
     }
 
-    historiesByTradeIndex[history.tradeIndex].push(history);
+    historiesByTradeIndex[`${history.address}-${history.tradeIndex}`].push(
+      history,
+    );
   });
 
   const validHistories = Object.values(historiesByTradeIndex);
@@ -130,6 +132,8 @@ export function getHistoriesChartData(
 
   const { sortedHistories, historiesGroupedByTradeIndex } =
     getSortedPartialHistories(histories, filters);
+
+  console.log("sortedHistories ==>", sortedHistories);
 
   if (sortedHistories.length > 0) {
     [

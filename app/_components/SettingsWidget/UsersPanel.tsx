@@ -14,6 +14,7 @@ import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 import { useGetAllUsers } from "@/app-hooks/useUser";
 import { FaEdit } from "react-icons/fa";
 import { ChangePermissionModal } from "./ChangePermissionModal";
+import { User } from "@/graphql/gql/graphql";
 
 const columns: TableColumnProps[] = [
   {
@@ -25,6 +26,18 @@ const columns: TableColumnProps[] = [
     component: "Permission",
   },
   {
+    id: "allowAuto",
+    component: "Allow Auto",
+  },
+  {
+    id: "budget",
+    component: "Budget",
+  },
+  {
+    id: "ratio",
+    component: "Ratio",
+  },
+  {
     id: "action",
     component: "",
   },
@@ -33,8 +46,8 @@ const columns: TableColumnProps[] = [
 export function UsersPanel() {
   const { users, loading } = useGetAllUsers();
 
-  const { onOpen, onClose, onOpenChange, isOpen } = useDisclosure();
-  const [address, setAddress] = useState("");
+  const { onOpen, onOpenChange, isOpen } = useDisclosure();
+  const [user, setUser] = useState<User | null>(null);
 
   const rows = useMemo(() => {
     if (!users) {
@@ -50,6 +63,15 @@ export function UsersPanel() {
         permission: {
           component: user.permission,
         },
+        allowAuto: {
+          component: user.allowAuto ? "Allowed" : "Not Allowed",
+        },
+        budget: {
+          component: user.budget,
+        },
+        ratio: {
+          component: user.ratio,
+        },
         action: {
           component: (
             <Button
@@ -58,7 +80,7 @@ export function UsersPanel() {
               variant="flat"
               onClick={() => {
                 onOpen();
-                setAddress(user.address);
+                setUser(user);
               }}
             >
               <FaEdit />
@@ -91,12 +113,13 @@ export function UsersPanel() {
         />
       </CardBody>
 
-      <ChangePermissionModal
-        isOpen={isOpen}
-        onClose={onClose}
-        onOpenChange={onOpenChange}
-        address={address}
-      />
+      {user && (
+        <ChangePermissionModal
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+          user={user}
+        />
+      )}
     </Card>
   );
 }

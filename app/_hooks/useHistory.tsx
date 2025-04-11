@@ -363,8 +363,13 @@ export const GET_WHOLE_COMPRESSED_HISTORIES_V4_DOCUMENT = graphql(`
   query getWholeCompressedHistoriesV4(
     $filterParams: [ExportFilterV3!]!
     $ratio: Float!
+    $startDate: String!
   ) {
-    getWholeCompressedHistoriesV4(filterParams: $filterParams, ratio: $ratio) {
+    getWholeCompressedHistoriesV4(
+      filterParams: $filterParams
+      ratio: $ratio
+      startDate: $startDate
+    ) {
       accPnls {
         pnl
         in
@@ -386,6 +391,42 @@ export const GET_WHOLE_COMPRESSED_HISTORIES_V4_DOCUMENT = graphql(`
         address
         contractId
         dateStr
+      }
+    }
+  }
+`);
+
+export const GET_DEV_PNL_SNAPSHOTS_V4_DOCUMENT = graphql(`
+  query getDevPnlSnapshotsV4(
+    $dateStr: String!
+    $filterParams: [ExportFilterV3!]!
+    $ratio: Float!
+  ) {
+    getDevPnlSnapshotsV4(
+      dateStr: $dateStr
+      filterParams: $filterParams
+      ratio: $ratio
+    ) {
+      accUSDPnl
+      address
+      contractId
+      dateStr
+      histories {
+        ...TradeHistoryInfo
+      }
+      id
+      kind
+      regression {
+        chi2
+        intercept
+        r
+        r2
+        rmsd
+        slope
+      }
+      statistic {
+        averageIn
+        countIn
       }
     }
   }
@@ -465,6 +506,12 @@ export const BUILD_PNL_SNAPSHOTS_DOCUMENT = graphql(`
       dateStr
       isInit
     }
+  }
+`);
+
+export const AUTO_TESTING_DOCUMENT = graphql(`
+  mutation autoTesting($startDate: String!) {
+    autoTesting(startDate: $startDate)
   }
 `);
 
@@ -904,7 +951,42 @@ export function useGetTestingReportV3() {
   };
 }
 
+export function useGetDevPnlSnapshotsV4(
+  dateStr: string,
+  testParams: TestParamsV3[],
+  ratio: number,
+) {
+  const { data, loading } = useQuery(GET_DEV_PNL_SNAPSHOTS_V4_DOCUMENT, {
+    variables: {
+      dateStr,
+      filterParams: testParams,
+      ratio,
+    },
+  });
+
+  const pnlSnapshots = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return data.getDevPnlSnapshotsV4.map((item) => ({
+      ...item,
+      histories: item.histories.map((history) =>
+        getPersonalTradeHistory(
+          getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, history),
+        ),
+      ),
+    }));
+  }, [data]);
+
+  return {
+    pnlSnapshots,
+    loading,
+  };
+}
+
 export function useGetWholeCompressedHistoriesV4(
+  startDate: string,
   testParams: TestParamsV3[],
   ratio: number,
 ) {
@@ -914,6 +996,7 @@ export function useGetWholeCompressedHistoriesV4(
       variables: {
         filterParams: testParams,
         ratio,
+        startDate,
       },
     },
   );
@@ -943,7 +1026,9 @@ export function useGetTestingReportV4() {
     if (!data) {
       return [];
     }
-    return data.getTestingReportV4.edges.map((edge) => edge.node);
+    return data.getTestingReportV4.edges
+      .map((edge) => edge.node)
+      .filter((item) => item.usdPnls.length > 0);
   }, [data]);
 
   const handleFetchMore = useCallback(() => {
@@ -1099,4 +1184,10 @@ export function useInitializePnlSnapshot() {
   }, [data, error, enqueueSnackbar, client, refetch]);
 
   return { initializePnlSnapshot, loading };
+}
+
+export function useAutoTesting() {
+  const [autoTesting, { loading }] = useMutation(AUTO_TESTING_DOCUMENT);
+
+  return { autoTesting, loading };
 }

@@ -22,7 +22,7 @@ export function PastDatePicker({
         value={parseDate(dayjs(pastDate).format("YYYY-MM-DD"))}
         onChange={(date) => setPastDate(date.toDate(getServerTimezone()))}
         minValue={parseDate("2024-11-01")}
-        maxValue={parseDate("2025-03-31")}
+        maxValue={parseDate(dayjs().format("YYYY-MM-DD"))}
       />
 
       <div className="flex flex-row items-center gap-2">
