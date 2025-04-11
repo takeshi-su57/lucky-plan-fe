@@ -642,6 +642,7 @@ type Query {
   ): WholeCompressedHistories!
   getWholeCompressedHistoriesV4(
     filterParams: [ExportFilterV3!]!
+    isTestnet: Boolean!
     ratio: Float!
     startDate: String!
   ): WholeCompressedHistories!

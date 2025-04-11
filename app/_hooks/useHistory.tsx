@@ -364,11 +364,13 @@ export const GET_WHOLE_COMPRESSED_HISTORIES_V4_DOCUMENT = graphql(`
     $filterParams: [ExportFilterV3!]!
     $ratio: Float!
     $startDate: String!
+    $isTestnet: Boolean!
   ) {
     getWholeCompressedHistoriesV4(
       filterParams: $filterParams
       ratio: $ratio
       startDate: $startDate
+      isTestnet: $isTestnet
     ) {
       accPnls {
         pnl
@@ -989,6 +991,7 @@ export function useGetWholeCompressedHistoriesV4(
   startDate: string,
   testParams: TestParamsV3[],
   ratio: number,
+  isTestnet: boolean,
 ) {
   const { data, loading } = useQuery(
     GET_WHOLE_COMPRESSED_HISTORIES_V4_DOCUMENT,
@@ -997,6 +1000,7 @@ export function useGetWholeCompressedHistoriesV4(
         filterParams: testParams,
         ratio,
         startDate,
+        isTestnet,
       },
     },
   );
