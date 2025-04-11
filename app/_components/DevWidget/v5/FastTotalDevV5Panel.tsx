@@ -71,12 +71,14 @@ export type FastTotalDevV5PanelProps = {
   startDate: string;
   testParams: TestParamsV3[];
   ratio: number;
+  isTestnet: boolean;
 };
 
 export function FastTotalDevV5Panel({
   startDate,
   testParams,
   ratio,
+  isTestnet,
 }: FastTotalDevV5PanelProps) {
   const [selected, setSelected] = useState<TabType>("overview");
 
@@ -88,7 +90,7 @@ export function FastTotalDevV5Panel({
     maxInvested,
     totalBots,
     loading,
-  } = useGetWholeCompressedHistoriesV4(startDate, testParams, ratio);
+  } = useGetWholeCompressedHistoriesV4(startDate, testParams, ratio, isTestnet);
 
   const {
     dailyPnlChartData,

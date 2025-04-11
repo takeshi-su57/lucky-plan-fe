@@ -19,7 +19,7 @@ import { LeaderParams } from "../v1/LeaderItem";
 import { getServerTimezone } from "@/utils";
 import dayjs from "dayjs";
 
-type TabType = "one_day" | "best_filter" | "reports";
+type TabType = "one_day" | "best_filter" | "testnet" | "reports";
 
 export function DevPanelV5() {
   const [selected, setSelected] = useState<TabType>("one_day");
@@ -117,6 +117,7 @@ export function DevPanelV5() {
       >
         <Tab key="one_day" title="One Day" />
         <Tab key="best_filter" title="Best Filter" />
+        <Tab key="testnet" title="Best Filter in Testnet" />
         <Tab key="reports" title="Reports" />
       </Tabs>
 
@@ -129,6 +130,16 @@ export function DevPanelV5() {
           startDate={dayjs(startDate).format("YYYY-MM-DD")}
           testParams={bestCase}
           ratio={ratio}
+          isTestnet={false}
+        />
+      )}
+
+      {selected === "testnet" && (
+        <FastTotalDevV5Panel
+          startDate={dayjs(startDate).format("YYYY-MM-DD")}
+          testParams={bestCase}
+          ratio={ratio}
+          isTestnet={true}
         />
       )}
 

@@ -86,7 +86,7 @@ export function FastTotalDevV4Panel({
     maxInvested,
     totalBots,
     loading,
-  } = useGetWholeCompressedHistoriesV4("2024-11-01", testParams, ratio);
+  } = useGetWholeCompressedHistoriesV4("2024-11-01", testParams, ratio, false);
 
   const {
     dailyPnlChartData,
