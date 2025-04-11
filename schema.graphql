@@ -386,6 +386,7 @@ type Mutation {
   addTagToWalletAccount(input: ChangeUserTagInput!): WalletAccount!
   addWalletAccount(input: AddUserInput!): WalletAccount!
   allowAuto(address: String!, allowAuto: Boolean!, budget: Float!, followerContractId: Int!, ratio: Float!): User!
+  autoTesting(startDate: String!): Boolean!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
   buildPnlSnapshots(dateStr: String!, isForceBuild: Boolean!): PnlSnapshotInitializedFlag
   cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
@@ -562,6 +563,7 @@ type Query {
   getAllWalletAccounts: [WalletAccount!]!
   getBotsByStatus(after: Int, first: Int!, status: BotStatus!): BotConnection!
   getDevPnlSnapshots(dateStr: String!, filterParams: ExportFilter!): [PnlSnapshotDevDetails!]!
+  getDevPnlSnapshotsV4(dateStr: String!, filterParams: [ExportFilterV3!]!, ratio: Float!): [PnlSnapshotDevDetails!]!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
   getLogsSeverityCounts: [SeverityCount!]!
   getMonthlyDevPnlSnapshots(dateStr: String!, filterParams: ExportFilter!): [TradeHistory!]!
@@ -586,7 +588,7 @@ type Query {
   getWholeCompressedHistories(filterParams: ExportFilter!): WholeCompressedHistories!
   getWholeCompressedHistoriesV2(filterParams: [ExportFilterV2!]!): WholeCompressedHistories!
   getWholeCompressedHistoriesV3(filterParams: [ExportFilterV3!]!): WholeCompressedHistories!
-  getWholeCompressedHistoriesV4(filterParams: [ExportFilterV3!]!, ratio: Float!): WholeCompressedHistories!
+  getWholeCompressedHistoriesV4(filterParams: [ExportFilterV3!]!, ratio: Float!, startDate: String!): WholeCompressedHistories!
   getWholeResultHistories(filterParams: ExportFilter!): [TradeHistory!]!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
   systemStatus: Boolean!

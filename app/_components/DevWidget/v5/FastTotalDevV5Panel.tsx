@@ -7,7 +7,7 @@ import { useGetWholeCompressedHistoriesV4 } from "@/app/_hooks/useHistory";
 import BarChart from "@/components/charts/BarChart";
 import LineChart from "@/components/charts/LineChart";
 import { getPriceStr } from "@/utils/price";
-import { TestParamsV3 } from "./TestParamsV4";
+import { TestParamsV3 } from "./TestParamsV5";
 import { TradeHistories } from "./TradeHistories";
 
 function getData(
@@ -67,15 +67,17 @@ function getData(
 
 type TabType = "overview" | "details";
 
-export type FastTotalDevV4PanelProps = {
+export type FastTotalDevV5PanelProps = {
+  startDate: string;
   testParams: TestParamsV3[];
   ratio: number;
 };
 
-export function FastTotalDevV4Panel({
+export function FastTotalDevV5Panel({
+  startDate,
   testParams,
   ratio,
-}: FastTotalDevV4PanelProps) {
+}: FastTotalDevV5PanelProps) {
   const [selected, setSelected] = useState<TabType>("overview");
 
   const {
@@ -86,7 +88,7 @@ export function FastTotalDevV4Panel({
     maxInvested,
     totalBots,
     loading,
-  } = useGetWholeCompressedHistoriesV4("2024-11-01", testParams, ratio);
+  } = useGetWholeCompressedHistoriesV4(startDate, testParams, ratio);
 
   const {
     dailyPnlChartData,
@@ -107,7 +109,7 @@ export function FastTotalDevV4Panel({
     dailyPositionCountChartData,
     dailyTraderCountChartData,
   } = useMemo(() => {
-    const startTimestamp = new Date("2024-11-01").getTime();
+    const startTimestamp = new Date(startDate).getTime();
     const endTimestamp = new Date().getTime();
 
     const dailyScales: string[] = [];
@@ -302,7 +304,7 @@ export function FastTotalDevV4Panel({
       dailyPositionCountChartData,
       dailyTraderCountChartData,
     };
-  }, [accPnls]);
+  }, [accPnls, startDate]);
 
   if (loading) {
     return (

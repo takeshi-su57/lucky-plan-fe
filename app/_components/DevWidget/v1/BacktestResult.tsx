@@ -7,7 +7,6 @@ import {
   Card,
   Tab,
   Tabs,
-  Switch,
 } from "@nextui-org/react";
 import { Address } from "viem";
 import { PersonalTradeHistory } from "@/types";
@@ -16,6 +15,7 @@ import { AutomationGridChart } from "../../PlansWidget/AutomationChart";
 import { LeaderItem, LeaderParams } from "./LeaderItem";
 import { FutureChart } from "./FutureChart";
 import dayjs from "dayjs";
+import { getSortedPartialHistories } from "@/utils/historiesChart";
 
 type TabType = "overview" | "details";
 
@@ -33,16 +33,23 @@ export function BacktestResult({
   onPrevStep,
 }: BacktestResultProps) {
   const [selected, setSelected] = useState<TabType>("overview");
-  const [showAllActivity, setShowAllActivity] = useState(false);
 
   const [totalLeaderHistories, setTotalLeaderHistories] = useState<
     PersonalTradeHistory[]
   >([]);
 
   useEffect(() => {
-    const histories = leaders.map((leader) => leader.histories);
+    const endDate = dayjs(startDate).add(1, "day").toDate();
+
+    const histories = leaders.map(
+      (leader) =>
+        getSortedPartialHistories(leader.histories, {
+          mode: "show_only_valid_activity",
+          range: { from: startDate, to: endDate },
+        }).sortedHistories,
+    );
     setTotalLeaderHistories(histories.flat());
-  }, [leaders]);
+  }, [leaders, startDate]);
 
   const endDate = dayjs(startDate).add(1, "day").toDate();
 
@@ -62,27 +69,12 @@ export function BacktestResult({
       </Tabs>
 
       {selected === "overview" ? (
-        <>
-          <div className="flex items-center gap-2">
-            <Switch
-              isSelected={showAllActivity}
-              onValueChange={setShowAllActivity}
-              size="sm"
-            >
-              {showAllActivity
-                ? "Show All Activities"
-                : "Show Valid Activities"}
-            </Switch>
-          </div>
-          <AutomationGridChart
-            mode={
-              showAllActivity ? "show_all_activity" : "show_only_valid_activity"
-            }
-            histories={totalLeaderHistories}
-            title={`Total Result`}
-            range={{ from: startDate, to: endDate }}
-          />
-        </>
+        <AutomationGridChart
+          mode="show_only_valid_activity"
+          histories={totalLeaderHistories}
+          title={`Total Result`}
+          range={{ from: startDate, to: endDate }}
+        />
       ) : null}
 
       {selected === "details" ? (

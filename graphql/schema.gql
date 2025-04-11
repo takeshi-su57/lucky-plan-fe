@@ -390,6 +390,7 @@ type Mutation {
     followerContractId: Int!
     ratio: Float!
   ): User!
+  autoTesting(startDate: String!): Boolean!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
   buildPnlSnapshots(
     dateStr: String!
@@ -586,6 +587,11 @@ type Query {
     dateStr: String!
     filterParams: ExportFilter!
   ): [PnlSnapshotDevDetails!]!
+  getDevPnlSnapshotsV4(
+    dateStr: String!
+    filterParams: [ExportFilterV3!]!
+    ratio: Float!
+  ): [PnlSnapshotDevDetails!]!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
   getLogsSeverityCounts: [SeverityCount!]!
   getMonthlyDevPnlSnapshots(
@@ -637,6 +643,7 @@ type Query {
   getWholeCompressedHistoriesV4(
     filterParams: [ExportFilterV3!]!
     ratio: Float!
+    startDate: String!
   ): WholeCompressedHistories!
   getWholeResultHistories(filterParams: ExportFilter!): [TradeHistory!]!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
