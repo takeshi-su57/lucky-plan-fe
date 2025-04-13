@@ -18,6 +18,7 @@ import {
 } from "@/graphql/gql/graphql";
 import { getBotForwardDetails } from "./useAutomation";
 import { PlanMessage } from "../_components/PlansWidget/PlanMessage";
+import { useAccount } from "wagmi";
 
 export const PLAN_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment PlanInfo on Plan {
@@ -29,6 +30,7 @@ export const PLAN_INFO_FRAGMENT_DOCUMENT = graphql(`
     scheduledEnd
     startedAt
     endedAt
+    userId
   }
 `);
 
@@ -42,6 +44,7 @@ export const PLAN_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     scheduledEnd
     startedAt
     endedAt
+    userId
     bots {
       ...BotForwardDetailsInfo
     }
@@ -107,25 +110,17 @@ export const END_PLAN_DOCUMENT = graphql(`
   }
 `);
 
-export const ADD_BOTS_TO_PLAN_DOCUMENT = graphql(`
-  mutation addBotsToPlan($botIds: [Int!]!, $planId: Int!) {
-    addBotsToPlan(botIds: $botIds, planId: $planId) {
-      ...PlanForwardDetailsInfo
-    }
-  }
-`);
-
 export const PLAN_CREATED_SUBSCRIPTION_DOCUMENT = graphql(`
-  subscription planCreated {
-    planCreated {
+  subscription planCreated($userId: String!) {
+    planCreated(userId: $userId) {
       ...PlanInfo
     }
   }
 `);
 
 export const PLAN_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
-  subscription planUpdated {
-    planUpdated {
+  subscription planUpdated($userId: String!) {
+    planUpdated(userId: $userId) {
       ...PlanInfo
     }
   }
@@ -195,11 +190,23 @@ export function useGetPlansByStatus(status: PlanStatus) {
 }
 
 export function useSubscribePlan() {
+  const { address } = useAccount();
+
   const { data: newData, error: error1 } = useSubscription(
     PLAN_CREATED_SUBSCRIPTION_DOCUMENT,
+    {
+      variables: {
+        userId: address?.toLowerCase() ?? "",
+      },
+    },
   );
   const { data: updatedData, error: error2 } = useSubscription(
     PLAN_UPDATED_SUBSCRIPTION_DOCUMENT,
+    {
+      variables: {
+        userId: address?.toLowerCase() ?? "",
+      },
+    },
   );
 
   const client = useApolloClient();
@@ -335,6 +342,7 @@ export function useSubscribePlan() {
           startedAt: planInfo.startedAt,
           status: planInfo.status,
           title: planInfo.title,
+          userId: planInfo.userId,
           bots: [],
         },
       });
@@ -512,41 +520,4 @@ export function useEndPlan() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return { endPlan, loading };
-}
-
-export function useAddBotsToPlan() {
-  const [addBotsToPlan, { data: newData, error, loading }] = useMutation(
-    ADD_BOTS_TO_PLAN_DOCUMENT,
-  );
-
-  const client = useApolloClient();
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (newData && !error) {
-      enqueueSnackbar("Success at adding bots to plan!", {
-        variant: "success",
-      });
-
-      const planForwardDetails = getPlanForwardDetails(newData.addBotsToPlan);
-
-      client.cache.writeFragment({
-        id: client.cache.identify({
-          __typename: "PlanForwardDetails",
-          id: planForwardDetails.id,
-        }),
-        fragment: PLAN_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
-        fragmentName: "PlanForwardDetailsInfo",
-        data: planForwardDetails,
-      });
-    }
-
-    if (newData && error) {
-      enqueueSnackbar("Error at adding bots to plan!", {
-        variant: "error",
-      });
-    }
-  }, [client.cache, newData, error, enqueueSnackbar]);
-
-  return { addBotsToPlan, loading };
 }

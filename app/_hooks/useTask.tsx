@@ -21,6 +21,7 @@ import {
   MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
 } from "./useMission";
 import { TaskMessage } from "@/app-components/TaskWidgets/TaskMessage";
+import { useAccount } from "wagmi";
 
 export const ACTION_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment ActionInfo on Action {
@@ -103,16 +104,16 @@ export const STOP_TASK_DOCUMENT = graphql(`
 `);
 
 export const TASK_CREATED_SUBSCRIPTION_DOCUMENT = graphql(`
-  subscription taskCreated {
-    taskCreated {
+  subscription taskCreated($userId: String!) {
+    taskCreated(userId: $userId) {
       ...TaskBackwardDetailsInfo
     }
   }
 `);
 
 export const TASK_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
-  subscription taskUpdated {
-    taskUpdated {
+  subscription taskUpdated($userId: String!) {
+    taskUpdated(userId: $userId) {
       ...TaskBackwardDetailsInfo
     }
   }
@@ -186,11 +187,23 @@ export function useGetAlertTasks() {
 }
 
 export function useSubscribeTask() {
+  const { address } = useAccount();
+
   const { data: newData, error: error1 } = useSubscription(
     TASK_CREATED_SUBSCRIPTION_DOCUMENT,
+    {
+      variables: {
+        userId: address?.toLowerCase() ?? "",
+      },
+    },
   );
   const { data: updatedData, error: error2 } = useSubscription(
     TASK_UPDATED_SUBSCRIPTION_DOCUMENT,
+    {
+      variables: {
+        userId: address?.toLowerCase() ?? "",
+      },
+    },
   );
 
   const client = useApolloClient();

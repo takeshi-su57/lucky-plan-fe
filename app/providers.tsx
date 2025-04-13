@@ -63,6 +63,12 @@ const wsLink = new GraphQLWsLink(
       console.error("WebSocket connection failed:", error);
     },
     shouldRetry: () => true,
+    connectionParams: () => {
+      const userJWTStr = localStorage.getItem(LOCAL_USER_JWT_KEY);
+      return {
+        authToken: userJWTStr ? `${JSON.parse(userJWTStr)}` : "",
+      };
+    },
   }),
 );
 
@@ -86,7 +92,7 @@ const authLink = setContext((_, { headers }) => {
   return {
     headers: {
       ...headers,
-      authorization: userJWTStr ? `Bearer ${userJWTStr}` : "",
+      authorization: userJWTStr ? `Bearer ${JSON.parse(userJWTStr)}` : "",
     },
   };
 });
@@ -99,6 +105,10 @@ const cache = new InMemoryCache({
         getBotsByStatus: relayStylePagination(["status"]),
         getPlansByStatus: relayStylePagination(["status"]),
         allLogs: relayStylePagination(["checked", "severity"]),
+        getTestingReport: relayStylePagination(),
+        getTestingReportV2: relayStylePagination(),
+        getTestingReportV3: relayStylePagination(),
+        getTestingReportV4: relayStylePagination(),
       },
     },
     TagCategory: { keyFields: ["id"] },
@@ -178,6 +188,24 @@ const cache = new InMemoryCache({
       keyFields: ["id"],
     },
     PnlSnapshotDetailsEdge: {
+      keyFields: ["cursor"],
+    },
+    TestingReport: {
+      keyFields: ["id"],
+    },
+    TestingReportEdge: {
+      keyFields: ["cursor"],
+    },
+    TestingReportV2: {
+      keyFields: ["id"],
+    },
+    TestingReportV2Edge: {
+      keyFields: ["cursor"],
+    },
+    TestingReportV3: {
+      keyFields: ["id"],
+    },
+    TestingReportV3Edge: {
       keyFields: ["cursor"],
     },
     PnlSnapshotInitializedFlag: {

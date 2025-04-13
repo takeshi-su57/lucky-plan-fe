@@ -69,7 +69,7 @@ export function WalletAccounts() {
                 : null;
 
               router.push(
-                `/users?${contractQuery || ""}${contractQuery && tagsQuery ? `&` : ""}${tagsQuery || ""}`,
+                `/traders?${contractQuery || ""}${contractQuery && tagsQuery ? `&` : ""}${tagsQuery || ""}`,
               );
             }}
           >
@@ -122,7 +122,7 @@ export function WalletAccounts() {
                   : null;
 
                 router.push(
-                  `/users?${contractQuery || ""}${contractQuery && tagsQuery ? `&` : ""}${tagsQuery || ""}`,
+                  `/traders?${contractQuery || ""}${contractQuery && tagsQuery ? `&` : ""}${tagsQuery || ""}`,
                 );
 
                 value.toString();

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useDisclosure, Button, Chip, Tab, Tabs } from "@nextui-org/react";
+import { Button, Chip, Tab, Tabs, useDisclosure } from "@nextui-org/react";
 import dayjs from "dayjs";
 import { useSearchParams, useRouter } from "next/navigation";
 import { PlanStatus } from "@/graphql/gql/graphql";
@@ -16,15 +16,18 @@ import { chipColorsByPlanStatus } from "./PlanCard";
 
 import { PlanAutomations } from "./PlanAutomations";
 import { RealResultView } from "./RealResultView";
-import { FaPlus } from "react-icons/fa";
-import { CreateAutomationModal } from "../AutomationWidgets/CreateAutomationModal";
+
 import { getSortedPartialHistories } from "@/utils/historiesChart";
+import { CreateAutomationModal } from "../AutomationWidgets/CreateAutomationModal";
+import { FaPlus } from "react-icons/fa";
 
 type TabType = "overview" | "automations";
 
 export function PlanDetailPanel({ planId }: { planId: string }) {
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   const [selected, setSelected] = useState<TabType>(
     (searchParams.get("tab") as TabType) || "past",
@@ -34,8 +37,6 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
   const { endPlan, loading: endPlanLoading } = useEndPlan();
 
   const plan = useGetPlanById(+planId);
-
-  const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   const [selectedBotIds, setSelectedBotIds] = useState<Record<number, boolean>>(
     {},
@@ -239,7 +240,7 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
       )}
 
       <CreateAutomationModal
-        planId={null}
+        planId={+planId}
         isOpen={isOpen}
         onClose={onClose}
         onOpenChange={onOpenChange}

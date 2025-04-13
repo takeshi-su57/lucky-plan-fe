@@ -4,6 +4,17 @@ schema {
   subscription: Subscription
 }
 
+type AccPnl {
+  date: DateTime!
+  in: Float!
+  inOut: Float!
+  out: Float!
+  pnl: Float!
+  positionCount: Int!
+  taskCount: Int!
+  traderCount: Int!
+}
+
 type AccessToken {
   accessToken: String!
 }
@@ -37,8 +48,8 @@ type BotBackwardDetails {
   leaderContractId: Int!
   leaderEndedBlock: Int
   leaderStartedBlock: Int
-  plan: Plan
-  planId: Int
+  plan: Plan!
+  planId: Int!
   startedAt: DateTime
   status: BotStatus!
   strategy: Strategy!
@@ -48,6 +59,11 @@ type BotBackwardDetails {
 type BotConnection {
   edges: [BotEdge!]!
   pageInfo: BotPageInfo!
+}
+
+type BotCount {
+  botCount: Int!
+  date: DateTime!
 }
 
 type BotDetails {
@@ -65,7 +81,7 @@ type BotDetails {
   leaderContractId: Int!
   leaderEndedBlock: Int
   leaderStartedBlock: Int
-  planId: Int
+  planId: Int!
   startedAt: DateTime
   status: BotStatus!
   strategy: Strategy!
@@ -93,7 +109,7 @@ type BotForwardDetails {
   leaderEndedBlock: Int
   leaderStartedBlock: Int
   missions: [MissionForwardDetails!]!
-  planId: Int
+  planId: Int!
   startedAt: DateTime
   status: BotStatus!
   strategy: Strategy!
@@ -116,11 +132,6 @@ input CancelOrderAfterTimeoutInput {
   address: String!
   contractId: Int!
   index: Int!
-}
-
-input ChangeContractStatusInput {
-  id: Int!
-  status: String!
 }
 
 input ChangeUserTagInput {
@@ -163,7 +174,7 @@ input CreateBotAndStrategyInput {
   leaderAddress: String!
   leaderCollateralBaseline: Int!
   leaderContractId: Int!
-  planId: Int
+  planId: Int!
   strategy: CreateStrategyInput!
 }
 
@@ -173,15 +184,8 @@ input CreateBotInput {
   leaderAddress: String!
   leaderCollateralBaseline: Int!
   leaderContractId: Int!
-  planId: Int
+  planId: Int!
   strategyId: Int!
-}
-
-input CreateContractInput {
-  address: String!
-  chainId: Int!
-  description: String!
-  lastBlockNumber: Int!
 }
 
 input CreatePlanInput {
@@ -208,10 +212,34 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+input ExportFilter {
+  closePositionCountsByPnlSnapshotKind: String!
+  maxR2: Float!
+  maxSlope: Float!
+  minR2: Float!
+  minSlope: Float!
+  recentTradedDays: Int!
+}
+
+input ExportFilterV2 {
+  maxSlope: Float!
+  minSlope: Float!
+  r2MinsByPnlSnapshotKind: String!
+}
+
+input ExportFilterV3 {
+  maxCount: Float!
+  maxSize: Float!
+  minCount: Float!
+  minR2: Float!
+  minSize: Float!
+}
+
 type Follower {
   accountIndex: Int!
   address: String!
   publicKey: String!
+  userId: String!
 }
 
 type FollowerActionDetails {
@@ -229,6 +257,7 @@ type FollowerDetail {
   pnlSnapshots: [PnlSnapshot!]!
   publicKey: String!
   usdcBalance: String
+  userId: String!
 }
 
 type FollowerPendingOrder {
@@ -354,21 +383,19 @@ enum MissionStatus {
 }
 
 type Mutation {
-  addBotsToPlan(botIds: [Int!]!, planId: Int!): PlanForwardDetails!
   addTagToWalletAccount(input: ChangeUserTagInput!): WalletAccount!
   addWalletAccount(input: AddUserInput!): WalletAccount!
+  allowAuto(address: String!, allowAuto: Boolean!, budget: Float!, followerContractId: Int!, ratio: Float!): User!
+  autoTesting(startDate: String!): Boolean!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
   buildPnlSnapshots(dateStr: String!, isForceBuild: Boolean!): PnlSnapshotInitializedFlag
   cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
-  changeContractStatus(input: ChangeContractStatusInput!): Contract!
   changeUserPermission(address: String!, permission: String!): User!
   checkLog(id: Int!): Log!
   closeMission(id: Int!, isForce: Boolean!): Boolean!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
   createBot(input: CreateBotInput!): BotBackwardDetails!
-  createContract(input: CreateContractInput!): Contract!
   createPlan(createPlanInput: CreatePlanInput!): Plan!
-  createStrategy(input: CreateStrategyInput!): Strategy!
   deleteBot(id: Int!): BotBackwardDetails!
   deleteCategory(id: Int!): TagCategory!
   deletePlan(id: Int!): Int!
@@ -378,18 +405,16 @@ type Mutation {
   generateNewFollower: Follower!
   getToken(signature: String!, timestamp: String!, walletAddress: String!): AccessToken!
   ignoreMission(id: Int!): Boolean!
-  initializePnlSnapshot: Boolean!
+  initializePnlSnapshot(beginingDate: DateTime!, isForceBuild: Boolean!): Boolean!
   liveBot(id: Int!): Boolean!
   pauseSystem: Boolean!
   performTask(id: Int!): Boolean!
-  removeStrategy(id: Int!): Strategy!
   removeTagFromWalletAccount(input: ChangeUserTagInput!): WalletAccount!
   resumeSystem: Boolean!
   startPlan(id: Int!): Boolean!
   stopBot(id: Int!): Boolean!
   stopTask(id: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
-  updateStrategyMetadata(input: UpdateStrategyMetadataInput!, key: String!): StrategyMetadata!
   upsertCategory(input: TagCategoryInput!): TagCategory!
   upsertTag(input: TagInput!): Tag!
   withdrawAllETH(input: WithdrawAllInput!): Boolean!
@@ -405,6 +430,7 @@ type Plan {
   startedAt: DateTime
   status: PlanStatus!
   title: String!
+  userId: String!
 }
 
 type PlanConnection {
@@ -427,6 +453,7 @@ type PlanForwardDetails {
   startedAt: DateTime
   status: PlanStatus!
   title: String!
+  userId: String!
 }
 
 type PlanPageInfo {
@@ -473,6 +500,18 @@ type PnlSnapshotDetailsEdge {
 type PnlSnapshotDetailsPageInfo {
   endCursor: Int
   hasNextPage: Boolean!
+}
+
+type PnlSnapshotDevDetails {
+  accUSDPnl: Float!
+  address: String!
+  contractId: Int!
+  dateStr: String!
+  histories: [TradeHistory!]!
+  id: Int!
+  kind: PnlSnapshotKind!
+  regression: Regression!
+  statistic: Statistic!
 }
 
 type PnlSnapshotInitializedFlag {
@@ -523,8 +562,11 @@ type Query {
   getAllUsers: [User!]!
   getAllWalletAccounts: [WalletAccount!]!
   getBotsByStatus(after: Int, first: Int!, status: BotStatus!): BotConnection!
+  getDevPnlSnapshots(dateStr: String!, filterParams: ExportFilter!): [PnlSnapshotDevDetails!]!
+  getDevPnlSnapshotsV4(dateStr: String!, filterParams: [ExportFilterV3!]!, ratio: Float!): [PnlSnapshotDevDetails!]!
   getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
   getLogsSeverityCounts: [SeverityCount!]!
+  getMonthlyDevPnlSnapshots(dateStr: String!, filterParams: ExportFilter!): [TradeHistory!]!
   getPendingOrders(address: String!, contractId: Int!): [FollowerPendingOrder!]!
   getPlanById(id: Int!): PlanForwardDetails
   getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
@@ -532,6 +574,10 @@ type Query {
   getPnlSnapshots(after: Int, contractId: Int!, dateStr: String!, first: Int!, kind: PnlSnapshotKind!): PnlSnapshotDetailsConnection!
   getPnlSnapshotsByAddress(address: String!, dateStr: String!): [PnlSnapshot!]!
   getServerTime: ServerTime!
+  getTestingReport(after: Int, first: Int!): TestingReportConnection!
+  getTestingReportV2(after: Int, first: Int!): TestingReportV2Connection!
+  getTestingReportV3(after: Int, first: Int!): TestingReportV3Connection!
+  getTestingReportV4(after: Int, first: Int!): TestingReportV3Connection!
   getTradeCollaterals(contractId: Int!): [TradeCollateral!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getTradePairs(contractId: Int!): [TradePair!]!
@@ -539,8 +585,22 @@ type Query {
   getTrades(address: String!, contractId: Int!): [FollowerTrade!]!
   getUserTransactionCounts(inputs: [GetUserTransactionCountsInput!]!): [TradeTransactionCount!]!
   getWalletAccountByAddress(input: GetUserByAddressInput!): WalletAccount!
+  getWholeCompressedHistories(filterParams: ExportFilter!): WholeCompressedHistories!
+  getWholeCompressedHistoriesV2(filterParams: [ExportFilterV2!]!): WholeCompressedHistories!
+  getWholeCompressedHistoriesV3(filterParams: [ExportFilterV3!]!): WholeCompressedHistories!
+  getWholeCompressedHistoriesV4(filterParams: [ExportFilterV3!]!, isTestnet: Boolean!, ratio: Float!, startDate: String!): WholeCompressedHistories!
+  getWholeResultHistories(filterParams: ExportFilter!): [TradeHistory!]!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
   systemStatus: Boolean!
+}
+
+type Regression {
+  chi2: Float!
+  intercept: Float!
+  r: Float!
+  r2: Float!
+  rmsd: Float!
+  slope: Float!
 }
 
 type ServerTime {
@@ -551,6 +611,11 @@ type ServerTime {
 type SeverityCount {
   counts: Int!
   severity: LogSeverity!
+}
+
+type Statistic {
+  averageIn: Float!
+  countIn: Int!
 }
 
 type Strategy {
@@ -573,29 +638,31 @@ type StrategyMetadata {
 }
 
 type Subscription {
-  botCreated: [BotBackwardDetails!]!
-  botUpdated: [BotBackwardDetails!]!
-  followerDetailsUpdated(contractId: Int!): [FollowerDetail!]!
-  missionCreated: [MissionBackwardDetails!]!
-  missionUpdated: [MissionBackwardDetails!]!
+  botCreated(userId: String!): [BotBackwardDetails!]!
+  botUpdated(userId: String!): [BotBackwardDetails!]!
+  missionCreated(userId: String!): [MissionBackwardDetails!]!
+  missionUpdated(userId: String!): [MissionBackwardDetails!]!
   newLog(checked: Boolean!, severity: LogSeverity): Log!
-  planCreated: Plan!
-  planUpdated: Plan!
-  taskCreated: [TaskBackwardDetails!]!
-  taskUpdated: [TaskBackwardDetails!]!
+  planCreated(userId: String!): Plan!
+  planUpdated(userId: String!): Plan!
+  taskCreated(userId: String!): [TaskBackwardDetails!]!
+  taskUpdated(userId: String!): [TaskBackwardDetails!]!
 }
 
 type Tag {
   categoryId: Int
   color: String!
   description: String!
+  id: Int!
   tag: String!
+  userId: String!
 }
 
 type TagCategory {
   category: String!
   description: String!
   id: Int!
+  userId: String!
 }
 
 input TagCategoryInput {
@@ -640,6 +707,134 @@ enum TaskStatus {
   Failed
   Initiated
   Stopped
+}
+
+type TestingReport {
+  avgLoss: Float!
+  avgProfit: Float!
+  bottomAccProfit: Float!
+  calculatedR2: Float!
+  calculatedSlope: Float!
+  closePositionCountsByPnlSnapshotKind: String!
+  id: Int!
+  investedUSD: Float!
+  lossCount: Int!
+  maxLoss: Float!
+  maxProfit: Float!
+  maxR2: Float!
+  maxSlope: Int!
+  minR2: Float!
+  minSlope: Int!
+  peakAccProfit: Float!
+  profitCount: Int!
+  recentTradedDays: Int!
+  totalPositions: Int!
+  totalTasks: Int!
+  totalTraders: Int!
+  totalUSDPnl: Float!
+  totalUniqueTraders: Int!
+  usdPnls: [Float!]!
+}
+
+type TestingReportConnection {
+  edges: [TestingReportEdge!]!
+  pageInfo: TestingReportPageInfo!
+}
+
+type TestingReportEdge {
+  cursor: Int!
+  node: TestingReport!
+}
+
+type TestingReportPageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
+type TestingReportV2 {
+  avgLoss: Float!
+  avgProfit: Float!
+  bottomAccProfit: Float!
+  calculatedR2: Float!
+  calculatedSlope: Float!
+  id: Int!
+  investedUSD: Float!
+  lossCount: Int!
+  maxLoss: Float!
+  maxProfit: Float!
+  maxSlope: Int!
+  minSlope: Int!
+  peakAccProfit: Float!
+  profitCount: Int!
+  r2MinsByPnlSnapshotKind: String!
+  totalPositions: Int!
+  totalTasks: Int!
+  totalTraders: Int!
+  totalUSDPnl: Float!
+  totalUniqueTraders: Int!
+  usdPnls: [Float!]!
+}
+
+type TestingReportV2Connection {
+  edges: [TestingReportV2Edge!]!
+  pageInfo: TestingReportV2PageInfo!
+}
+
+type TestingReportV2Edge {
+  cursor: Int!
+  node: TestingReportV2!
+}
+
+type TestingReportV2PageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
+type TestingReportV3 {
+  avgLoss: Float!
+  avgProfit: Float!
+  bottomAccProfit: Float!
+  calculatedR2: Float!
+  calculatedSlope: Float!
+  id: Int!
+  investedUSD: Float!
+  lossCount: Int!
+  maxCount: Int!
+  maxLoss: Float!
+  maxProfit: Float!
+  maxSize: Int!
+  minCount: Int!
+  minR2: String!
+  minSize: Int!
+  peakAccProfit: Float!
+  profitCount: Int!
+  totalPositions: Int!
+  totalTasks: Int!
+  totalTraders: Int!
+  totalUSDPnl: Float!
+  totalUniqueTraders: Int!
+  usdPnls: [Float!]!
+}
+
+type TestingReportV3Connection {
+  edges: [TestingReportV3Edge!]!
+  pageInfo: TestingReportV3PageInfo!
+}
+
+type TestingReportV3Edge {
+  cursor: Int!
+  node: TestingReportV3!
+}
+
+type TestingReportV3PageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
+type TotalBot {
+  address: String!
+  contractId: Int!
+  dateStr: String!
 }
 
 enum TradeActionType {
@@ -707,14 +902,13 @@ input UpdatePlanInput {
   title: String
 }
 
-input UpdateStrategyMetadataInput {
-  description: String
-  title: String
-}
-
 type User {
   address: String!
+  allowAuto: Boolean!
+  budget: Float!
+  followerContractId: Int!
   permission: UserPermission!
+  ratio: Float!
 }
 
 enum UserPermission {
@@ -725,7 +919,18 @@ enum UserPermission {
 
 type WalletAccount {
   address: String!
+  id: Int!
   tags: [Tag!]!
+  userId: String!
+}
+
+type WholeCompressedHistories {
+  accPnls: [AccPnl!]!
+  actionTypeCount: String
+  botCounts: [BotCount!]!
+  maxInvested: Float!
+  totalBots: [TotalBot!]!
+  uniqueTraders: [String!]
 }
 
 input WithdrawAllInput {

@@ -3,7 +3,6 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import Chart from "chart.js/auto";
 import { twMerge } from "tailwind-merge";
-import dayjs from "dayjs";
 import { Button, Checkbox, useDisclosure } from "@nextui-org/react";
 import { CheckboxGroup } from "@nextui-org/react";
 import { StandardModal } from "../modals/StandardModal";
@@ -12,12 +11,18 @@ export type LineChartProps = {
   title?: string;
   data: {
     value: number;
-    date: Date;
+    label: string;
   }[];
   className?: string;
+  initialSelected?: string[];
 };
 
-export default function LineChart({ title, data, className }: LineChartProps) {
+export default function LineChart({
+  title,
+  data,
+  className,
+  initialSelected,
+}: LineChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const modalChartRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -27,7 +32,7 @@ export default function LineChart({ title, data, className }: LineChartProps) {
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(initialSelected || []);
 
   const drawChart = useCallback(() => {
     if (ref.current) {
@@ -39,11 +44,11 @@ export default function LineChart({ title, data, className }: LineChartProps) {
         ...[
           {
             value: 0,
-            date: new Date(),
+            label: "",
           },
           {
             value: 0,
-            date: new Date(),
+            label: "",
           },
         ],
       );
@@ -54,9 +59,7 @@ export default function LineChart({ title, data, className }: LineChartProps) {
     ref.current = new Chart(chartContainer, {
       type: "line",
       data: {
-        labels: data.map((item) =>
-          dayjs(new Date(item.date)).format("YYYY/MM/DD hh:mm:ss"),
-        ),
+        labels: data.map((item) => item.label),
         datasets: [
           {
             label: "Amount",
@@ -120,11 +123,11 @@ export default function LineChart({ title, data, className }: LineChartProps) {
         ...[
           {
             value: 0,
-            date: new Date(),
+            label: "",
           },
           {
             value: 0,
-            date: new Date(),
+            label: "",
           },
         ],
       );
@@ -135,9 +138,7 @@ export default function LineChart({ title, data, className }: LineChartProps) {
     modalRef.current = new Chart(chartContainer, {
       type: "line",
       data: {
-        labels: data.map((item) =>
-          dayjs(new Date(item.date)).format("YYYY/MM/DD hh:mm:ss"),
-        ),
+        labels: data.map((item) => item.label),
         datasets: [
           {
             label: "Amount",

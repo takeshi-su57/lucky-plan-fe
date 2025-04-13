@@ -1,4 +1,5 @@
 import LineChart from "@/components/charts/LineChart";
+import dayjs from "dayjs";
 
 export type HistoryChartData = {
   value: number;
@@ -24,7 +25,10 @@ export function HistoryCharts({
         <div className="flex-1">
           <LineChart
             title="PNL"
-            data={pnlChartData}
+            data={pnlChartData.map((item) => ({
+              ...item,
+              label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+            }))}
             className="h-[250px] rounded-2xl border border-neutral-800 bg-amber-950/5"
           />
         </div>
@@ -32,7 +36,10 @@ export function HistoryCharts({
         <div className="flex-1">
           <LineChart
             title="Out"
-            data={outChartData}
+            data={outChartData.map((item) => ({
+              ...item,
+              label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+            }))}
             className="h-[250px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
           />
         </div>
@@ -42,7 +49,10 @@ export function HistoryCharts({
         <div className="flex-1">
           <LineChart
             title="In/Out"
-            data={inOutChartData}
+            data={inOutChartData.map((item) => ({
+              ...item,
+              label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+            }))}
             className="h-[250px] rounded-2xl border border-neutral-800 bg-amber-950/5"
           />
         </div>
@@ -50,7 +60,10 @@ export function HistoryCharts({
         <div className="flex-1">
           <LineChart
             title="In"
-            data={inChartData}
+            data={inChartData.map((item) => ({
+              ...item,
+              label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+            }))}
             className="h-[250px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
           />
         </div>

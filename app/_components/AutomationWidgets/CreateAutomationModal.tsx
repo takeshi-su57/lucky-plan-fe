@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEventHandler, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Autocomplete,
   AutocompleteItem,
@@ -9,8 +9,6 @@ import {
   Dropdown,
   DropdownMenu,
   DropdownItem,
-  Select,
-  SelectItem,
   DateRangePicker,
   Switch,
 } from "@nextui-org/react";
@@ -30,11 +28,10 @@ import {
 } from "@/app-hooks/useContract";
 import { useBatchCreateBots } from "@/app-hooks/useAutomation";
 import { useGetWalletAccountsByTags } from "@/app/_hooks/useWalletAccount";
-import { useGetAllStrategyMetadata } from "@/app-hooks/useStrategy";
 import { useGetAllTags } from "@/app-hooks/useTag";
 import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHistories";
 
-import { lifeTimeItems, shrinkAddress } from "@/utils";
+import { shrinkAddress } from "@/utils";
 import { NumericInput } from "@/components/inputs/NumericInput";
 
 import LineChart from "@/components/charts/LineChart";
@@ -43,9 +40,10 @@ import {
   transformHistories,
 } from "@/utils/historiesChart";
 import { PairChip } from "../LeaderboardWidgets/PairChip";
+import dayjs from "dayjs";
 
 export type CreateAutomationModalProps = {
-  planId: number | null;
+  planId: number;
   isOpen: boolean;
   onClose: () => void;
   onOpenChange: (value: boolean) => void;
@@ -61,7 +59,6 @@ export function CreateAutomationModal({
 
   const allTags = useGetAllTags();
   const allContracts = useGetAllContracts();
-  const allStrategyMetadata = useGetAllStrategyMetadata();
 
   const [selectedTags, setSelectedTags] = useState<Selection>(
     new Set(["LEADER"]),
@@ -79,9 +76,6 @@ export function CreateAutomationModal({
   const [leaderCollateralBaseline, setLeaderCollateralBaseline] =
     useState<string>("");
 
-  const [strategy, setStrategy] = useState<string>();
-  const [ratio, setRatio] = useState("100");
-  const [lifeTimeScale, setLifeTimeScale] = useState("1m");
   const [maxCollateral, setMaxCollateral] = useState("");
   const [minCollateral, setMinCollateral] = useState("");
   const [collateralBaseline, setCollateralBaseline] = useState("");
@@ -106,48 +100,11 @@ export function CreateAutomationModal({
     leaderAddress || null,
   );
 
-  const handleChangeStrategy: ChangeEventHandler<HTMLSelectElement> = (
-    event,
-  ) => {
-    const value = event.target.value;
-
-    if (value.trim() !== "") {
-      if (value === "equalCopy") {
-        setRatio("100");
-      }
-      setStrategy(value);
-    }
-  };
-
-  const handleChangeLifetime: ChangeEventHandler<HTMLSelectElement> = (
-    event,
-  ) => {
-    const value = event.target.value;
-
-    if (value.trim() !== "") {
-      setLifeTimeScale(value);
-    }
-  };
-
-  let strategyHelper = "";
-  let ratioHelper = "";
   let maxCollateralHelper = "";
   let minCollateralHelper = "";
   let collateralBaselineHelper = "";
   let maxLeverageHelper = "";
   let minLeverageHelper = "";
-
-  if (!strategy) {
-    strategyHelper = "Please select strategy";
-  }
-
-  if (Number.isNaN(+ratio)) {
-    ratioHelper = "Invalid ratio";
-  } else {
-    if (+ratio <= 0) {
-      ratioHelper = "Invalid ratio";
-    }
-  }
 
   if (Number.isNaN(+maxCollateral)) {
     maxCollateralHelper = "Invalid max collateral";
@@ -212,8 +169,6 @@ export function CreateAutomationModal({
     !leaderCollateralBaseline;
 
   const isDisabledStrategy =
-    strategyHelper.trim() !== "" ||
-    (strategy === "ratioCopy" && ratioHelper.trim() !== "") ||
     maxCollateralHelper.trim() !== "" ||
     minCollateralHelper.trim() !== "" ||
     maxLeverageHelper.trim() !== "" ||
@@ -225,21 +180,12 @@ export function CreateAutomationModal({
     }
 
     if (
-      !strategy ||
-      (strategy === "ratioCopty" && ratio.trim() === "") ||
-      lifeTimeScale.trim() === "" ||
       maxCollateral.trim() === "" ||
       minCollateral.trim() === "" ||
       collateralBaseline.trim() === "" ||
       maxLeverage.trim() === "" ||
       minLeverage.trim() === ""
     ) {
-      return;
-    }
-
-    const lifeTime = lifeTimeItems.find((item) => item.id === lifeTimeScale);
-
-    if (!lifeTime) {
       return;
     }
 
@@ -253,9 +199,9 @@ export function CreateAutomationModal({
             followerContractId: +followerContractId,
             leaderCollateralBaseline: Math.floor(+leaderCollateralBaseline),
             strategy: {
-              strategyKey: strategy,
-              ratio: +ratio,
-              lifeTime: lifeTime.value,
+              strategyKey: "scaleCopy",
+              ratio: +100,
+              lifeTime: 365 * 24 * 60,
               maxCollateral: +maxCollateral,
               minCollateral: +minCollateral,
               collateralBaseline: +collateralBaseline,
@@ -282,7 +228,6 @@ export function CreateAutomationModal({
     outChartData: originalOutChartData,
     minIn: originalMinIn,
     maxIn: originalMaxIn,
-
     sumIn: originalSumIn,
     countIn: originalCountIn,
   } = useMemo(
@@ -315,13 +260,7 @@ export function CreateAutomationModal({
   } = useMemo(() => {
     const baseline = Math.floor(+collateralBaseline);
 
-    if (
-      !originalHistories ||
-      Number.isNaN(baseline) ||
-      !strategy ||
-      strategyHelper.trim() !== "" ||
-      (strategy === "ratioCopy" && ratioHelper.trim() !== "")
-    ) {
+    if (!originalHistories || Number.isNaN(baseline)) {
       return {
         pnlChartData: [],
         inOutChartData: [],
@@ -339,8 +278,8 @@ export function CreateAutomationModal({
       originalHistories,
       baseline,
       {
-        strategyKey: strategy,
-        ratio: +ratio,
+        strategyKey: "scaleCopy",
+        ratio: 100,
         collateralBaseline: +collateralBaseline,
       },
     );
@@ -362,10 +301,6 @@ export function CreateAutomationModal({
   }, [
     collateralBaseline,
     originalHistories,
-    strategy,
-    strategyHelper,
-    ratioHelper,
-    ratio,
     followerAvailableTradePairs,
     showAllActivity,
     range,
@@ -538,48 +473,6 @@ export function CreateAutomationModal({
                 label="Leader Collateral Baseline"
               />
 
-              <Select
-                variant="underlined"
-                label="Strategy"
-                selectedKeys={strategy ? [strategy] : undefined}
-                onChange={handleChangeStrategy}
-                selectionMode="single"
-                className="flex-1"
-                errorMessage={strategyHelper}
-                isInvalid={strategyHelper.trim() !== ""}
-              >
-                {allStrategyMetadata.map((metadata) => (
-                  <SelectItem key={metadata.key}>{metadata.title}</SelectItem>
-                ))}
-              </Select>
-
-              <NumericInput
-                amount={ratio}
-                onChange={setRatio}
-                isDisabled={strategy !== "ratioCopy"}
-                label="Ratio"
-                errorMessage={strategy === "ratioCopy" && ratioHelper}
-                isInvalid={
-                  strategy === "ratioCopy" && ratioHelper.trim() !== ""
-                }
-              />
-
-              <Select
-                variant="underlined"
-                label="Lifetime"
-                selectedKeys={lifeTimeScale ? [lifeTimeScale] : undefined}
-                onChange={handleChangeLifetime}
-                selectionMode="single"
-                className="flex-1"
-                isDisabled={
-                  strategy === "ratioCopy" && ratioHelper.trim() !== ""
-                }
-              >
-                {lifeTimeItems.map((item) => (
-                  <SelectItem key={item.id}>{item.label}</SelectItem>
-                ))}
-              </Select>
-
               <NumericInput
                 amount={maxCollateral}
                 onChange={setMaxCollateral}
@@ -610,7 +503,6 @@ export function CreateAutomationModal({
                 amount={maxLeverage}
                 onChange={setMaxLeverage}
                 label="Max Leverage"
-                isDisabled={ratioHelper.trim() !== ""}
                 errorMessage={maxLeverageHelper}
                 isInvalid={maxLeverageHelper.trim() !== ""}
               />
@@ -734,22 +626,34 @@ export function CreateAutomationModal({
 
                 <LineChart
                   title="PNL"
-                  data={originalPNLChartData}
+                  data={originalPNLChartData.map((item) => ({
+                    ...item,
+                    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+                  }))}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
                 <LineChart
                   title="In/Out"
-                  data={originalInOutChartData}
+                  data={originalInOutChartData.map((item) => ({
+                    ...item,
+                    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+                  }))}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
                 <LineChart
                   title="Out"
-                  data={originalOutChartData}
+                  data={originalOutChartData.map((item) => ({
+                    ...item,
+                    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+                  }))}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
                 <LineChart
                   title="In"
-                  data={originalInChartData}
+                  data={originalInChartData.map((item) => ({
+                    ...item,
+                    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+                  }))}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
               </div>
@@ -783,25 +687,37 @@ export function CreateAutomationModal({
 
                 <LineChart
                   title="PNL"
-                  data={calculatedPNLChartData}
+                  data={calculatedPNLChartData.map((item) => ({
+                    ...item,
+                    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+                  }))}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
 
                 <LineChart
                   title="In/Out"
-                  data={calculatedInOutChartData}
+                  data={calculatedInOutChartData.map((item) => ({
+                    ...item,
+                    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+                  }))}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
 
                 <LineChart
                   title="Out"
-                  data={calculatedOutChartData}
+                  data={calculatedOutChartData.map((item) => ({
+                    ...item,
+                    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+                  }))}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
 
                 <LineChart
                   title="In"
-                  data={calculatedInChartData}
+                  data={calculatedInChartData.map((item) => ({
+                    ...item,
+                    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+                  }))}
                   className="h-[200px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
                 />
               </div>
