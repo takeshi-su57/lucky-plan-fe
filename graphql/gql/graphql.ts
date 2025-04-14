@@ -229,7 +229,7 @@ export type CreateStrategyInput = {
   minCollateral: Scalars['Float']['input'];
   minLeverage: Scalars['Int']['input'];
   params: Scalars['String']['input'];
-  ratio: Scalars['Int']['input'];
+  ratio: Scalars['Float']['input'];
   strategyKey: Scalars['String']['input'];
 };
 
