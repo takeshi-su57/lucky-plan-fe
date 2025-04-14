@@ -49,7 +49,7 @@ export function VirtualAutomationRow({
           <Divider />
 
           <div className="flex flex-col font-mono text-xs">
-            <span>{`${strategy.strategyKey}, ${strategy.ratio}%)`}</span>
+            <span>{`${strategy.strategyKey}, ${strategy.ratio}x)`}</span>
 
             <span>
               Collateral:

@@ -192,7 +192,7 @@ export function FollowerStrategyForm({
       leaderCollateralBaseline: Math.floor(+leaderCollateralBaseline),
       strategy: {
         strategyKey: "scaleCopy",
-        ratio: 100,
+        ratio: 1,
         collateralBaseline: +collateralBaseline,
         lifeTime: 365 * 24 * 60, // 1 year lifetime
         maxCollateral: +maxCollateral,
@@ -219,7 +219,7 @@ export function FollowerStrategyForm({
 
     return transformHistories(originalHistories, leaderBaseline, {
       strategyKey: "scaleCopy",
-      ratio: 100,
+      ratio: 1,
       collateralBaseline: baseline,
     });
   }, [collateralBaseline, leaderCollateralBaseline, originalHistories]);

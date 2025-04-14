@@ -74,7 +74,7 @@ export function PastChart({
       leaderCollateralBaseline,
       {
         strategyKey: "scaleCopy",
-        ratio: 100,
+        ratio: 1,
         collateralBaseline: followerCollateralBaseline,
       },
     );
