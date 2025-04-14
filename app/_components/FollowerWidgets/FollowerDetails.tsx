@@ -7,7 +7,7 @@ import {
   Button,
   Card,
   CardBody,
-  useDisclosure,
+  // useDisclosure,
   Tab,
   Tabs,
   Progress,
@@ -16,7 +16,7 @@ import { Address } from "viem";
 
 import { WalletAccountTradeHistory } from "@/app/_components/WalletAccountWidgets/WalletAccountTradeHistory";
 
-import { ShowPrivateKeyModal } from "./ShowPrivateKeyModal";
+// import { ShowPrivateKeyModal } from "./ShowPrivateKeyModal";
 import {
   useGetPendingOrders,
   useGetTradedOrders,
@@ -62,7 +62,7 @@ export function FollowerDetails({
     follower.contractId,
   );
 
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  // const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   useEffect(() => {
     if (isChatFirst) {
@@ -120,14 +120,14 @@ export function FollowerDetails({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
+          {/* <Button
             onClick={() => {
               onOpen();
             }}
             size="sm"
           >
             Get Key
-          </Button>
+          </Button> */}
 
           <Button
             onClick={() =>
@@ -200,11 +200,11 @@ export function FollowerDetails({
         </>
       )}
 
-      <ShowPrivateKeyModal
+      {/* <ShowPrivateKeyModal
         address={follower.address as Address}
         isOpen={isOpen}
         onOpenChange={onOpenChange}
-      />
+      /> */}
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import {
   useApolloClient,
-  useLazyQuery,
+  // useLazyQuery,
   useMutation,
   useQuery,
 } from "@apollo/client";
@@ -66,11 +66,11 @@ export const GET_ALL_FOLLOWER_DETAILS_DOCUMENT = graphql(`
   }
 `);
 
-export const GET_FOLLOWER_PRIVATE_KEY_DOCUMENT = graphql(`
-  query getFollowerPrivateKey($input: GetFollowerByAddressInput!) {
-    getFollowerPrivateKey(input: $input)
-  }
-`);
+// export const GET_FOLLOWER_PRIVATE_KEY_DOCUMENT = graphql(`
+//   query getFollowerPrivateKey($input: GetFollowerByAddressInput!) {
+//     getFollowerPrivateKey(input: $input)
+//   }
+// `);
 
 export const GET_PENDING_ORDERS_DOCUMENT = graphql(`
   query getPendingOrders($address: String!, $contractId: Int!) {
@@ -131,6 +131,18 @@ export const WITHDRAW_ALL_USDC_DOCUMENT = graphql(`
 export const WITHDRAW_ALL_ETH_DOCUMENT = graphql(`
   mutation withdrawAllETH($input: WithdrawAllInput!) {
     withdrawAllETH(input: $input)
+  }
+`);
+
+export const WITHDRAW_ETH_TO_USER_DOCUMENT = graphql(`
+  mutation withdrawETHToUser($amount: Float!, $contractId: Int!) {
+    withdrawETHToUser(amount: $amount, contractId: $contractId)
+  }
+`);
+
+export const WITHDRAW_USDC_TO_USER_DOCUMENT = graphql(`
+  mutation withdrawUSDCToUser($amount: Float!, $contractId: Int!) {
+    withdrawUSDCToUser(amount: $amount, contractId: $contractId)
   }
 `);
 
@@ -225,26 +237,26 @@ export function useGetTradedOrders(address: string, contractId: number) {
   return { trades, loading };
 }
 
-export function useGetFollowerPrivateKey() {
-  const [getPrivateKey, { data, error }] = useLazyQuery(
-    GET_FOLLOWER_PRIVATE_KEY_DOCUMENT,
-  );
+// export function useGetFollowerPrivateKey() {
+//   const [getPrivateKey, { data, error }] = useLazyQuery(
+//     GET_FOLLOWER_PRIVATE_KEY_DOCUMENT,
+//   );
 
-  const { enqueueSnackbar } = useSnackbar();
+//   const { enqueueSnackbar } = useSnackbar();
 
-  useEffect(() => {
-    if (error) {
-      enqueueSnackbar("Failed at follower private key!", {
-        variant: "error",
-      });
-    }
-  }, [enqueueSnackbar, error]);
+//   useEffect(() => {
+//     if (error) {
+//       enqueueSnackbar("Failed at follower private key!", {
+//         variant: "error",
+//       });
+//     }
+//   }, [enqueueSnackbar, error]);
 
-  return {
-    getPrivateKey,
-    data,
-  };
-}
+//   return {
+//     getPrivateKey,
+//     data,
+//   };
+// }
 
 export function useGenerateFollower() {
   const [generateFollower, { data: newData, error }] = useMutation(
@@ -438,4 +450,40 @@ export function useWithdrawAllETH() {
   }, [client.cache, error, enqueueSnackbar, data]);
 
   return withdrawAllETH;
+}
+
+export function useWithdrawETHToUser() {
+  const [withdrawETHToUser, { data, error, loading }] = useMutation(
+    WITHDRAW_ETH_TO_USER_DOCUMENT,
+  );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      enqueueSnackbar("Success at withdraw ETH to User Wallet!", {
+        variant: "success",
+      });
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return { withdrawETHToUser, loading };
+}
+
+export function useWithdrawUSDCToUser() {
+  const [withdrawUSDCToUser, { data, error, loading }] = useMutation(
+    WITHDRAW_USDC_TO_USER_DOCUMENT,
+  );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      enqueueSnackbar("Success at withdraw USDC to User Wallet!", {
+        variant: "success",
+      });
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return { withdrawUSDCToUser, loading };
 }
