@@ -1044,7 +1044,7 @@ export type Strategy = {
   minCollateral: Scalars['Int']['output'];
   minLeverage: Scalars['Int']['output'];
   params: Scalars['String']['output'];
-  ratio: Scalars['Int']['output'];
+  ratio: Scalars['Float']['output'];
   strategyKey: Scalars['String']['output'];
 };
 
