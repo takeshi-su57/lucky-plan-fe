@@ -1,0 +1,117 @@
+"use client";
+
+import { useState } from "react";
+
+import { StandardModal } from "@/components/modals/StandardModal";
+
+import { Button } from "@nextui-org/react";
+import {
+  useWithdrawETHToUser,
+  useWithdrawUSDCToUser,
+} from "@/app/_hooks/useFollower";
+import { NumericInput } from "@/components/inputs/NumericInput";
+
+export type WithdrawModalProps = {
+  isOpen: boolean;
+  contractId: number;
+  onOpenChange: (value: boolean) => void;
+};
+
+export function WithdrawModal({
+  isOpen,
+  contractId,
+  onOpenChange,
+}: WithdrawModalProps) {
+  const { withdrawETHToUser, loading: ethLoading } = useWithdrawETHToUser();
+  const { withdrawUSDCToUser, loading: usdcLoading } = useWithdrawUSDCToUser();
+
+  const [ethAmount, setEthAmount] = useState("0");
+  const [usdcAmount, setUSDCAmount] = useState("0");
+
+  const handleWithdrawETH = () => {
+    if (ethAmount.trim() === "") {
+      return;
+    }
+
+    const ethAmountNum = +ethAmount;
+
+    if (Number.isNaN(ethAmountNum)) {
+      return;
+    }
+
+    withdrawETHToUser({
+      variables: {
+        contractId,
+        amount: ethAmountNum,
+      },
+    });
+  };
+
+  const handleWithdrawUSDC = () => {
+    if (usdcAmount.trim() === "") {
+      return;
+    }
+
+    const usdcAmountNum = +usdcAmount;
+
+    if (Number.isNaN(usdcAmountNum)) {
+      return;
+    }
+
+    withdrawUSDCToUser({
+      variables: {
+        contractId,
+        amount: usdcAmountNum,
+      },
+    });
+  };
+
+  const isDisabledETHWithdraw =
+    ethAmount.trim() === "" || Number.isNaN(+ethAmount);
+  const isDisabledUSDCWithdraw =
+    usdcAmount.trim() === "" || Number.isNaN(+usdcAmount);
+
+  return (
+    <StandardModal isOpen={isOpen} onOpenChange={onOpenChange} backdrop="blur">
+      <div className="flex flex-col gap-3.5">
+        <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          Withdraw to User Wallet
+        </h1>
+
+        <div className="flex flex-row items-center gap-4">
+          <NumericInput
+            amount={ethAmount}
+            onChange={setEthAmount}
+            label="ETH Amount"
+          />
+
+          <Button
+            onClick={handleWithdrawETH}
+            isDisabled={isDisabledETHWithdraw}
+            isLoading={ethLoading}
+            className="w-[180px]"
+          >
+            Withdraw ETH
+          </Button>
+        </div>
+
+        <div className="flex flex-row items-center gap-4">
+          <NumericInput
+            amount={usdcAmount}
+            onChange={setUSDCAmount}
+            label="USDC Amount"
+          />
+
+          <Button
+            onClick={handleWithdrawUSDC}
+            isDisabled={isDisabledUSDCWithdraw}
+            isLoading={usdcLoading}
+            className="w-[180px]"
+          >
+            Withdraw USDC
+          </Button>
+        </div>
+      </div>
+    </StandardModal>
+  );
+}
