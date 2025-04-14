@@ -13,6 +13,7 @@ import {
   Switch,
   Card,
   CardBody,
+  useDisclosure,
 } from "@nextui-org/react";
 import { FaPlus } from "react-icons/fa";
 import { Virtuoso } from "react-virtuoso";
@@ -31,6 +32,7 @@ import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 import { FollowerDetails } from "@/app-components/FollowerWidgets/FollowerDetails";
 import { getPriceStr } from "@/utils/price";
 import { LabeledChip } from "@/components/chips/LabeledChip";
+import { WithdrawModal } from "./WithdrawModal";
 
 export function Followers() {
   const searchParams = useSearchParams();
@@ -50,6 +52,8 @@ export function Followers() {
   const [showAllActivity, setShowAllActivity] = useState(false);
 
   const followerDetails = useGetAllFollowerDetails(contractId);
+
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const handleGenerateFollower = () => {
     generateFollower({
@@ -231,6 +235,12 @@ export function Followers() {
             color="danger"
           />
 
+          {contractId ? (
+            <Button color="primary" variant="flat" onClick={onOpen}>
+              Withdraw
+            </Button>
+          ) : null}
+
           <Button
             isIconOnly
             color="primary"
@@ -272,6 +282,14 @@ export function Followers() {
           />
         </CardBody>
       </Card>
+
+      {contractId ? (
+        <WithdrawModal
+          contractId={+contractId}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+        />
+      ) : null}
     </div>
   );
 }

@@ -273,10 +273,6 @@ type FollowerTrade {
   params: String!
 }
 
-input GetFollowerByAddressInput {
-  address: String!
-}
-
 input GetUserByAddressInput {
   address: String!
 }
@@ -419,6 +415,8 @@ type Mutation {
   upsertTag(input: TagInput!): Tag!
   withdrawAllETH(input: WithdrawAllInput!): Boolean!
   withdrawAllUSDC(input: WithdrawAllInput!): Boolean!
+  withdrawETHToUser(amount: Float!, contractId: Int!): Boolean!
+  withdrawUSDCToUser(amount: Float!, contractId: Int!): Boolean!
 }
 
 type Plan {
@@ -564,7 +562,6 @@ type Query {
   getBotsByStatus(after: Int, first: Int!, status: BotStatus!): BotConnection!
   getDevPnlSnapshots(dateStr: String!, filterParams: ExportFilter!): [PnlSnapshotDevDetails!]!
   getDevPnlSnapshotsV4(dateStr: String!, filterParams: [ExportFilterV3!]!, ratio: Float!): [PnlSnapshotDevDetails!]!
-  getFollowerPrivateKey(input: GetFollowerByAddressInput!): String!
   getLogsSeverityCounts: [SeverityCount!]!
   getMonthlyDevPnlSnapshots(dateStr: String!, filterParams: ExportFilter!): [TradeHistory!]!
   getPendingOrders(address: String!, contractId: Int!): [FollowerPendingOrder!]!
