@@ -200,7 +200,7 @@ export function CreateAutomationModal({
             leaderCollateralBaseline: Math.floor(+leaderCollateralBaseline),
             strategy: {
               strategyKey: "scaleCopy",
-              ratio: +100,
+              ratio: 1,
               lifeTime: 365 * 24 * 60,
               maxCollateral: +maxCollateral,
               minCollateral: +minCollateral,
@@ -279,7 +279,7 @@ export function CreateAutomationModal({
       baseline,
       {
         strategyKey: "scaleCopy",
-        ratio: 100,
+        ratio: 1,
         collateralBaseline: +collateralBaseline,
       },
     );

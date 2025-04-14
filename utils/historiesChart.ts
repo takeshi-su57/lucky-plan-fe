@@ -377,7 +377,6 @@ export function getOpenMissionParams(
     collateralAmount: number;
     collateralPriceUsd: number;
   },
-
   leaderCollateralBaseline: number,
 ) {
   const collateralUSDAmount = args.collateralAmount * args.collateralPriceUsd;
@@ -387,7 +386,7 @@ export function getOpenMissionParams(
   if (strategy.strategyKey === "ratioCopy") {
     const deltaCollateral = collateralUSDAmount - leaderCollateralBaseline;
 
-    const deltaFollower = (deltaCollateral * strategy.ratio) / 100;
+    const deltaFollower = deltaCollateral * strategy.ratio;
 
     ratioAmount = strategy.collateralBaseline + deltaFollower;
   }
