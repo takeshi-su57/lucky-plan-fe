@@ -627,7 +627,7 @@ type Strategy {
   minCollateral: Int!
   minLeverage: Int!
   params: String!
-  ratio: Int!
+  ratio: Float!
   strategyKey: String!
 }
 
