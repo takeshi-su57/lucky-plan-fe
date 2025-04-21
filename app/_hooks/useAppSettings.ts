@@ -38,11 +38,14 @@ export function useAppSettings() {
   });
 
   const changeAppSettings = useMutation({
-    mutationFn: (newAppSettings: AppSettings) => {
+    mutationFn: (newAppSettings: Partial<AppSettings>) => {
       try {
         window.localStorage.setItem(
           LOCAL_APP_SETTINGS,
-          JSON.stringify(newAppSettings),
+          JSON.stringify({
+            ...(appQuery.data || initialAppSettings),
+            ...newAppSettings,
+          }),
         );
 
         return Promise.resolve(newAppSettings);
@@ -53,11 +56,11 @@ export function useAppSettings() {
         );
       }
     },
-    onSuccess: (newAppSettings: AppSettings) => {
+    onSuccess: (newAppSettings: Partial<AppSettings>) => {
       if (newAppSettings) {
         queryClient.setQueriesData(
           { queryKey: [LOCAL_APP_SETTINGS] },
-          () => newAppSettings,
+          (prev) => ({ ...(prev || initialAppSettings), ...newAppSettings }),
         );
       } else {
         queryClient.setQueriesData(
@@ -69,7 +72,7 @@ export function useAppSettings() {
   });
 
   return {
-    appQuery,
+    appSettings: appQuery.data || initialAppSettings,
     changeAppSettings,
   };
 }

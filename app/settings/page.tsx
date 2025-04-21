@@ -10,6 +10,7 @@ import { UsersPanel } from "../_components/SettingsWidget/UsersPanel";
 import { useUserJWT } from "../_hooks/useUserJWT";
 import { UserPermission } from "@/graphql/gql/graphql";
 import { BacktestSettingsPanel } from "../_components/SettingsWidget/BacktestSettingsPanel";
+import { useAppSettings } from "../_hooks/useAppSettings";
 
 type TabType =
   | "contracts"
@@ -20,9 +21,11 @@ type TabType =
   | "controls";
 
 export default function Page() {
-  const [selected, setSelected] = useState<TabType>("contracts");
+  const [selected, setSelected] = useState<TabType>("controls");
 
   const { userJwtQuery } = useUserJWT();
+
+  const { appSettings } = useAppSettings();
 
   return (
     <div className="flex flex-col gap-6">
@@ -32,29 +35,35 @@ export default function Page() {
           selectedKey={selected}
           onSelectionChange={(value) => value && setSelected(value as TabType)}
         >
-          <Tab key="contracts" title="Contracts" />
-          <Tab key="strategies" title="Strategies" />
+          {appSettings.isDevMode ? (
+            <>
+              <Tab key="contracts" title="Contracts" />
+              <Tab key="strategies" title="Strategies" />
+            </>
+          ) : null}
 
           {userJwtQuery?.data?.permission === UserPermission.Admin ? (
             <>
               <Tab key="pnlSnapshot" title="Pnl Snapshot" />
               <Tab key="users" title="Users" />
               <Tab key="backtest" title="Backtest" />
-              <Tab key="controls" title="Controls" />
             </>
           ) : null}
+
+          <Tab key="controls" title="Controls" />
         </Tabs>
       </div>
 
       {selected === "contracts" && <ContractPanel />}
       {selected === "strategies" && <StrategyPanel />}
+
+      {selected === "controls" && <ControlPanel />}
+
       {userJwtQuery?.data?.permission === UserPermission.Admin ? (
         <>
           {selected === "pnlSnapshot" && <PnlSnapshotPanel />}
           {selected === "users" && <UsersPanel />}
           {selected === "backtest" && <BacktestSettingsPanel />}
-
-          {selected === "controls" && <ControlPanel />}
         </>
       ) : null}
     </div>

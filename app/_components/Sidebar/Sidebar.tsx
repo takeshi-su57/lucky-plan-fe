@@ -10,6 +10,7 @@ import { usePathname } from "next/navigation";
 import { twMerge } from "tailwind-merge";
 import { UserPermission } from "@/graphql/gql/graphql";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
+import { useAppSettings } from "@/app/_hooks/useAppSettings";
 
 const permissionRank: Record<string, number> = {
   [UserPermission.Admin]: 3,
@@ -38,6 +39,7 @@ export const links = [
     label: "Trader",
     title: "",
     limited: UserPermission.Trial,
+    isDevMode: true,
   },
   {
     id: "tags",
@@ -45,6 +47,7 @@ export const links = [
     title: "",
     limited: UserPermission.Trial,
     showDivider: true,
+    isDevMode: true,
   },
   {
     id: "leaderboards",
@@ -58,38 +61,44 @@ export const links = [
     title: "",
     limited: "Public",
     showDivider: true,
+    isDevMode: true,
   },
-  // {
-  //   id: "dev",
-  //   label: "Dev Page",
-  //   title: "",
-  //   limited: "Public",
-  // },
-  // {
-  //   id: "dev-v2",
-  //   label: "Dev V2 Page",
-  //   title: "",
-  //   limited: "Public",
-  // },
-  // {
-  //   id: "dev-v3",
-  //   label: "Dev V3 Page",
-  //   title: "",
-  //   limited: "Public",
-  // },
-  // {
-  //   id: "dev-v4",
-  //   label: "Dev Page",
-  //   title: "",
-  //   limited: "Public",
-  //   showDivider: true,
-  // },
+  {
+    id: "dev",
+    label: "Dev Page",
+    title: "",
+    limited: "Public",
+    isDevMode: true,
+  },
+  {
+    id: "dev-v2",
+    label: "Dev V2 Page",
+    title: "",
+    limited: "Public",
+    isDevMode: true,
+  },
+  {
+    id: "dev-v3",
+    label: "Dev V3 Page",
+    title: "",
+    limited: "Public",
+    isDevMode: true,
+  },
+  {
+    id: "dev-v4",
+    label: "Dev Page",
+    title: "",
+    limited: "Public",
+    showDivider: true,
+    isDevMode: true,
+  },
   {
     id: "dev-v5",
     label: "Dev Page",
     title: "",
     limited: "Public",
     showDivider: true,
+    isDevMode: true,
   },
   {
     id: "settings",
@@ -102,11 +111,13 @@ export const links = [
     label: "Log",
     title: "",
     limited: UserPermission.Admin,
+    isDevMode: true,
   },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { appSettings } = useAppSettings();
 
   const { userJwtQuery } = useUserJWT();
 
@@ -138,6 +149,7 @@ export function Sidebar() {
         }}
       >
         {links
+          .filter((link) => (appSettings.isDevMode ? true : !link.isDevMode))
           .filter(
             (link) =>
               permissionRank[link.limited] <= permissionRank[userPermissoin],
