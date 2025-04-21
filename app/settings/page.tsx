@@ -9,7 +9,6 @@ import { PnlSnapshotPanel } from "../_components/SettingsWidget/PnlSnapshotPanel
 import { UsersPanel } from "../_components/SettingsWidget/UsersPanel";
 import { useUserJWT } from "../_hooks/useUserJWT";
 import { UserPermission } from "@/graphql/gql/graphql";
-import { BacktestSettingsPanel } from "../_components/SettingsWidget/BacktestSettingsPanel";
 import { useAppSettings } from "../_hooks/useAppSettings";
 
 type TabType =
@@ -17,7 +16,6 @@ type TabType =
   | "strategies"
   | "pnlSnapshot"
   | "users"
-  | "backtest"
   | "controls";
 
 export default function Page() {
@@ -46,7 +44,6 @@ export default function Page() {
             <>
               <Tab key="pnlSnapshot" title="Pnl Snapshot" />
               <Tab key="users" title="Users" />
-              <Tab key="backtest" title="Backtest" />
             </>
           ) : null}
 
@@ -63,7 +60,6 @@ export default function Page() {
         <>
           {selected === "pnlSnapshot" && <PnlSnapshotPanel />}
           {selected === "users" && <UsersPanel />}
-          {selected === "backtest" && <BacktestSettingsPanel />}
         </>
       ) : null}
     </div>

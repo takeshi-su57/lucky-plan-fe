@@ -1,5 +1,5 @@
 import { Address } from "viem";
-
+import dayjs from "dayjs";
 import crypto from "crypto";
 
 export function shrinkAddress(address: Address, onlyFirst?: boolean) {
@@ -444,4 +444,59 @@ export function getWeekDateStr(date: Date) {
           : "th";
 
   return `${year} ${month} ${weekNumber}${suffix} Week`;
+}
+
+export function getDevData(
+  items: { pnl: number; date: Date }[],
+  scales: string[],
+  dateFormat: string,
+  operator: "sum" | "max" | "min",
+): {
+  data: { value: number; label: string }[];
+  accData: { value: number; label: string }[];
+} {
+  const dailyPnlData: Record<string, number> = {};
+
+  items.forEach((history) => {
+    const date = dayjs(history.date).format(dateFormat);
+
+    if (operator === "sum") {
+      dailyPnlData[date] = (dailyPnlData[date] ?? 0) + +history.pnl;
+    } else if (operator === "max") {
+      dailyPnlData[date] = Math.max(dailyPnlData[date] ?? 0, +history.pnl);
+    } else if (operator === "min") {
+      dailyPnlData[date] = Math.min(dailyPnlData[date] ?? 0, +history.pnl);
+    }
+  });
+
+  const data: { value: number; label: string }[] = [];
+  const accData: { value: number; label: string }[] = [];
+  let accPnl = 0;
+
+  for (const scale of scales) {
+    const pnl = dailyPnlData[scale] ?? 0;
+
+    if (operator === "sum") {
+      accPnl += pnl;
+    } else if (operator === "max") {
+      accPnl = Math.max(accPnl, pnl);
+    } else if (operator === "min") {
+      accPnl = Math.min(accPnl, pnl);
+    }
+
+    data.push({
+      value: pnl,
+      label: scale,
+    });
+
+    accData.push({
+      value: accPnl,
+      label: scale,
+    });
+  }
+
+  return {
+    data,
+    accData,
+  };
 }

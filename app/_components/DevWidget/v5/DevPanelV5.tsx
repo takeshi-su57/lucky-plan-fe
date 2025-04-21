@@ -7,14 +7,14 @@ import { parseDate } from "@internationalized/date";
 import { FastTotalDevV5Panel } from "./FastTotalDevV5Panel";
 import { TestParamsV5View } from "./TestParamsV5";
 
-import { TestingReportV4Panel } from "./TestingReportV4Panel";
+import { TestingReportV5Panel } from "./TestingReportV5Panel";
 import { PastDatePicker } from "@/app/_components/DevWidget/v1/PastDatePicker";
 import { SelectLeaders } from "./SelectLeaders";
 import { MergedLeaderboard } from "@/app/_components/DevWidget/v1/MergedLeaderboard";
 import { BacktestResult } from "@/app/_components/DevWidget/v1/BacktestResult";
 import { Stepper } from "@/components/Stepper/Stepper";
 
-import { bestCase } from "./subcase";
+import { bestCase } from "./subcaseV1";
 import { LeaderParams } from "../v1/LeaderItem";
 import { getServerTimezone } from "@/utils";
 import dayjs from "dayjs";
@@ -143,7 +143,7 @@ export function DevPanelV5() {
         />
       )}
 
-      {selected === "reports" && <TestingReportV4Panel />}
+      {selected === "reports" && <TestingReportV5Panel />}
     </div>
   );
 }

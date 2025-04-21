@@ -10,60 +10,7 @@ import { getPriceStr } from "@/utils/price";
 import { TestParamsV3 } from "./TestParamsV5";
 import { TradeHistories } from "./TradeHistories";
 
-function getData(
-  items: { pnl: number; date: Date }[],
-  scales: string[],
-  dateFormat: string,
-  operator: "sum" | "max" | "min",
-): {
-  data: { value: number; label: string }[];
-  accData: { value: number; label: string }[];
-} {
-  const dailyPnlData: Record<string, number> = {};
-
-  items.forEach((history) => {
-    const date = dayjs(history.date).format(dateFormat);
-
-    if (operator === "sum") {
-      dailyPnlData[date] = (dailyPnlData[date] ?? 0) + +history.pnl;
-    } else if (operator === "max") {
-      dailyPnlData[date] = Math.max(dailyPnlData[date] ?? 0, +history.pnl);
-    } else if (operator === "min") {
-      dailyPnlData[date] = Math.min(dailyPnlData[date] ?? 0, +history.pnl);
-    }
-  });
-
-  const data: { value: number; label: string }[] = [];
-  const accData: { value: number; label: string }[] = [];
-  let accPnl = 0;
-
-  for (const scale of scales) {
-    const pnl = dailyPnlData[scale] ?? 0;
-
-    if (operator === "sum") {
-      accPnl += pnl;
-    } else if (operator === "max") {
-      accPnl = Math.max(accPnl, pnl);
-    } else if (operator === "min") {
-      accPnl = Math.min(accPnl, pnl);
-    }
-
-    data.push({
-      value: pnl,
-      label: scale,
-    });
-
-    accData.push({
-      value: accPnl,
-      label: scale,
-    });
-  }
-
-  return {
-    data,
-    accData,
-  };
-}
+import { getDevData } from "@/utils";
 
 type TabType = "overview" | "details";
 
@@ -120,14 +67,10 @@ export function FastTotalDevV5Panel({
       dailyScales.push(dayjs(i).format("YYYY-MM-DD"));
     }
 
-    const { data: dailyPnlChartData, accData: accDailyPnlChartData } = getData(
-      accPnls,
-      dailyScales,
-      "YYYY-MM-DD",
-      "sum",
-    );
+    const { data: dailyPnlChartData, accData: accDailyPnlChartData } =
+      getDevData(accPnls, dailyScales, "YYYY-MM-DD", "sum");
 
-    const { data: dailyInChartData } = getData(
+    const { data: dailyInChartData } = getDevData(
       accPnls.map((item) => ({
         pnl: item.in,
         date: item.date,
@@ -137,7 +80,7 @@ export function FastTotalDevV5Panel({
       "sum",
     );
 
-    const { data: dailyOutChartData } = getData(
+    const { data: dailyOutChartData } = getDevData(
       accPnls.map((item) => ({
         pnl: item.in,
         date: item.date,
@@ -147,7 +90,7 @@ export function FastTotalDevV5Panel({
       "sum",
     );
 
-    const { data: dailyMaxInChartData } = getData(
+    const { data: dailyMaxInChartData } = getDevData(
       accPnls.map((item) => ({
         pnl: item.in,
         date: item.date,
@@ -157,7 +100,7 @@ export function FastTotalDevV5Panel({
       "max",
     );
 
-    const { data: dailyMaxOutChartData } = getData(
+    const { data: dailyMaxOutChartData } = getDevData(
       accPnls.map((item) => ({
         pnl: item.in,
         date: item.date,
@@ -168,7 +111,7 @@ export function FastTotalDevV5Panel({
     );
 
     const { data: dailyInOutChartData, accData: accDailyInOutChartData } =
-      getData(
+      getDevData(
         accPnls.map((item) => ({
           pnl: item.inOut,
           date: item.date,
@@ -178,7 +121,7 @@ export function FastTotalDevV5Panel({
         "sum",
       );
 
-    const { data: dailyMinInOutChartData } = getData(
+    const { data: dailyMinInOutChartData } = getDevData(
       accPnls.map((item) => ({
         pnl: item.inOut,
         date: item.date,
@@ -188,7 +131,7 @@ export function FastTotalDevV5Panel({
       "min",
     );
 
-    const { data: dailyTaskCountChartData } = getData(
+    const { data: dailyTaskCountChartData } = getDevData(
       accPnls.map((item) => ({
         pnl: item.taskCount,
         date: item.date,
@@ -198,7 +141,7 @@ export function FastTotalDevV5Panel({
       "sum",
     );
 
-    const { data: dailyPositionCountChartData } = getData(
+    const { data: dailyPositionCountChartData } = getDevData(
       accPnls.map((item) => ({
         pnl: item.positionCount,
         date: item.date,
@@ -208,7 +151,7 @@ export function FastTotalDevV5Panel({
       "sum",
     );
 
-    const { data: dailyTraderCountChartData } = getData(
+    const { data: dailyTraderCountChartData } = getDevData(
       accPnls.map((item) => ({
         pnl: item.traderCount,
         date: item.date,
@@ -224,7 +167,7 @@ export function FastTotalDevV5Panel({
       hourlyScales.push(dayjs(i).format("YYYY-MM-DD HH:[00]:[00]"));
     }
 
-    const { accData: accHourlyPnlChartData } = getData(
+    const { accData: accHourlyPnlChartData } = getDevData(
       accPnls,
       hourlyScales,
       "YYYY-MM-DD HH:[00]:[00]",
@@ -237,7 +180,12 @@ export function FastTotalDevV5Panel({
       hourScales.push(`${i}`);
     }
 
-    const { data: hourPnlChartData } = getData(accPnls, hourScales, "H", "sum");
+    const { data: hourPnlChartData } = getDevData(
+      accPnls,
+      hourScales,
+      "H",
+      "sum",
+    );
 
     const monthlyHourScales: string[] = [];
     const monthScales = ["2024-11", "2024-12", "2025-01", "2025-02", "2025-03"];
@@ -248,7 +196,7 @@ export function FastTotalDevV5Panel({
       }
     }
 
-    const { data: monthlyHourPnlChartData } = getData(
+    const { data: monthlyHourPnlChartData } = getDevData(
       accPnls,
       monthlyHourScales,
       "YYYY-MM HH",
@@ -265,7 +213,7 @@ export function FastTotalDevV5Panel({
       "Sun",
     ];
 
-    const { data: weekPnlChartData } = getData(
+    const { data: weekPnlChartData } = getDevData(
       accPnls,
       weekScales,
       "ddd",
@@ -280,7 +228,7 @@ export function FastTotalDevV5Panel({
       }
     }
 
-    const { data: monthWeekPnlChartData } = getData(
+    const { data: monthWeekPnlChartData } = getDevData(
       accPnls,
       monthWeekScales,
       "YYYY-MM ddd",

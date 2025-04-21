@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import dayjs from "dayjs";
+import { Address } from "viem";
+import { UserPermission } from "@/graphql/gql/graphql";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 
@@ -11,14 +14,17 @@ import {
   Select,
   SelectItem,
   Switch,
+  Skeleton,
 } from "@nextui-org/react";
 
-import { useAllowAuto, useChangeUserPermission } from "@/app/_hooks/useUser";
-import { UserPermission } from "@/graphql/gql/graphql";
+import { useAllowAuto, useChangeUserPermission } from "@/app-hooks/useUser";
+import { useGetAllContracts } from "@/app-hooks/useContract";
+import { useGetWholeCompressedHistoriesV4 } from "@/app-hooks/useHistory";
+
 import { NumericInput } from "@/components/inputs/NumericInput";
-import { useGetAllContracts } from "@/app/_hooks/useContract";
-import { Address } from "viem";
 import { shrinkAddress } from "@/utils";
+import { bestCase } from "../DevWidget/v5/subcaseV1";
+import { getPriceStr } from "@/utils/price";
 
 export type ChangePermissionModalProps = {
   user: {
@@ -41,6 +47,38 @@ export function ChangePermissionModal({
   const { mutateChangeUserPermission, loading: changeUserPermissionLoading } =
     useChangeUserPermission();
   const { mutateAllowAuto, loading: allowAutoLoading } = useAllowAuto();
+
+  const { accPnls, loading } = useGetWholeCompressedHistoriesV4(
+    "2024-11-01",
+    bestCase,
+    1,
+    false,
+  );
+
+  const { maxIn, month3MaxIn } = useMemo(() => {
+    let maxIn = 0;
+    let acc = 0;
+    let month3MaxIn = 0;
+    let month3Acc = 0;
+
+    console.log(accPnls);
+
+    for (const item of accPnls) {
+      maxIn = Math.min(maxIn, item.inOut);
+      acc = acc + item.inOut;
+
+      maxIn = Math.min(acc, maxIn);
+
+      if (dayjs().diff(new Date(item.date), "days") < 90) {
+        month3MaxIn = Math.min(month3MaxIn, item.inOut);
+        month3Acc = month3Acc + item.inOut;
+
+        month3MaxIn = Math.min(acc, month3MaxIn);
+      }
+    }
+
+    return { maxIn, month3MaxIn };
+  }, [accPnls]);
 
   const allContracts = useGetAllContracts();
 
@@ -162,6 +200,30 @@ export function ChangePermissionModal({
             >
               Change Permission
             </Button>
+
+            <br />
+            <br />
+
+            <p className="text-xs text-neutral-400">
+              All-Time Maximum Volume: <br />{" "}
+              {loading ? (
+                <Skeleton className="h-4 w-[100px] rounded-lg" />
+              ) : (
+                <span className="text-sm text-white">
+                  {getPriceStr(-maxIn)} USDC
+                </span>
+              )}
+            </p>
+            <p className="text-xs text-neutral-400">
+              Recent Max Volume (3M): <br />{" "}
+              {loading ? (
+                <Skeleton className="h-4 w-[100px] rounded-lg" />
+              ) : (
+                <span className="text-sm text-white">
+                  {getPriceStr(-month3MaxIn)} USDC
+                </span>
+              )}
+            </p>
           </div>
 
           <div className="flex flex-1 flex-col gap-3.5">
