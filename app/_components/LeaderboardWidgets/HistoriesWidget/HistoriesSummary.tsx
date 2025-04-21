@@ -1,10 +1,12 @@
+"use client";
 import dayjs from "dayjs";
+import { useState } from "react";
+import { Address } from "viem";
+import { Checkbox, Switch } from "@nextui-org/react";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { getPriceStr } from "@/utils/price";
-import { Address } from "viem";
-import { TagsWidget } from "../../TagWidgets/TagsWidget";
-import { Checkbox } from "@nextui-org/react";
+// import { TagsWidget } from "../../TagWidgets/TagsWidget";
 import { HistoryChartData } from "../HistoryCharts";
 
 export type HistoriesSummaryProps = {
@@ -33,18 +35,19 @@ export function HistoriesSummary({
   address,
   contractId,
   actionCounts,
-  maxIn,
   sumIn,
   countIn,
   firstActivity,
   lastActivity,
-  hideTags,
+  // hideTags,
   isSelected,
   onChangeSelection,
   label,
   pnlChartData,
   inOutChartData,
 }: HistoriesSummaryProps) {
+  const [showMore, setShowMore] = useState(false);
+
   const totalInvested = inOutChartData.reduce(
     (acc, curr) => (acc > curr.value ? curr.value : acc),
     0,
@@ -53,21 +56,11 @@ export function HistoriesSummary({
     pnlChartData.length > 0 ? pnlChartData[pnlChartData.length - 1].value : 0;
   const remainBalance = -totalInvested + totalPnl;
 
-  const items = [
+  const primaryItems = [
     {
       id: "address",
       label: "Address",
       value: <AddressWidget address={address as Address} />,
-    },
-    ...Object.entries(actionCounts).map(([action, count]) => ({
-      id: action,
-      label: action,
-      value: count,
-    })),
-    {
-      id: "tradeCount",
-      label: "Trades",
-      value: pnlChartData.length,
     },
     {
       id: "totalPnl",
@@ -80,24 +73,9 @@ export function HistoriesSummary({
       value: `$${getPriceStr(-totalInvested)}`,
     },
     {
-      id: "remainBalance",
-      label: "Remain Balance",
-      value: `$${getPriceStr(remainBalance)}`,
-    },
-    {
-      id: "maxInvested",
-      label: "Invested",
-      value: `$${getPriceStr(maxIn)}`,
-    },
-    {
-      id: "avgInvested",
-      label: "Avg Invested",
-      value: `$${getPriceStr(sumIn / countIn)}`,
-    },
-    {
-      id: "countInvested",
-      label: "Invested Count",
-      value: countIn,
+      id: "tradeCount",
+      label: "Trades",
+      value: pnlChartData.length,
     },
     {
       id: "firstActivity",
@@ -115,10 +93,33 @@ export function HistoriesSummary({
     },
   ];
 
+  const extraItems = [
+    ...Object.entries(actionCounts).map(([action, count]) => ({
+      id: action,
+      label: action,
+      value: count,
+    })),
+    {
+      id: "remainBalance",
+      label: "Remain Balance",
+      value: `$${getPriceStr(remainBalance)}`,
+    },
+    {
+      id: "avgInvested",
+      label: "Avg Invested",
+      value: `$${getPriceStr(sumIn / countIn)}`,
+    },
+    {
+      id: "countInvested",
+      label: "Invested Count",
+      value: countIn,
+    },
+  ];
+
   return (
     <div className="flex h-full w-[200px] flex-col justify-between gap-8">
       <div className="flex flex-col gap-2">
-        {items.map((item) => (
+        {primaryItems.map((item) => (
           <div
             className="flex w-full items-center justify-between gap-4"
             key={item.id}
@@ -129,7 +130,26 @@ export function HistoriesSummary({
         ))}
       </div>
 
-      {!hideTags ? <TagsWidget address={address} /> : null}
+      <div className="flex flex-col gap-2">
+        {showMore &&
+          extraItems.map((item) => (
+            <div
+              className="flex w-full items-center justify-between gap-4"
+              key={item.id}
+            >
+              <span className="text-xs text-neutral-400">{item.label}:</span>
+              <span className="text-base font-bold text-white">
+                {item.value}
+              </span>
+            </div>
+          ))}
+      </div>
+
+      <Switch isSelected={showMore} onValueChange={setShowMore}>
+        Show More
+      </Switch>
+
+      {/* {!hideTags ? <TagsWidget address={address} /> : null} */}
 
       {isSelected !== undefined ? (
         <Checkbox
