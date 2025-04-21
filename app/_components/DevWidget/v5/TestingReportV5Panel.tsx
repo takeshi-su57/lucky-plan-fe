@@ -1,14 +1,37 @@
-import { Card, CardBody, Chip, Spinner } from "@nextui-org/react";
+import { useState } from "react";
+import {
+  Card,
+  CardBody,
+  Chip,
+  Spinner,
+  DatePicker,
+  Button,
+} from "@nextui-org/react";
 import { TestingReportV3 } from "@/graphql/gql/graphql";
-
-import { useGetTestingReportV4 } from "@/app/_hooks/useHistory";
-
+import { parseDate } from "@internationalized/date";
+import dayjs from "dayjs";
 import { Virtuoso } from "react-virtuoso";
+
+import { useAutoTesting, useGetTestingReportV4 } from "@/app-hooks/useHistory";
+
 import { getPriceStr } from "@/utils/price";
+import { getServerTimezone } from "@/utils";
 import LineChart from "@/components/charts/LineChart";
 
-export function TestingReportV4Panel() {
+export function TestingReportV5Panel() {
   const { reports, loading, fetchMore, hasMore } = useGetTestingReportV4();
+
+  const { autoTesting } = useAutoTesting();
+
+  const [pastDate, setPastDate] = useState<Date>(
+    parseDate("2024-11-01").toDate(getServerTimezone()),
+  );
+
+  const handleAutoBacktest = () => {
+    autoTesting({
+      variables: { startDate: dayjs(pastDate).format("YYYY-MM-DD") },
+    });
+  };
 
   if (loading) {
     return (
@@ -20,6 +43,25 @@ export function TestingReportV4Panel() {
 
   return (
     <div className="flex flex-col gap-2">
+      <div className="flex flex-row items-center gap-4">
+        <DatePicker
+          className="max-w-[284px]"
+          label="Pick a past date"
+          value={parseDate(dayjs(pastDate).format("YYYY-MM-DD"))}
+          onChange={(date) => setPastDate(date.toDate(getServerTimezone()))}
+          minValue={parseDate("2024-11-01")}
+          maxValue={parseDate(dayjs().format("YYYY-MM-DD"))}
+        />
+
+        <Button
+          isLoading={loading}
+          isDisabled={loading}
+          onClick={handleAutoBacktest}
+        >
+          Auto Backtest
+        </Button>
+      </div>
+
       <Virtuoso
         style={{ height: 700 }}
         data={reports}

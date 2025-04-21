@@ -386,6 +386,7 @@ type Mutation {
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
   buildPnlSnapshots(dateStr: String!, isForceBuild: Boolean!): PnlSnapshotInitializedFlag
   cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
+  changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
   checkLog(id: Int!): Log!
   closeMission(id: Int!, isForce: Boolean!): Boolean!
@@ -403,10 +404,11 @@ type Mutation {
   ignoreMission(id: Int!): Boolean!
   initializePnlSnapshot(beginingDate: DateTime!, isForceBuild: Boolean!): Boolean!
   liveBot(id: Int!): Boolean!
+  makeSafeApp(password: String!): Boolean!
   pauseSystem: Boolean!
   performTask(id: Int!): Boolean!
   removeTagFromWalletAccount(input: ChangeUserTagInput!): WalletAccount!
-  resumeSystem: Boolean!
+  resumeSystem(password: String): Boolean!
   startPlan(id: Int!): Boolean!
   stopBot(id: Int!): Boolean!
   stopTask(id: Int!): Boolean!
@@ -588,6 +590,7 @@ type Query {
   getWholeCompressedHistoriesV4(filterParams: [ExportFilterV3!]!, isTestnet: Boolean!, ratio: Float!, startDate: String!): WholeCompressedHistories!
   getWholeResultHistories(filterParams: ExportFilter!): [TradeHistory!]!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
+  isSafeApp: Boolean!
   systemStatus: Boolean!
 }
 

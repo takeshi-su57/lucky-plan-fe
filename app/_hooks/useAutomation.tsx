@@ -320,6 +320,25 @@ export function useGetBotsByStatus(status: BotStatus) {
   };
 }
 
+export function useLiveBots() {
+  const createdBots = useGetBotsByStatus(BotStatus.Created);
+  const liveBots = useGetBotsByStatus(BotStatus.Live);
+  const stopBots = useGetBotsByStatus(BotStatus.Stop);
+
+  const handleFetchMore = useCallback(() => {
+    createdBots.fetchMore();
+    liveBots.fetchMore();
+    stopBots.fetchMore();
+  }, [createdBots, liveBots, stopBots]);
+
+  return {
+    hasMore: createdBots.hasMore || liveBots.hasMore || stopBots.hasMore,
+    bots: [...createdBots.bots, ...liveBots.bots, ...stopBots.bots],
+    fetchMore: handleFetchMore,
+    loading: createdBots.loading || liveBots.loading || stopBots.loading,
+  };
+}
+
 export function useSubscribeBot() {
   const { address } = useAccount();
 

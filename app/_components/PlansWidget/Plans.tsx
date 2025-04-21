@@ -11,7 +11,7 @@ import { Virtuoso } from "react-virtuoso";
 
 import { PlanForwardDetails, PlanStatus } from "@/graphql/gql/graphql";
 
-import { useGetPlansByStatus } from "@/app-hooks/usePlan";
+import { useGetPlansByStatus, useLivePlans } from "@/app-hooks/usePlan";
 import { PlanCard } from "./PlanCard";
 import { getWeekDateStr } from "@/utils";
 
@@ -42,31 +42,33 @@ const responsive = {
   },
 };
 
-type TabType = "created" | "started" | "stopped" | "finished";
-
-const planStatusByTabType: Record<TabType, PlanStatus> = {
-  created: PlanStatus.Created,
-  started: PlanStatus.Started,
-  stopped: PlanStatus.Stopped,
-  finished: PlanStatus.Finished,
-};
+type TabType = "live" | "history";
 
 export function Plans() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const [selected, setSelected] = useState<TabType>(
-    (searchParams.get("status") as TabType) || "started",
+    (searchParams.get("status") as TabType) || "live",
   );
 
-  const { plans, hasMore, loading, fetchMore } = useGetPlansByStatus(
-    planStatusByTabType[selected],
-  );
+  const {
+    plans: livePlans,
+    hasMore: hasMoreLives,
+    loading: loadingLives,
+    fetchMore: fetchMoreLives,
+  } = useLivePlans();
+  const {
+    plans: planHistories,
+    hasMore: hasMoreHistories,
+    loading: loadingHistories,
+    fetchMore: fetchMoreHistories,
+  } = useGetPlansByStatus(PlanStatus.Finished);
 
   const groupedPlans = useMemo(() => {
     const weekPlans: Record<string, PlanForwardDetails[]> = {};
 
-    plans
+    (selected === "live" ? livePlans : planHistories)
       .sort(
         (a, b) =>
           (b.startedAt ? new Date(b.startedAt).getTime() : 0) -
@@ -85,7 +87,11 @@ export function Plans() {
       });
 
     return weekPlans;
-  }, [plans]);
+  }, [livePlans, planHistories, selected]);
+
+  const loading = selected === "live" ? loadingLives : loadingHistories;
+  const hasMore = selected === "live" ? hasMoreLives : hasMoreHistories;
+  const fetchMore = selected === "live" ? fetchMoreLives : fetchMoreHistories;
 
   return (
     <div className="flex flex-col gap-8">
@@ -101,10 +107,8 @@ export function Plans() {
               }
             }}
           >
-            <Tab key="created" title="Created" />
-            <Tab key="started" title="Started" />
-            <Tab key="stopped" title="Stopped" />
-            <Tab key="finished" title="Finished" />
+            <Tab key="live" title="Live" />
+            <Tab key="history" title="Histories" />
           </Tabs>
         </div>
 

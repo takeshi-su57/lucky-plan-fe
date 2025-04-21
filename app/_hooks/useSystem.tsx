@@ -13,14 +13,32 @@ export const PAUSE_SYSTEM_DOCUMENT = graphql(`
 `);
 
 export const RESUME_SYSTEM_DOCUMENT = graphql(`
-  mutation resumeSystem {
-    resumeSystem
+  mutation resumeSystem($password: String) {
+    resumeSystem(password: $password)
+  }
+`);
+
+export const MAKE_SAFE_APP_DOCUMENT = graphql(`
+  mutation makeSafeApp($password: String!) {
+    makeSafeApp(password: $password)
+  }
+`);
+
+export const CHANGE_PASSWORD_DOCUMENT = graphql(`
+  mutation changePassword($newPassword: String!, $oldPassword: String!) {
+    changePassword(newPassword: $newPassword, oldPassword: $oldPassword)
   }
 `);
 
 export const GET_SYSTEM_STATUS_DOCUMENT = graphql(`
   query getSystemStatus {
     systemStatus
+  }
+`);
+
+export const GET_IS_SAFE_APP_DOCUMENT = graphql(`
+  query isSafeApp {
+    isSafeApp
   }
 `);
 
@@ -68,7 +86,9 @@ export function usePauseSystem() {
 }
 
 export function useResumeSystem() {
-  const [resumeSystem, { data, error }] = useMutation(RESUME_SYSTEM_DOCUMENT);
+  const [resumeSystem, { data, error, loading }] = useMutation(
+    RESUME_SYSTEM_DOCUMENT,
+  );
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -99,9 +119,68 @@ export function useResumeSystem() {
     }
   }, [data, error, enqueueSnackbar, client.cache]);
 
-  return resumeSystem;
+  return { resumeSystem, loading };
 }
 
 export function useGetSystemStatus() {
   return useQuery(GET_SYSTEM_STATUS_DOCUMENT);
+}
+
+export function useIsSafeApp() {
+  return useQuery(GET_IS_SAFE_APP_DOCUMENT);
+}
+
+export function useMakeSafeApp() {
+  const [makeSafeApp, { data, error, loading }] = useMutation(
+    MAKE_SAFE_APP_DOCUMENT,
+  );
+
+  const { enqueueSnackbar } = useSnackbar();
+  const client = useApolloClient();
+
+  useEffect(() => {
+    if (data?.makeSafeApp && !error) {
+      enqueueSnackbar("Success at turn safe app!", {
+        variant: "success",
+      });
+
+      client.cache.updateQuery(
+        {
+          query: GET_IS_SAFE_APP_DOCUMENT,
+          variables: {},
+        },
+        (data) => {
+          if (data) {
+            return {
+              ...data,
+              isSafeApp: true,
+            };
+          } else {
+            return data;
+          }
+        },
+      );
+    }
+  }, [data, error, enqueueSnackbar, client.cache]);
+
+  return { makeSafeApp, loading };
+}
+
+export function useChangePassword() {
+  const [changePassword, { data, error, loading }] = useMutation(
+    CHANGE_PASSWORD_DOCUMENT,
+  );
+
+  const { enqueueSnackbar } = useSnackbar();
+  const client = useApolloClient();
+
+  useEffect(() => {
+    if (data?.changePassword && !error) {
+      enqueueSnackbar("Success at changing password!", {
+        variant: "success",
+      });
+    }
+  }, [data, error, enqueueSnackbar, client.cache]);
+
+  return { changePassword, loading };
 }

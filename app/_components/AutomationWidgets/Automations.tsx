@@ -1,27 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Tab, Tabs, Switch, Spinner } from "@nextui-org/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Virtuoso } from "react-virtuoso";
 
 import { BotStatus } from "@/graphql/gql/graphql";
 
-import { useGetBotsByStatus } from "@/app-hooks/useAutomation";
+import { useGetBotsByStatus, useLiveBots } from "@/app-hooks/useAutomation";
 
 import { AutomationSummary } from "@/app-components/AutomationWidgets/AutomationSummary";
 import { AutomationDetails } from "@/app-components/AutomationWidgets/AutomationDetails";
 
 import { ModaledItems } from "@/components/modals/ModaledItems";
 
-type TabType = "created" | "live" | "stop" | "dead";
-
-const botStatusByTabType: Record<TabType, BotStatus> = {
-  created: BotStatus.Created,
-  live: BotStatus.Live,
-  stop: BotStatus.Stop,
-  dead: BotStatus.Dead,
-};
+type TabType = "live" | "history";
 
 export function Automations() {
   const searchParams = useSearchParams();
@@ -33,9 +26,28 @@ export function Automations() {
   const [isChatFirst, setIsChatFirst] = useState(true);
   const [isHiddedPlanedBots, setIsHiddedPlanedBots] = useState(false);
 
-  const { bots, hasMore, loading, fetchMore } = useGetBotsByStatus(
-    botStatusByTabType[selected],
-  );
+  const {
+    bots: botHistories,
+    hasMore: hasMoreHistories,
+    loading: loadingHistories,
+    fetchMore: fetchMoreHistories,
+  } = useGetBotsByStatus(BotStatus.Dead);
+  const {
+    bots: liveBots,
+    hasMore: hasMoreLives,
+    loading: loadingLives,
+    fetchMore: fetchMoreLives,
+  } = useLiveBots();
+
+  const bots = useMemo(() => {
+    return (selected === "live" ? liveBots : botHistories).sort(
+      (a, b) => b.id - a.id,
+    );
+  }, [botHistories, liveBots, selected]);
+
+  const hasMore = selected === "live" ? hasMoreLives : hasMoreHistories;
+  const loading = selected === "live" ? loadingLives : loadingHistories;
+  const fetchMore = selected === "live" ? fetchMoreLives : fetchMoreHistories;
 
   return (
     <div className="flex flex-col gap-6">
@@ -51,10 +63,8 @@ export function Automations() {
               }
             }}
           >
-            <Tab key="created" title="Created" />
             <Tab key="live" title="Live" />
-            <Tab key="stop" title="Stop" />
-            <Tab key="dead" title="Dead" />
+            <Tab key="history" title="Histories" />
           </Tabs>
 
           <Switch

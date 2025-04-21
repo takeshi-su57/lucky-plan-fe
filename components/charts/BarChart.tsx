@@ -1,9 +1,14 @@
 "use client";
 
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import Chart from "chart.js/auto";
 import { twMerge } from "tailwind-merge";
-import { Button, useDisclosure } from "@nextui-org/react";
+import {
+  Button,
+  Checkbox,
+  CheckboxGroup,
+  useDisclosure,
+} from "@nextui-org/react";
 import { StandardModal } from "../modals/StandardModal";
 
 export type BarChartProps = {
@@ -13,9 +18,15 @@ export type BarChartProps = {
     label: string;
   }[];
   className?: string;
+  initialSelected?: string[];
 };
 
-export default function BarChart({ title, data, className }: BarChartProps) {
+export default function BarChart({
+  title,
+  data,
+  className,
+  initialSelected,
+}: BarChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const modalChartRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -24,6 +35,7 @@ export default function BarChart({ title, data, className }: BarChartProps) {
   const modalRef = useRef<Chart>();
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [selected, setSelected] = useState<string[]>(initialSelected || []);
 
   const drawChart = useCallback(() => {
     if (ref.current) {
@@ -69,10 +81,10 @@ export default function BarChart({ title, data, className }: BarChartProps) {
         maintainAspectRatio: false,
         scales: {
           x: {
-            display: true,
+            display: selected.includes("x"),
           },
           y: {
-            display: true,
+            display: selected.includes("y"),
           },
         },
         plugins: {
@@ -82,7 +94,7 @@ export default function BarChart({ title, data, className }: BarChartProps) {
         },
       },
     });
-  }, [data]);
+  }, [data, selected]);
 
   useEffect(() => {
     if (!chartRef.current || !containerRef.current) {
@@ -189,6 +201,18 @@ export default function BarChart({ title, data, className }: BarChartProps) {
         <Button size="sm" variant="ghost" onPress={onOpen}>
           Details
         </Button>
+      </div>
+
+      <div className="absolute bottom-4 right-4 z-[1000] flex flex-row items-center justify-between gap-0">
+        <CheckboxGroup
+          color="warning"
+          value={selected}
+          onValueChange={setSelected}
+          orientation="horizontal"
+        >
+          <Checkbox value="x">X Scale</Checkbox>
+          <Checkbox value="y">Y Scale</Checkbox>
+        </CheckboxGroup>
       </div>
 
       <div
