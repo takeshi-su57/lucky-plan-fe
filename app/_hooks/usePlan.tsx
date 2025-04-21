@@ -189,6 +189,31 @@ export function useGetPlansByStatus(status: PlanStatus) {
   };
 }
 
+export function useLivePlans() {
+  const createdPlans = useGetPlansByStatus(PlanStatus.Created);
+  const startedPlans = useGetPlansByStatus(PlanStatus.Started);
+  const stoppedPlans = useGetPlansByStatus(PlanStatus.Stopped);
+
+  const handleFetchMore = useCallback(() => {
+    createdPlans.fetchMore();
+    startedPlans.fetchMore();
+    stoppedPlans.fetchMore();
+  }, [createdPlans, startedPlans, stoppedPlans]);
+
+  return {
+    plans: [
+      ...createdPlans.plans,
+      ...startedPlans.plans,
+      ...stoppedPlans.plans,
+    ],
+    loading:
+      createdPlans.loading || startedPlans.loading || stoppedPlans.loading,
+    fetchMore: handleFetchMore,
+    hasMore:
+      createdPlans.hasMore || startedPlans.hasMore || stoppedPlans.hasMore,
+  };
+}
+
 export function useSubscribePlan() {
   const { address } = useAccount();
 

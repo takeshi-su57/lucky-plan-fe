@@ -95,24 +95,28 @@ export function PlanCard({ plan }: PlanCardProps) {
       };
 
   const items = [
-    {
-      label: "Scheduled Start At",
-      value: dayjs(plan.scheduledStart).format("MMM D, H:m:s"),
-    },
-    {
-      label: "Scheduled End At",
-      value: dayjs(plan.scheduledEnd).format("MMM D, H:m:s"),
-    },
-    {
-      label: "Started At",
-      value: plan.startedAt
-        ? dayjs(plan.startedAt).format("MMM D, H:m:s")
-        : null,
-    },
-    {
-      label: "Ended At",
-      value: plan.endedAt ? dayjs(plan.endedAt).format("MMM D, H:m:s") : null,
-    },
+    plan.startedAt
+      ? {
+          label: "Started At",
+          value: plan.startedAt
+            ? dayjs(plan.startedAt).format("MMM D, H:m:s")
+            : null,
+        }
+      : {
+          label: "Scheduled Start At",
+          value: dayjs(plan.scheduledStart).format("MMM D, H:m:s"),
+        },
+    plan.endedAt
+      ? {
+          label: "Ended At",
+          value: plan.endedAt
+            ? dayjs(plan.endedAt).format("MMM D, H:m:s")
+            : null,
+        }
+      : {
+          label: "Scheduled End At",
+          value: dayjs(plan.scheduledEnd).format("MMM D, H:m:s"),
+        },
     {
       label: "Bots",
       value: plan.bots.length,
