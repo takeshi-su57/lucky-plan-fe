@@ -10,6 +10,7 @@ import { usePathname } from "next/navigation";
 import { twMerge } from "tailwind-merge";
 import { UserPermission } from "@/graphql/gql/graphql";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
+import { useAppSettings } from "@/app/_hooks/useAppSettings";
 
 const permissionRank: Record<string, number> = {
   [UserPermission.Admin]: 3,
@@ -34,10 +35,24 @@ export const links = [
     limited: UserPermission.Trader,
   },
   {
+    id: "leaderboards",
+    label: "Leaderboard",
+    title: "",
+    limited: "Public",
+  },
+  {
+    id: "settings",
+    label: "Setting",
+    title: "",
+    limited: "Public",
+    showDivider: true,
+  },
+  {
     id: "traders",
     label: "Trader",
     title: "",
     limited: UserPermission.Trial,
+    isDevMode: true,
   },
   {
     id: "tags",
@@ -45,68 +60,65 @@ export const links = [
     title: "",
     limited: UserPermission.Trial,
     showDivider: true,
+    isDevMode: true,
   },
-  {
-    id: "leaderboards",
-    label: "Leaderboard",
-    title: "",
-    limited: "Public",
-  },
+
   {
     id: "backtesting",
-    label: "Back Testing",
+    label: "Dev Page 1",
     title: "",
     limited: "Public",
-    showDivider: true,
+    isDevMode: true,
   },
-  // {
-  //   id: "dev",
-  //   label: "Dev Page",
-  //   title: "",
-  //   limited: "Public",
-  // },
-  // {
-  //   id: "dev-v2",
-  //   label: "Dev V2 Page",
-  //   title: "",
-  //   limited: "Public",
-  // },
-  // {
-  //   id: "dev-v3",
-  //   label: "Dev V3 Page",
-  //   title: "",
-  //   limited: "Public",
-  // },
-  // {
-  //   id: "dev-v4",
-  //   label: "Dev Page",
-  //   title: "",
-  //   limited: "Public",
-  //   showDivider: true,
-  // },
+  {
+    id: "dev",
+    label: "Dev Page 2",
+    title: "",
+    limited: "Public",
+    isDevMode: true,
+  },
+  {
+    id: "dev-v2",
+    label: "Dev Page 3",
+    title: "",
+    limited: "Public",
+    isDevMode: true,
+  },
+  {
+    id: "dev-v3",
+    label: "Dev Page 4",
+    title: "",
+    limited: "Public",
+    isDevMode: true,
+  },
+  {
+    id: "dev-v4",
+    label: "Dev Page 5",
+    title: "",
+    limited: "Public",
+    isDevMode: true,
+  },
   {
     id: "dev-v5",
-    label: "Dev Page",
+    label: "Dev Page 6",
     title: "",
     limited: "Public",
     showDivider: true,
+    isDevMode: true,
   },
-  {
-    id: "settings",
-    label: "Setting",
-    title: "",
-    limited: "Public",
-  },
+
   {
     id: "logs",
     label: "Log",
     title: "",
     limited: UserPermission.Admin,
+    isDevMode: true,
   },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { appSettings } = useAppSettings();
 
   const { userJwtQuery } = useUserJWT();
 
@@ -138,6 +150,7 @@ export function Sidebar() {
         }}
       >
         {links
+          .filter((link) => (appSettings.isDevMode ? true : !link.isDevMode))
           .filter(
             (link) =>
               permissionRank[link.limited] <= permissionRank[userPermissoin],

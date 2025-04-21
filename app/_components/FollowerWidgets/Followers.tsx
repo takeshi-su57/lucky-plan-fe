@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, ChangeEventHandler } from "react";
+import { useMemo, useState } from "react";
 import { Address } from "viem";
 import {
   Button,
@@ -8,8 +8,6 @@ import {
   AutocompleteItem,
   Accordion,
   AccordionItem,
-  Select,
-  SelectItem,
   Switch,
   Card,
   CardBody,
@@ -28,11 +26,11 @@ import { useGetAllContracts } from "@/app-hooks/useContract";
 import { shrinkAddress } from "@/utils";
 import { FollowerInfoWidget } from "@/app-components/FollowerWidgets/FollowerInfoWidget";
 
-import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 import { FollowerDetails } from "@/app-components/FollowerWidgets/FollowerDetails";
 import { getPriceStr } from "@/utils/price";
 import { LabeledChip } from "@/components/chips/LabeledChip";
 import { WithdrawModal } from "./WithdrawModal";
+import { PnlSnapshotKind } from "@/graphql/gql/graphql";
 
 export function Followers() {
   const searchParams = useSearchParams();
@@ -45,9 +43,7 @@ export function Followers() {
   const [contractId, setContractId] = useState<string | null>(
     searchParams.get("contractId") || null,
   );
-  const [kind, setKind] = useState<PnlSnapshotKind>(
-    (searchParams.get("kind") as PnlSnapshotKind) || PnlSnapshotKind.AllTime,
-  );
+
   const [isChatFirst, setIsChatFirst] = useState(true);
   const [showAllActivity, setShowAllActivity] = useState(false);
 
@@ -59,20 +55,6 @@ export function Followers() {
     generateFollower({
       variables: {},
     });
-  };
-
-  const handleChangeKind: ChangeEventHandler<HTMLSelectElement> = (event) => {
-    const value = event.target.value;
-
-    if (value.trim() !== "") {
-      setKind(value as PnlSnapshotKind);
-      const contractQuery = contractId ? `contractId=${contractId}` : null;
-      const kindQuery = value ? `kind=${value}` : null;
-
-      router.push(
-        `/followers?${contractQuery || ""}${contractQuery && kindQuery ? `&` : ""}${kindQuery || ""}`,
-      );
-    }
   };
 
   const followers = useMemo(() => {
@@ -94,8 +76,9 @@ export function Followers() {
           usdcBalance: exist.usdcBalance ? Number(exist.usdcBalance) : 0,
           contractId: exist.contractId,
           accUSDPnl:
-            exist.pnlSnapshots.find((item) => item.kind === kind)?.accUSDPnl ||
-            0,
+            exist.pnlSnapshots.find(
+              (item) => item.kind === PnlSnapshotKind.AllTime,
+            )?.accUSDPnl || 0,
         };
       } else {
         return {
@@ -109,13 +92,15 @@ export function Followers() {
         };
       }
     });
-  }, [allFollowers, contractId, followerDetails, kind]);
+  }, [allFollowers, contractId, followerDetails]);
 
   const { totalEarned, totalLost } = useMemo(() => {
     return followerDetails.reduce(
       (acc, item) => {
         const accUSDPnl =
-          item.pnlSnapshots.find((item) => item.kind === kind)?.accUSDPnl || 0;
+          item.pnlSnapshots.find(
+            (item) => item.kind === PnlSnapshotKind.AllTime,
+          )?.accUSDPnl || 0;
 
         return {
           totalEarned: acc.totalEarned + (accUSDPnl > 0 ? accUSDPnl : 0),
@@ -124,7 +109,7 @@ export function Followers() {
       },
       { totalEarned: 0, totalLost: 0 },
     );
-  }, [followerDetails, kind]);
+  }, [followerDetails]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -141,11 +126,8 @@ export function Followers() {
               setContractId(key as string | null);
 
               const contractQuery = key ? `contractId=${key}` : null;
-              const kindQuery = kind ? `kind=${kind}` : null;
 
-              router.push(
-                `/followers?${contractQuery || ""}${contractQuery && kindQuery ? `&` : ""}${kindQuery || ""}`,
-              );
+              router.push(`/followers?${contractQuery || ""}`);
             }}
           >
             {(item) => (
@@ -170,19 +152,6 @@ export function Followers() {
             )}
           </Autocomplete>
 
-          <Select
-            variant="underlined"
-            label="Before"
-            selectedKeys={kind ? [kind] : undefined}
-            onChange={handleChangeKind}
-            selectionMode="single"
-            className="w-[200px] font-mono"
-          >
-            {Object.values(PnlSnapshotKind).map((item) => (
-              <SelectItem key={item}>{item}</SelectItem>
-            ))}
-          </Select>
-
           <Switch
             isSelected={isChatFirst}
             onValueChange={setIsChatFirst}
@@ -205,8 +174,8 @@ export function Followers() {
             label="Gas"
             value={(
               followers
-                .map((item) => item.usdcBalance)
-                .reduce((acc, item) => acc + item, 0) / 1e6
+                .map((item) => item.ethBalance)
+                .reduce((acc, item) => acc + item, 0) / 1e18
             ).toFixed(2)}
             unit="ETH"
           />

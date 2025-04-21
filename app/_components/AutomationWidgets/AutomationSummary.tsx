@@ -2,7 +2,6 @@
 
 import { Badge, Chip, Divider } from "@nextui-org/react";
 import { Address } from "viem";
-import dayjs from "dayjs";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import {
@@ -63,7 +62,7 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
 
         <div className="flex flex-col">
           <div className="flex h-5 flex-row items-center gap-3">
-            <span className="text-xs">{`Chain:${leaderContract.chainId}`}</span>
+            <span className="text-xs">{`Leader on ${leaderContract.chainId} Chain`}</span>
             <Divider orientation="vertical" />
             <AddressWidget
               address={leaderAddress as Address}
@@ -72,7 +71,7 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
           </div>
           <div className="flex h-5 flex-row items-center gap-3">
             <span className="text-xs">
-              {`Chain:${followerContract.chainId}`}
+              {`Follower on ${followerContract.chainId} Chain`}
             </span>
             <Divider orientation="vertical" />
             <AddressWidget
@@ -90,21 +89,6 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
           <span className="text-xs">
             Leverage:
             {`(${strategy.minLeverage / 1000} ~ ${strategy.maxLeverage / 1000}) x`}
-          </span>
-        </div>
-
-        <div className="flex flex-col font-mono">
-          <span className="text-xs">
-            Started At:
-            {bot.startedAt
-              ? dayjs(new Date(bot.startedAt)).format("YYYY/MM/DD hh:mm:ss")
-              : "Not yet"}
-          </span>
-          <span className="text-xs">
-            Ended At:
-            {bot.endedAt
-              ? dayjs(new Date(bot.endedAt)).format("YYYY/MM/DD hh:mm:ss")
-              : "Not yet"}
           </span>
         </div>
 

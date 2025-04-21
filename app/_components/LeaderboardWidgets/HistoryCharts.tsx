@@ -1,3 +1,4 @@
+import BarChart from "@/components/charts/BarChart";
 import LineChart from "@/components/charts/LineChart";
 import dayjs from "dayjs";
 
@@ -34,7 +35,7 @@ export function HistoryCharts({
         </div>
 
         <div className="flex-1">
-          <LineChart
+          <BarChart
             title="Out"
             data={outChartData.map((item) => ({
               ...item,
@@ -58,7 +59,7 @@ export function HistoryCharts({
         </div>
 
         <div className="flex-1">
-          <LineChart
+          <BarChart
             title="In"
             data={inChartData.map((item) => ({
               ...item,
