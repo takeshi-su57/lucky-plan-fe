@@ -109,6 +109,7 @@ const cache = new InMemoryCache({
         getTestingReportV2: relayStylePagination(),
         getTestingReportV3: relayStylePagination(),
         getTestingReportV4: relayStylePagination(),
+        getTestingReportV5: relayStylePagination(),
       },
     },
     TagCategory: { keyFields: ["id"] },

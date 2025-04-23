@@ -19,11 +19,11 @@ import {
 
 import { useAllowAuto, useChangeUserPermission } from "@/app-hooks/useUser";
 import { useGetAllContracts } from "@/app-hooks/useContract";
-import { useGetWholeCompressedHistoriesV4 } from "@/app-hooks/useHistory";
+import { useGetWholeCompressedHistoriesV5 } from "@/app-hooks/useHistory";
 
 import { NumericInput } from "@/components/inputs/NumericInput";
 import { shrinkAddress } from "@/utils";
-import { bestCase } from "../DevWidget/v5/subcaseV1";
+import { bestCase } from "../DevWidget/v6/subcase";
 import { getPriceStr } from "@/utils/price";
 
 export type ChangePermissionModalProps = {
@@ -48,11 +48,11 @@ export function ChangePermissionModal({
     useChangeUserPermission();
   const { mutateAllowAuto, loading: allowAutoLoading } = useAllowAuto();
 
-  const { accPnls, loading } = useGetWholeCompressedHistoriesV4(
+  const { accPnls, loading } = useGetWholeCompressedHistoriesV5(
     "2024-11-01",
-    bestCase,
     1,
     false,
+    bestCase,
   );
 
   const { maxIn, month3MaxIn } = useMemo(() => {
