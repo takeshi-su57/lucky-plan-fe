@@ -10,6 +10,7 @@ import {
 import { useSnackbar } from "notistack";
 import { getFragmentData, graphql } from "@/gql/index";
 import {
+  ExportFilterV5,
   GetPnlSnapshotsQuery,
   PnlSnapshotKind,
   TradeHistory,
@@ -539,6 +540,104 @@ export const INITIALIZE_PNL_SNAPSHOT_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_DEV_PNL_SNAPSHOTS_V5_DOCUMENT = graphql(`
+  query getDevPnlSnapshotsV5(
+    $dateStr: String!
+    $filterParams: ExportFilterV5!
+  ) {
+    getDevPnlSnapshotsV5(dateStr: $dateStr, filterParams: $filterParams) {
+      accUSDPnl
+      address
+      contractId
+      dateStr
+      histories {
+        ...TradeHistoryInfo
+      }
+      id
+      kind
+      score
+    }
+  }
+`);
+
+export const GET_WHOLE_COMPRESSED_HISTORIES_V5_DOCUMENT = graphql(`
+  query getWholeCompressedHistoriesV5(
+    $ratio: Float!
+    $startDate: String!
+    $isTestnet: Boolean!
+    $filterParams: ExportFilterV5!
+  ) {
+    getWholeCompressedHistoriesV5(
+      ratio: $ratio
+      startDate: $startDate
+      isTestnet: $isTestnet
+      filterParams: $filterParams
+    ) {
+      accPnls {
+        pnl
+        in
+        out
+        inOut
+        date
+        positionCount
+        taskCount
+        traderCount
+      }
+      botCounts {
+        botCount
+        date
+      }
+      maxInvested
+      actionTypeCount
+      uniqueTraders
+      totalBots {
+        address
+        contractId
+        dateStr
+      }
+    }
+  }
+`);
+
+export const GET_TESTING_REPORT_V5_DOCUMENT = graphql(`
+  query getTestingReportV5($first: Int!, $after: Int) {
+    getTestingReportV5(first: $first, after: $after) {
+      edges {
+        cursor
+        node {
+          avgLoss
+          avgProfit
+          bottomAccProfit
+          calculatedR2
+          calculatedSlope
+          id
+          investedUSD
+          lossCount
+          m
+          maxLoss
+          maxProfit
+          minR2
+          minScore
+          n
+          peakAccProfit
+          profitCount
+          totalPositions
+          totalTasks
+          totalTraders
+          totalUSDPnl
+          totalUniqueTraders
+          usdPnls
+          window
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+`);
+
 function getPersonalTradeHistory(history: TradeHistory): PersonalTradeHistory {
   return {
     action: history.action as unknown as TradeActionType,
@@ -1048,6 +1147,105 @@ export function useGetTestingReportV4() {
 
   return {
     hasMore: data?.getTestingReportV4.pageInfo.hasNextPage,
+    reports,
+    fetchMore: handleFetchMore,
+    loading,
+  };
+}
+
+export function useGetDevPnlSnapshotsV5(
+  dateStr: string,
+  filterParams: ExportFilterV5,
+) {
+  const { data, loading } = useQuery(GET_DEV_PNL_SNAPSHOTS_V5_DOCUMENT, {
+    variables: {
+      dateStr,
+      filterParams,
+    },
+  });
+
+  const pnlSnapshots = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return data.getDevPnlSnapshotsV5.map((item) => ({
+      ...item,
+      histories: item.histories.map((history) =>
+        getPersonalTradeHistory(
+          getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, history),
+        ),
+      ),
+    }));
+  }, [data]);
+
+  return {
+    pnlSnapshots,
+    loading,
+  };
+}
+
+export function useGetWholeCompressedHistoriesV5(
+  startDate: string,
+  ratio: number,
+  isTestnet: boolean,
+  filterParams: ExportFilterV5,
+) {
+  const { data, loading } = useQuery(
+    GET_WHOLE_COMPRESSED_HISTORIES_V5_DOCUMENT,
+    {
+      variables: {
+        ratio,
+        startDate,
+        isTestnet,
+        filterParams,
+      },
+    },
+  );
+
+  return {
+    accPnls: data?.getWholeCompressedHistoriesV5.accPnls || [],
+    botCounts: data?.getWholeCompressedHistoriesV5.botCounts || [],
+    maxInvested: data?.getWholeCompressedHistoriesV5.maxInvested || 0,
+    actionTypeCount: data?.getWholeCompressedHistoriesV5.actionTypeCount || 0,
+    uniqueTraders: data?.getWholeCompressedHistoriesV5.uniqueTraders || [],
+    totalBots: data?.getWholeCompressedHistoriesV5?.totalBots || [],
+    loading,
+  };
+}
+
+export function useGetTestingReportV5() {
+  const { data, loading, fetchMore, error } = useQuery(
+    GET_TESTING_REPORT_V5_DOCUMENT,
+    {
+      variables: {
+        first: 20,
+      },
+    },
+  );
+
+  const reports = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+    return data.getTestingReportV5.edges
+      .map((edge) => edge.node)
+      .filter((item) => item.usdPnls.length > 0);
+  }, [data]);
+
+  const handleFetchMore = useCallback(() => {
+    if (data && !error) {
+      fetchMore({
+        variables: {
+          first: 20,
+          after: data.getTestingReportV5.pageInfo.endCursor,
+        },
+      });
+    }
+  }, [data, error, fetchMore]);
+
+  return {
+    hasMore: data?.getTestingReportV5.pageInfo.hasNextPage,
     reports,
     fetchMore: handleFetchMore,
     loading,
