@@ -84,6 +84,12 @@ export const CREATE_PLAN_DOCUMENT = graphql(`
   }
 `);
 
+export const CREATE_AUTO_PLAN_DOCUMENT = graphql(`
+  mutation createAutoPlan {
+    createAutoPlan
+  }
+`);
+
 export const UPDATE_PLAN_DOCUMENT = graphql(`
   mutation updatePlan($updatePlanInput: UpdatePlanInput!) {
     updatePlan(updatePlanInput: $updatePlanInput) {
@@ -545,4 +551,29 @@ export function useEndPlan() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return { endPlan, loading };
+}
+
+export function useCreateAutoPlan() {
+  const [createAutoPlan, { data: newData, error, loading }] = useMutation(
+    CREATE_AUTO_PLAN_DOCUMENT,
+  );
+  const client = useApolloClient();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      enqueueSnackbar("Success at creating a new auto plan!", {
+        variant: "success",
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at creating a new auto plan!", {
+        variant: "error",
+      });
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return { createAutoPlan, loading };
 }
