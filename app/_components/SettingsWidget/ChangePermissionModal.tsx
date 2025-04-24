@@ -25,6 +25,7 @@ import { NumericInput } from "@/components/inputs/NumericInput";
 import { shrinkAddress } from "@/utils";
 import { bestCase } from "../DevWidget/v6/subcase";
 import { getPriceStr } from "@/utils/price";
+import { useCreateAutoPlan } from "@/app/_hooks/usePlan";
 
 export type ChangePermissionModalProps = {
   user: {
@@ -47,6 +48,7 @@ export function ChangePermissionModal({
   const { mutateChangeUserPermission, loading: changeUserPermissionLoading } =
     useChangeUserPermission();
   const { mutateAllowAuto, loading: allowAutoLoading } = useAllowAuto();
+  const { createAutoPlan, loading: autoPlanLoading } = useCreateAutoPlan();
 
   const { accPnls, loading } = useGetWholeCompressedHistoriesV5(
     "2024-11-01",
@@ -112,6 +114,10 @@ export function ChangePermissionModal({
         permission,
       },
     });
+  };
+
+  const handleCreateAutoPlan = () => {
+    createAutoPlan({ variables: {} });
   };
 
   const handleAllowAuto = () => {
@@ -224,6 +230,17 @@ export function ChangePermissionModal({
                 </span>
               )}
             </p>
+
+            {allowAuto ? (
+              <Button
+                onClick={handleCreateAutoPlan}
+                color="secondary"
+                isDisabled={!permission}
+                isLoading={autoPlanLoading}
+              >
+                Generate Auto Plan
+              </Button>
+            ) : null}
           </div>
 
           <div className="flex flex-1 flex-col gap-3.5">

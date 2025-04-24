@@ -399,6 +399,7 @@ type Mutation {
   checkLog(id: Int!): Log!
   closeMission(id: Int!, isForce: Boolean!): Boolean!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
+  createAutoPlan: Boolean!
   createBot(input: CreateBotInput!): BotBackwardDetails!
   createPlan(createPlanInput: CreatePlanInput!): Plan!
   deleteBot(id: Int!): BotBackwardDetails!
