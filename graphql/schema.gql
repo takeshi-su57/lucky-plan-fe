@@ -233,6 +233,14 @@ input ExportFilterV3 {
   minSize: Float!
 }
 
+input ExportFilterV5 {
+  m: Int!
+  minR2: Float!
+  minScore: Float!
+  n: Float!
+  window: Int!
+}
+
 type Follower {
   accountIndex: Int!
   address: String!
@@ -530,6 +538,17 @@ type PnlSnapshotDevDetails {
   statistic: Statistic!
 }
 
+type PnlSnapshotDevDetailsV5 {
+  accUSDPnl: Float!
+  address: String!
+  contractId: Int!
+  dateStr: String!
+  histories: [TradeHistory!]!
+  id: Int!
+  kind: PnlSnapshotKind!
+  score: Float!
+}
+
 type PnlSnapshotInitializedFlag {
   dateStr: String!
   id: Int!
@@ -592,6 +611,10 @@ type Query {
     filterParams: [ExportFilterV3!]!
     ratio: Float!
   ): [PnlSnapshotDevDetails!]!
+  getDevPnlSnapshotsV5(
+    dateStr: String!
+    filterParams: ExportFilterV5!
+  ): [PnlSnapshotDevDetailsV5!]!
   getLogsSeverityCounts: [SeverityCount!]!
   getMonthlyDevPnlSnapshots(
     dateStr: String!
@@ -618,6 +641,7 @@ type Query {
   getTestingReportV2(after: Int, first: Int!): TestingReportV2Connection!
   getTestingReportV3(after: Int, first: Int!): TestingReportV3Connection!
   getTestingReportV4(after: Int, first: Int!): TestingReportV3Connection!
+  getTestingReportV5(after: Int, first: Int!): TestingReportV5Connection!
   getTradeCollaterals(contractId: Int!): [TradeCollateral!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getTradePairs(contractId: Int!): [TradePair!]!
@@ -641,6 +665,12 @@ type Query {
   ): WholeCompressedHistories!
   getWholeCompressedHistoriesV4(
     filterParams: [ExportFilterV3!]!
+    isTestnet: Boolean!
+    ratio: Float!
+    startDate: String!
+  ): WholeCompressedHistories!
+  getWholeCompressedHistoriesV5(
+    filterParams: ExportFilterV5!
     isTestnet: Boolean!
     ratio: Float!
     startDate: String!
@@ -884,6 +914,47 @@ type TestingReportV3Edge {
 }
 
 type TestingReportV3PageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
+type TestingReportV5 {
+  avgLoss: Float!
+  avgProfit: Float!
+  bottomAccProfit: Float!
+  calculatedR2: Float!
+  calculatedSlope: Float!
+  id: Int!
+  investedUSD: Float!
+  lossCount: Int!
+  m: Int!
+  maxLoss: Float!
+  maxProfit: Float!
+  minR2: Float!
+  minScore: Float!
+  n: Int!
+  peakAccProfit: Float!
+  profitCount: Int!
+  totalPositions: Int!
+  totalTasks: Int!
+  totalTraders: Int!
+  totalUSDPnl: Float!
+  totalUniqueTraders: Int!
+  usdPnls: [Float!]!
+  window: Int!
+}
+
+type TestingReportV5Connection {
+  edges: [TestingReportV5Edge!]!
+  pageInfo: TestingReportV5PageInfo!
+}
+
+type TestingReportV5Edge {
+  cursor: Int!
+  node: TestingReportV5!
+}
+
+type TestingReportV5PageInfo {
   endCursor: Int
   hasNextPage: Boolean!
 }

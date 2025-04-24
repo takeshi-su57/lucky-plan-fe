@@ -103,10 +103,16 @@ export const links = [
     label: "Dev Page 6",
     title: "",
     limited: "Public",
+    isDevMode: true,
+  },
+  {
+    id: "dev-v6",
+    label: "Dev Page 7",
+    title: "",
+    limited: "Public",
     showDivider: true,
     isDevMode: true,
   },
-
   {
     id: "logs",
     label: "Log",
