@@ -15,6 +15,7 @@ import { twMerge } from "tailwind-merge";
 import { HistoriesSummary } from "./HistoriesSummary";
 import { HistoriesPositionList } from "./HistoriesPositionList";
 import { useGetAllTradePairs } from "@/app/_hooks/useContract";
+import { getScore } from "@/utils";
 
 type TabType = "chart" | "positions";
 
@@ -79,6 +80,17 @@ export function HistoriesWidget({
     });
   }, [availableTradePairs, histories, mode, range]);
 
+  const score = useMemo(
+    () =>
+      getScore(
+        range?.to
+          ? dayjs(range.to).format("YYYY-MM-DD")
+          : dayjs().format("YYYY-MM-DD"),
+        histories,
+      ),
+    [histories, range?.to],
+  );
+
   if (range && range.to && showLastTwoDaysTraders) {
     const twoDaysAgo = dayjs(range.to).subtract(2, "day").toDate();
 
@@ -121,6 +133,8 @@ export function HistoriesWidget({
               pnlChartData={pnlChartData}
               inOutChartData={inOutChartData}
             />
+
+            <div className="text-red-500">{score}</div>
           </div>
 
           <div className="flex flex-1 flex-col items-center justify-start gap-6">
