@@ -133,8 +133,6 @@ export function getHistoriesChartData(
   const { sortedHistories, historiesGroupedByTradeIndex } =
     getSortedPartialHistories(histories, filters);
 
-  console.log("sortedHistories ==>", sortedHistories);
-
   if (sortedHistories.length > 0) {
     [
       ...sortedHistories,

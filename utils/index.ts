@@ -1,6 +1,8 @@
 import { Address } from "viem";
 import dayjs from "dayjs";
 import crypto from "crypto";
+import { SimpleLinearRegression } from "ml-regression-simple-linear";
+import { PersonalTradeHistory, TradeActionType } from "@/types";
 
 export function shrinkAddress(address: Address, onlyFirst?: boolean) {
   if (onlyFirst) {
@@ -499,4 +501,114 @@ export function getDevData(
     data,
     accData,
   };
+}
+
+const bestFilter = {
+  minR2: 0.925,
+  window: 38,
+  minScore: 25,
+  n: 2,
+  m: 32,
+};
+
+export function getScore(
+  dateStr: string,
+  histories: PersonalTradeHistory[],
+): number {
+  const endDate = dayjs(dateStr).add(1, "days").toDate();
+
+  const rangeHistories = histories.filter((history) => {
+    const historyDate = new Date(history.date);
+
+    return historyDate.getTime() <= endDate.getTime();
+  });
+
+  const openHistoriesMap: Record<number, PersonalTradeHistory[]> = {};
+
+  rangeHistories.forEach((history) => {
+    if (
+      history.action === TradeActionType.TradeOpenedMarket ||
+      history.action === TradeActionType.TradeOpenedLimit
+    ) {
+      const arr = openHistoriesMap[history.tradeIndex];
+
+      if (arr) {
+        arr.push(history);
+      } else {
+        openHistoriesMap[history.tradeIndex] = [history];
+      }
+    }
+  });
+
+  const closeHistories = rangeHistories
+    .filter((history) => {
+      return (
+        history.action === TradeActionType.TradeClosedMarket ||
+        history.action === TradeActionType.TradeClosedLIQ ||
+        history.action === TradeActionType.TradeClosedSL ||
+        history.action === TradeActionType.TradeClosedTP ||
+        history.action === TradeActionType.TradePosSizeDecrease ||
+        history.action === TradeActionType.TradePosSizeIncrease
+      );
+    })
+    .filter((history) => +history.pnl !== 0);
+
+  if (closeHistories.length < 6) {
+    return 0;
+  }
+
+  let traderScore = 0;
+  let round = 0;
+
+  for (let i = 0; i < closeHistories.length; i += bestFilter.window) {
+    round++;
+
+    const chunk = closeHistories.slice(
+      Math.max(closeHistories.length - i - bestFilter.window, 0),
+      closeHistories.length - i,
+    );
+
+    let pnlSum = 0;
+
+    const pnlArrs: number[] = [];
+    const xs: number[] = [];
+
+    for (let j = 0; j < chunk.length; j++) {
+      const history = chunk[j];
+
+      pnlSum += +history.pnl * +history.collateralPriceUsd;
+
+      pnlArrs.push(pnlSum);
+      xs.push(j);
+    }
+
+    const regression = new SimpleLinearRegression(xs, pnlArrs);
+    const score = regression.score(xs, pnlArrs);
+
+    if (Number.isNaN(score.r2)) {
+      continue;
+    }
+
+    let fragmentScore = 0;
+
+    if (regression.slope > 0) {
+      if (score.r2 > bestFilter.minR2) {
+        fragmentScore = (regression.slope * score.r2) / round / bestFilter.n;
+      } else {
+        fragmentScore =
+          (regression.slope * (score.r2 - 1) * bestFilter.m) /
+          round /
+          bestFilter.n;
+      }
+    } else {
+      fragmentScore =
+        (regression.slope * (2 - score.r2) * bestFilter.m) /
+        round /
+        bestFilter.n;
+    }
+
+    traderScore += fragmentScore;
+  }
+
+  return traderScore;
 }
