@@ -562,11 +562,14 @@ export function getScore(
 
   for (let i = 0; i < closeHistories.length; i += bestFilter.window) {
     round++;
-
     const chunk = closeHistories.slice(
       Math.max(closeHistories.length - i - bestFilter.window, 0),
       closeHistories.length - i,
     );
+
+    if (chunk.length < 2) {
+      continue;
+    }
 
     let pnlSum = 0;
 
@@ -586,6 +589,10 @@ export function getScore(
     const score = regression.score(xs, pnlArrs);
 
     if (Number.isNaN(score.r2)) {
+      score.r2 = 1;
+    }
+
+    if (score.r2 === Infinity) {
       continue;
     }
 
@@ -596,15 +603,11 @@ export function getScore(
         fragmentScore = (regression.slope * score.r2) / round / bestFilter.n;
       } else {
         fragmentScore =
-          (regression.slope * (score.r2 - 1) * bestFilter.m) /
-          round /
-          bestFilter.n;
+          (regression.slope * (score.r2 - 1)) / round / bestFilter.n;
       }
     } else {
       fragmentScore =
-        (regression.slope * (2 - score.r2) * bestFilter.m) /
-        round /
-        bestFilter.n;
+        (regression.slope * (2 - score.r2)) / round / bestFilter.n;
     }
 
     traderScore += fragmentScore;

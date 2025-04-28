@@ -22,7 +22,7 @@ export function TestingReportV6Panel() {
     <div className="flex flex-col gap-2">
       <Virtuoso
         style={{ height: 700 }}
-        data={reports}
+        data={reports.filter((item) => item.n === 2 || item.n === 13)}
         itemContent={(_, item) => <ReportView key={item.id} report={item} />}
         endReached={() => hasMore && !loading && fetchMore()}
         components={{
