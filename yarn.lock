@@ -5583,6 +5583,11 @@ chart.js@^4.4.6:
   dependencies:
     "@kurkle/color" "^0.3.0"
 
+cheminfo-types@^1.7.3:
+  version "1.8.1"
+  resolved "https://registry.yarnpkg.com/cheminfo-types/-/cheminfo-types-1.8.1.tgz#f7ecfa8c0c54251d5c4a302ea4c010b9639ee58e"
+  integrity sha512-FRcpVkox+cRovffgqNdDFQ1eUav+i/Vq/CUd1hcfEl2bevntFlzznL+jE8g4twl6ElB7gZjCko6pYpXyMn+6dA==
+
 chokidar@^3.5.3, chokidar@^3.6.0:
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-3.6.0.tgz#197c6cc669ef2a8dc5e7b4d97ee4e092c3eb0d5b"
@@ -7351,6 +7356,11 @@ is-absolute@^1.0.0:
     is-relative "^1.0.0"
     is-windows "^1.0.1"
 
+is-any-array@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/is-any-array/-/is-any-array-2.0.1.tgz#9233242a9c098220290aa2ec28f82ca7fa79899e"
+  integrity sha512-UtilS7hLRu++wb/WBAw9bNuP1Eg04Ivn1vERJck8zJthEvXCBEBpGR/33u/xLKWEQf95803oalHrVDptcAvFdQ==
+
 is-arguments@^1.0.4:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/is-arguments/-/is-arguments-1.1.1.tgz#15b3f88fda01f2a97fec84ca761a560f123efa9b"
@@ -8146,6 +8156,22 @@ mipd@0.0.7:
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/mipd/-/mipd-0.0.7.tgz#bb5559e21fa18dc3d9fe1c08902ef14b7ce32fd9"
   integrity sha512-aAPZPNDQ3uMTdKbuO2YmAw2TxLHO0moa4YKAyETM/DTj5FloZo+a+8tU+iv4GmW+sOxKLSRwcSFuczk+Cpt6fg==
+
+ml-regression-base@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/ml-regression-base/-/ml-regression-base-4.0.0.tgz#0fd2c3a1b073900efdfd66caf1c8922447d4fa82"
+  integrity sha512-V2VjB+K/BcgXaX450xvYw36TLOB+piD9G1pHU3VE+ggQUApsVGkYco6UMQykFOwBydHnDTbOiybH/lwrkqFT4g==
+  dependencies:
+    cheminfo-types "^1.7.3"
+    is-any-array "^2.0.1"
+
+ml-regression-simple-linear@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/ml-regression-simple-linear/-/ml-regression-simple-linear-3.0.1.tgz#89351f1f3b634d76c6deabbcb1f16d682d9bbaf7"
+  integrity sha512-SF2oxA+034Co9GVQSFuS3vtACaRAFrEwHi9oX6VTaSY/KtXxseL3d4GApj4jWXMoAgrP7VMoIO1PH0RoZaMR1g==
+  dependencies:
+    cheminfo-types "^1.7.3"
+    ml-regression-base "^4.0.0"
 
 mlly@^1.7.1, mlly@^1.7.2:
   version "1.7.3"
