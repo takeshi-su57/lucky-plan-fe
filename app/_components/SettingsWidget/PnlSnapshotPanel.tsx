@@ -64,9 +64,13 @@ export function PnlSnapshotPanel() {
   };
 
   const handleForceInitializePnlSnapshot = () => {
+    if (!selectedDate) {
+      return;
+    }
+
     initializePnlSnapshot({
       variables: {
-        beginingDate: new Date("2024-11-01"),
+        beginingDate: selectedDate.toDate(getServerTimezone()),
         isForceBuild: true,
       },
     });
