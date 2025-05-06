@@ -261,7 +261,6 @@ export function Providers({ children }: { children: ReactNode }) {
                   error: ErrorSnackbar,
                   default: DefaultSnackbar,
                 }}
-                autoHideDuration={30000}
                 maxSnack={15}
                 anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
               >
