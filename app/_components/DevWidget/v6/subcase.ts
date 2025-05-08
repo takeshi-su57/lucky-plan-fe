@@ -1,9 +1,9 @@
 export const bestCase = {
   minR2: 0.9,
-  window: 38,
-  minScore: 35,
+  window: 6,
+  minScore: 10,
   n: 2,
-  m: 32,
+  m: 1,
 };
 
 export const bestCase1 = {

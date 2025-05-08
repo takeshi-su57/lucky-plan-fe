@@ -606,6 +606,10 @@ export const GET_TESTING_REPORT_V5_DOCUMENT = graphql(`
         cursor
         node {
           avgLoss
+          monthWeight
+          threeMonthWeight
+          weekWeight
+          allTimeWeight
           avgProfit
           bottomAccProfit
           calculatedR2
