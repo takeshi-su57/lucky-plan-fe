@@ -920,6 +920,7 @@ type TestingReportV3PageInfo {
 }
 
 type TestingReportV5 {
+  allTimeWeight: Int!
   avgLoss: Float!
   avgProfit: Float!
   bottomAccProfit: Float!
@@ -933,15 +934,18 @@ type TestingReportV5 {
   maxProfit: Float!
   minR2: Float!
   minScore: Float!
+  monthWeight: Int!
   n: Int!
   peakAccProfit: Float!
   profitCount: Int!
+  threeMonthWeight: Int!
   totalPositions: Int!
   totalTasks: Int!
   totalTraders: Int!
   totalUSDPnl: Float!
   totalUniqueTraders: Int!
   usdPnls: [Float!]!
+  weekWeight: Int!
   window: Int!
 }
 

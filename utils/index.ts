@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import crypto from "crypto";
 import { SimpleLinearRegression } from "ml-regression-simple-linear";
 import { PersonalTradeHistory, TradeActionType } from "@/types";
+import { bestCase } from "@/app/_components/DevWidget/v6/subcase";
 
 export function shrinkAddress(address: Address, onlyFirst?: boolean) {
   if (onlyFirst) {
@@ -503,14 +504,6 @@ export function getDevData(
   };
 }
 
-const bestFilter = {
-  minR2: 0.925,
-  window: 38,
-  minScore: 25,
-  n: 2,
-  m: 32,
-};
-
 export function getScore(
   dateStr: string,
   histories: PersonalTradeHistory[],
@@ -560,10 +553,10 @@ export function getScore(
   let traderScore = 0;
   let round = 0;
 
-  for (let i = 0; i < closeHistories.length; i += bestFilter.window) {
+  for (let i = 0; i < closeHistories.length; i += bestCase.window) {
     round++;
     const chunk = closeHistories.slice(
-      Math.max(closeHistories.length - i - bestFilter.window, 0),
+      Math.max(closeHistories.length - i - bestCase.window, 0),
       closeHistories.length - i,
     );
 
@@ -596,21 +589,17 @@ export function getScore(
       continue;
     }
 
-    let fragmentScore = 0;
-
     if (regression.slope > 0) {
-      if (score.r2 > bestFilter.minR2) {
-        fragmentScore = (regression.slope * score.r2) / round / bestFilter.n;
+      if (score.r2 > bestCase.minR2) {
+        traderScore += (regression.slope * score.r2) / round / bestCase.n;
       } else {
-        fragmentScore =
-          (regression.slope * (score.r2 - 1)) / round / bestFilter.n;
+        traderScore +=
+          (regression.slope * (score.r2 - 1) * bestCase.m) / round / bestCase.n;
       }
     } else {
-      fragmentScore =
-        (regression.slope * (2 - score.r2)) / round / bestFilter.n;
+      traderScore +=
+        (regression.slope * (2 - score.r2) * bestCase.m) / round / bestCase.n;
     }
-
-    traderScore += fragmentScore;
   }
 
   return traderScore;
