@@ -22,7 +22,7 @@ export function TestingReportV6Panel() {
     <div className="flex flex-col gap-2">
       <Virtuoso
         style={{ height: 700 }}
-        data={reports.filter((item) => item.n === 2 || item.n === 13)}
+        data={reports.filter((item) => item.totalUSDPnl > 0)}
         itemContent={(_, item) => <ReportView key={item.id} report={item} />}
         endReached={() => hasMore && !loading && fetchMore()}
         components={{
@@ -86,6 +86,10 @@ export function ReportView({ report }: { report: TestingReportV5 }) {
           <span>minScore: {report.minScore}</span>
           <span>Window: {report.window}</span>
           <span>Min R2: {report.minR2}</span>
+          <span>All Time Weight: {report.allTimeWeight}</span>
+          <span>Three Month Weight: {report.threeMonthWeight}</span>
+          <span>Month Weight: {report.monthWeight}</span>
+          <span>Week Weight: {report.weekWeight}</span>
         </div>
 
         <LineChart
