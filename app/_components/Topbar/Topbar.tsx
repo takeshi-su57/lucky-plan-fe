@@ -3,21 +3,21 @@
 import { Chip, Badge } from "@nextui-org/react";
 import { TaskStatus } from "@/graphql/gql/graphql";
 
-import { useGetTradeTransactionCounts } from "@/app-hooks/useHistory";
-import { useGetAllContracts } from "@/app-hooks/useContract";
+// import { useGetTradeTransactionCounts } from "@/app-hooks/useHistory";
+// import { useGetAllContracts } from "@/app-hooks/useContract";
 import { useGetAlertTasks } from "@/app-hooks/useTask";
 
-import { LabeledChip } from "@/components/chips/LabeledChip";
+// import { LabeledChip } from "@/components/chips/LabeledChip";
 import WalletConnectButton from "./WalletConnectButton";
 
 export function Topbar() {
-  const contracts = useGetAllContracts();
+  // const contracts = useGetAllContracts();
   const alertTasks = useGetAlertTasks();
 
-  const { data: tradeTransactionCounts } = useGetTradeTransactionCounts(
-    contracts.map((item) => item.id),
-    [],
-  );
+  // const { data: tradeTransactionCounts } = useGetTradeTransactionCounts(
+  //   contracts.map((item) => item.id),
+  //   [],
+  // );
 
   const createdCount = alertTasks.filter(
     (task) => task.status === TaskStatus.Created,
@@ -37,27 +37,7 @@ export function Topbar() {
 
   return (
     <div className="sticky flex items-center justify-between">
-      <div className="flex flex-row items-center gap-2">
-        <LabeledChip
-          label="This Month"
-          value={
-            tradeTransactionCounts?.getTradeTransactionCounts?.monthly || 0
-          }
-          unit="Trades"
-        />
-        <LabeledChip
-          label="This Week"
-          value={tradeTransactionCounts?.getTradeTransactionCounts?.weekly || 0}
-          unit="Trades"
-        />
-        <LabeledChip
-          label="Today"
-          value={tradeTransactionCounts?.getTradeTransactionCounts?.daily || 0}
-          unit="Trades"
-        />
-      </div>
-
-      <div className="flex items-center gap-6">
+      <div className="flex flex-row items-center gap-4">
         {createdCount > 0 ? (
           <Badge color="secondary" content={createdCount}>
             <Chip color="secondary">Created</Chip>
@@ -82,6 +62,26 @@ export function Topbar() {
           </Badge>
         ) : null}
 
+        {/* <LabeledChip
+          label="This Month"
+          value={
+            tradeTransactionCounts?.getTradeTransactionCounts?.monthly || 0
+          }
+          unit="Trades"
+        />
+        <LabeledChip
+          label="This Week"
+          value={tradeTransactionCounts?.getTradeTransactionCounts?.weekly || 0}
+          unit="Trades"
+        />
+        <LabeledChip
+          label="Today"
+          value={tradeTransactionCounts?.getTradeTransactionCounts?.daily || 0}
+          unit="Trades"
+        /> */}
+      </div>
+
+      <div className="flex items-center gap-6">
         <WalletConnectButton />
       </div>
     </div>

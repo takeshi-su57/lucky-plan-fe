@@ -66,7 +66,9 @@ export function Automations() {
             <Tab key="live" title="Live" />
             <Tab key="history" title="Histories" />
           </Tabs>
+        </div>
 
+        <div className="flex items-center gap-4">
           <Switch
             isSelected={isChatFirst}
             onValueChange={setIsChatFirst}

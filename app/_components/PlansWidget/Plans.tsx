@@ -21,20 +21,20 @@ const responsive = {
     items: 5,
   },
   "2xl": {
-    breakpoint: { max: 3000, min: 1536 },
+    breakpoint: { max: 3000, min: 1900 },
     items: 4,
   },
   xl: {
-    breakpoint: { max: 1536, min: 1280 },
+    breakpoint: { max: 1900, min: 1536 },
     items: 3,
   },
   lg: {
-    breakpoint: { max: 1280, min: 1024 },
+    breakpoint: { max: 1536, min: 1024 },
     items: 2,
   },
   md: {
     breakpoint: { max: 1024, min: 768 },
-    items: 2,
+    items: 1,
   },
   mobile: {
     breakpoint: { max: 768, min: 0 },
