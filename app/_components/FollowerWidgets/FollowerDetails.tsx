@@ -48,7 +48,7 @@ export function FollowerDetails({
   isChatFirst,
   mode,
 }: FollowerDetailsProps) {
-  const [selected, setSelected] = useState<TabType>("chart");
+  const [selected, setSelected] = useState<TabType>("positions");
 
   const withdrawAllETH = useWithdrawAllETH();
   const withdrawAllUSDC = useWithdrawAllUSDC();
@@ -114,8 +114,8 @@ export function FollowerDetails({
               value && setSelected(value as TabType)
             }
           >
-            <Tab key="chart" title="Chart" />
             <Tab key="positions" title="Positions" />
+            <Tab key="chart" title="Chart" />
           </Tabs>
         </div>
 

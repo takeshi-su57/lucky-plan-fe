@@ -8,7 +8,6 @@ import {
   AutocompleteItem,
   Accordion,
   AccordionItem,
-  Switch,
   Card,
   CardBody,
   useDisclosure,
@@ -43,9 +42,6 @@ export function Followers() {
   const [contractId, setContractId] = useState<string | null>(
     searchParams.get("contractId") || null,
   );
-
-  const [isChatFirst, setIsChatFirst] = useState(true);
-  const [showAllActivity, setShowAllActivity] = useState(false);
 
   const followerDetails = useGetAllFollowerDetails(contractId);
 
@@ -151,22 +147,6 @@ export function Followers() {
               </AutocompleteItem>
             )}
           </Autocomplete>
-
-          <Switch
-            isSelected={isChatFirst}
-            onValueChange={setIsChatFirst}
-            size="sm"
-          >
-            Chat First
-          </Switch>
-
-          <Switch
-            isSelected={showAllActivity}
-            onValueChange={setShowAllActivity}
-            size="sm"
-          >
-            {showAllActivity ? "Show All Activities" : "Show Valid Activities"}
-          </Switch>
         </div>
 
         <div className="flex items-center gap-4">
@@ -238,12 +218,8 @@ export function Followers() {
                 >
                   <FollowerDetails
                     follower={follower}
-                    isChatFirst={isChatFirst}
-                    mode={
-                      showAllActivity
-                        ? "show_all_activity"
-                        : "show_only_valid_activity"
-                    }
+                    isChatFirst={false}
+                    mode="show_all_activity"
                   />
                 </AccordionItem>
               </Accordion>

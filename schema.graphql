@@ -236,7 +236,7 @@ input ExportFilterV3 {
 }
 
 input ExportFilterV5 {
-  m: Int!
+  m: Float!
   minR2: Float!
   minScore: Float!
   n: Float!

@@ -14,7 +14,7 @@ export type PlanAutomationsProps = {
 };
 
 export function PlanAutomations({ bots }: PlanAutomationsProps) {
-  const [isChatFirst, setIsChatFirst] = useState(true);
+  const [isChatFirst, setIsChatFirst] = useState(false);
 
   return (
     <div className="flex flex-col gap-2">
