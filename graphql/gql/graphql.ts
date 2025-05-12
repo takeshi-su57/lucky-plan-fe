@@ -257,7 +257,7 @@ export type ExportFilterV3 = {
 };
 
 export type ExportFilterV5 = {
-  m: Scalars['Int']['input'];
+  m: Scalars['Float']['input'];
   minR2: Scalars['Float']['input'];
   minScore: Scalars['Float']['input'];
   n: Scalars['Float']['input'];

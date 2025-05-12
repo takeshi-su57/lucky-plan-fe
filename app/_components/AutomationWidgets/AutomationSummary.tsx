@@ -32,7 +32,7 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
   const {
     leaderContract,
     followerContract,
-    strategy,
+    // strategy,
     leaderAddress,
     followerAddress,
   } = bot;
@@ -55,33 +55,42 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
     (task) => task.status === TaskStatus.Failed,
   ).length;
 
+  const validBotMisions = bot.missions.filter(
+    (mission) => mission.achievePosition,
+  );
+
   return (
     <div className="flex items-center justify-between gap-6 text-neutral-400">
       <div className="flex items-center gap-6">
         <Chip>{bot.id}</Chip>
 
-        <div className="flex flex-col">
-          <div className="flex h-5 flex-row items-center gap-3">
-            <span className="text-xs">{`Leader on ${leaderContract.chainId} Chain`}</span>
-            <Divider orientation="vertical" />
+        <div className="flex h-10 items-center gap-4">
+          <div className="flex w-[140px] flex-col items-center">
             <AddressWidget
               address={leaderAddress as Address}
-              className="text-xs"
+              className="text-sm"
             />
-          </div>
-          <div className="flex h-5 flex-row items-center gap-3">
-            <span className="text-xs">
-              {`Follower on ${followerContract.chainId} Chain`}
+
+            <span className="text-xs text-neutral-400/60">
+              {`Leader on ${leaderContract.chainId} Chain`}
             </span>
-            <Divider orientation="vertical" />
+          </div>
+
+          <Divider orientation="vertical" />
+
+          <div className="flex w-[150px] flex-col items-center">
             <AddressWidget
               address={followerAddress as Address}
-              className="text-xs"
+              className="text-sm"
             />
+
+            <span className="text-xs text-neutral-400/60">
+              {`Follower on ${followerContract.chainId} Chain`}
+            </span>
           </div>
         </div>
 
-        <div className="flex flex-col font-mono">
+        {/* <div className="flex flex-col font-mono">
           <span className="text-xs">
             Collateral:
             {`(${Number(strategy.minCollateral)} ~ ${Number(strategy.maxCollateral)}) USDC`}
@@ -90,14 +99,14 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
             Leverage:
             {`(${strategy.minLeverage / 1000} ~ ${strategy.maxLeverage / 1000}) x`}
           </span>
-        </div>
+        </div> */}
 
         <div className="flex flex-row items-center gap-3 font-mono">
           <ContractPnl
             label="Leader"
             contractId={bot.leaderContractId}
             finished={false}
-            actions={bot.missions.map((mission) =>
+            actions={validBotMisions.map((mission) =>
               mission.tasks.map((task) => task.action),
             )}
           />
@@ -106,7 +115,7 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
             label="Follower"
             contractId={bot.followerContractId}
             finished={false}
-            actions={bot.missions.map((mission) =>
+            actions={validBotMisions.map((mission) =>
               mission.tasks
                 .map((task) => {
                   if (task.followerActions.length === 0) {

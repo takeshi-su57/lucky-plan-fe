@@ -190,9 +190,11 @@ export function PlanCard({ plan }: PlanCardProps) {
                   actions={plan.bots
                     .filter((bot) => bot.leaderContractId === contract.id)
                     .flatMap((bot) =>
-                      bot.missions.map((mission) =>
-                        mission.tasks.map((task) => task.action),
-                      ),
+                      bot.missions
+                        .filter((mission) => mission.achievePosition)
+                        .map((mission) =>
+                          mission.tasks.map((task) => task.action),
+                        ),
                     )}
                 />
               ))}

@@ -30,7 +30,7 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   const [selected, setSelected] = useState<TabType>(
-    (searchParams.get("tab") as TabType) || "past",
+    (searchParams.get("tab") as TabType) || "automations",
   );
 
   const { startPlan, loading: startPlanLoading } = useStartPlan();
@@ -214,8 +214,8 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
               }
             }}
           >
-            <Tab key="overview" title="Overview" />
             <Tab key="automations" title="Automations" />
+            <Tab key="overview" title="Overview" />
           </Tabs>
 
           <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>
