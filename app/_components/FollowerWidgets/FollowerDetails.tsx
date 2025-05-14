@@ -7,19 +7,14 @@ import {
   Button,
   Card,
   CardBody,
-  // useDisclosure,
   Tab,
   Tabs,
-  Progress,
 } from "@nextui-org/react";
 import { Address } from "viem";
 
 import { WalletAccountTradeHistory } from "@/app/_components/WalletAccountWidgets/WalletAccountTradeHistory";
 
-// import { ShowPrivateKeyModal } from "./ShowPrivateKeyModal";
 import {
-  useGetPendingOrders,
-  useGetTradedOrders,
   useWithdrawAllETH,
   useWithdrawAllUSDC,
 } from "@/app/_hooks/useFollower";
@@ -27,6 +22,7 @@ import { PositionDetails } from "./PositionDetails";
 import { PositionSummary } from "./PositionSummary";
 import { PendingOrderSummary } from "./PendingOrderSummary";
 import { PendingOrderDetails } from "./PendingOrderDetails";
+import { FollowerPendingOrder, FollowerTrade } from "@/graphql/gql/graphql";
 
 type TabType = "chart" | "positions";
 
@@ -38,31 +34,20 @@ export type FollowerDetailsProps = {
     ethBalance: number;
     usdcBalance: number;
     contractId: number;
+    trades: FollowerTrade[];
+    pendingOrders: FollowerPendingOrder[];
   };
   isChatFirst: boolean;
-  mode: "show_all_activity" | "show_only_valid_activity";
 };
 
 export function FollowerDetails({
   follower,
   isChatFirst,
-  mode,
 }: FollowerDetailsProps) {
   const [selected, setSelected] = useState<TabType>("positions");
 
   const withdrawAllETH = useWithdrawAllETH();
   const withdrawAllUSDC = useWithdrawAllUSDC();
-
-  const { pendingOrders, loading: pendingOrdersLoading } = useGetPendingOrders(
-    follower.address,
-    follower.contractId,
-  );
-  const { trades, loading: tradesLoading } = useGetTradedOrders(
-    follower.address,
-    follower.contractId,
-  );
-
-  // const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   useEffect(() => {
     if (isChatFirst) {
@@ -100,10 +85,6 @@ export function FollowerDetails({
     [withdrawAllUSDC],
   );
 
-  if (pendingOrdersLoading || tradesLoading) {
-    return <Progress isIndeterminate className="w-full flex-1" size="sm" />;
-  }
-
   return (
     <div className="flex flex-col gap-6 border-t border-t-neutral-400/20 py-6">
       <div className="flex items-center justify-between">
@@ -120,15 +101,6 @@ export function FollowerDetails({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* <Button
-            onClick={() => {
-              onOpen();
-            }}
-            size="sm"
-          >
-            Get Key
-          </Button> */}
-
           <Button
             onClick={() =>
               handleWithdrawAllETH(follower.address, `${follower.contractId}`)
@@ -155,20 +127,20 @@ export function FollowerDetails({
             <WalletAccountTradeHistory
               address={follower.address as Address}
               contractId={follower.contractId.toString()}
-              mode={mode}
+              mode="show_all_activity"
             />
           </CardBody>
         </Card>
       ) : (
         <>
           <Accordion isCompact variant="splitted">
-            {trades.map((trade) => (
+            {follower.trades.map((trade) => (
               <AccordionItem
                 key={`${trade.address}-${trade.index}`}
                 title={
                   <PositionSummary
                     index={trade.index}
-                    mission={trade.mission}
+                    mission={trade.mission || null}
                     params={trade.params}
                   />
                 }
@@ -184,7 +156,7 @@ export function FollowerDetails({
           </Accordion>
 
           <Accordion isCompact variant="splitted">
-            {pendingOrders.map((pendingOrder) => (
+            {follower.pendingOrders.map((pendingOrder) => (
               <AccordionItem
                 key={pendingOrder.params}
                 title={<PendingOrderSummary params={pendingOrder.params} />}
@@ -199,12 +171,6 @@ export function FollowerDetails({
           </Accordion>
         </>
       )}
-
-      {/* <ShowPrivateKeyModal
-        address={follower.address as Address}
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-      /> */}
     </div>
   );
 }

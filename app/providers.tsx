@@ -125,6 +125,12 @@ const cache = new InMemoryCache({
     FollowerDetails: {
       keyFields: ["address", "contractId"],
     },
+    FollowerTrade: {
+      keyFields: ["address", "index"],
+    },
+    FollowerPendingOrder: {
+      keyFields: ["address", "index"],
+    },
     Strategy: {
       keyFields: ["id"],
     },
