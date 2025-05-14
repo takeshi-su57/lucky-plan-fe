@@ -11,6 +11,7 @@ import {
   Card,
   CardBody,
   useDisclosure,
+  Spinner,
 } from "@nextui-org/react";
 import { FaPlus } from "react-icons/fa";
 import { Virtuoso } from "react-virtuoso";
@@ -19,10 +20,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   useGenerateFollower,
   useGetAllFollowerDetails,
-  useGetAllFollowers,
 } from "@/app-hooks/useFollower";
 import { useGetAllContracts } from "@/app-hooks/useContract";
-import { shrinkAddress } from "@/utils";
+import { getPNLPercentage, shrinkAddress } from "@/utils";
 import { FollowerInfoWidget } from "@/app-components/FollowerWidgets/FollowerInfoWidget";
 
 import { FollowerDetails } from "@/app-components/FollowerWidgets/FollowerDetails";
@@ -30,20 +30,22 @@ import { getPriceStr } from "@/utils/price";
 import { LabeledChip } from "@/components/chips/LabeledChip";
 import { WithdrawModal } from "./WithdrawModal";
 import { PnlSnapshotKind } from "@/graphql/gql/graphql";
+import { useGetPrices } from "@/app/_hooks/useGetPrices";
 
 export function Followers() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const allFollowers = useGetAllFollowers();
   const allContracts = useGetAllContracts();
   const generateFollower = useGenerateFollower();
+  const prices = useGetPrices();
 
   const [contractId, setContractId] = useState<string | null>(
     searchParams.get("contractId") || null,
   );
 
-  const followerDetails = useGetAllFollowerDetails(contractId);
+  const { details: followerDetails, loading: followerLoading } =
+    useGetAllFollowerDetails(contractId);
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
@@ -58,37 +60,58 @@ export function Followers() {
       return [];
     }
 
-    return allFollowers.map((follower) => {
-      const exist = followerDetails.find(
-        (item) => item.address === follower.address,
-      );
-
-      if (exist) {
-        return {
-          address: exist.address,
-          accountIndex: exist.accountIndex,
-          publicKey: exist.publicKey,
-          ethBalance: exist.ethBalance ? Number(exist.ethBalance) : 0,
-          usdcBalance: exist.usdcBalance ? Number(exist.usdcBalance) : 0,
-          contractId: exist.contractId,
-          accUSDPnl:
-            exist.pnlSnapshots.find(
-              (item) => item.kind === PnlSnapshotKind.AllTime,
-            )?.accUSDPnl || 0,
-        };
-      } else {
-        return {
-          address: follower.address,
-          accountIndex: follower.accountIndex,
-          publicKey: follower.publicKey,
-          usdcBalance: 0,
-          ethBalance: 0,
-          contractId: +contractId,
-          accUSDPnl: 0,
-        };
-      }
+    return followerDetails.map((follower) => {
+      return {
+        address: follower.address,
+        accountIndex: follower.accountIndex,
+        publicKey: follower.publicKey,
+        ethBalance: follower.ethBalance ? Number(follower.ethBalance) : 0,
+        usdcBalance: follower.usdcBalance ? Number(follower.usdcBalance) : 0,
+        contractId: follower.contractId,
+        accUSDPnl:
+          follower.pnlSnapshots.find(
+            (item) => item.kind === PnlSnapshotKind.AllTime,
+          )?.accUSDPnl || 0,
+        trades: follower.trades,
+        pendingOrders: follower.pendingOrders,
+      };
     });
-  }, [allFollowers, contractId, followerDetails]);
+  }, [contractId, followerDetails]);
+
+  const summary = followerDetails
+    .flatMap((follower) => follower.trades)
+    .map((trade) => {
+      const data = JSON.parse(trade.params);
+
+      const currentPrice = prices?.[data?.pairIndex || 0];
+      const openPrice = data?.openPrice ? Number(data.openPrice) / 1e10 : 0;
+      const collateralAmount = data?.collateralAmount
+        ? Number(data.collateralAmount) / 1e6
+        : 0;
+
+      const pnlPercentage = currentPrice
+        ? getPNLPercentage({
+            closePrice: currentPrice,
+            openPrice,
+            leverage: data.leverage / 1000,
+            long: data.long,
+          })
+        : 0;
+
+      return {
+        pnls: (collateralAmount * pnlPercentage) / 100,
+        size: collateralAmount,
+      };
+    })
+    .reduce(
+      (acc, item) => {
+        return {
+          pnls: acc.pnls + item.pnls,
+          size: acc.size + item.size,
+        };
+      },
+      { pnls: 0, size: 0 },
+    );
 
   const { totalEarned, totalLost } = useMemo(() => {
     return followerDetails.reduce(
@@ -149,84 +172,99 @@ export function Followers() {
           </Autocomplete>
         </div>
 
-        <div className="flex items-center gap-4">
-          <LabeledChip
-            label="Gas"
-            value={(
-              followers
-                .map((item) => item.ethBalance)
-                .reduce((acc, item) => acc + item, 0) / 1e18
-            ).toFixed(2)}
-            unit="ETH"
-          />
+        {contractId ? (
+          <div className="flex items-center gap-4">
+            <LabeledChip
+              label="Gas"
+              value={(
+                followers
+                  .map((item) => item.ethBalance)
+                  .reduce((acc, item) => acc + item, 0) / 1e18
+              ).toFixed(2)}
+              unit="ETH"
+            />
 
-          <LabeledChip
-            label="Collateral"
-            value={(
-              followers
-                .map((item) => item.usdcBalance)
-                .reduce((acc, item) => acc + item, 0) / 1e6
-            ).toFixed(2)}
-            unit="USDC"
-          />
+            <LabeledChip
+              label="Collateral"
+              value={(
+                followers
+                  .map((item) => item.usdcBalance)
+                  .reduce((acc, item) => acc + item, 0) / 1e6
+              ).toFixed(2)}
+              unit="USDC"
+            />
 
-          <LabeledChip
-            label="Earned"
-            value={getPriceStr(totalEarned)}
-            unit="USDC"
-            color="warning"
-          />
+            <LabeledChip
+              label="Earned"
+              value={getPriceStr(totalEarned)}
+              unit="USDC"
+              color="warning"
+            />
 
-          <LabeledChip
-            label="Lost"
-            value={getPriceStr(totalLost)}
-            unit="USDC"
-            color="danger"
-          />
+            <LabeledChip
+              label="Lost"
+              value={getPriceStr(totalLost)}
+              unit="USDC"
+              color="danger"
+            />
 
-          {contractId ? (
-            <Button color="primary" variant="flat" onClick={onOpen}>
-              Withdraw
+            <LabeledChip
+              label="Unrealized PNL"
+              value={getPriceStr(summary.pnls)}
+              unit="USDC"
+              color={summary.pnls >= 0 ? "warning" : "danger"}
+            />
+
+            <LabeledChip
+              label="Locked at Gains"
+              value={getPriceStr(summary.size)}
+              unit="USDC"
+              color="default"
+            />
+
+            {contractId ? (
+              <Button color="primary" variant="flat" onClick={onOpen}>
+                Withdraw
+              </Button>
+            ) : null}
+
+            <Button
+              isIconOnly
+              color="primary"
+              variant="flat"
+              onClick={handleGenerateFollower}
+            >
+              <FaPlus />
             </Button>
-          ) : null}
-
-          <Button
-            isIconOnly
-            color="primary"
-            variant="flat"
-            onClick={handleGenerateFollower}
-          >
-            <FaPlus />
-          </Button>
-        </div>
+          </div>
+        ) : null}
       </div>
-
-      <Card>
-        <CardBody>
-          <Virtuoso
-            style={{ height: 700 }}
-            data={followers}
-            itemContent={(_, follower) => (
-              <Accordion
-                key={follower.address}
-                isCompact
-                variant="splitted"
-                className="!mb-2"
-              >
-                <AccordionItem
-                  title={<FollowerInfoWidget follower={follower} />}
+      {followerLoading ? (
+        <Spinner label="Loading..." size="lg" className="mt-[100px]" />
+      ) : (
+        <Card>
+          <CardBody>
+            <Virtuoso
+              style={{ height: 700 }}
+              data={followers}
+              itemContent={(_, follower) => (
+                <Accordion
+                  key={follower.address}
+                  isCompact
+                  variant="splitted"
+                  className="!mb-2"
                 >
-                  <FollowerDetails
-                    follower={follower}
-                    isChatFirst={false}
-                    mode="show_all_activity"
-                  />
-                </AccordionItem>
-              </Accordion>
-            )}
-          />
-        </CardBody>
-      </Card>
+                  <AccordionItem
+                    title={<FollowerInfoWidget follower={follower} />}
+                  >
+                    <FollowerDetails follower={follower} isChatFirst={false} />
+                  </AccordionItem>
+                </Accordion>
+              )}
+            />
+          </CardBody>
+        </Card>
+      )}
 
       {contractId ? (
         <WithdrawModal
