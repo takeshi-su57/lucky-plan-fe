@@ -260,8 +260,10 @@ type FollowerDetail {
   address: String!
   contractId: Int!
   ethBalance: String
+  pendingOrders: [FollowerPendingOrder!]!
   pnlSnapshots: [PnlSnapshot!]!
   publicKey: String!
+  trades: [FollowerTrade!]!
   usdcBalance: String
   userId: String!
 }
@@ -438,6 +440,7 @@ type Mutation {
   stopBot(id: Int!): Boolean!
   stopTask(id: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
+  upgradeSystem: Boolean!
   upsertCategory(input: TagCategoryInput!): TagCategory!
   upsertTag(input: TagInput!): Tag!
   withdrawAllETH(input: WithdrawAllInput!): Boolean!
@@ -621,7 +624,6 @@ type Query {
     dateStr: String!
     filterParams: ExportFilter!
   ): [TradeHistory!]!
-  getPendingOrders(address: String!, contractId: Int!): [FollowerPendingOrder!]!
   getPlanById(id: Int!): PlanForwardDetails
   getPlansByStatus(
     after: Int
@@ -650,7 +652,6 @@ type Query {
     addresses: [String!]!
     contractIds: [Int!]!
   ): TradeTransactionCount!
-  getTrades(address: String!, contractId: Int!): [FollowerTrade!]!
   getUserTransactionCounts(
     inputs: [GetUserTransactionCountsInput!]!
   ): [TradeTransactionCount!]!

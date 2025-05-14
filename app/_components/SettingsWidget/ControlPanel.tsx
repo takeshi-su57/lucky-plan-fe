@@ -5,6 +5,7 @@ import {
   useGetSystemStatus,
   useIsSafeApp,
   usePauseSystem,
+  // useUpgradeSystem,
 } from "@/app-hooks/useSystem";
 import { ResumeSystemButton } from "./ResumeSystemButton";
 import { SetupPasswordButton } from "./SetupPasswordButton";
@@ -21,6 +22,7 @@ export function ControlPanel() {
   const { userJwtQuery } = useUserJWT();
 
   const pauseSystem = usePauseSystem();
+  // const { upgradeSystem, loading: upgradeSystemLoading } = useUpgradeSystem();
 
   const handleToggleDevMode = (isSelected: boolean) => {
     changeAppSettings.mutate({ isDevMode: isSelected });
@@ -59,6 +61,16 @@ export function ControlPanel() {
               </div>
             </>
           ) : null}
+
+          {/* <Button
+            onClick={() => upgradeSystem()}
+            className="w-[300px]"
+            color="secondary"
+            isDisabled={upgradeSystemLoading}
+            isLoading={upgradeSystemLoading}
+          >
+            Upgrade System
+          </Button> */}
 
           <Switch
             checked={appSettings.isDevMode}

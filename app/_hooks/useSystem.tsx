@@ -18,6 +18,12 @@ export const RESUME_SYSTEM_DOCUMENT = graphql(`
   }
 `);
 
+export const UPGRADE_SYSTEM_DOCUMENT = graphql(`
+  mutation upgradeSystem {
+    upgradeSystem
+  }
+`);
+
 export const MAKE_SAFE_APP_DOCUMENT = graphql(`
   mutation makeSafeApp($password: String!) {
     makeSafeApp(password: $password)
@@ -183,4 +189,23 @@ export function useChangePassword() {
   }, [data, error, enqueueSnackbar, client.cache]);
 
   return { changePassword, loading };
+}
+
+export function useUpgradeSystem() {
+  const [upgradeSystem, { data, error, loading }] = useMutation(
+    UPGRADE_SYSTEM_DOCUMENT,
+  );
+
+  const { enqueueSnackbar } = useSnackbar();
+  const client = useApolloClient();
+
+  useEffect(() => {
+    if (data?.upgradeSystem && !error) {
+      enqueueSnackbar("Sent upgrade request!", {
+        variant: "success",
+      });
+    }
+  }, [data, error, enqueueSnackbar, client.cache]);
+
+  return { upgradeSystem, loading };
 }

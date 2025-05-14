@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useApolloClient,
-  // useLazyQuery,
-  useMutation,
-  useQuery,
-} from "@apollo/client";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 
 import { getFragmentData, graphql } from "@/gql/index";
 import { useEffect, useMemo } from "react";
@@ -24,6 +19,25 @@ export const FOLLOWER_INFO_FRAGMENT_DOCUMENT = graphql(`
   }
 `);
 
+export const FOLLOWER_TRADE_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment FollowerTradeInfo on FollowerTrade {
+    address
+    index
+    mission {
+      ...MissionInfo
+    }
+    params
+  }
+`);
+
+export const FOLLOWER_PENDING_ORDER_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment FollowerPendingOrderInfo on FollowerPendingOrder {
+    params
+    address
+    index
+  }
+`);
+
 export const FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment FollowerDetailInfo on FollowerDetail {
     address
@@ -36,17 +50,12 @@ export const FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     pnlSnapshots {
       ...PnlSnapshotInfo
     }
-  }
-`);
-
-export const FOLLOWER_TRADE_INFO_FRAGMENT_DOCUMENT = graphql(`
-  fragment FollowerTradeInfo on FollowerTrade {
-    address
-    index
-    mission {
-      ...MissionInfo
+    trades {
+      ...FollowerTradeInfo
     }
-    params
+    pendingOrders {
+      ...FollowerPendingOrderInfo
+    }
   }
 `);
 
@@ -62,30 +71,6 @@ export const GET_ALL_FOLLOWER_DETAILS_DOCUMENT = graphql(`
   query getAllFollowerDetails($contractId: Int!) {
     getAllFollowerDetails(contractId: $contractId) {
       ...FollowerDetailInfo
-    }
-  }
-`);
-
-// export const GET_FOLLOWER_PRIVATE_KEY_DOCUMENT = graphql(`
-//   query getFollowerPrivateKey($input: GetFollowerByAddressInput!) {
-//     getFollowerPrivateKey(input: $input)
-//   }
-// `);
-
-export const GET_PENDING_ORDERS_DOCUMENT = graphql(`
-  query getPendingOrders($address: String!, $contractId: Int!) {
-    getPendingOrders(address: $address, contractId: $contractId) {
-      params
-      address
-      index
-    }
-  }
-`);
-
-export const GET_TRADED_ORDERS_DOCUMENT = graphql(`
-  query getTradedOrders($address: String!, $contractId: Int!) {
-    getTrades(address: $address, contractId: $contractId) {
-      ...FollowerTradeInfo
     }
   }
 `);
@@ -163,11 +148,11 @@ export function useGetAllFollowers() {
 }
 
 export function useGetAllFollowerDetails(contractId: string | null) {
-  const { data } = useQuery(GET_ALL_FOLLOWER_DETAILS_DOCUMENT, {
+  const { data, loading } = useQuery(GET_ALL_FOLLOWER_DETAILS_DOCUMENT, {
     variables: contractId !== null ? { contractId: +contractId } : undefined,
   });
 
-  return useMemo(() => {
+  const details = useMemo(() => {
     if (!data) {
       return [];
     }
@@ -183,80 +168,45 @@ export function useGetAllFollowerDetails(contractId: string | null) {
           getFragmentData(PNL_SNAPSHOT_INFO_FRAGMENT_DOCUMENT, snapshot),
         );
 
+        const trades = followerData.trades.map((trade) => {
+          const tradeData = getFragmentData(
+            FOLLOWER_TRADE_INFO_FRAGMENT_DOCUMENT,
+            trade,
+          );
+
+          const mission = getFragmentData(
+            MISSION_INFO_FRAGMENT_DOCUMENT,
+            tradeData.mission,
+          );
+
+          return {
+            ...tradeData,
+            mission: mission || null,
+          };
+        });
+
+        const pendingOrders = followerData.pendingOrders.map((pendingOrder) =>
+          getFragmentData(
+            FOLLOWER_PENDING_ORDER_INFO_FRAGMENT_DOCUMENT,
+            pendingOrder,
+          ),
+        );
+
         return {
           ...followerData,
           pnlSnapshots,
+          trades,
+          pendingOrders,
         };
       })
       .sort((a, b) => a.accountIndex - b.accountIndex);
   }, [data]);
+
+  return {
+    details,
+    loading,
+  };
 }
-
-export function useGetPendingOrders(address: string, contractId: number) {
-  const { data, loading } = useQuery(GET_PENDING_ORDERS_DOCUMENT, {
-    variables: {
-      address,
-      contractId: contractId,
-    },
-  });
-
-  return { pendingOrders: data?.getPendingOrders || [], loading };
-}
-
-export function useGetTradedOrders(address: string, contractId: number) {
-  const { data, loading } = useQuery(GET_TRADED_ORDERS_DOCUMENT, {
-    variables: {
-      address,
-      contractId: +contractId,
-    },
-  });
-
-  const trades = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-
-    return data.getTrades.map((trade) => {
-      const tradeData = getFragmentData(
-        FOLLOWER_TRADE_INFO_FRAGMENT_DOCUMENT,
-        trade,
-      );
-
-      const mission = getFragmentData(
-        MISSION_INFO_FRAGMENT_DOCUMENT,
-        tradeData.mission,
-      );
-
-      return {
-        ...tradeData,
-        mission: mission || null,
-      };
-    });
-  }, [data]);
-
-  return { trades, loading };
-}
-
-// export function useGetFollowerPrivateKey() {
-//   const [getPrivateKey, { data, error }] = useLazyQuery(
-//     GET_FOLLOWER_PRIVATE_KEY_DOCUMENT,
-//   );
-
-//   const { enqueueSnackbar } = useSnackbar();
-
-//   useEffect(() => {
-//     if (error) {
-//       enqueueSnackbar("Failed at follower private key!", {
-//         variant: "error",
-//       });
-//     }
-//   }, [enqueueSnackbar, error]);
-
-//   return {
-//     getPrivateKey,
-//     data,
-//   };
-// }
 
 export function useGenerateFollower() {
   const [generateFollower, { data: newData, error }] = useMutation(
@@ -328,29 +278,49 @@ export function useCloseTradeMarket() {
         });
 
         const tradeIndex = data.closeTradeMarket.index;
+        const traderAddress = data.closeTradeMarket.address;
 
         client.cache.updateQuery(
           {
-            query: GET_TRADED_ORDERS_DOCUMENT,
+            query: GET_ALL_FOLLOWER_DETAILS_DOCUMENT,
             variables: {
-              address: data.closeTradeMarket.address,
               contractId: data.closeTradeMarket.contractId,
             },
           },
           (data) => {
-            if (data && data.getTrades.length > 0) {
+            if (data && data.getAllFollowerDetails.length > 0) {
               return {
                 ...data,
-                getTrades: data.getTrades.filter(
-                  (item) =>
-                    tradeIndex !==
-                    getFragmentData(FOLLOWER_TRADE_INFO_FRAGMENT_DOCUMENT, item)
-                      .index,
+                getAllFollowerDetails: data.getAllFollowerDetails.map(
+                  (item) => {
+                    const followerData = getFragmentData(
+                      FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT,
+                      item,
+                    );
+
+                    if (followerData.address !== traderAddress) {
+                      return item;
+                    }
+
+                    const trades = followerData.trades.filter((trade) => {
+                      const tradeData = getFragmentData(
+                        FOLLOWER_TRADE_INFO_FRAGMENT_DOCUMENT,
+                        trade,
+                      );
+
+                      return tradeData.index !== tradeIndex;
+                    });
+
+                    return {
+                      ...followerData,
+                      trades,
+                    };
+                  },
                 ),
               };
             } else {
               return {
-                getTrades: [],
+                getAllFollowerDetails: [],
               };
             }
           },
@@ -381,26 +351,51 @@ export function useCancelOrderAfterTimeout() {
         });
 
         const tradeIndex = data.cancelOrderAfterTimeout.index;
+        const traderAddress = data.cancelOrderAfterTimeout.address;
 
         client.cache.updateQuery(
           {
-            query: GET_PENDING_ORDERS_DOCUMENT,
+            query: GET_ALL_FOLLOWER_DETAILS_DOCUMENT,
             variables: {
-              address: data.cancelOrderAfterTimeout.address,
               contractId: data.cancelOrderAfterTimeout.contractId,
             },
           },
           (data) => {
-            if (data && data.getPendingOrders.length > 0) {
+            if (data && data.getAllFollowerDetails.length > 0) {
               return {
                 ...data,
-                getPendingOrders: data.getPendingOrders.filter(
-                  (item) => tradeIndex !== item.index,
+                getAllFollowerDetails: data.getAllFollowerDetails.map(
+                  (item) => {
+                    const followerData = getFragmentData(
+                      FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT,
+                      item,
+                    );
+
+                    if (followerData.address !== traderAddress) {
+                      return item;
+                    }
+
+                    const pendingOrders = followerData.pendingOrders.filter(
+                      (pendingOrder) => {
+                        const order = getFragmentData(
+                          FOLLOWER_PENDING_ORDER_INFO_FRAGMENT_DOCUMENT,
+                          pendingOrder,
+                        );
+
+                        return order.index !== tradeIndex;
+                      },
+                    );
+
+                    return {
+                      ...followerData,
+                      pendingOrders,
+                    };
+                  },
                 ),
               };
             } else {
               return {
-                getPendingOrders: [],
+                getAllFollowerDetails: [],
               };
             }
           },

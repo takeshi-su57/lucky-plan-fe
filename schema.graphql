@@ -262,8 +262,10 @@ type FollowerDetail {
   address: String!
   contractId: Int!
   ethBalance: String
+  pendingOrders: [FollowerPendingOrder!]!
   pnlSnapshots: [PnlSnapshot!]!
   publicKey: String!
+  trades: [FollowerTrade!]!
   usdcBalance: String
   userId: String!
 }
@@ -422,6 +424,7 @@ type Mutation {
   stopBot(id: Int!): Boolean!
   stopTask(id: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
+  upgradeSystem: Boolean!
   upsertCategory(input: TagCategoryInput!): TagCategory!
   upsertTag(input: TagInput!): Tag!
   withdrawAllETH(input: WithdrawAllInput!): Boolean!
@@ -587,7 +590,6 @@ type Query {
   getDevPnlSnapshotsV5(dateStr: String!, filterParams: ExportFilterV5!): [PnlSnapshotDevDetailsV5!]!
   getLogsSeverityCounts: [SeverityCount!]!
   getMonthlyDevPnlSnapshots(dateStr: String!, filterParams: ExportFilter!): [TradeHistory!]!
-  getPendingOrders(address: String!, contractId: Int!): [FollowerPendingOrder!]!
   getPlanById(id: Int!): PlanForwardDetails
   getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
   getPnlSnapshotInitializedFlag: [PnlSnapshotInitializedFlag!]!
@@ -603,7 +605,6 @@ type Query {
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getTradePairs(contractId: Int!): [TradePair!]!
   getTradeTransactionCounts(addresses: [String!]!, contractIds: [Int!]!): TradeTransactionCount!
-  getTrades(address: String!, contractId: Int!): [FollowerTrade!]!
   getUserTransactionCounts(inputs: [GetUserTransactionCountsInput!]!): [TradeTransactionCount!]!
   getWalletAccountByAddress(input: GetUserByAddressInput!): WalletAccount!
   getWholeCompressedHistories(filterParams: ExportFilter!): WholeCompressedHistories!

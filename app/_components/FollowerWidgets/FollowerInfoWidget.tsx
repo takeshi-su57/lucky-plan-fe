@@ -1,18 +1,14 @@
 "use client";
 
 import { Address } from "viem";
-import { Chip, Skeleton } from "@nextui-org/react";
+import { Chip } from "@nextui-org/react";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { LabeledChip } from "@/components/chips/LabeledChip";
 
-import {
-  useGetTradedOrders,
-  useGetPendingOrders,
-} from "@/app-hooks/useFollower";
-import { useGetPrices } from "@/app-hooks/useGetPrices";
-
 import { getPriceStr } from "@/utils/price";
+import { useGetPrices } from "@/app/_hooks/useGetPrices";
+import { FollowerPendingOrder, FollowerTrade } from "@/graphql/gql/graphql";
 import { getPNLPercentage } from "@/utils";
 
 export type FollowerInfoWidgetProps = {
@@ -24,18 +20,12 @@ export type FollowerInfoWidgetProps = {
     usdcBalance: number;
     contractId: number;
     accUSDPnl: number;
+    trades: FollowerTrade[];
+    pendingOrders: FollowerPendingOrder[];
   };
 };
 
 export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
-  const { pendingOrders, loading: pendingOrdersLoading } = useGetPendingOrders(
-    follower.address,
-    follower.contractId,
-  );
-  const { trades, loading: tradedOrdersLoading } = useGetTradedOrders(
-    follower.address,
-    follower.contractId,
-  );
   const prices = useGetPrices();
 
   const items = [
@@ -51,8 +41,7 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
     },
   ];
 
-  const counts = trades.length || 0;
-  const summary = trades
+  const summary = follower.trades
     .map((trade) => {
       const data = JSON.parse(trade.params);
 
@@ -86,8 +75,6 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
       { pnls: 0, size: 0 },
     );
 
-  const pendingOrdersCount = pendingOrders.length || 0;
-
   return (
     <div className="flex flex-1 items-center justify-between gap-3">
       <div className="flex items-center gap-2">
@@ -107,35 +94,29 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
           </Chip>
         ) : null}
 
-        {tradedOrdersLoading ? (
-          <Skeleton className="rounded-lg">
-            <div className="h-8 w-[80px] rounded-full bg-default-300" />
-          </Skeleton>
-        ) : counts !== 0 ? (
-          <Chip color="success">{counts} Trades</Chip>
+        {follower.trades.length > 0 ? (
+          <Chip color="success">{follower.trades.length} Trades</Chip>
         ) : null}
 
-        {pendingOrdersLoading ? (
-          <Skeleton className="rounded-lg">
-            <div className="h-8 w-[80px] rounded-full bg-default-300" />
-          </Skeleton>
-        ) : pendingOrdersCount !== 0 ? (
-          <Chip color="secondary">{pendingOrdersCount} Pendings</Chip>
+        {follower.pendingOrders.length > 0 ? (
+          <Chip color="secondary">
+            {follower.pendingOrders.length} Pendings
+          </Chip>
         ) : null}
       </div>
 
       <div className="flex items-center gap-4">
-        {counts > 0 && (
+        {follower.trades.length > 0 && (
           <LabeledChip
             label="uPnL"
             value={getPriceStr(summary.pnls, 2)}
             unit="$"
             isPrefix={true}
-            color={summary.pnls > 0 ? "warning" : "danger"}
+            color={summary.pnls >= 0 ? "warning" : "danger"}
           />
         )}
 
-        {counts > 0 && (
+        {follower.trades.length > 0 && (
           <LabeledChip
             label="Size"
             value={getPriceStr(summary.size)}
