@@ -14,7 +14,10 @@ export function LabeledChip({
   isPrefix?: boolean;
 }) {
   return (
-    <Chip {...props} className="h-fit rounded-md p-1">
+    <Chip
+      {...props}
+      className={twMerge("h-fit rounded-md p-1", props.className)}
+    >
       <div className="flex flex-col">
         {label && <span className="text-xs opacity-80">{label}</span>}
         <div

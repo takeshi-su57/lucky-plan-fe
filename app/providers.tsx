@@ -110,6 +110,7 @@ const cache = new InMemoryCache({
         getTestingReportV3: relayStylePagination(),
         getTestingReportV4: relayStylePagination(),
         getTestingReportV5: relayStylePagination(),
+        getAllFollowerDetails: relayStylePagination(["contractId"]),
       },
     },
     TagCategory: { keyFields: ["id"] },
@@ -124,6 +125,9 @@ const cache = new InMemoryCache({
     },
     FollowerDetails: {
       keyFields: ["address", "contractId"],
+    },
+    FollowerDetailsEdge: {
+      keyFields: ["cursor"],
     },
     FollowerTrade: {
       keyFields: ["address", "index"],
