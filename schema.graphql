@@ -257,6 +257,11 @@ type FollowerActionDetails {
   taskId: Int!
 }
 
+type FollowerConnection {
+  edges: [FollowerEdge!]!
+  pageInfo: FollowerPageInfo!
+}
+
 type FollowerDetail {
   accountIndex: Int!
   address: String!
@@ -268,6 +273,16 @@ type FollowerDetail {
   trades: [FollowerTrade!]!
   usdcBalance: String
   userId: String!
+}
+
+type FollowerEdge {
+  cursor: Int!
+  node: FollowerDetail!
+}
+
+type FollowerPageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
 }
 
 type FollowerPendingOrder {
@@ -577,7 +592,7 @@ type Query {
   getAlertTasks: [TaskBackwardDetails!]!
   getAllCategories: [TagCategory!]!
   getAllContracts: [Contract!]!
-  getAllFollowerDetails(contractId: Int!): [FollowerDetail!]!
+  getAllFollowerDetails(after: Int, contractId: Int!, first: Int!): FollowerConnection!
   getAllFollowers: [Follower!]!
   getAllStrategy: [Strategy!]!
   getAllStrategyMetadata: [StrategyMetadata!]!
