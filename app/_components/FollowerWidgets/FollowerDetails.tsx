@@ -22,21 +22,12 @@ import { PositionDetails } from "./PositionDetails";
 import { PositionSummary } from "./PositionSummary";
 import { PendingOrderSummary } from "./PendingOrderSummary";
 import { PendingOrderDetails } from "./PendingOrderDetails";
-import { FollowerPendingOrder, FollowerTrade } from "@/graphql/gql/graphql";
+import { FollowerDetail } from "@/graphql/gql/graphql";
 
 type TabType = "chart" | "positions";
 
 export type FollowerDetailsProps = {
-  follower: {
-    address: string;
-    accountIndex: number;
-    publicKey: string;
-    ethBalance: number;
-    usdcBalance: number;
-    contractId: number;
-    trades: FollowerTrade[];
-    pendingOrders: FollowerPendingOrder[];
-  };
+  follower: FollowerDetail;
   isChatFirst: boolean;
 };
 

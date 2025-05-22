@@ -1,6 +1,11 @@
 "use client";
 
-import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import {
+  useApolloClient,
+  useLazyQuery,
+  useMutation,
+  useQuery,
+} from "@apollo/client";
 
 import { getFragmentData, graphql } from "@/gql/index";
 import { useEffect, useMemo } from "react";
@@ -68,9 +73,22 @@ export const GET_ALL_FOLLOWERS_DOCUMENT = graphql(`
 `);
 
 export const GET_ALL_FOLLOWER_DETAILS_DOCUMENT = graphql(`
-  query getAllFollowerDetails($contractId: Int!) {
-    getAllFollowerDetails(contractId: $contractId) {
-      ...FollowerDetailInfo
+  query getAllFollowerDetails($contractId: Int!, $after: Int, $first: Int!) {
+    getAllFollowerDetails(
+      contractId: $contractId
+      after: $after
+      first: $first
+    ) {
+      edges {
+        cursor
+        node {
+          ...FollowerDetailInfo
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
     }
   }
 `);
@@ -148,16 +166,51 @@ export function useGetAllFollowers() {
 }
 
 export function useGetAllFollowerDetails(contractId: string | null) {
-  const { data, loading } = useQuery(GET_ALL_FOLLOWER_DETAILS_DOCUMENT, {
-    variables: contractId !== null ? { contractId: +contractId } : undefined,
-  });
+  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
+    GET_ALL_FOLLOWER_DETAILS_DOCUMENT,
+  );
+
+  useEffect(() => {
+    if (contractId === null) {
+      return;
+    }
+
+    query({
+      variables: {
+        contractId: +contractId,
+        first: 20,
+        after: null,
+      },
+    });
+  }, [query, contractId]);
+
+  useEffect(() => {
+    if (
+      data &&
+      !loading &&
+      !error &&
+      contractId &&
+      data.getAllFollowerDetails.pageInfo.hasNextPage
+    ) {
+      setTimeout(() => {
+        fetchMore({
+          variables: {
+            contractId: +contractId,
+            first: 20,
+            after: data.getAllFollowerDetails.pageInfo.endCursor,
+          },
+        });
+      }, 5000);
+    }
+  }, [data, error, fetchMore, contractId, loading]);
 
   const details = useMemo(() => {
     if (!data) {
       return [];
     }
 
-    return data.getAllFollowerDetails
+    return data.getAllFollowerDetails.edges
+      .map((edge) => edge.node)
       .map((follower) => {
         const followerData = getFragmentData(
           FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT,
@@ -205,6 +258,7 @@ export function useGetAllFollowerDetails(contractId: string | null) {
   return {
     details,
     loading,
+    hasMore: data?.getAllFollowerDetails.pageInfo.hasNextPage,
   };
 }
 
@@ -277,54 +331,13 @@ export function useCloseTradeMarket() {
           variant: "success",
         });
 
-        const tradeIndex = data.closeTradeMarket.index;
-        const traderAddress = data.closeTradeMarket.address;
-
-        client.cache.updateQuery(
-          {
-            query: GET_ALL_FOLLOWER_DETAILS_DOCUMENT,
-            variables: {
-              contractId: data.closeTradeMarket.contractId,
+        client.cache.modify({
+          fields: {
+            getAllFollowerDetails: (_, { INVALIDATE }) => {
+              return INVALIDATE;
             },
           },
-          (data) => {
-            if (data && data.getAllFollowerDetails.length > 0) {
-              return {
-                ...data,
-                getAllFollowerDetails: data.getAllFollowerDetails.map(
-                  (item) => {
-                    const followerData = getFragmentData(
-                      FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT,
-                      item,
-                    );
-
-                    if (followerData.address !== traderAddress) {
-                      return item;
-                    }
-
-                    const trades = followerData.trades.filter((trade) => {
-                      const tradeData = getFragmentData(
-                        FOLLOWER_TRADE_INFO_FRAGMENT_DOCUMENT,
-                        trade,
-                      );
-
-                      return tradeData.index !== tradeIndex;
-                    });
-
-                    return {
-                      ...followerData,
-                      trades,
-                    };
-                  },
-                ),
-              };
-            } else {
-              return {
-                getAllFollowerDetails: [],
-              };
-            }
-          },
-        );
+        });
       } else {
         enqueueSnackbar(data.closeTradeMarket.message, {
           variant: "error",
@@ -350,56 +363,13 @@ export function useCancelOrderAfterTimeout() {
           variant: "success",
         });
 
-        const tradeIndex = data.cancelOrderAfterTimeout.index;
-        const traderAddress = data.cancelOrderAfterTimeout.address;
-
-        client.cache.updateQuery(
-          {
-            query: GET_ALL_FOLLOWER_DETAILS_DOCUMENT,
-            variables: {
-              contractId: data.cancelOrderAfterTimeout.contractId,
+        client.cache.modify({
+          fields: {
+            getAllFollowerDetails: (_, { INVALIDATE }) => {
+              return INVALIDATE;
             },
           },
-          (data) => {
-            if (data && data.getAllFollowerDetails.length > 0) {
-              return {
-                ...data,
-                getAllFollowerDetails: data.getAllFollowerDetails.map(
-                  (item) => {
-                    const followerData = getFragmentData(
-                      FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT,
-                      item,
-                    );
-
-                    if (followerData.address !== traderAddress) {
-                      return item;
-                    }
-
-                    const pendingOrders = followerData.pendingOrders.filter(
-                      (pendingOrder) => {
-                        const order = getFragmentData(
-                          FOLLOWER_PENDING_ORDER_INFO_FRAGMENT_DOCUMENT,
-                          pendingOrder,
-                        );
-
-                        return order.index !== tradeIndex;
-                      },
-                    );
-
-                    return {
-                      ...followerData,
-                      pendingOrders,
-                    };
-                  },
-                ),
-              };
-            } else {
-              return {
-                getAllFollowerDetails: [],
-              };
-            }
-          },
-        );
+        });
       } else {
         enqueueSnackbar(data.cancelOrderAfterTimeout.message, {
           variant: "error",
