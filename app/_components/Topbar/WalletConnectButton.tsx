@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useSignMessage, useDisconnect, useChainId } from "wagmi";
 import { useSnackbar } from "notistack";
+import { useApolloClient } from "@apollo/client";
 
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { Button } from "@nextui-org/react";
@@ -17,6 +18,7 @@ export default function WalletConnectButton() {
 
   const account = useAccount();
   const chainId = useChainId();
+  const client = useApolloClient();
 
   const { signMessage } = useSignMessage();
   const { disconnect } = useDisconnect();
@@ -67,6 +69,7 @@ export default function WalletConnectButton() {
               variant: "error",
             });
             disconnect();
+            client.resetStore();
           },
         },
       );
@@ -82,6 +85,7 @@ export default function WalletConnectButton() {
     isConnected,
     signin,
     chainId,
+    client,
   ]);
 
   useEffect(() => {

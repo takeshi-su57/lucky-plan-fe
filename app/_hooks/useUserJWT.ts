@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect } from "react";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
-import { useMutation as useApolloMutation } from "@apollo/client";
+import {
+  useApolloClient,
+  useMutation as useApolloMutation,
+} from "@apollo/client";
 import { useDisconnect } from "wagmi";
 import { GET_TOKEN_DOCUMENT } from "./useUser";
 import { UserPermission } from "@/graphql/gql/graphql";
@@ -29,6 +32,8 @@ export function useUserJWT() {
   const { disconnect } = useDisconnect();
 
   const queryClient = useQueryClient();
+  const apolloClient = useApolloClient();
+
   const userJwtQuery = useQuery({
     queryKey: [LOCAL_USER_JWT_KEY],
     queryFn: async () => {
@@ -96,13 +101,14 @@ export function useUserJWT() {
 
   const signout = useCallback(() => {
     changeJWTMutation.mutate(null);
-  }, [changeJWTMutation]);
+    disconnect();
+    apolloClient.resetStore();
+  }, [changeJWTMutation, disconnect, apolloClient]);
 
   useEffect(() => {
     if (userJwtQuery.data) {
       if (new Date(userJwtQuery.data.expirationTime) < new Date()) {
         signout();
-        disconnect();
       }
     }
   }, [userJwtQuery.data, signout, disconnect]);

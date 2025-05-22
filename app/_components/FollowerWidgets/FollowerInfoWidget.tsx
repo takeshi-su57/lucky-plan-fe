@@ -2,27 +2,17 @@
 
 import { Address } from "viem";
 import { Chip } from "@nextui-org/react";
+import { FollowerDetail, PnlSnapshotKind } from "@/graphql/gql/graphql";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { LabeledChip } from "@/components/chips/LabeledChip";
 
 import { getPriceStr } from "@/utils/price";
 import { useGetPrices } from "@/app/_hooks/useGetPrices";
-import { FollowerPendingOrder, FollowerTrade } from "@/graphql/gql/graphql";
 import { getPNLPercentage } from "@/utils";
 
 export type FollowerInfoWidgetProps = {
-  follower: {
-    address: string;
-    accountIndex: number;
-    publicKey: string;
-    ethBalance: number;
-    usdcBalance: number;
-    contractId: number;
-    accUSDPnl: number;
-    trades: FollowerTrade[];
-    pendingOrders: FollowerPendingOrder[];
-  };
+  follower: FollowerDetail;
 };
 
 export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
@@ -75,6 +65,10 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
       { pnls: 0, size: 0 },
     );
 
+  const accUSDPnl =
+    follower.pnlSnapshots.find((item) => item.kind === PnlSnapshotKind.AllTime)
+      ?.accUSDPnl || 0;
+
   return (
     <div className="flex flex-1 items-center justify-between gap-3">
       <div className="flex items-center gap-2">
@@ -88,9 +82,9 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
           </div>
         ))}
 
-        {follower.accUSDPnl !== 0 ? (
-          <Chip color={follower.accUSDPnl > 0 ? "warning" : "danger"}>
-            {getPriceStr(follower.accUSDPnl)} USDC
+        {accUSDPnl !== 0 ? (
+          <Chip color={accUSDPnl > 0 ? "warning" : "danger"}>
+            {accUSDPnl.toFixed(2)} USDC
           </Chip>
         ) : null}
 
