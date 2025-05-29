@@ -577,14 +577,9 @@ type PnlSnapshotInitializedFlag {
 enum PnlSnapshotKind {
   ALL_TIME
   DAY
-  HALF_YEAR
   MONTH
-  THREE_DAY
   THREE_MONTH
-  TWO_DAY
-  TWO_WEEK
   WEEK
-  YEAR
 }
 
 type Position {
