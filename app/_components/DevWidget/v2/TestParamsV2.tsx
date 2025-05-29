@@ -16,14 +16,9 @@ export type TestParamsV2 = {
 export const initialTestParams: TestParamsV2 = {
   r2MinsByPnlSnapshotKind: {
     [PnlSnapshotKind.Day]: 0.9,
-    [PnlSnapshotKind.TwoDay]: 0.9,
-    [PnlSnapshotKind.ThreeDay]: 0.9,
     [PnlSnapshotKind.Week]: 0.9,
-    [PnlSnapshotKind.TwoWeek]: 0.9,
     [PnlSnapshotKind.Month]: 0.9,
     [PnlSnapshotKind.ThreeMonth]: 0.9,
-    [PnlSnapshotKind.HalfYear]: 0.9,
-    [PnlSnapshotKind.Year]: 0.9,
     [PnlSnapshotKind.AllTime]: 0.9,
   },
   minSlope: 0,
@@ -86,13 +81,7 @@ export function TestParamsV2View({
           </div>
 
           <div className="flex flex-col gap-4">
-            {[
-              PnlSnapshotKind.Day,
-              PnlSnapshotKind.TwoDay,
-              PnlSnapshotKind.ThreeDay,
-              PnlSnapshotKind.Week,
-              PnlSnapshotKind.TwoWeek,
-            ].map((kind) => (
+            {[PnlSnapshotKind.Day, PnlSnapshotKind.Week].map((kind) => (
               <div key={kind}>
                 <NumericInput
                   min={0}
@@ -113,8 +102,6 @@ export function TestParamsV2View({
             {[
               PnlSnapshotKind.Month,
               PnlSnapshotKind.ThreeMonth,
-              PnlSnapshotKind.HalfYear,
-              PnlSnapshotKind.Year,
               PnlSnapshotKind.AllTime,
             ].map((kind) => (
               <div key={kind}>
