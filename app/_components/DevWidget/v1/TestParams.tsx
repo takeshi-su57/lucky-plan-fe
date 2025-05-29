@@ -24,14 +24,9 @@ export const initialTestParams: TestParams = {
   maxSlope: 1000000,
   closePositionCountsByPnlSnapshotKind: {
     [PnlSnapshotKind.Day]: 3,
-    [PnlSnapshotKind.TwoDay]: 4,
-    [PnlSnapshotKind.ThreeDay]: 5,
     [PnlSnapshotKind.Week]: 6,
-    [PnlSnapshotKind.TwoWeek]: 7,
     [PnlSnapshotKind.Month]: 8,
     [PnlSnapshotKind.ThreeMonth]: 9,
-    [PnlSnapshotKind.HalfYear]: 10,
-    [PnlSnapshotKind.Year]: 11,
     [PnlSnapshotKind.AllTime]: 12,
   },
 };
@@ -132,13 +127,7 @@ export function TestParamsView({
           </div>
 
           <div className="flex flex-col gap-4">
-            {[
-              PnlSnapshotKind.Day,
-              PnlSnapshotKind.TwoDay,
-              PnlSnapshotKind.ThreeDay,
-              PnlSnapshotKind.Week,
-              PnlSnapshotKind.TwoWeek,
-            ].map((kind) => (
+            {[PnlSnapshotKind.Day, PnlSnapshotKind.Week].map((kind) => (
               <div key={kind}>
                 <NumericInput
                   min={0}
@@ -159,8 +148,6 @@ export function TestParamsView({
             {[
               PnlSnapshotKind.Month,
               PnlSnapshotKind.ThreeMonth,
-              PnlSnapshotKind.HalfYear,
-              PnlSnapshotKind.Year,
               PnlSnapshotKind.AllTime,
             ].map((kind) => (
               <div key={kind}>
