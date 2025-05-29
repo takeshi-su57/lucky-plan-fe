@@ -815,14 +815,9 @@ export type PnlSnapshotInitializedFlag = {
 export enum PnlSnapshotKind {
   AllTime = 'ALL_TIME',
   Day = 'DAY',
-  HalfYear = 'HALF_YEAR',
   Month = 'MONTH',
-  ThreeDay = 'THREE_DAY',
   ThreeMonth = 'THREE_MONTH',
-  TwoDay = 'TWO_DAY',
-  TwoWeek = 'TWO_WEEK',
-  Week = 'WEEK',
-  Year = 'YEAR'
+  Week = 'WEEK'
 }
 
 export type Position = {
