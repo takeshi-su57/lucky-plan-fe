@@ -4,7 +4,11 @@ import { useCallback } from "react";
 import { Accordion, AccordionItem, Button } from "@nextui-org/react";
 import { MissionStatus, MissionForwardDetails } from "@/graphql/gql/graphql";
 
-import { useCloseMission, useIgnoreMission } from "@/app-hooks/useMission";
+import {
+  useCloseMission,
+  useIgnoreMission,
+  useCloneMission,
+} from "@/app-hooks/useMission";
 import { TaskSummary } from "../TaskWidgets/TaskSummary";
 import { TaskDetails } from "../TaskWidgets/TaskDetails";
 
@@ -13,8 +17,17 @@ export type MissionDetailsProps = {
 };
 
 export function MissionDetails({ mission }: MissionDetailsProps) {
+  const cloneMission = useCloneMission();
   const closeMission = useCloseMission();
   const ignoreMission = useIgnoreMission();
+
+  const handleCloneMission = useCallback(() => {
+    cloneMission({
+      variables: {
+        id: mission.id,
+      },
+    });
+  }, [cloneMission, mission.id]);
 
   const handleCloseMission = useCallback(() => {
     closeMission({
@@ -44,39 +57,50 @@ export function MissionDetails({ mission }: MissionDetailsProps) {
 
   return (
     <div className="flex flex-col gap-2 border-t border-t-neutral-400/20 py-6">
-      <div className="flex flex-row items-center gap-4">
-        {mission.status !== MissionStatus.Closed ? (
-          <Button
-            onClick={handleCloseMission}
-            color="secondary"
-            className="w-fit"
-            size="sm"
-          >
-            Close
-          </Button>
-        ) : null}
+      <div className="flex flex-row items-center justify-between">
+        <div className="flex flex-row items-center gap-4">
+          {mission.status !== MissionStatus.Closed ? (
+            <Button
+              onClick={handleCloseMission}
+              color="primary"
+              className="w-fit"
+              size="sm"
+            >
+              Close
+            </Button>
+          ) : null}
 
-        {mission.status !== MissionStatus.Closed ? (
-          <Button
-            onClick={handleCloseForceMission}
-            color="danger"
-            className="w-fit"
-            size="sm"
-          >
-            Force Close
-          </Button>
-        ) : null}
+          {mission.status !== MissionStatus.Closed ? (
+            <Button
+              onClick={handleCloseForceMission}
+              color="danger"
+              className="w-fit"
+              size="sm"
+            >
+              Force Close
+            </Button>
+          ) : null}
 
-        {mission.status !== MissionStatus.Closed ? (
-          <Button
-            onClick={handleIgnoreMission}
-            color="warning"
-            className="w-fit"
-            size="sm"
-          >
-            Ignore
-          </Button>
-        ) : null}
+          {mission.status !== MissionStatus.Closed ? (
+            <Button
+              onClick={handleIgnoreMission}
+              color="warning"
+              className="w-fit"
+              size="sm"
+            >
+              Ignore
+            </Button>
+          ) : null}
+        </div>
+
+        <Button
+          onClick={handleCloneMission}
+          color="secondary"
+          className="w-fit"
+          size="sm"
+        >
+          Clone
+        </Button>
       </div>
       <span className="px-2 text-base">Tasks</span>
 
