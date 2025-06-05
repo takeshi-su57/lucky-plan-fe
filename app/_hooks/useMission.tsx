@@ -81,6 +81,12 @@ export const MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   }
 `);
 
+export const CLONE_MISSION_DOCUMENT = graphql(`
+  mutation cloneMission($id: Int!) {
+    cloneMission(id: $id)
+  }
+`);
+
 export const CLOSE_MISSION_DOCUMENT = graphql(`
   mutation closeMission($id: Int!, $isForce: Boolean!) {
     closeMission(id: $id, isForce: $isForce)
@@ -325,6 +331,29 @@ export function useCloseMission() {
   }, [newData, error, enqueueSnackbar]);
 
   return closeMission;
+}
+
+export function useCloneMission() {
+  const [cloneMission, { data: newData, error }] = useMutation(
+    CLONE_MISSION_DOCUMENT,
+  );
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      enqueueSnackbar("Success at cloning mission!", {
+        variant: "success",
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Failed to clone mission!", {
+        variant: "error",
+      });
+    }
+  }, [newData, error, enqueueSnackbar]);
+
+  return cloneMission;
 }
 
 export function useIgnoreMission() {
