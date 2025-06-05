@@ -404,25 +404,15 @@ enum MissionStatus {
 type Mutation {
   addTagToWalletAccount(input: ChangeUserTagInput!): WalletAccount!
   addWalletAccount(input: AddUserInput!): WalletAccount!
-  allowAuto(
-    address: String!
-    allowAuto: Boolean!
-    budget: Float!
-    followerContractId: Int!
-    ratio: Float!
-  ): User!
+  allowAuto(address: String!, allowAuto: Boolean!, budget: Float!, followerContractId: Int!, ratio: Float!): User!
   autoTesting(startDate: String!): Boolean!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
-  buildPnlSnapshots(
-    dateStr: String!
-    isForceBuild: Boolean!
-  ): PnlSnapshotInitializedFlag
-  cancelOrderAfterTimeout(
-    input: CancelOrderAfterTimeoutInput!
-  ): ContractExecutionResult!
+  buildPnlSnapshots(dateStr: String!, isForceBuild: Boolean!): PnlSnapshotInitializedFlag
+  cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
   checkLog(id: Int!): Log!
+  cloneMission(id: Int!): Boolean!
   closeMission(id: Int!, isForce: Boolean!): Boolean!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
   createAutoPlan: Boolean!
@@ -435,16 +425,9 @@ type Mutation {
   dynamicSnapshotBuild(dateStr: String!): PnlSnapshotInitializedFlag
   endPlan(id: Int!): Boolean!
   generateNewFollower: Follower!
-  getToken(
-    signature: String!
-    timestamp: String!
-    walletAddress: String!
-  ): AccessToken!
+  getToken(signature: String!, timestamp: String!, walletAddress: String!): AccessToken!
   ignoreMission(id: Int!): Boolean!
-  initializePnlSnapshot(
-    beginingDate: DateTime!
-    isForceBuild: Boolean!
-  ): Boolean!
+  initializePnlSnapshot(beginingDate: DateTime!, isForceBuild: Boolean!): Boolean!
   liveBot(id: Int!): Boolean!
   makeSafeApp(password: String!): Boolean!
   pauseSystem: Boolean!
@@ -596,23 +579,14 @@ type PositionInfo {
 }
 
 type Query {
-  allLogs(
-    after: Int
-    checked: Boolean!
-    first: Int!
-    severity: LogSeverity
-  ): LogsConnection!
+  allLogs(after: Int, checked: Boolean!, first: Int!, severity: LogSeverity): LogsConnection!
   findContract(id: Int!): Contract!
   findStrategy(id: Int!): Strategy
   findStrategyMetadata(key: String!): StrategyMetadata!
   getAlertTasks: [TaskBackwardDetails!]!
   getAllCategories: [TagCategory!]!
   getAllContracts: [Contract!]!
-  getAllFollowerDetails(
-    after: Int
-    contractId: Int!
-    first: Int!
-  ): FollowerConnection!
+  getAllFollowerDetails(after: Int, contractId: Int!, first: Int!): FollowerConnection!
   getAllFollowers: [Follower!]!
   getAllStrategy: [Strategy!]!
   getAllStrategyMetadata: [StrategyMetadata!]!
@@ -620,38 +594,15 @@ type Query {
   getAllUsers: [User!]!
   getAllWalletAccounts: [WalletAccount!]!
   getBotsByStatus(after: Int, first: Int!, status: BotStatus!): BotConnection!
-  getDevPnlSnapshots(
-    dateStr: String!
-    filterParams: ExportFilter!
-  ): [PnlSnapshotDevDetails!]!
-  getDevPnlSnapshotsV4(
-    dateStr: String!
-    filterParams: [ExportFilterV3!]!
-    ratio: Float!
-  ): [PnlSnapshotDevDetails!]!
-  getDevPnlSnapshotsV5(
-    dateStr: String!
-    filterParams: ExportFilterV5!
-  ): [PnlSnapshotDevDetailsV5!]!
+  getDevPnlSnapshots(dateStr: String!, filterParams: ExportFilter!): [PnlSnapshotDevDetails!]!
+  getDevPnlSnapshotsV4(dateStr: String!, filterParams: [ExportFilterV3!]!, ratio: Float!): [PnlSnapshotDevDetails!]!
+  getDevPnlSnapshotsV5(dateStr: String!, filterParams: ExportFilterV5!): [PnlSnapshotDevDetailsV5!]!
   getLogsSeverityCounts: [SeverityCount!]!
-  getMonthlyDevPnlSnapshots(
-    dateStr: String!
-    filterParams: ExportFilter!
-  ): [TradeHistory!]!
+  getMonthlyDevPnlSnapshots(dateStr: String!, filterParams: ExportFilter!): [TradeHistory!]!
   getPlanById(id: Int!): PlanForwardDetails
-  getPlansByStatus(
-    after: Int
-    first: Int!
-    status: PlanStatus!
-  ): PlanConnection!
+  getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
   getPnlSnapshotInitializedFlag: [PnlSnapshotInitializedFlag!]!
-  getPnlSnapshots(
-    after: Int
-    contractId: Int!
-    dateStr: String!
-    first: Int!
-    kind: PnlSnapshotKind!
-  ): PnlSnapshotDetailsConnection!
+  getPnlSnapshots(after: Int, contractId: Int!, dateStr: String!, first: Int!, kind: PnlSnapshotKind!): PnlSnapshotDetailsConnection!
   getPnlSnapshotsByAddress(address: String!, dateStr: String!): [PnlSnapshot!]!
   getServerTime: ServerTime!
   getTestingReport(after: Int, first: Int!): TestingReportConnection!
@@ -662,35 +613,14 @@ type Query {
   getTradeCollaterals(contractId: Int!): [TradeCollateral!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getTradePairs(contractId: Int!): [TradePair!]!
-  getTradeTransactionCounts(
-    addresses: [String!]!
-    contractIds: [Int!]!
-  ): TradeTransactionCount!
-  getUserTransactionCounts(
-    inputs: [GetUserTransactionCountsInput!]!
-  ): [TradeTransactionCount!]!
+  getTradeTransactionCounts(addresses: [String!]!, contractIds: [Int!]!): TradeTransactionCount!
+  getUserTransactionCounts(inputs: [GetUserTransactionCountsInput!]!): [TradeTransactionCount!]!
   getWalletAccountByAddress(input: GetUserByAddressInput!): WalletAccount!
-  getWholeCompressedHistories(
-    filterParams: ExportFilter!
-  ): WholeCompressedHistories!
-  getWholeCompressedHistoriesV2(
-    filterParams: [ExportFilterV2!]!
-  ): WholeCompressedHistories!
-  getWholeCompressedHistoriesV3(
-    filterParams: [ExportFilterV3!]!
-  ): WholeCompressedHistories!
-  getWholeCompressedHistoriesV4(
-    filterParams: [ExportFilterV3!]!
-    isTestnet: Boolean!
-    ratio: Float!
-    startDate: String!
-  ): WholeCompressedHistories!
-  getWholeCompressedHistoriesV5(
-    filterParams: ExportFilterV5!
-    isTestnet: Boolean!
-    ratio: Float!
-    startDate: String!
-  ): WholeCompressedHistories!
+  getWholeCompressedHistories(filterParams: ExportFilter!): WholeCompressedHistories!
+  getWholeCompressedHistoriesV2(filterParams: [ExportFilterV2!]!): WholeCompressedHistories!
+  getWholeCompressedHistoriesV3(filterParams: [ExportFilterV3!]!): WholeCompressedHistories!
+  getWholeCompressedHistoriesV4(filterParams: [ExportFilterV3!]!, isTestnet: Boolean!, ratio: Float!, startDate: String!): WholeCompressedHistories!
+  getWholeCompressedHistoriesV5(filterParams: ExportFilterV5!, isTestnet: Boolean!, ratio: Float!, startDate: String!): WholeCompressedHistories!
   getWholeResultHistories(filterParams: ExportFilter!): [TradeHistory!]!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
   isSafeApp: Boolean!
