@@ -32,7 +32,7 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
   const {
     leaderContract,
     followerContract,
-    // strategy,
+    strategy,
     leaderAddress,
     followerAddress,
   } = bot;
@@ -90,16 +90,16 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
           </div>
         </div>
 
-        {/* <div className="flex flex-col font-mono">
+        <div className="flex flex-col font-mono">
           <span className="text-xs">
-            Collateral:
-            {`(${Number(strategy.minCollateral)} ~ ${Number(strategy.maxCollateral)}) USDC`}
+            Max Collateral:
+            {`${Number(strategy.maxCollateral)} USDC`}
           </span>
           <span className="text-xs">
-            Leverage:
-            {`(${strategy.minLeverage / 1000} ~ ${strategy.maxLeverage / 1000}) x`}
+            Ratio:
+            {`${strategy.ratio} x`}
           </span>
-        </div> */}
+        </div>
 
         <div className="flex flex-row items-center gap-3 font-mono">
           <ContractPnl
