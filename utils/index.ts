@@ -508,7 +508,7 @@ export function getScore(
   dateStr: string,
   histories: PersonalTradeHistory[],
 ): number {
-  const endDate = dayjs(dateStr).add(1, "days").toDate();
+  const endDate = dayjs(dateStr).toDate();
 
   const rangeHistories = histories.filter((history) => {
     const historyDate = new Date(history.date);
@@ -551,56 +551,64 @@ export function getScore(
   }
 
   let traderScore = 0;
-  let round = 0;
 
-  for (let i = 0; i < closeHistories.length; i += bestCase.window) {
-    round++;
-    const chunk = closeHistories.slice(
-      Math.max(closeHistories.length - i - bestCase.window, 0),
-      closeHistories.length - i,
-    );
+  for (let step = 0; step < bestCase.window; step++) {
+    let round = 0;
+    let stepScore = 0;
 
-    if (chunk.length < 2) {
-      continue;
-    }
+    for (let i = 0; i < closeHistories.length; i += bestCase.window) {
+      round++;
+      const chunk = closeHistories.slice(
+        Math.max(closeHistories.length - i - step - bestCase.window, 0),
+        closeHistories.length - i - step,
+      );
 
-    let pnlSum = 0;
-
-    const pnlArrs: number[] = [];
-    const xs: number[] = [];
-
-    for (let j = 0; j < chunk.length; j++) {
-      const history = chunk[j];
-
-      pnlSum += +history.pnl * +history.collateralPriceUsd;
-
-      pnlArrs.push(pnlSum);
-      xs.push(j);
-    }
-
-    const regression = new SimpleLinearRegression(xs, pnlArrs);
-    const score = regression.score(xs, pnlArrs);
-
-    if (Number.isNaN(score.r2)) {
-      score.r2 = 1;
-    }
-
-    if (score.r2 === Infinity) {
-      continue;
-    }
-
-    if (regression.slope > 0) {
-      if (score.r2 > bestCase.minR2) {
-        traderScore += (regression.slope * score.r2) / round / bestCase.n;
-      } else {
-        traderScore +=
-          (regression.slope * (score.r2 - 1) * bestCase.m) / round / bestCase.n;
+      if (chunk.length < 6) {
+        continue;
       }
-    } else {
-      traderScore +=
-        (regression.slope * (2 - score.r2) * bestCase.m) / round / bestCase.n;
+
+      let pnlSum = 0;
+
+      const pnlArrs: number[] = [];
+      const xs: number[] = [];
+
+      for (let j = 0; j < chunk.length; j++) {
+        const history = chunk[j];
+
+        pnlSum += +history.pnl * +history.collateralPriceUsd;
+
+        pnlArrs.push(pnlSum);
+        xs.push(j);
+      }
+
+      const regression = new SimpleLinearRegression(xs, pnlArrs);
+      const score = regression.score(xs, pnlArrs);
+
+      if (Number.isNaN(score.r2)) {
+        score.r2 = 1;
+      }
+
+      if (score.r2 === Infinity) {
+        continue;
+      }
+
+      if (regression.slope > 0) {
+        if (score.r2 > bestCase.minR2) {
+          stepScore += (regression.slope * score.r2) / round / bestCase.n;
+        } else {
+          stepScore +=
+            (regression.slope * (score.r2 - 1) * bestCase.m) /
+            round /
+            bestCase.n;
+        }
+      } else {
+        stepScore +=
+          (regression.slope * (2 - score.r2) * bestCase.m) / round / bestCase.n;
+      }
     }
+
+    traderScore += stepScore;
   }
 
-  return traderScore;
+  return (traderScore * closeHistories.length) / bestCase.window;
 }

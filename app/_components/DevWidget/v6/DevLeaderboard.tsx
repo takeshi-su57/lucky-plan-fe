@@ -9,8 +9,36 @@ import { useGetDevPnlSnapshotsV5 } from "@/app-hooks/useHistory";
 
 import { HistoriesWidget } from "@/app-components/LeaderboardWidgets/HistoriesWidget/HistoriesWidget";
 import { useEffect, useState } from "react";
-import { PersonalTradeHistory } from "@/types";
+import { PersonalTradeHistory, TradeActionType } from "@/types";
 import { ExportFilterV5 } from "@/graphql/gql/graphql";
+
+function getHistories(histories: PersonalTradeHistory[]) {
+  const pnlData: Record<string, PersonalTradeHistory> = {};
+
+  histories.forEach((history) => {
+    if (
+      history.action === TradeActionType.TradeOpenedMarket ||
+      history.action === TradeActionType.TradeOpenedLimit
+    ) {
+      return;
+    }
+
+    if (!pnlData[history.tradeIndex]) {
+      pnlData[history.tradeIndex] = {
+        ...history,
+      };
+    } else {
+      pnlData[history.tradeIndex] = {
+        ...history,
+        pnl: +pnlData[history.tradeIndex].pnl + +history.pnl,
+      };
+    }
+  });
+
+  return Object.values(pnlData).sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  );
+}
 
 export type DevLeaderboardProps = {
   selectionLabel?: string;
