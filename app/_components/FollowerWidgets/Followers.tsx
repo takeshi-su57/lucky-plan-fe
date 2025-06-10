@@ -7,11 +7,8 @@ import {
   AutocompleteItem,
   Accordion,
   AccordionItem,
-  Card,
-  CardBody,
   Spinner,
 } from "@nextui-org/react";
-import { Virtuoso } from "react-virtuoso";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { useGetAllFollowerDetails } from "@/app-hooks/useFollower";
@@ -32,14 +29,11 @@ export function Followers() {
     searchParams.get("contractId") || null,
   );
 
-  const {
-    details: followerDetails,
-    loading: followerLoading,
-    hasMore: followerHasMore,
-  } = useGetAllFollowerDetails(contractId);
+  const { details: followerDetails, loading: followerLoading } =
+    useGetAllFollowerDetails(contractId);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex h-[calc(100vh-150px)] flex-col gap-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Autocomplete
@@ -84,37 +78,27 @@ export function Followers() {
           <FollowerSummary
             contractId={+contractId}
             followers={followerDetails}
-            followerHasMore={!!followerHasMore}
           />
         ) : null}
       </div>
 
-      {followerLoading ? (
-        <Spinner label="Loading..." size="lg" className="mt-[100px]" />
-      ) : (
-        <Card>
-          <CardBody>
-            <Virtuoso
-              style={{ height: 700 }}
-              data={followerDetails}
-              itemContent={(_, follower) => (
-                <Accordion
-                  key={follower.address}
-                  isCompact
-                  variant="splitted"
-                  className="!mb-2"
+      <div className="flex-1 overflow-y-auto">
+        {followerLoading ? (
+          <Spinner label="Loading..." size="lg" className="mt-[100px]" />
+        ) : (
+          <div className="flex w-full flex-col gap-2">
+            {followerDetails.map((follower) => (
+              <Accordion key={follower.address} isCompact variant="splitted">
+                <AccordionItem
+                  title={<FollowerInfoWidget follower={follower} />}
                 >
-                  <AccordionItem
-                    title={<FollowerInfoWidget follower={follower} />}
-                  >
-                    <FollowerDetails follower={follower} isChatFirst={false} />
-                  </AccordionItem>
-                </Accordion>
-              )}
-            />
-          </CardBody>
-        </Card>
-      )}
+                  <FollowerDetails follower={follower} isChatFirst={false} />
+                </AccordionItem>
+              </Accordion>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

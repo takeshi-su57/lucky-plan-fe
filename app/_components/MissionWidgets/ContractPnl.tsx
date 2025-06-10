@@ -82,7 +82,7 @@ export function ContractPnl({
             long = !!history.long;
           }
 
-          size = history.size;
+          size = history.size * history.collateralPriceUsd;
           leverage = history.leverage;
           pairIndex = history.pairIndex;
         }
