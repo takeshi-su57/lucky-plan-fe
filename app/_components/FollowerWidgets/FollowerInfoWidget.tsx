@@ -84,7 +84,7 @@ export function FollowerInfoWidget({ follower }: FollowerInfoWidgetProps) {
 
         {accUSDPnl !== 0 ? (
           <Chip color={accUSDPnl > 0 ? "warning" : "danger"}>
-            {accUSDPnl.toFixed(2)} USDC
+            {getPriceStr(accUSDPnl)} USDC
           </Chip>
         ) : null}
 

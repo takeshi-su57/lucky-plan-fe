@@ -20,11 +20,9 @@ import {
 } from "@/graphql/gql/graphql";
 
 import { useGetAlertTasks } from "@/app-hooks/useTask";
-import { useGetUserTransactionCounts } from "@/app-hooks/useHistory";
 import { useDeletePlan } from "@/app-hooks/usePlan";
 import { useGetAllContracts } from "@/app-hooks/useContract";
 
-import { LabeledChip } from "@/components/chips/LabeledChip";
 import { ContractPnl } from "@/app-components/MissionWidgets/ContractPnl";
 
 export const chipColorsByPlanStatus: Record<PlanStatus, ChipProps["color"]> = {
@@ -41,13 +39,6 @@ export type PlanCardProps = {
 export function PlanCard({ plan }: PlanCardProps) {
   const { deletePlan, loading } = useDeletePlan();
   const alertTasks = useGetAlertTasks();
-  const { data: transactionCounts } = useGetUserTransactionCounts(
-    plan.bots.map((bot) => ({
-      address: bot.leaderAddress,
-      contractId: bot.leaderContract.id,
-      startedAt: bot.startedAt || null,
-    })),
-  );
 
   const allContracts = useGetAllContracts();
 
@@ -78,21 +69,6 @@ export function PlanCard({ plan }: PlanCardProps) {
   const failedCount = planTasks.filter(
     (task) => task.status === TaskStatus.Failed,
   ).length;
-
-  const transactions = transactionCounts?.getUserTransactionCounts
-    ? transactionCounts.getUserTransactionCounts.reduce(
-        (acc, item) => ({
-          daily: acc.daily + item.daily,
-          weekly: acc.weekly + item.weekly,
-          monthly: acc.monthly + item.monthly,
-        }),
-        { daily: 0, weekly: 0, monthly: 0 },
-      )
-    : {
-        daily: 0,
-        weekly: 0,
-        monthly: 0,
-      };
 
   const items = [
     plan.startedAt
@@ -155,24 +131,6 @@ export function PlanCard({ plan }: PlanCardProps) {
                   </div>
                 ),
             )}
-
-            <div className="flex flex-row items-center gap-3 font-mono">
-              <LabeledChip
-                label="Monthly"
-                value={transactions.monthly}
-                unit="Trades"
-              />
-              <LabeledChip
-                label="Weekly"
-                value={transactions.weekly}
-                unit="Trades"
-              />
-              <LabeledChip
-                label="Daily"
-                value={transactions.daily}
-                unit="Trades"
-              />
-            </div>
 
             <Divider />
 
