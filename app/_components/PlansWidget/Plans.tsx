@@ -5,42 +5,14 @@ import { useMemo, useState } from "react";
 import { Tab, Tabs, Button, Spinner } from "@nextui-org/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaPlus } from "react-icons/fa";
-import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
-import { Virtuoso } from "react-virtuoso";
+import { GroupedVirtuoso } from "react-virtuoso";
 
 import { PlanForwardDetails, PlanStatus } from "@/graphql/gql/graphql";
 
 import { useGetPlansByStatus, useLivePlans } from "@/app-hooks/usePlan";
-import { PlanCard } from "./PlanCard";
+import { PlanRow } from "./PlanRow";
 import { getWeekDateStr } from "@/utils";
-
-const responsive = {
-  superLargeDesktop: {
-    breakpoint: { max: 4000, min: 3000 },
-    items: 5,
-  },
-  "2xl": {
-    breakpoint: { max: 3000, min: 1900 },
-    items: 4,
-  },
-  xl: {
-    breakpoint: { max: 1900, min: 1536 },
-    items: 3,
-  },
-  lg: {
-    breakpoint: { max: 1536, min: 1024 },
-    items: 2,
-  },
-  md: {
-    breakpoint: { max: 1024, min: 768 },
-    items: 1,
-  },
-  mobile: {
-    breakpoint: { max: 768, min: 0 },
-    items: 1,
-  },
-};
 
 type TabType = "live" | "history";
 
@@ -65,7 +37,7 @@ export function Plans() {
     fetchMore: fetchMoreHistories,
   } = useGetPlansByStatus(PlanStatus.Finished);
 
-  const groupedPlans = useMemo(() => {
+  const { groupCounts, groupContent, plans } = useMemo(() => {
     const weekPlans: Record<string, PlanForwardDetails[]> = {};
 
     (selected === "live" ? livePlans : planHistories)
@@ -86,7 +58,17 @@ export function Plans() {
         }
       });
 
-    return weekPlans;
+    const groupCounts: number[] = [];
+    const groupContent: string[] = [];
+    const plans: PlanForwardDetails[] = [];
+
+    Object.entries(weekPlans).forEach(([week, weekPlans]) => {
+      groupCounts.push(weekPlans.length);
+      groupContent.push(week);
+      plans.push(...weekPlans);
+    });
+
+    return { groupCounts, groupContent, plans };
   }, [livePlans, planHistories, selected]);
 
   const loading = selected === "live" ? loadingLives : loadingHistories;
@@ -124,20 +106,15 @@ export function Plans() {
           <Spinner size="lg" color="warning" />
         </div>
       ) : (
-        <Virtuoso
-          style={{ height: 750 }}
-          data={Object.entries(groupedPlans)}
-          itemContent={(_, [week, weekPlans]) => (
-            <div className="flex flex-col gap-4 border-b border-neutral-400/20 pb-4">
-              <h2 className="text-lg font-bold text-neutral-400">{week}</h2>
-
-              <Carousel responsive={responsive}>
-                {weekPlans.map((plan) => (
-                  <PlanCard key={plan.id} plan={plan} />
-                ))}
-              </Carousel>
-            </div>
+        <GroupedVirtuoso
+          style={{ height: 700 }}
+          groupCounts={groupCounts}
+          groupContent={(index) => (
+            <h2 className="w-fit rounded-lg bg-red-800/40 px-3 py-1 text-lg font-bold text-neutral-400">
+              {groupContent[index]}
+            </h2>
           )}
+          itemContent={(index) => <PlanRow plan={plans[index]} />}
           endReached={() => hasMore && !loading && fetchMore()}
           components={{
             Footer: () => (

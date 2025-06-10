@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Button, useDisclosure, Skeleton } from "@nextui-org/react";
+import { Button, useDisclosure } from "@nextui-org/react";
 import { FaPlus } from "react-icons/fa";
 
 import { useGenerateFollower } from "@/app-hooks/useFollower";
@@ -16,12 +16,10 @@ import { useGetPrices } from "@/app/_hooks/useGetPrices";
 export type FollowerSummaryProps = {
   contractId: number;
   followers: FollowerDetail[];
-  followerHasMore: boolean;
 };
 
 export function FollowerSummary({
   contractId,
-  followerHasMore,
   followers,
 }: FollowerSummaryProps) {
   const prices = useGetPrices();
@@ -93,91 +91,60 @@ export function FollowerSummary({
   return (
     <div>
       <div className="flex items-center gap-4">
-        {followerHasMore ? (
-          <Skeleton className="h-10 w-[100px] rounded-lg" />
-        ) : (
-          <LabeledChip
-            label="Pending Orders"
-            value={followers
-              .map((item) => item.pendingOrders.length)
-              .reduce((acc, item) => acc + item, 0)}
-            unit=""
-            color="secondary"
-          />
-        )}
+        <LabeledChip
+          label="Pending Orders"
+          value={followers
+            .map((item) => item.pendingOrders.length)
+            .reduce((acc, item) => acc + item, 0)}
+          unit=""
+          color="secondary"
+        />
 
-        {followerHasMore ? (
-          <Skeleton className="h-10 w-[100px] rounded-lg" />
-        ) : (
-          <LabeledChip
-            label="Open Trades"
-            value={followers
-              .map((item) => item.trades.length)
-              .reduce((acc, item) => acc + item, 0)}
-            unit=""
-            color="success"
-          />
-        )}
+        <LabeledChip
+          label="Open Trades"
+          value={followers
+            .map((item) => item.trades.length)
+            .reduce((acc, item) => acc + item, 0)}
+          unit=""
+          color="success"
+        />
 
-        {followerHasMore ? (
-          <Skeleton className="h-10 w-[100px] rounded-lg" />
-        ) : (
-          <LabeledChip label="Gas" value={totalEth.toFixed(2)} unit="ETH" />
-        )}
+        <LabeledChip label="Gas" value={totalEth.toFixed(2)} unit="ETH" />
 
-        {followerHasMore ? (
-          <Skeleton className="h-10 w-[100px] rounded-lg" />
-        ) : (
-          <LabeledChip
-            label="Collateral"
-            value={totalUsdc.toFixed(2)}
-            unit="USDC"
-          />
-        )}
+        <LabeledChip
+          label="Collateral"
+          value={totalUsdc.toFixed(2)}
+          unit="USDC"
+          color="default"
+        />
 
-        {followerHasMore ? (
-          <Skeleton className="h-10 w-[100px] rounded-lg" />
-        ) : (
-          <LabeledChip
-            label="Earned"
-            value={getPriceStr(totalEarned)}
-            unit="USDC"
-            color="warning"
-          />
-        )}
+        <LabeledChip
+          label="Earned"
+          value={getPriceStr(totalEarned)}
+          unit="USDC"
+          color="warning"
+        />
 
-        {followerHasMore ? (
-          <Skeleton className="h-10 w-[100px] rounded-lg" />
-        ) : (
-          <LabeledChip
-            label="Lost"
-            value={getPriceStr(totalLost)}
-            unit="USDC"
-            color="danger"
-          />
-        )}
+        <LabeledChip
+          label="Lost"
+          value={getPriceStr(totalLost)}
+          unit="USDC"
+          color="danger"
+        />
 
-        {followerHasMore ? (
-          <Skeleton className="h-10 w-[100px] rounded-lg" />
-        ) : (
-          <LabeledChip
-            label="Unrealized PNL"
-            value={summary.pnls.toFixed(1)}
-            unit="USDC"
-            color={summary.pnls >= 0 ? "warning" : "danger"}
-          />
-        )}
+        <LabeledChip
+          label="Unrealized PNL"
+          value={summary.pnls.toFixed(1)}
+          unit="USDC"
+          color={summary.pnls >= 0 ? "warning" : "danger"}
+        />
 
-        {followerHasMore ? (
-          <Skeleton className="h-10 w-[100px] rounded-lg" />
-        ) : (
-          <LabeledChip
-            label="Locked at Gains"
-            value={getPriceStr(summary.size)}
-            unit="USDC"
-            color="default"
-          />
-        )}
+        <LabeledChip
+          label="Locked at Gains"
+          value={getPriceStr(summary.size)}
+          unit="USDC"
+          color="default"
+        />
 
         {contractId ? (
           <Button color="primary" variant="flat" radius="sm" onClick={onOpen}>
