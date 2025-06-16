@@ -237,6 +237,10 @@ input ExportFilterV3 {
 
 input ExportFilterV5 {
   m: Float!
+  maxAvgSize: Int!
+  maxCount: Int!
+  minAvgSize: Int!
+  minCount: Int!
   minR2: Float!
   minScore: Float!
   n: Float!
@@ -407,7 +411,8 @@ type Mutation {
   addTagToWalletAccount(input: ChangeUserTagInput!): WalletAccount!
   addWalletAccount(input: AddUserInput!): WalletAccount!
   allowAuto(address: String!, allowAuto: Boolean!, budget: Float!, followerContractId: Int!, ratio: Float!): User!
-  autoTesting(startDate: String!): Boolean!
+  autoTestingV4(startDate: String!): Boolean!
+  autoTestingV5: Boolean!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
   buildPnlSnapshots(dateStr: String!, isForceBuild: Boolean!): PnlSnapshotInitializedFlag
   cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
@@ -877,8 +882,12 @@ type TestingReportV5 {
   investedUSD: Float!
   lossCount: Int!
   m: Int!
+  maxAvgSize: Int!
+  maxCount: Int!
   maxLoss: Float!
   maxProfit: Float!
+  minAvgSize: Int!
+  minCount: Int!
   minR2: Float!
   minScore: Float!
   monthWeight: Int!

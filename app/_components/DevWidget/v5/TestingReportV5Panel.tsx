@@ -12,7 +12,10 @@ import { parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
 import { Virtuoso } from "react-virtuoso";
 
-import { useAutoTesting, useGetTestingReportV4 } from "@/app-hooks/useHistory";
+import {
+  useAutoTestingV4,
+  useGetTestingReportV4,
+} from "@/app-hooks/useHistory";
 
 import { getPriceStr } from "@/utils/price";
 import { getServerTimezone } from "@/utils";
@@ -21,7 +24,7 @@ import LineChart from "@/components/charts/LineChart";
 export function TestingReportV5Panel() {
   const { reports, loading, fetchMore, hasMore } = useGetTestingReportV4();
 
-  const { autoTesting } = useAutoTesting();
+  const { autoTesting } = useAutoTestingV4();
 
   const [pastDate, setPastDate] = useState<Date>(
     parseDate("2024-11-01").toDate(getServerTimezone()),

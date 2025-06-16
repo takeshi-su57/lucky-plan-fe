@@ -1,14 +1,27 @@
-import { Card, CardBody, Chip, Spinner } from "@nextui-org/react";
+import { Button, Card, CardBody, Chip, Spinner } from "@nextui-org/react";
 import { TestingReportV5 } from "@/graphql/gql/graphql";
 import { Virtuoso } from "react-virtuoso";
 
-import { useGetTestingReportV5 } from "@/app-hooks/useHistory";
+import {
+  useAutoTestingV5,
+  useGetTestingReportV5,
+} from "@/app-hooks/useHistory";
 
 import { getPriceStr } from "@/utils/price";
 import LineChart from "@/components/charts/LineChart";
 
 export function TestingReportV6Panel() {
   const { reports, loading, fetchMore, hasMore } = useGetTestingReportV5();
+
+  const { autoTesting } = useAutoTestingV5();
+
+  const handleAutoBacktest = () => {
+    if (window.confirm("Are you sure you want to auto backtest?")) {
+      autoTesting({
+        variables: {},
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -20,6 +33,14 @@ export function TestingReportV6Panel() {
 
   return (
     <div className="flex flex-col gap-2">
+      <Button
+        isLoading={loading}
+        isDisabled={loading}
+        onClick={handleAutoBacktest}
+      >
+        Auto Backtest
+      </Button>
+
       <Virtuoso
         style={{ height: 700 }}
         data={reports.filter((item) => item.totalUSDPnl > 0)}
@@ -86,10 +107,11 @@ export function ReportView({ report }: { report: TestingReportV5 }) {
           <span>minScore: {report.minScore}</span>
           <span>Window: {report.window}</span>
           <span>Min R2: {report.minR2}</span>
-          <span>All Time Weight: {report.allTimeWeight}</span>
-          <span>Three Month Weight: {report.threeMonthWeight}</span>
-          <span>Month Weight: {report.monthWeight}</span>
-          <span>Week Weight: {report.weekWeight}</span>
+
+          <span>Max Avg Size: {report.maxAvgSize}</span>
+          <span>Min Avg Size: {report.minAvgSize}</span>
+          <span>Max Count: {report.maxCount}</span>
+          <span>Min Count: {report.minCount}</span>
         </div>
 
         <LineChart
