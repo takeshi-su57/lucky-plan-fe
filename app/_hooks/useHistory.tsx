@@ -11,8 +11,8 @@ import { useSnackbar } from "notistack";
 import { getFragmentData, graphql } from "@/gql/index";
 import {
   ExportFilterV5,
-  GetPnlSnapshotsQuery,
   PnlSnapshotKind,
+  GetPnlSnapshotsQuery,
   TradeHistory,
 } from "@/graphql/gql/graphql";
 
@@ -512,9 +512,15 @@ export const BUILD_PNL_SNAPSHOTS_DOCUMENT = graphql(`
   }
 `);
 
-export const AUTO_TESTING_DOCUMENT = graphql(`
-  mutation autoTesting($startDate: String!) {
-    autoTesting(startDate: $startDate)
+export const AUTO_TESTING_V4_DOCUMENT = graphql(`
+  mutation autoTestingV4($startDate: String!) {
+    autoTestingV4(startDate: $startDate)
+  }
+`);
+
+export const AUTO_TESTING_V5_DOCUMENT = graphql(`
+  mutation autoTestingV5 {
+    autoTestingV5
   }
 `);
 
@@ -605,6 +611,10 @@ export const GET_TESTING_REPORT_V5_DOCUMENT = graphql(`
       edges {
         cursor
         node {
+          maxAvgSize
+          minAvgSize
+          maxCount
+          minCount
           avgLoss
           monthWeight
           threeMonthWeight
@@ -1392,8 +1402,14 @@ export function useInitializePnlSnapshot() {
   return { initializePnlSnapshot, loading };
 }
 
-export function useAutoTesting() {
-  const [autoTesting, { loading }] = useMutation(AUTO_TESTING_DOCUMENT);
+export function useAutoTestingV4() {
+  const [autoTesting, { loading }] = useMutation(AUTO_TESTING_V4_DOCUMENT);
+
+  return { autoTesting, loading };
+}
+
+export function useAutoTestingV5() {
+  const [autoTesting, { loading }] = useMutation(AUTO_TESTING_V5_DOCUMENT);
 
   return { autoTesting, loading };
 }
