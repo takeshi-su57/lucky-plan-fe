@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import dayjs from "dayjs";
+import { useEffect, useState } from "react";
 import { Address } from "viem";
 import { UserPermission } from "@/graphql/gql/graphql";
 
@@ -14,17 +13,13 @@ import {
   Select,
   SelectItem,
   Switch,
-  Skeleton,
 } from "@nextui-org/react";
 
 import { useAllowAuto, useChangeUserPermission } from "@/app-hooks/useUser";
 import { useGetAllContracts } from "@/app-hooks/useContract";
-import { useGetWholeCompressedHistoriesV5 } from "@/app-hooks/useHistory";
 
 import { NumericInput } from "@/components/inputs/NumericInput";
 import { shrinkAddress } from "@/utils";
-import { bestCase } from "../DevWidget/v6/subcase";
-import { getPriceStr } from "@/utils/price";
 import { useCreateAutoPlan } from "@/app/_hooks/usePlan";
 
 export type ChangePermissionModalProps = {
@@ -49,38 +44,6 @@ export function ChangePermissionModal({
     useChangeUserPermission();
   const { mutateAllowAuto, loading: allowAutoLoading } = useAllowAuto();
   const { createAutoPlan, loading: autoPlanLoading } = useCreateAutoPlan();
-
-  const { accPnls, loading } = useGetWholeCompressedHistoriesV5(
-    "2025-01-01",
-    1,
-    false,
-    bestCase,
-  );
-
-  const { maxIn, month3MaxIn } = useMemo(() => {
-    let maxIn = 0;
-    let acc = 0;
-    let month3MaxIn = 0;
-    let month3Acc = 0;
-
-    console.log(accPnls);
-
-    for (const item of accPnls) {
-      maxIn = Math.min(maxIn, item.inOut);
-      acc = acc + item.inOut;
-
-      maxIn = Math.min(acc, maxIn);
-
-      if (dayjs().diff(new Date(item.date), "days") < 90) {
-        month3MaxIn = Math.min(month3MaxIn, item.inOut);
-        month3Acc = month3Acc + item.inOut;
-
-        month3MaxIn = Math.min(acc, month3MaxIn);
-      }
-    }
-
-    return { maxIn, month3MaxIn };
-  }, [accPnls]);
 
   const allContracts = useGetAllContracts();
 
@@ -121,35 +84,42 @@ export function ChangePermissionModal({
   };
 
   const handleAllowAuto = () => {
-    if (!allowAuto || !followerContractId || followerContractId.trim() === "") {
-      return;
-    }
+    if (allowAuto) {
+      if (!followerContractId || followerContractId.trim() === "") {
+        alert("Please select a follower contract");
+        return;
+      }
 
-    if (Number.isNaN(+budget)) {
-      return;
-    }
+      if (Number.isNaN(+budget)) {
+        alert("Invalid budget");
+        return;
+      }
 
-    if (Number.isNaN(+ratio)) {
-      return;
-    }
+      if (Number.isNaN(+ratio)) {
+        alert("Invalid ratio");
+        return;
+      }
 
-    if (+ratio < 0) {
-      return;
+      mutateAllowAuto({
+        variables: {
+          address: user.address,
+          allowAuto,
+          budget: +budget,
+          ratio: +ratio,
+          followerContractId: +followerContractId,
+        },
+      });
+    } else {
+      mutateAllowAuto({
+        variables: {
+          address: user.address,
+          allowAuto: false,
+          budget: 0,
+          ratio: 0,
+          followerContractId: 0,
+        },
+      });
     }
-
-    if (+budget < 0) {
-      return;
-    }
-
-    mutateAllowAuto({
-      variables: {
-        address: user.address,
-        allowAuto,
-        budget: +budget,
-        ratio: +ratio,
-        followerContractId: +followerContractId,
-      },
-    });
   };
 
   const handleSelectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -210,27 +180,6 @@ export function ChangePermissionModal({
             <br />
             <br />
 
-            <p className="text-xs text-neutral-400">
-              All-Time Maximum Volume: <br />{" "}
-              {loading ? (
-                <Skeleton className="h-4 w-[100px] rounded-lg" />
-              ) : (
-                <span className="text-sm text-white">
-                  {getPriceStr(-maxIn)} USDC
-                </span>
-              )}
-            </p>
-            <p className="text-xs text-neutral-400">
-              Recent Max Volume (3M): <br />{" "}
-              {loading ? (
-                <Skeleton className="h-4 w-[100px] rounded-lg" />
-              ) : (
-                <span className="text-sm text-white">
-                  {getPriceStr(-month3MaxIn)} USDC
-                </span>
-              )}
-            </p>
-
             {allowAuto ? (
               <Button
                 onClick={handleCreateAutoPlan}
@@ -248,57 +197,65 @@ export function ChangePermissionModal({
               Allow Auto
             </Switch>
 
-            <Autocomplete
-              label="Follower Contract"
-              variant="underlined"
-              defaultItems={allContracts}
-              placeholder="Search contract"
-              selectedKey={followerContractId}
-              onSelectionChange={(key) =>
-                setFollowerContractId(key as string | null)
-              }
-            >
-              {(item) => (
-                <AutocompleteItem
-                  key={item.id}
-                  className="font-mono"
-                  textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
-                >
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-2">
-                      <span className="text-small">Chain: {item.chainId}</span>
+            {allowAuto ? (
+              <Autocomplete
+                label="Follower Contract"
+                variant="underlined"
+                defaultItems={allContracts}
+                placeholder="Search contract"
+                selectedKey={followerContractId}
+                onSelectionChange={(key) =>
+                  setFollowerContractId(key as string | null)
+                }
+              >
+                {(item) => (
+                  <AutocompleteItem
+                    key={item.id}
+                    className="font-mono"
+                    textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
+                  >
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <span className="text-small">
+                          Chain: {item.chainId}
+                        </span>
+                        <span className="text-small">
+                          {item.isTestnet ? "(Testnet)" : ""}
+                        </span>
+                      </div>
                       <span className="text-small">
-                        {item.isTestnet ? "(Testnet)" : ""}
+                        Contract: {shrinkAddress(item.address as Address)}
+                      </span>
+                      <span className="text-tiny text-default-400">
+                        {item.description}
                       </span>
                     </div>
-                    <span className="text-small">
-                      Contract: {shrinkAddress(item.address as Address)}
-                    </span>
-                    <span className="text-tiny text-default-400">
-                      {item.description}
-                    </span>
-                  </div>
-                </AutocompleteItem>
-              )}
-            </Autocomplete>
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
+            ) : null}
 
-            <NumericInput
-              amount={budget}
-              onChange={setBudget}
-              label="Budget"
-              isDisabled={!allowAuto}
-              errorMessage={budgetHelper}
-              isInvalid={budgetHelper.trim() !== ""}
-            />
+            {allowAuto ? (
+              <NumericInput
+                amount={budget}
+                onChange={setBudget}
+                label="Budget"
+                isDisabled={!allowAuto}
+                errorMessage={budgetHelper}
+                isInvalid={budgetHelper.trim() !== ""}
+              />
+            ) : null}
 
-            <NumericInput
-              amount={ratio}
-              onChange={setRatio}
-              label="Ratio"
-              isDisabled={!allowAuto}
-              errorMessage={ratioHelper}
-              isInvalid={ratioHelper.trim() !== ""}
-            />
+            {allowAuto ? (
+              <NumericInput
+                amount={ratio}
+                onChange={setRatio}
+                label="Ratio"
+                isDisabled={!allowAuto}
+                errorMessage={ratioHelper}
+                isInvalid={ratioHelper.trim() !== ""}
+              />
+            ) : null}
 
             <Button
               onClick={handleAllowAuto}
@@ -306,7 +263,7 @@ export function ChangePermissionModal({
               isDisabled={isDisabled}
               isLoading={allowAutoLoading}
             >
-              Allow Auto
+              {allowAuto ? "Enable Auto Plan" : "Disable Auto Plan"}
             </Button>
           </div>
         </div>
