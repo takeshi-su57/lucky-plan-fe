@@ -18,7 +18,7 @@ export type FastTotalDevV6PanelProps = {
   startDate: string;
   ratio: number;
   isTestnet: boolean;
-  filterParams: ExportFilterV5;
+  filterParams: ExportFilterV5[];
 };
 
 export function FastTotalDevV6Panel({

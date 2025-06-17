@@ -637,7 +637,7 @@ type Query {
   ): [PnlSnapshotDevDetails!]!
   getDevPnlSnapshotsV5(
     dateStr: String!
-    filterParams: ExportFilterV5!
+    filterParams: [ExportFilterV5!]!
   ): [PnlSnapshotDevDetailsV5!]!
   getLogsSeverityCounts: [SeverityCount!]!
   getMonthlyDevPnlSnapshots(
@@ -692,7 +692,7 @@ type Query {
     startDate: String!
   ): WholeCompressedHistories!
   getWholeCompressedHistoriesV5(
-    filterParams: ExportFilterV5!
+    filterParams: [ExportFilterV5!]!
     isTestnet: Boolean!
     ratio: Float!
     startDate: String!

@@ -22,7 +22,7 @@ export type SelectLeadersProps = {
   hideTags: boolean;
   onNextStep: () => void;
   onPrevStep: () => void;
-  testParams: ExportFilterV5;
+  testParams: ExportFilterV5[];
   ratio: number;
 };
 
