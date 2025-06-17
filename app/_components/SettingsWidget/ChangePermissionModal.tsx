@@ -51,7 +51,7 @@ export function ChangePermissionModal({
   const { createAutoPlan, loading: autoPlanLoading } = useCreateAutoPlan();
 
   const { accPnls, loading } = useGetWholeCompressedHistoriesV5(
-    "2024-11-01",
+    "2025-01-01",
     1,
     false,
     bestCase,
