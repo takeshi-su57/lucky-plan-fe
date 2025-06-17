@@ -28,7 +28,7 @@ export type DevLeaderboardProps = {
   ) => void;
   endDate: Date;
   hideTags: boolean;
-  testParams: ExportFilterV5;
+  testParams: ExportFilterV5[];
   ratio: number;
 };
 

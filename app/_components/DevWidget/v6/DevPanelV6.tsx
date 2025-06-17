@@ -14,12 +14,12 @@ import { MergedLeaderboard } from "@/app/_components/DevWidget/v1/MergedLeaderbo
 import { BacktestResult } from "@/app/_components/DevWidget/v1/BacktestResult";
 import { Stepper } from "@/components/Stepper/Stepper";
 
-import { bestCase } from "./subcase";
+import { bestCase, primaryBestCase } from "./subcase";
 import { LeaderParams } from "../v1/LeaderItem";
 import { getServerTimezone } from "@/utils";
 import dayjs from "dayjs";
 
-type TabType = "one_day" | "best_filter" | "testnet" | "reports";
+type TabType = "one_day" | "applied_filter" | "wide_filter" | "reports";
 
 export function DevPanelV6() {
   const [selected, setSelected] = useState<TabType>("one_day");
@@ -32,7 +32,7 @@ export function DevPanelV6() {
   );
   const [leaders, setLeaders] = useState<LeaderParams[]>([]);
   const [startDate, setStartDate] = useState<Date>(
-    parseDate("2024-11-01").toDate(getServerTimezone()),
+    parseDate("2025-01-01").toDate(getServerTimezone()),
   );
 
   const steps = [
@@ -116,8 +116,8 @@ export function DevPanelV6() {
         }}
       >
         <Tab key="one_day" title="One Day" />
-        <Tab key="best_filter" title="Best Filter" />
-        <Tab key="testnet" title="Best Filter in Testnet" />
+        <Tab key="applied_filter" title="Applied Filter" />
+        <Tab key="wide_filter" title="Wide Filter" />
         <Tab key="reports" title="Reports" />
       </Tabs>
 
@@ -125,7 +125,7 @@ export function DevPanelV6() {
         <Stepper steps={steps} currentStep={currentStep} />
       )}
 
-      {selected === "best_filter" && (
+      {selected === "applied_filter" && (
         <FastTotalDevV6Panel
           startDate={dayjs(startDate).format("YYYY-MM-DD")}
           ratio={ratio}
@@ -134,12 +134,12 @@ export function DevPanelV6() {
         />
       )}
 
-      {selected === "testnet" && (
+      {selected === "wide_filter" && (
         <FastTotalDevV6Panel
           startDate={dayjs(startDate).format("YYYY-MM-DD")}
-          filterParams={bestCase}
+          filterParams={primaryBestCase}
           ratio={ratio}
-          isTestnet={true}
+          isTestnet={false}
         />
       )}
 
