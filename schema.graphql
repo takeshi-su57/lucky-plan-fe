@@ -603,7 +603,7 @@ type Query {
   getBotsByStatus(after: Int, first: Int!, status: BotStatus!): BotConnection!
   getDevPnlSnapshots(dateStr: String!, filterParams: ExportFilter!): [PnlSnapshotDevDetails!]!
   getDevPnlSnapshotsV4(dateStr: String!, filterParams: [ExportFilterV3!]!, ratio: Float!): [PnlSnapshotDevDetails!]!
-  getDevPnlSnapshotsV5(dateStr: String!, filterParams: ExportFilterV5!): [PnlSnapshotDevDetailsV5!]!
+  getDevPnlSnapshotsV5(dateStr: String!, filterParams: [ExportFilterV5!]!): [PnlSnapshotDevDetailsV5!]!
   getLogsSeverityCounts: [SeverityCount!]!
   getMonthlyDevPnlSnapshots(dateStr: String!, filterParams: ExportFilter!): [TradeHistory!]!
   getPlanById(id: Int!): PlanForwardDetails
@@ -627,7 +627,7 @@ type Query {
   getWholeCompressedHistoriesV2(filterParams: [ExportFilterV2!]!): WholeCompressedHistories!
   getWholeCompressedHistoriesV3(filterParams: [ExportFilterV3!]!): WholeCompressedHistories!
   getWholeCompressedHistoriesV4(filterParams: [ExportFilterV3!]!, isTestnet: Boolean!, ratio: Float!, startDate: String!): WholeCompressedHistories!
-  getWholeCompressedHistoriesV5(filterParams: ExportFilterV5!, isTestnet: Boolean!, ratio: Float!, startDate: String!): WholeCompressedHistories!
+  getWholeCompressedHistoriesV5(filterParams: [ExportFilterV5!]!, isTestnet: Boolean!, ratio: Float!, startDate: String!): WholeCompressedHistories!
   getWholeResultHistories(filterParams: ExportFilter!): [TradeHistory!]!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
   isSafeApp: Boolean!
