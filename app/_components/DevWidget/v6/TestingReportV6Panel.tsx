@@ -9,6 +9,7 @@ import {
 
 import { getPriceStr } from "@/utils/price";
 import LineChart from "@/components/charts/LineChart";
+import BarChart from "@/components/charts/BarChart";
 
 export function TestingReportV6Panel() {
   const { reports, loading, fetchMore, hasMore } = useGetTestingReportV5();
@@ -66,9 +67,17 @@ export function TestingReportV6Panel() {
 
 export function ReportView({ report }: { report: TestingReportV5 }) {
   let usdPnl = 0;
+  let maxDailyPnl = 0;
+  let minDailyPnl = 0;
 
   const accPnls = report.usdPnls.map((pnl) => {
     usdPnl += pnl;
+    if (pnl > maxDailyPnl) {
+      maxDailyPnl = pnl;
+    }
+    if (pnl < minDailyPnl) {
+      minDailyPnl = pnl;
+    }
     return usdPnl;
   });
 
@@ -80,18 +89,21 @@ export function ReportView({ report }: { report: TestingReportV5 }) {
         <div className="flex items-center gap-3">
           <span>Invested: {getPriceStr(-report.investedUSD)} USDC</span>
           <span>Total Pnl: {getPriceStr(report.totalUSDPnl)} USDC</span>
-          <span>Max Lost: {getPriceStr(report.maxLoss)} USDC</span>
-          <span>Avg Lost: {getPriceStr(report.avgLoss)} USDC</span>
-          <span>Max Profit: {getPriceStr(report.maxProfit)} USDC</span>
-          <span>Avg Profit: {getPriceStr(report.avgProfit)} USDC</span>
+
+          <span>Max Daily Pnl: {getPriceStr(maxDailyPnl)} USDC</span>
+          <span className="text-red-700">
+            Min Daily Pnl: {getPriceStr(minDailyPnl)} USDC
+          </span>
 
           <span>Total Tasks: {report.totalTasks}</span>
           <span>Total Positions: {report.totalPositions}</span>
           <span>Total Traders: {report.totalTraders}</span>
-          <span>Total Unique Traders: {report.totalUniqueTraders}</span>
+          <span className="text-red-700">
+            Total Unique Traders: {report.totalUniqueTraders}
+          </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* <div className="flex items-center gap-3">
           <span>Loss Count: {report.lossCount}</span>
           <span>Profit Count: {report.profitCount}</span>
 
@@ -99,7 +111,7 @@ export function ReportView({ report }: { report: TestingReportV5 }) {
           <span>Slope: {report.calculatedSlope}</span>
           <span>Peak Acc Profit: {report.peakAccProfit}</span>
           <span>Bottom Acc Profit: {report.bottomAccProfit}</span>
-        </div>
+        </div> */}
 
         <div className="flex items-center gap-3">
           <span>n: {report.n}</span>
@@ -108,15 +120,24 @@ export function ReportView({ report }: { report: TestingReportV5 }) {
           <span>Window: {report.window}</span>
           <span>Min R2: {report.minR2}</span>
 
-          <span>Max Avg Size: {report.maxAvgSize}</span>
           <span>Min Avg Size: {report.minAvgSize}</span>
-          <span>Max Count: {report.maxCount}</span>
+          <span>Max Avg Size: {report.maxAvgSize}</span>
           <span>Min Count: {report.minCount}</span>
+          <span>Max Count: {report.maxCount}</span>
         </div>
 
         <LineChart
           title={`PnL`}
           data={accPnls.map((pnl, index) => ({
+            label: index.toString(),
+            value: pnl,
+          }))}
+          className="h-[250px] rounded-2xl border border-neutral-800 bg-amber-950/5"
+        />
+
+        <BarChart
+          title={`Daily PNL`}
+          data={report.usdPnls.map((pnl, index) => ({
             label: index.toString(),
             value: pnl,
           }))}

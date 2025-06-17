@@ -549,7 +549,7 @@ export const INITIALIZE_PNL_SNAPSHOT_DOCUMENT = graphql(`
 export const GET_DEV_PNL_SNAPSHOTS_V5_DOCUMENT = graphql(`
   query getDevPnlSnapshotsV5(
     $dateStr: String!
-    $filterParams: ExportFilterV5!
+    $filterParams: [ExportFilterV5!]!
   ) {
     getDevPnlSnapshotsV5(dateStr: $dateStr, filterParams: $filterParams) {
       accUSDPnl
@@ -571,7 +571,7 @@ export const GET_WHOLE_COMPRESSED_HISTORIES_V5_DOCUMENT = graphql(`
     $ratio: Float!
     $startDate: String!
     $isTestnet: Boolean!
-    $filterParams: ExportFilterV5!
+    $filterParams: [ExportFilterV5!]!
   ) {
     getWholeCompressedHistoriesV5(
       ratio: $ratio
@@ -1169,7 +1169,7 @@ export function useGetTestingReportV4() {
 
 export function useGetDevPnlSnapshotsV5(
   dateStr: string,
-  filterParams: ExportFilterV5,
+  filterParams: ExportFilterV5[],
 ) {
   const { data, loading } = useQuery(GET_DEV_PNL_SNAPSHOTS_V5_DOCUMENT, {
     variables: {
@@ -1203,7 +1203,7 @@ export function useGetWholeCompressedHistoriesV5(
   startDate: string,
   ratio: number,
   isTestnet: boolean,
-  filterParams: ExportFilterV5,
+  filterParams: ExportFilterV5[],
 ) {
   const { data, loading } = useQuery(
     GET_WHOLE_COMPRESSED_HISTORIES_V5_DOCUMENT,
