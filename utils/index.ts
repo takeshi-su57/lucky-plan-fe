@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import crypto from "crypto";
 import { SimpleLinearRegression } from "ml-regression-simple-linear";
 import { PersonalTradeHistory, TradeActionType } from "@/types";
-import { bestCase } from "@/app/_components/DevWidget/v6/subcase";
+import { primaryBestCase } from "@/app/_components/DevWidget/v6/subcase";
 
 export function shrinkAddress(address: Address, onlyFirst?: boolean) {
   if (onlyFirst) {
@@ -552,14 +552,17 @@ export function getScore(
 
   let traderScore = 0;
 
-  for (let step = 0; step < bestCase.window; step++) {
+  for (let step = 0; step < primaryBestCase[0].window; step++) {
     let round = 0;
     let stepScore = 0;
 
-    for (let i = 0; i < closeHistories.length; i += bestCase.window) {
+    for (let i = 0; i < closeHistories.length; i += primaryBestCase[0].window) {
       round++;
       const chunk = closeHistories.slice(
-        Math.max(closeHistories.length - i - step - bestCase.window, 0),
+        Math.max(
+          closeHistories.length - i - step - primaryBestCase[0].window,
+          0,
+        ),
         closeHistories.length - i - step,
       );
 
@@ -593,22 +596,25 @@ export function getScore(
       }
 
       if (regression.slope > 0) {
-        if (score.r2 > bestCase.minR2) {
-          stepScore += (regression.slope * score.r2) / round / bestCase.n;
+        if (score.r2 > primaryBestCase[0].minR2) {
+          stepScore +=
+            (regression.slope * score.r2) / round / primaryBestCase[0].n;
         } else {
           stepScore +=
-            (regression.slope * (score.r2 - 1) * bestCase.m) /
+            (regression.slope * (score.r2 - 1) * primaryBestCase[0].m) /
             round /
-            bestCase.n;
+            primaryBestCase[0].n;
         }
       } else {
         stepScore +=
-          (regression.slope * (2 - score.r2) * bestCase.m) / round / bestCase.n;
+          (regression.slope * (2 - score.r2) * primaryBestCase[0].m) /
+          round /
+          primaryBestCase[0].n;
       }
     }
 
     traderScore += stepScore;
   }
 
-  return (traderScore * closeHistories.length) / bestCase.window;
+  return (traderScore * closeHistories.length) / primaryBestCase[0].window;
 }
