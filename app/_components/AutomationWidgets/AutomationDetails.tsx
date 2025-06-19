@@ -152,33 +152,74 @@ export function AutomationDetails({
             label="Leader"
             contractId={bot.leaderContractId}
             finished={false}
-            actions={bot.missions.map((mission) =>
-              mission.tasks.map((task) => task.action),
-            )}
+            finishedMissionActions={bot.missions
+              .filter(
+                (mission) =>
+                  mission.status === MissionStatus.Closed &&
+                  !!mission.achievePositionId,
+              )
+              .map((mission) => mission.tasks.map((task) => task.action))}
+            openedMissionActions={bot.missions
+              .filter(
+                (mission) =>
+                  mission.status !== MissionStatus.Opened &&
+                  !mission.achievePositionId,
+              )
+              .map((mission) => mission.tasks.map((task) => task.action))}
           />
 
           <ContractPnl
             label="Follower"
             contractId={bot.followerContractId}
             finished={false}
-            actions={bot.missions.map((mission) =>
-              mission.tasks
-                .map((task) => {
-                  if (task.followerActions.length === 0) {
-                    return null;
-                  }
+            finishedMissionActions={bot.missions
+              .filter(
+                (mission) =>
+                  mission.status === MissionStatus.Closed &&
+                  !!mission.achievePositionId,
+              )
+              .map((mission) =>
+                mission.tasks
+                  .map((task) => {
+                    if (task.followerActions.length === 0) {
+                      return null;
+                    }
 
-                  const followerAction =
-                    task.followerActions[task.followerActions.length - 1];
+                    const followerAction =
+                      task.followerActions[task.followerActions.length - 1];
 
-                  if (!followerAction) {
-                    return null;
-                  }
+                    if (!followerAction) {
+                      return null;
+                    }
 
-                  return followerAction.action;
-                })
-                .filter((action) => action !== null),
-            )}
+                    return followerAction.action;
+                  })
+                  .filter((action) => action !== null),
+              )}
+            openedMissionActions={bot.missions
+              .filter(
+                (mission) =>
+                  mission.status !== MissionStatus.Closed &&
+                  !mission.achievePositionId,
+              )
+              .map((mission) =>
+                mission.tasks
+                  .map((task) => {
+                    if (task.followerActions.length === 0) {
+                      return null;
+                    }
+
+                    const followerAction =
+                      task.followerActions[task.followerActions.length - 1];
+
+                    if (!followerAction) {
+                      return null;
+                    }
+
+                    return followerAction.action;
+                  })
+                  .filter((action) => action !== null),
+              )}
           />
 
           {bot.status === BotStatus.Created ? (

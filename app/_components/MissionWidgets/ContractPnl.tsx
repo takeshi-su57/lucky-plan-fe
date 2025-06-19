@@ -17,14 +17,16 @@ import { getPNLPercentage } from "@/utils";
 export type ContractPnlProps = {
   label: string;
   contractId: number;
-  actions: Action[][];
+  finishedMissionActions: Action[][];
+  openedMissionActions: Action[][];
   finished: boolean;
 };
 
 export function ContractPnl({
   label,
   contractId,
-  actions,
+  finishedMissionActions,
+  openedMissionActions,
   finished,
 }: ContractPnlProps) {
   const collaterals = useGetTradeCollaterals(contractId);
@@ -39,22 +41,23 @@ export function ContractPnl({
     let totalPnl = 0;
     let count = 0;
 
-    const positions = actions
+    finishedMissionActions.forEach((missionActions) =>
+      missionActions.forEach((action) => {
+        const history = convertTradeActionToHistory(action, collaterals);
+
+        totalPnl =
+          totalPnl + (history?.pnl || 0) * (history?.collateralPriceUsd || 0);
+
+        if (history) {
+          count++;
+        }
+      }),
+    );
+
+    const positions = openedMissionActions
       .map((missionActions) =>
         missionActions
-          .map((action) => {
-            const history = convertTradeActionToHistory(action, collaterals);
-
-            totalPnl =
-              totalPnl +
-              (history?.pnl || 0) * (history?.collateralPriceUsd || 0);
-
-            if (history) {
-              count++;
-            }
-
-            return history;
-          })
+          .map((action) => convertTradeActionToHistory(action, collaterals))
           .filter((item) => !!item),
       )
       .filter((missionHistories) => {
@@ -97,7 +100,7 @@ export function ContractPnl({
       });
 
     return { positions: !finished ? positions : [], totalPnl, count };
-  }, [actions, collaterals, finished]);
+  }, [finishedMissionActions, openedMissionActions, collaterals, finished]);
 
   if (prices === undefined) {
     return (
@@ -147,7 +150,7 @@ export function ContractPnl({
       <LabeledChip
         label={label}
         value={getPriceStr(sumOfnPnL, 1)}
-        unit="$"
+        unit="unrealized $"
         isPrefix={true}
         color={sumOfnPnL > 0 ? "warning" : "danger"}
       />

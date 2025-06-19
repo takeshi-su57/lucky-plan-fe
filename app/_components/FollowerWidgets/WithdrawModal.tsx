@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { Button, Input } from "@nextui-org/react";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 
-import { Button } from "@nextui-org/react";
 import {
   useWithdrawETHToUser,
   useWithdrawUSDCToUser,
@@ -28,6 +29,11 @@ export function WithdrawModal({
   const [ethAmount, setEthAmount] = useState("0");
   const [usdcAmount, setUSDCAmount] = useState("0");
 
+  const [password, setPassword] = useState("");
+  const [isVisible, setIsVisible] = useState(false);
+
+  const toggleVisibility = () => setIsVisible(!isVisible);
+
   const handleWithdrawETH = () => {
     if (ethAmount.trim() === "") {
       return;
@@ -43,6 +49,10 @@ export function WithdrawModal({
       variables: {
         contractId,
         amount: ethAmountNum,
+        password: password.trim(),
+      },
+      onCompleted: () => {
+        setPassword("");
       },
     });
   };
@@ -62,6 +72,10 @@ export function WithdrawModal({
       variables: {
         contractId,
         amount: usdcAmountNum,
+        password: password.trim(),
+      },
+      onCompleted: () => {
+        setPassword("");
       },
     });
   };
@@ -77,6 +91,26 @@ export function WithdrawModal({
         <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
           Withdraw to User Wallet
         </h1>
+
+        <Input
+          className="max-w-xs"
+          endContent={
+            <button
+              aria-label="toggle password visibility"
+              className="focus:outline-none"
+              type="button"
+              onClick={toggleVisibility}
+            >
+              {isVisible ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          }
+          value={password}
+          onValueChange={setPassword}
+          label="New Password"
+          placeholder="Enter new password"
+          type={isVisible ? "text" : "password"}
+          variant="bordered"
+        />
 
         <div className="flex flex-row items-center gap-4">
           <NumericInput

@@ -466,8 +466,16 @@ type Mutation {
   upsertTag(input: TagInput!): Tag!
   withdrawAllETH(input: WithdrawAllInput!): Boolean!
   withdrawAllUSDC(input: WithdrawAllInput!): Boolean!
-  withdrawETHToUser(amount: Float!, contractId: Int!): Boolean!
-  withdrawUSDCToUser(amount: Float!, contractId: Int!): Boolean!
+  withdrawETHToUser(
+    amount: Float!
+    contractId: Int!
+    password: String!
+  ): Boolean!
+  withdrawUSDCToUser(
+    amount: Float!
+    contractId: Int!
+    password: String!
+  ): Boolean!
 }
 
 type Plan {
