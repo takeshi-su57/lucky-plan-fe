@@ -78,31 +78,66 @@ export function MissionSummary({
           label="Leader"
           contractId={leaderContractId}
           finished={false}
-          actions={[mission.tasks.map((task) => task.action)]}
+          finishedMissionActions={
+            mission.status === MissionStatus.Closed
+              ? [mission.tasks.map((task) => task.action)]
+              : []
+          }
+          openedMissionActions={
+            mission.status !== MissionStatus.Closed
+              ? [mission.tasks.map((task) => task.action)]
+              : []
+          }
         />
 
         <ContractPnl
           label="Follower"
           contractId={followerContractId}
           finished={false}
-          actions={[
-            mission.tasks
-              .map((task) => {
-                if (task.followerActions.length === 0) {
-                  return null;
-                }
+          finishedMissionActions={
+            mission.status === MissionStatus.Closed
+              ? [
+                  mission.tasks
+                    .map((task) => {
+                      if (task.followerActions.length === 0) {
+                        return null;
+                      }
 
-                const followerAction =
-                  task.followerActions[task.followerActions.length - 1];
+                      const followerAction =
+                        task.followerActions[task.followerActions.length - 1];
 
-                if (!followerAction) {
-                  return null;
-                }
+                      if (!followerAction) {
+                        return null;
+                      }
 
-                return followerAction.action;
-              })
-              .filter((action) => action !== null),
-          ]}
+                      return followerAction.action;
+                    })
+                    .filter((action) => action !== null),
+                ]
+              : []
+          }
+          openedMissionActions={
+            mission.status !== MissionStatus.Closed
+              ? [
+                  mission.tasks
+                    .map((task) => {
+                      if (task.followerActions.length === 0) {
+                        return null;
+                      }
+
+                      const followerAction =
+                        task.followerActions[task.followerActions.length - 1];
+
+                      if (!followerAction) {
+                        return null;
+                      }
+
+                      return followerAction.action;
+                    })
+                    .filter((action) => action !== null),
+                ]
+              : []
+          }
         />
 
         <div className="flex flex-row items-center gap-3 font-mono">

@@ -14,6 +14,7 @@ import {
 } from "@nextui-org/react";
 import dayjs from "dayjs";
 import {
+  MissionStatus,
   PlanForwardDetails,
   PlanStatus,
   TaskStatus,
@@ -145,11 +146,28 @@ export function PlanCard({ plan }: PlanCardProps) {
                   label={`Chain (${contract.chainId})`}
                   contractId={contract.id}
                   finished={plan.status === PlanStatus.Finished}
-                  actions={plan.bots
+                  finishedMissionActions={plan.bots
                     .filter((bot) => bot.leaderContractId === contract.id)
                     .flatMap((bot) =>
                       bot.missions
-                        .filter((mission) => mission.achievePosition)
+                        .filter(
+                          (mission) =>
+                            !!mission.achievePositionId &&
+                            mission.status === MissionStatus.Closed,
+                        )
+                        .map((mission) =>
+                          mission.tasks.map((task) => task.action),
+                        ),
+                    )}
+                  openedMissionActions={plan.bots
+                    .filter((bot) => bot.leaderContractId === contract.id)
+                    .flatMap((bot) =>
+                      bot.missions
+                        .filter(
+                          (mission) =>
+                            !mission.achievePositionId &&
+                            mission.status !== MissionStatus.Closed,
+                        )
                         .map((mission) =>
                           mission.tasks.map((task) => task.action),
                         ),
@@ -169,29 +187,65 @@ export function PlanCard({ plan }: PlanCardProps) {
                   label={`Chain (${contract.chainId})`}
                   contractId={contract.id}
                   finished={plan.status === PlanStatus.Finished}
-                  actions={plan.bots
+                  finishedMissionActions={plan.bots
                     .filter((bot) => bot.followerContractId === contract.id)
                     .flatMap((bot) =>
-                      bot.missions.map((mission) =>
-                        mission.tasks
-                          .map((task) => {
-                            if (task.followerActions.length === 0) {
-                              return null;
-                            }
+                      bot.missions
+                        .filter(
+                          (mission) =>
+                            mission.status === MissionStatus.Closed &&
+                            !!mission.achievePositionId,
+                        )
+                        .map((mission) =>
+                          mission.tasks
+                            .map((task) => {
+                              if (task.followerActions.length === 0) {
+                                return null;
+                              }
 
-                            const followerAction =
-                              task.followerActions[
-                                task.followerActions.length - 1
-                              ];
+                              const followerAction =
+                                task.followerActions[
+                                  task.followerActions.length - 1
+                                ];
 
-                            if (!followerAction) {
-                              return null;
-                            }
+                              if (!followerAction) {
+                                return null;
+                              }
 
-                            return followerAction.action;
-                          })
-                          .filter((action) => action !== null),
-                      ),
+                              return followerAction.action;
+                            })
+                            .filter((action) => action !== null),
+                        ),
+                    )}
+                  openedMissionActions={plan.bots
+                    .filter((bot) => bot.followerContractId === contract.id)
+                    .flatMap((bot) =>
+                      bot.missions
+                        .filter(
+                          (mission) =>
+                            mission.status !== MissionStatus.Closed &&
+                            !!mission.achievePositionId,
+                        )
+                        .map((mission) =>
+                          mission.tasks
+                            .map((task) => {
+                              if (task.followerActions.length === 0) {
+                                return null;
+                              }
+
+                              const followerAction =
+                                task.followerActions[
+                                  task.followerActions.length - 1
+                                ];
+
+                              if (!followerAction) {
+                                return null;
+                              }
+
+                              return followerAction.action;
+                            })
+                            .filter((action) => action !== null),
+                        ),
                     )}
                 />
               ))}
