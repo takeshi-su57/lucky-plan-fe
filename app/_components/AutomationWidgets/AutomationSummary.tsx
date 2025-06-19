@@ -7,6 +7,7 @@ import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import {
   BotForwardDetails,
   BotStatus,
+  MissionStatus,
   TaskStatus,
 } from "@/graphql/gql/graphql";
 import { useGetAlertTasks } from "@/app/_hooks/useTask";
@@ -106,33 +107,58 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
             label="Leader"
             contractId={bot.leaderContractId}
             finished={false}
-            actions={validBotMisions.map((mission) =>
-              mission.tasks.map((task) => task.action),
-            )}
+            finishedMissionActions={validBotMisions
+              .filter((mission) => mission.status === MissionStatus.Closed)
+              .map((mission) => mission.tasks.map((task) => task.action))}
+            openedMissionActions={validBotMisions
+              .filter((mission) => mission.status !== MissionStatus.Closed)
+              .map((mission) => mission.tasks.map((task) => task.action))}
           />
 
           <ContractPnl
             label="Follower"
             contractId={bot.followerContractId}
             finished={false}
-            actions={validBotMisions.map((mission) =>
-              mission.tasks
-                .map((task) => {
-                  if (task.followerActions.length === 0) {
-                    return null;
-                  }
+            finishedMissionActions={validBotMisions
+              .filter((mission) => mission.status === MissionStatus.Closed)
+              .map((mission) =>
+                mission.tasks
+                  .map((task) => {
+                    if (task.followerActions.length === 0) {
+                      return null;
+                    }
 
-                  const followerAction =
-                    task.followerActions[task.followerActions.length - 1];
+                    const followerAction =
+                      task.followerActions[task.followerActions.length - 1];
 
-                  if (!followerAction) {
-                    return null;
-                  }
+                    if (!followerAction) {
+                      return null;
+                    }
 
-                  return followerAction.action;
-                })
-                .filter((action) => action !== null),
-            )}
+                    return followerAction.action;
+                  })
+                  .filter((action) => action !== null),
+              )}
+            openedMissionActions={validBotMisions
+              .filter((mission) => mission.status !== MissionStatus.Closed)
+              .map((mission) =>
+                mission.tasks
+                  .map((task) => {
+                    if (task.followerActions.length === 0) {
+                      return null;
+                    }
+
+                    const followerAction =
+                      task.followerActions[task.followerActions.length - 1];
+
+                    if (!followerAction) {
+                      return null;
+                    }
+
+                    return followerAction.action;
+                  })
+                  .filter((action) => action !== null),
+              )}
           />
 
           {bot.missions.length > 0 && (

@@ -109,9 +109,9 @@ export function Automations() {
                 <span className="font-sans text-neutral-400/40">
                   No More Results Available
                 </span>
-              ) : loading ? (
+              ) : (
                 <Spinner color="warning" size="lg" />
-              ) : null}
+              )}
             </div>
           ),
         }}

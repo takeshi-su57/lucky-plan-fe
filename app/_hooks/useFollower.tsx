@@ -138,14 +138,30 @@ export const WITHDRAW_ALL_ETH_DOCUMENT = graphql(`
 `);
 
 export const WITHDRAW_ETH_TO_USER_DOCUMENT = graphql(`
-  mutation withdrawETHToUser($amount: Float!, $contractId: Int!) {
-    withdrawETHToUser(amount: $amount, contractId: $contractId)
+  mutation withdrawETHToUser(
+    $amount: Float!
+    $contractId: Int!
+    $password: String!
+  ) {
+    withdrawETHToUser(
+      amount: $amount
+      contractId: $contractId
+      password: $password
+    )
   }
 `);
 
 export const WITHDRAW_USDC_TO_USER_DOCUMENT = graphql(`
-  mutation withdrawUSDCToUser($amount: Float!, $contractId: Int!) {
-    withdrawUSDCToUser(amount: $amount, contractId: $contractId)
+  mutation withdrawUSDCToUser(
+    $amount: Float!
+    $contractId: Int!
+    $password: String!
+  ) {
+    withdrawUSDCToUser(
+      amount: $amount
+      contractId: $contractId
+      password: $password
+    )
   }
 `);
 
