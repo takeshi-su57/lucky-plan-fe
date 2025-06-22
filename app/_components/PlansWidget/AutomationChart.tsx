@@ -1,12 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
+import dayjs from "dayjs";
 
 import { PersonalTradeHistory } from "@/types";
 import { getHistoriesChartData } from "@/utils/historiesChart";
 
 import { HistoryCharts } from "../LeaderboardWidgets/HistoryCharts";
 import { getPriceStr } from "@/utils/price";
+import { getScore } from "@/utils";
 
 export type AutomationChartProps = {
   title: string;
@@ -29,6 +31,17 @@ export function AutomationGridChart({
     [histories, mode, range],
   );
 
+  const score = useMemo(
+    () =>
+      getScore(
+        range?.to
+          ? dayjs(range.to).format("YYYY-MM-DD")
+          : dayjs().format("YYYY-MM-DD"),
+        histories,
+      ),
+    [histories, range?.to],
+  );
+
   const totalInvested = inOutChartData.reduce(
     (acc, curr) => (acc > curr.value ? curr.value : acc),
     0,
@@ -48,6 +61,8 @@ export function AutomationGridChart({
           <span>Remain balance: {getPriceStr(remainBalance)} USDC</span>
         </div>
       </div>
+
+      <div className="text-red-500">{score}</div>
 
       <HistoryCharts
         pnlChartData={pnlChartData}
