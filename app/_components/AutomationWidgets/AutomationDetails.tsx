@@ -32,6 +32,7 @@ import { AutomationGridChart } from "../PlansWidget/AutomationChart";
 import { useGetPersonalTradeHistories } from "@/app/_hooks/useGetPersonalTradeHistories";
 
 import { ContractPnl } from "../MissionWidgets/ContractPnl";
+import { useGetAllTradeHistory } from "@/app/_hooks/useHistory";
 
 type TabType = "chart" | "missions";
 
@@ -58,6 +59,11 @@ export function AutomationDetails({
   const { data: leaderHistories } = useGetPersonalTradeHistories(
     bot?.leaderContract?.backendUrl || null,
     bot?.leaderAddress || null,
+  );
+
+  const histories = useGetAllTradeHistory(
+    bot?.leaderAddress || null,
+    bot?.leaderContractId?.toString() || null,
   );
 
   const { data: followerHistories } = useGetPersonalTradeHistories(
@@ -258,6 +264,24 @@ export function AutomationDetails({
             <AutomationGridChart
               histories={leaderHistories || []}
               title="Leader Chart"
+              range={
+                showOnlyAutomationHistory
+                  ? {
+                      from: bot.startedAt
+                        ? new Date(bot.startedAt)
+                        : new Date(),
+                      to: bot.endedAt ? new Date(bot.endedAt) : new Date(),
+                    }
+                  : undefined
+              }
+              mode="show_all_activity"
+            />
+
+            <Divider />
+
+            <AutomationGridChart
+              histories={histories || []}
+              title="Leader Platform Chart"
               range={
                 showOnlyAutomationHistory
                   ? {
