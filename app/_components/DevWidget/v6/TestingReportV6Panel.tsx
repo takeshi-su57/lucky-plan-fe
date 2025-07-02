@@ -44,7 +44,7 @@ export function TestingReportV6Panel() {
 
       <Virtuoso
         style={{ height: 700 }}
-        data={reports.filter((item) => item.totalUSDPnl > 0)}
+        data={reports}
         itemContent={(_, item) => <ReportView key={item.id} report={item} />}
         endReached={() => hasMore && !loading && fetchMore()}
         components={{
@@ -90,10 +90,10 @@ export function ReportView({ report }: { report: TestingReportV5 }) {
           <span>Invested: {getPriceStr(-report.investedUSD)} USDC</span>
           <span>Total Pnl: {getPriceStr(report.totalUSDPnl)} USDC</span>
 
-          <span>Max Daily Pnl: {getPriceStr(maxDailyPnl)} USDC</span>
+          {/* <span>Max Daily Pnl: {getPriceStr(maxDailyPnl)} USDC</span>
           <span className="text-red-700">
             Min Daily Pnl: {getPriceStr(minDailyPnl)} USDC
-          </span>
+          </span> */}
 
           <span>Total Tasks: {report.totalTasks}</span>
           <span>Total Positions: {report.totalPositions}</span>
@@ -114,10 +114,10 @@ export function ReportView({ report }: { report: TestingReportV5 }) {
         </div> */}
 
         <div className="flex items-center gap-3">
-          <span>n: {report.n}</span>
+          {/* <span>n: {report.n}</span>
           <span>m: {report.m}</span>
           <span>minScore: {report.minScore}</span>
-          <span>Window: {report.window}</span>
+          <span>Window: {report.window}</span> */}
           <span>Min R2: {report.minR2}</span>
 
           <span>Min Avg Size: {report.minAvgSize}</span>
@@ -133,6 +133,7 @@ export function ReportView({ report }: { report: TestingReportV5 }) {
             value: pnl,
           }))}
           className="h-[250px] rounded-2xl border border-neutral-800 bg-amber-950/5"
+          initialSelected={["x", "y"]}
         />
 
         <BarChart
@@ -142,6 +143,7 @@ export function ReportView({ report }: { report: TestingReportV5 }) {
             value: pnl,
           }))}
           className="h-[250px] rounded-2xl border border-neutral-800 bg-amber-950/5"
+          initialSelected={["x", "y"]}
         />
       </CardBody>
     </Card>
