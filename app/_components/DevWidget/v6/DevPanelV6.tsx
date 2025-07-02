@@ -128,7 +128,6 @@ export function DevPanelV6() {
       {selected === "applied_filter" && (
         <FastTotalDevV6Panel
           startDate={dayjs(startDate).format("YYYY-MM-DD")}
-          ratio={ratio}
           isTestnet={false}
           filterParams={bestCase}
         />
@@ -138,7 +137,6 @@ export function DevPanelV6() {
         <FastTotalDevV6Panel
           startDate={dayjs(startDate).format("YYYY-MM-DD")}
           filterParams={primaryBestCase}
-          ratio={ratio}
           isTestnet={false}
         />
       )}
