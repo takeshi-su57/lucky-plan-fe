@@ -20,6 +20,7 @@ export const initialTestParams: ExportFilterV5 = {
   maxCount: 100000000000,
   minAvgSize: 0,
   minCount: 6,
+  ratio: 1,
 };
 
 export function TestParamsV6View({
