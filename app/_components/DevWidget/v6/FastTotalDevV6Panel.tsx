@@ -16,14 +16,12 @@ type TabType = "overview" | "details";
 
 export type FastTotalDevV6PanelProps = {
   startDate: string;
-  ratio: number;
   isTestnet: boolean;
   filterParams: ExportFilterV5[];
 };
 
 export function FastTotalDevV6Panel({
   startDate,
-  ratio,
   isTestnet,
   filterParams,
 }: FastTotalDevV6PanelProps) {
@@ -37,12 +35,7 @@ export function FastTotalDevV6Panel({
     maxInvested,
     totalBots,
     loading,
-  } = useGetWholeCompressedHistoriesV5(
-    startDate,
-    ratio,
-    isTestnet,
-    filterParams,
-  );
+  } = useGetWholeCompressedHistoriesV5(startDate, isTestnet, filterParams);
 
   const {
     dailyPnlChartData,
