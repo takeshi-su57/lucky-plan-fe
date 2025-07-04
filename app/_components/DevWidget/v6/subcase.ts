@@ -227,7 +227,7 @@ export const bestCase = [
 
 export const primaryBestCase = [
   {
-    minR2: 0.9,
+    minR2: 0.85,
     window: 6,
     minScore: 10,
     n: 2,

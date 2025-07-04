@@ -410,6 +410,7 @@ enum MissionStatus {
 
 type Mutation {
   addTagToWalletAccount(input: ChangeUserTagInput!): WalletAccount!
+  addToBlacklist(address: String!): Boolean!
   addWalletAccount(input: AddUserInput!): WalletAccount!
   allowAuto(address: String!, allowAuto: Boolean!, budget: Float!, followerContractId: Int!, ratio: Float!): User!
   autoTestingV4(startDate: String!): Boolean!
@@ -440,6 +441,7 @@ type Mutation {
   makeSafeApp(password: String!): Boolean!
   pauseSystem: Boolean!
   performTask(id: Int!): Boolean!
+  removeFromBlacklist(address: String!): Boolean!
   removeTagFromWalletAccount(input: ChangeUserTagInput!): WalletAccount!
   resumeSystem(password: String): Boolean!
   startPlan(id: Int!): Boolean!
@@ -601,6 +603,7 @@ type Query {
   getAllTags: [Tag!]!
   getAllUsers: [User!]!
   getAllWalletAccounts: [WalletAccount!]!
+  getBlacklist: [String!]
   getBotsByStatus(after: Int, first: Int!, status: BotStatus!): BotConnection!
   getDevPnlSnapshots(dateStr: String!, filterParams: ExportFilter!): [PnlSnapshotDevDetails!]!
   getDevPnlSnapshotsV4(dateStr: String!, filterParams: [ExportFilterV3!]!, ratio: Float!): [PnlSnapshotDevDetails!]!
