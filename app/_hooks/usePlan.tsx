@@ -132,6 +132,24 @@ export const PLAN_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_BLACKLIST_DOCUMENT = graphql(`
+  query getBlacklist {
+    getBlacklist
+  }
+`);
+
+export const ADD_TO_BLACKLIST_DOCUMENT = graphql(`
+  mutation addToBlacklist($address: String!) {
+    addToBlacklist(address: $address)
+  }
+`);
+
+export const REMOVE_FROM_BLACKLIST_DOCUMENT = graphql(`
+  mutation removeFromBlacklist($address: String!) {
+    removeFromBlacklist(address: $address)
+  }
+`);
+
 export function getPlanForwardDetails(
   plan: {
     __typename?: "PlanForwardDetails";
