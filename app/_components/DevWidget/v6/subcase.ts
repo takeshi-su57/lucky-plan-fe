@@ -219,10 +219,10 @@ const size_10000_30000 = [
 
 export const bestCase = [
   ...size_0_300,
-  // ...size_300_2000,
-  // ...size_2000_5000,
-  // ...size_5000_10000,
-  // ...size_10000_30000,
+  ...size_300_2000,
+  ...size_2000_5000,
+  ...size_5000_10000,
+  ...size_10000_30000,
 ];
 
 export const primaryBestCase = [
