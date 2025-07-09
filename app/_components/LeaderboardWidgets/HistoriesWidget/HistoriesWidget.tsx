@@ -3,18 +3,15 @@
 import { useMemo, useState } from "react";
 import { Address } from "viem";
 import { Card, CardBody, Tab, Tabs } from "@nextui-org/react";
-import { Virtuoso } from "react-virtuoso";
 import dayjs from "dayjs";
 
 import { getHistoriesChartData } from "@/utils/historiesChart";
 import { PersonalTradeHistory } from "@/types";
 
-import { PairChip } from "../PairChip";
 import { HistoryCharts } from "../HistoryCharts";
 import { twMerge } from "tailwind-merge";
 import { HistoriesSummary } from "./HistoriesSummary";
 import { HistoriesPositionList } from "./HistoriesPositionList";
-import { useGetAllTradePairs } from "@/app/_hooks/useContract";
 import { getScore } from "@/utils";
 
 type TabType = "chart" | "positions";
@@ -22,13 +19,11 @@ type TabType = "chart" | "positions";
 export type HistoriesWidgetProps = {
   address: Address;
   histories: PersonalTradeHistory[];
-  contractId: number;
   hideTags: boolean;
   label?: string;
   isSelected?: boolean;
   onChangeSelection?: (
     address: string,
-    contractId: number,
     leaderCollateral: number,
     isSelected: boolean,
   ) => void;
@@ -43,7 +38,6 @@ export type HistoriesWidgetProps = {
 export function HistoriesWidget({
   address,
   histories,
-  contractId,
   hideTags,
   isSelected,
   label,
@@ -53,7 +47,6 @@ export function HistoriesWidget({
   range,
 }: HistoriesWidgetProps) {
   const [selected, setSelected] = useState<TabType>("chart");
-  const availableTradePairs = useGetAllTradePairs(contractId);
 
   const {
     historiesGroupedByTradeIndex,
@@ -62,23 +55,17 @@ export function HistoriesWidget({
     inOutChartData,
     inChartData,
     outChartData,
-    tradePairs,
     maxIn,
     sumIn,
     countIn,
     firstActivity,
     lastActivity,
   } = useMemo(() => {
-    const availablePairNames = availableTradePairs.map((pair) =>
-      `${pair.from}/${pair.to}`.toLowerCase(),
-    );
-
     return getHistoriesChartData(histories, {
       mode,
       range,
-      supportedPairs: availablePairNames,
     });
-  }, [availableTradePairs, histories, mode, range]);
+  }, [histories, mode, range]);
 
   const score = useMemo(
     () =>
@@ -119,7 +106,6 @@ export function HistoriesWidget({
 
             <HistoriesSummary
               address={address}
-              contractId={contractId}
               actionCounts={actionCounts}
               maxIn={maxIn}
               sumIn={sumIn}
@@ -138,24 +124,6 @@ export function HistoriesWidget({
           </div>
 
           <div className="flex flex-1 flex-col items-center justify-start gap-6">
-            {contractId !== 0 ? (
-              <Virtuoso
-                style={{ height: 50, width: 800, overflowY: "hidden" }}
-                data={tradePairs}
-                horizontalDirection
-                itemContent={(_, data) => (
-                  <div className="mr-4">
-                    <PairChip
-                      key={data[0]}
-                      contractId={contractId}
-                      pairName={data[0]}
-                      count={data[1]}
-                    />
-                  </div>
-                )}
-              />
-            ) : null}
-
             {selected === "chart" && (
               <HistoryCharts
                 pnlChartData={pnlChartData}
@@ -167,7 +135,6 @@ export function HistoriesWidget({
 
             {selected === "positions" && (
               <HistoriesPositionList
-                contractId={contractId}
                 historiesGroupedByTradeIndex={historiesGroupedByTradeIndex}
               />
             )}

@@ -43,7 +43,11 @@ export function ContractPnl({
 
     finishedMissionActions.forEach((missionActions) =>
       missionActions.forEach((action) => {
-        const history = convertTradeActionToHistory(action, collaterals);
+        const history = convertTradeActionToHistory(
+          contractId,
+          action,
+          collaterals,
+        );
 
         totalPnl =
           totalPnl + (history?.pnl || 0) * (history?.collateralPriceUsd || 0);
@@ -57,7 +61,9 @@ export function ContractPnl({
     const positions = openedMissionActions
       .map((missionActions) =>
         missionActions
-          .map((action) => convertTradeActionToHistory(action, collaterals))
+          .map((action) =>
+            convertTradeActionToHistory(contractId, action, collaterals),
+          )
           .filter((item) => !!item),
       )
       .filter((missionHistories) => {
@@ -100,7 +106,13 @@ export function ContractPnl({
       });
 
     return { positions: !finished ? positions : [], totalPnl, count };
-  }, [finishedMissionActions, openedMissionActions, collaterals, finished]);
+  }, [
+    collaterals,
+    finishedMissionActions,
+    openedMissionActions,
+    finished,
+    contractId,
+  ]);
 
   if (prices === undefined) {
     return (

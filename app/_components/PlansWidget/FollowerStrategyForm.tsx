@@ -61,6 +61,7 @@ export function FollowerStrategyForm({
   });
 
   const { data: originalHistories } = useGetPersonalTradeHistories(
+    params.leaderContract.contractId,
     params.leaderContract.backendUrl || null,
     params.leaderAddress || null,
   );

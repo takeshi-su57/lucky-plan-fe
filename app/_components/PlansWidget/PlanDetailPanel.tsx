@@ -57,6 +57,7 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
 
       plan.bots.forEach((bot) => {
         getPersonalTradeHistories(
+          bot.followerContract.id,
           bot.followerContract.backendUrl!,
           bot.followerAddress,
         ).then((histories) => {
@@ -98,6 +99,7 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
     if (isSelected && bot && !followerBotsHistories[botId]) {
       const histories =
         (await getPersonalTradeHistories(
+          bot.followerContract.id,
           bot.followerContract.backendUrl!,
           bot.followerAddress,
         )) || [];

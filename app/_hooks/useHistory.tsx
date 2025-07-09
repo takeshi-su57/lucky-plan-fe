@@ -106,14 +106,12 @@ export const GET_ALL_TRADEHISTORIES_DOCUMENT = graphql(`
 
 export const GET_PNL_SNAPSHOTS_DOCUMENT = graphql(`
   query getPnlSnapshots(
-    $contractId: Int!
     $dateStr: String!
     $kind: PnlSnapshotKind!
     $first: Int!
     $after: Int
   ) {
     getPnlSnapshots(
-      contractId: $contractId
       dateStr: $dateStr
       kind: $kind
       first: $first
@@ -652,6 +650,7 @@ export const GET_TESTING_REPORT_V5_DOCUMENT = graphql(`
 
 function getPersonalTradeHistory(history: TradeHistory): PersonalTradeHistory {
   return {
+    contractId: history.contractId,
     action: history.action as unknown as TradeActionType,
     address: history.address,
     block: history.block,
@@ -747,11 +746,7 @@ export function useGetAllTradeHistory(
   }, [data]);
 }
 
-export function useGetPnlSnapshots(
-  dateStr: string,
-  contractId: string | null,
-  kind: PnlSnapshotKind,
-) {
+export function useGetPnlSnapshots(dateStr: string, kind: PnlSnapshotKind) {
   const [query, { data, fetchMore, loading, error }] = useLazyQuery(
     GET_PNL_SNAPSHOTS_DOCUMENT,
   );
@@ -760,12 +755,11 @@ export function useGetPnlSnapshots(
     query({
       variables: {
         dateStr,
-        contractId: contractId ? +contractId : 0,
         kind,
         first: 20,
       },
     });
-  }, [contractId, dateStr, kind, query]);
+  }, [dateStr, kind, query]);
 
   const pnlSnapshots = useMemo(() => {
     if (!data) {
@@ -777,17 +771,16 @@ export function useGetPnlSnapshots(
   }, [data]);
 
   const handleFetchMore = useCallback(() => {
-    if (data && !error && contractId) {
+    if (data && !error) {
       fetchMore({
         variables: {
-          contractId: +contractId,
           kind,
           first: 20,
           after: data.getPnlSnapshots.pageInfo.endCursor,
         },
       });
     }
-  }, [contractId, data, error, fetchMore, kind]);
+  }, [data, error, fetchMore, kind]);
 
   return {
     hasMore: data?.getPnlSnapshots.pageInfo.hasNextPage,

@@ -82,7 +82,6 @@ export function DevLeaderboard({
                 <HistoriesWidget
                   address={snapshot.address as Address}
                   histories={snapshot.histories}
-                  contractId={snapshot.contractId}
                   hideTags={hideTags}
                   range={
                     showAll

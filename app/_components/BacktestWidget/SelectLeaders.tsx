@@ -40,9 +40,7 @@ export function SelectLeaders({
   const allContracts = useGetAllContracts();
 
   const [tempLeaders, setTempLeaders] = useState<LeaderParams[]>([]);
-  const [initialContractId, setInitialContractId] = useState<string | null>(
-    null,
-  );
+
   const [initialKind, setInitialKind] = useState<PnlSnapshotKind>(
     PnlSnapshotKind.Week,
   );
@@ -58,50 +56,40 @@ export function SelectLeaders({
 
   const handleChangeSelection = (
     address: string,
-    contractId: number,
     leaderCollateral: number,
     isSelected: boolean,
   ) => {
     if (isSelected) {
       setTempLeaders((prev) => {
         const exists = prev.find(
-          (item) =>
-            item.contract.contractId === contractId &&
-            item.address.toLowerCase() === address.toLowerCase(),
+          (item) => item.address.toLowerCase() === address.toLowerCase(),
         );
 
         if (exists) {
           return prev;
         }
 
-        const contract = allContracts.find((item) => item.id === contractId);
-
-        if (!contract) {
-          return prev;
-        }
-
-        return [
-          ...prev,
-          {
+        const newLeaders = allContracts
+          .filter((item) => item.id !== 4)
+          .map((item) => ({
             virtualId: nanoid(),
             address,
             leaderCollateral,
             contract: {
-              contractId: contract.id,
-              chainId: contract.chainId,
-              address: contract.address,
-              backendUrl: contract.backendUrl!,
+              contractId: item.id,
+              chainId: item.chainId,
+              address: item.address,
+              backendUrl: item.backendUrl!,
             },
             isConfirmed: false,
-          },
-        ];
+          }));
+
+        return [...prev, ...newLeaders];
       });
     } else {
       setTempLeaders((prev) => {
         return prev.filter(
-          (item) =>
-            item.contract.contractId !== contractId ||
-            item.address.toLowerCase() !== address.toLowerCase(),
+          (item) => item.address.toLowerCase() !== address.toLowerCase(),
         );
       });
     }
@@ -169,10 +157,8 @@ export function SelectLeaders({
           contractId: leader.contract.contractId,
           leaderCollateral: leader.leaderCollateral,
         }))}
-        initialContractId={initialContractId}
         initialKind={initialKind}
-        onChangeParams={(contractId, kind) => {
-          setInitialContractId(contractId);
+        onChangeParams={(kind) => {
           setInitialKind(kind);
         }}
         onChangeSelection={handleChangeSelection}
