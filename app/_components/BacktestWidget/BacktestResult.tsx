@@ -63,6 +63,7 @@ export function BacktestResult({
     if (allContracts) {
       leaders.forEach((leader) => {
         getPersonalTradeHistories(
+          leader.contract.contractId,
           allContracts.find(
             (contract) => contract.id === leader.contract.contractId,
           )?.backendUrl!,

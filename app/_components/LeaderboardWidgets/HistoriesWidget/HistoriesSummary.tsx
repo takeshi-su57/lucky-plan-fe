@@ -11,7 +11,6 @@ import { HistoryChartData } from "../HistoryCharts";
 
 export type HistoriesSummaryProps = {
   address: Address;
-  contractId: number;
   actionCounts: Record<string, number>;
   maxIn: number;
   sumIn: number;
@@ -23,7 +22,6 @@ export type HistoriesSummaryProps = {
   isSelected?: boolean;
   onChangeSelection?: (
     address: string,
-    contractId: number,
     leaderCollateral: number,
     isSelected: boolean,
   ) => void;
@@ -33,7 +31,6 @@ export type HistoriesSummaryProps = {
 
 export function HistoriesSummary({
   address,
-  contractId,
   actionCounts,
   sumIn,
   countIn,
@@ -157,7 +154,6 @@ export function HistoriesSummary({
           onValueChange={(value) =>
             onChangeSelection?.(
               address,
-              contractId,
               countIn > 0 ? sumIn / countIn : 0,
               value,
             )

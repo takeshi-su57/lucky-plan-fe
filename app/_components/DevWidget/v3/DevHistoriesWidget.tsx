@@ -89,7 +89,6 @@ export function DevHistoriesWidget({
                   <HistoriesWidget
                     address={walletAddress as Address}
                     histories={[...(appUserHistories[contract.id] || [])]}
-                    contractId={contract.id}
                     hideTags={false}
                     // range={{ from: new Date("2024-11-01"), to: new Date() }}
                     mode="show_only_valid_activity"

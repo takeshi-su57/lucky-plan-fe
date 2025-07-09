@@ -57,6 +57,7 @@ export function AutomationDetails({
     useState(true);
 
   const { data: leaderHistories } = useGetPersonalTradeHistories(
+    bot?.leaderContractId || 0,
     bot?.leaderContract?.backendUrl || null,
     bot?.leaderAddress || null,
   );
@@ -67,6 +68,7 @@ export function AutomationDetails({
   );
 
   const { data: followerHistories } = useGetPersonalTradeHistories(
+    bot?.followerContractId || 0,
     bot?.followerContract?.backendUrl || null,
     bot?.followerAddress || null,
   );

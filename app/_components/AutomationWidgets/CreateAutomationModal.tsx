@@ -96,6 +96,7 @@ export function CreateAutomationModal({
     : null;
 
   const { data: originalHistories } = useGetPersonalTradeHistories(
+    leaderContract?.id || null,
     leaderContract?.backendUrl || null,
     leaderAddress || null,
   );

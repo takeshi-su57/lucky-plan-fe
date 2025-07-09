@@ -6,6 +6,7 @@ import {
 } from "@/types";
 
 export function convertTradeActionToHistory(
+  contractId: number,
   action: Action,
   collaterals: TradeCollateral[],
 ): (Omit<PersonalTradeHistory, "pair"> & { pairIndex: number }) | null {
@@ -28,6 +29,7 @@ export function convertTradeActionToHistory(
       }
 
       return {
+        contractId,
         action: TradeActionType.TradePosSizeIncrease,
         address: args.orderId.user.toLowerCase(),
         block: action.blockNumber,
@@ -76,6 +78,7 @@ export function convertTradeActionToHistory(
       }
 
       return {
+        contractId,
         action: TradeActionType.TradePosSizeDecrease,
         address: args.orderId.user.toLowerCase(),
         block: action.blockNumber,
@@ -122,6 +125,7 @@ export function convertTradeActionToHistory(
       }
 
       return {
+        contractId,
         action: TradeActionType.TradeLeverageUpdate,
         address: args.orderId.user.toLowerCase(),
         block: action.blockNumber,
@@ -168,6 +172,7 @@ export function convertTradeActionToHistory(
           );
 
       return {
+        contractId,
         action: args.open
           ? TradeActionType.TradeOpenedMarket
           : TradeActionType.TradeClosedMarket,
@@ -223,6 +228,7 @@ export function convertTradeActionToHistory(
             );
 
       return {
+        contractId,
         action: actionNameMap[args.orderType],
         address: args.orderId.user.toLowerCase(),
         block: action.blockNumber,

@@ -665,7 +665,6 @@ type Query {
   getPnlSnapshotInitializedFlag: [PnlSnapshotInitializedFlag!]!
   getPnlSnapshots(
     after: Int
-    contractId: Int!
     dateStr: String!
     first: Int!
     kind: PnlSnapshotKind!

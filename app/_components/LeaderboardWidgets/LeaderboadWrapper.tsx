@@ -10,24 +10,17 @@ export function LeaderboadWrapper() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const handleChangeParams = (
-    contractId: string | null,
-    kind: PnlSnapshotKind,
-  ) => {
-    const contractQuery = contractId ? `contractId=${contractId}` : null;
+  const handleChangeParams = (kind: PnlSnapshotKind) => {
     const kindQuery = kind ? `kind=${kind}` : null;
 
-    router.push(
-      `/leaderboards?${contractQuery || ""}${contractQuery && kindQuery ? `&` : ""}${kindQuery || ""}`,
-    );
+    router.push(`/leaderboards?${kindQuery || ""}`);
   };
 
   return (
     <Leaderboard
       endDate={new Date()}
-      initialContractId={searchParams.get("contractId") || null}
       initialKind={
-        (searchParams.get("kind") as PnlSnapshotKind) || PnlSnapshotKind.AllTime
+        (searchParams.get("kind") as PnlSnapshotKind) || PnlSnapshotKind.Month
       }
       onChangeParams={handleChangeParams}
       hideTags={false}
