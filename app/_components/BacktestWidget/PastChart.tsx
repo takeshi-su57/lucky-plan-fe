@@ -46,6 +46,7 @@ export function PastChart({
   const allContracts = useGetAllContracts();
 
   const { data: allHistories } = useGetPersonalTradeHistories(
+    contractId,
     allContracts.find((contract) => contract.id === contractId)?.backendUrl ||
       null,
     address,
@@ -127,7 +128,6 @@ export function PastChart({
       <HistoriesWidget
         address={address as Address}
         histories={histories}
-        contractId={contractId}
         hideTags={true}
         range={{
           to: endDate,

@@ -27,7 +27,6 @@ export function DevHistoriesWidget({
       <HistoriesWidget
         address={item.address as Address}
         histories={histories || []}
-        contractId={item.contractId}
         hideTags={false}
         mode="show_only_valid_activity"
       />

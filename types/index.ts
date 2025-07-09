@@ -25,6 +25,7 @@ export enum TradeActionType {
 
 export type PersonalTradeHistory = {
   action: TradeActionType;
+  contractId: number;
   address: string;
   block: number;
   collateralDelta: number | null;

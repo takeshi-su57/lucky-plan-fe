@@ -3,18 +3,17 @@ import { HistoriesPosition } from "./HistoriesPosition";
 import { Virtuoso } from "react-virtuoso";
 
 export type HistoriesPositionListProps = {
-  contractId: number;
   historiesGroupedByTradeIndex: {
     tradeIndex: number;
     long: number;
     collateralIndex: number;
     pair: string;
+    contractId: number;
     actions: PersonalTradeHistory[];
   }[];
 };
 
 export function HistoriesPositionList({
-  contractId,
   historiesGroupedByTradeIndex,
 }: HistoriesPositionListProps) {
   return (
@@ -26,7 +25,7 @@ export function HistoriesPositionList({
       itemContent={(_, position) => (
         <HistoriesPosition
           key={position.tradeIndex}
-          contractId={contractId}
+          contractId={position.contractId}
           tradeIndex={position.tradeIndex}
           collateralIndex={position.collateralIndex}
           long={position.long}
