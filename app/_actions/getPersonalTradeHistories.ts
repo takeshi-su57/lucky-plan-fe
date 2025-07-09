@@ -3,6 +3,7 @@
 import { PersonalTradeHistory } from "@/types";
 
 export async function getPersonalTradeHistories(
+  contractId: number,
   backendUrl: string,
   address: string,
 ): Promise<PersonalTradeHistory[]> {
@@ -14,7 +15,10 @@ export async function getPersonalTradeHistories(
     );
 
     const data = await response.json();
-    return data as PersonalTradeHistory[];
+    return data.map((item: any) => ({
+      ...item,
+      contractId,
+    })) as PersonalTradeHistory[];
   } catch (err) {
     console.log(err);
     return [];

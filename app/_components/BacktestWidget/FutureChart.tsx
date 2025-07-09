@@ -23,8 +23,6 @@ export type FutureChartProps = {
 export function FutureChart({
   startDate,
   endDate,
-  leaderContractId,
-  followerContractId,
   address,
   leaderHistories,
   followerHistories,
@@ -61,7 +59,6 @@ export function FutureChart({
       <HistoriesWidget
         address={address as Address}
         histories={isLeaderChart ? leaderHistories : followerHistories}
-        contractId={isLeaderChart ? leaderContractId : followerContractId}
         hideTags={hideTags}
         range={{
           to: endDate,

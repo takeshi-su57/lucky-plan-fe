@@ -21,7 +21,6 @@ export function WalletAccountTradeHistory({
   return (
     <HistoriesWidget
       address={address}
-      contractId={+contractId}
       histories={allHistories}
       hideTags={false}
       mode={mode}

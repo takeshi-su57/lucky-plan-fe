@@ -49,29 +49,43 @@ export function getSortedPartialHistories(
     }
 
     if (filters.mode === "show_all_activity") {
-      valideTradeIndexMap[`${history.address}-${history.tradeIndex}`] = true;
+      valideTradeIndexMap[
+        `${history.contractId}-${history.address}-${history.tradeIndex}`
+      ] = true;
     } else if (
       history.action === TradeActionType.TradeOpenedMarket ||
       history.action === TradeActionType.TradeOpenedLimit
     ) {
-      valideTradeIndexMap[`${history.address}-${history.tradeIndex}`] = true;
+      valideTradeIndexMap[
+        `${history.contractId}-${history.address}-${history.tradeIndex}`
+      ] = true;
     }
   });
 
   const historiesByTradeIndex: Record<string, PersonalTradeHistory[]> = {};
 
   sortedAndSupportedHistories.forEach((history) => {
-    if (!valideTradeIndexMap[`${history.address}-${history.tradeIndex}`]) {
+    if (
+      !valideTradeIndexMap[
+        `${history.contractId}-${history.address}-${history.tradeIndex}`
+      ]
+    ) {
       return;
     }
 
-    if (!historiesByTradeIndex[`${history.address}-${history.tradeIndex}`]) {
-      historiesByTradeIndex[`${history.address}-${history.tradeIndex}`] = [];
+    if (
+      !historiesByTradeIndex[
+        `${history.contractId}-${history.address}-${history.tradeIndex}`
+      ]
+    ) {
+      historiesByTradeIndex[
+        `${history.contractId}-${history.address}-${history.tradeIndex}`
+      ] = [];
     }
 
-    historiesByTradeIndex[`${history.address}-${history.tradeIndex}`].push(
-      history,
-    );
+    historiesByTradeIndex[
+      `${history.contractId}-${history.address}-${history.tradeIndex}`
+    ].push(history);
   });
 
   const validHistories = Object.values(historiesByTradeIndex);
@@ -84,6 +98,7 @@ export function getSortedPartialHistories(
         pair: item[0].pair,
         long: item[0].long,
         collateralIndex: item[0].collateralIndex,
+        contractId: item[0].contractId,
         actions: item,
       })),
     sortedHistories: validHistories
