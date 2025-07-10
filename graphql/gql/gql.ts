@@ -27,7 +27,7 @@ const documents = {
     "\n  subscription botUpdated($userId: String!) {\n    botUpdated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": types.BotUpdatedDocument,
     "\n  fragment ContractInfo on Contract {\n    id\n    chainId\n    address\n    backendUrl\n    description\n    isTestnet\n    status\n  }\n": types.ContractInfoFragmentDoc,
     "\n  query getAllContracts {\n    getAllContracts {\n      ...ContractInfo\n    }\n  }\n": types.GetAllContractsDocument,
-    "\n  query getAllTradePairs($contractId: Int!) {\n    getTradePairs(contractId: $contractId) {\n      from\n      pairIndex\n      to\n    }\n  }\n": types.GetAllTradePairsDocument,
+    "\n  query getAllTradePairs($contractId: [Int!]!) {\n    getTradePairs(contractId: $contractId) {\n      contractId\n      from\n      pairIndex\n      to\n      onePercentDepthAboveUsd\n      onePercentDepthBelowUsd\n    }\n  }\n": types.GetAllTradePairsDocument,
     "\n  query getTradeCollaterals($contractId: Int!) {\n    getTradeCollaterals(contractId: $contractId) {\n      collateral\n      collateralIndex\n      isActive\n      precision\n      precisionDelta\n    }\n  }\n": types.GetTradeCollateralsDocument,
     "\n  fragment FollowerInfo on Follower {\n    userId\n    address\n    accountIndex\n    publicKey\n  }\n": types.FollowerInfoFragmentDoc,
     "\n  fragment FollowerTradeInfo on FollowerTrade {\n    address\n    index\n    mission {\n      ...MissionInfo\n    }\n    params\n  }\n": types.FollowerTradeInfoFragmentDoc,
@@ -101,6 +101,10 @@ const documents = {
     "\n  query getBlacklist {\n    getBlacklist\n  }\n": types.GetBlacklistDocument,
     "\n  mutation addToBlacklist($address: String!) {\n    addToBlacklist(address: $address)\n  }\n": types.AddToBlacklistDocument,
     "\n  mutation removeFromBlacklist($address: String!) {\n    removeFromBlacklist(address: $address)\n  }\n": types.RemoveFromBlacklistDocument,
+    "\n  query getExpertPnlSnapshots {\n    getExpertPnlSnapshots {\n      accUSDPnl\n      address\n      contractId\n      dateStr\n      id\n      kind\n      maxSize\n      ratio\n      score\n      openedPositions\n      avgPnlRatio\n      avgDuration\n    }\n  }\n": types.GetExpertPnlSnapshotsDocument,
+    "\n  query getWhitelist {\n    getWhitelist\n  }\n": types.GetWhitelistDocument,
+    "\n  mutation addToWhitelist($params: String!) {\n    addToWhitelist(params: $params)\n  }\n": types.AddToWhitelistDocument,
+    "\n  mutation removeFromWhitelist($address: String!) {\n    removeFromWhitelist(address: $address)\n  }\n": types.RemoveFromWhitelistDocument,
     "\n  fragment StrategyMetadataInfo on StrategyMetadata {\n    key\n    title\n    description\n  }\n": types.StrategyMetadataInfoFragmentDoc,
     "\n  fragment StrategyInfo on Strategy {\n    id\n    lifeTime\n    maxCollateral\n    minCollateral\n    maxLeverage\n    minLeverage\n    collateralBaseline\n    params\n    ratio\n    strategyKey\n  }\n": types.StrategyInfoFragmentDoc,
     "\n  query getAllStrategyMetadata {\n    getAllStrategyMetadata {\n      ...StrategyMetadataInfo\n    }\n  }\n": types.GetAllStrategyMetadataDocument,
@@ -210,7 +214,7 @@ export function graphql(source: "\n  query getAllContracts {\n    getAllContract
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query getAllTradePairs($contractId: Int!) {\n    getTradePairs(contractId: $contractId) {\n      from\n      pairIndex\n      to\n    }\n  }\n"): (typeof documents)["\n  query getAllTradePairs($contractId: Int!) {\n    getTradePairs(contractId: $contractId) {\n      from\n      pairIndex\n      to\n    }\n  }\n"];
+export function graphql(source: "\n  query getAllTradePairs($contractId: [Int!]!) {\n    getTradePairs(contractId: $contractId) {\n      contractId\n      from\n      pairIndex\n      to\n      onePercentDepthAboveUsd\n      onePercentDepthBelowUsd\n    }\n  }\n"): (typeof documents)["\n  query getAllTradePairs($contractId: [Int!]!) {\n    getTradePairs(contractId: $contractId) {\n      contractId\n      from\n      pairIndex\n      to\n      onePercentDepthAboveUsd\n      onePercentDepthBelowUsd\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -503,6 +507,22 @@ export function graphql(source: "\n  mutation addToBlacklist($address: String!) 
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation removeFromBlacklist($address: String!) {\n    removeFromBlacklist(address: $address)\n  }\n"): (typeof documents)["\n  mutation removeFromBlacklist($address: String!) {\n    removeFromBlacklist(address: $address)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query getExpertPnlSnapshots {\n    getExpertPnlSnapshots {\n      accUSDPnl\n      address\n      contractId\n      dateStr\n      id\n      kind\n      maxSize\n      ratio\n      score\n      openedPositions\n      avgPnlRatio\n      avgDuration\n    }\n  }\n"): (typeof documents)["\n  query getExpertPnlSnapshots {\n    getExpertPnlSnapshots {\n      accUSDPnl\n      address\n      contractId\n      dateStr\n      id\n      kind\n      maxSize\n      ratio\n      score\n      openedPositions\n      avgPnlRatio\n      avgDuration\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query getWhitelist {\n    getWhitelist\n  }\n"): (typeof documents)["\n  query getWhitelist {\n    getWhitelist\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation addToWhitelist($params: String!) {\n    addToWhitelist(params: $params)\n  }\n"): (typeof documents)["\n  mutation addToWhitelist($params: String!) {\n    addToWhitelist(params: $params)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation removeFromWhitelist($address: String!) {\n    removeFromWhitelist(address: $address)\n  }\n"): (typeof documents)["\n  mutation removeFromWhitelist($address: String!) {\n    removeFromWhitelist(address: $address)\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

@@ -13,6 +13,7 @@ import { twMerge } from "tailwind-merge";
 import { HistoriesSummary } from "./HistoriesSummary";
 import { HistoriesPositionList } from "./HistoriesPositionList";
 import { getScore } from "@/utils";
+import { useGetAllTradePairs } from "@/app/_hooks/useContract";
 
 type TabType = "chart" | "positions";
 
@@ -47,6 +48,7 @@ export function HistoriesWidget({
   range,
 }: HistoriesWidgetProps) {
   const [selected, setSelected] = useState<TabType>("chart");
+  const allPairs = useGetAllTradePairs([1, 2, 3, 5]);
 
   const {
     historiesGroupedByTradeIndex,
@@ -60,12 +62,20 @@ export function HistoriesWidget({
     countIn,
     firstActivity,
     lastActivity,
+    openedHistoriesArr,
+    avgDuration,
+    avgPnlP,
+    avgSize,
   } = useMemo(() => {
-    return getHistoriesChartData(histories, {
-      mode,
-      range,
-    });
-  }, [histories, mode, range]);
+    return getHistoriesChartData(
+      histories,
+      {
+        mode,
+        range,
+      },
+      allPairs,
+    );
+  }, [allPairs, histories, mode, range]);
 
   const score = useMemo(
     () =>
@@ -118,6 +128,10 @@ export function HistoriesWidget({
               label={label}
               pnlChartData={pnlChartData}
               inOutChartData={inOutChartData}
+              openedHistoriesArr={openedHistoriesArr}
+              avgDuration={avgDuration}
+              avgPnlP={avgPnlP}
+              avgSize={avgSize}
             />
 
             <div className="text-red-500">{score}</div>

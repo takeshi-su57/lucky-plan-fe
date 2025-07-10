@@ -9,6 +9,7 @@ import {
   CardBody,
   Checkbox,
   Divider,
+  Spinner,
   Tab,
   Tabs,
 } from "@nextui-org/react";
@@ -62,7 +63,7 @@ export function AutomationDetails({
     bot?.leaderAddress || null,
   );
 
-  const histories = useGetAllTradeHistory(
+  const { histories, loading } = useGetAllTradeHistory(
     bot?.leaderAddress || null,
     bot?.leaderContractId?.toString() || null,
   );
@@ -281,21 +282,25 @@ export function AutomationDetails({
 
             <Divider />
 
-            <AutomationGridChart
-              histories={histories || []}
-              title="Leader Platform Chart"
-              range={
-                showOnlyAutomationHistory
-                  ? {
-                      from: bot.startedAt
-                        ? new Date(bot.startedAt)
-                        : new Date(),
-                      to: bot.endedAt ? new Date(bot.endedAt) : new Date(),
-                    }
-                  : undefined
-              }
-              mode="show_all_activity"
-            />
+            {loading ? (
+              <Spinner color="warning" size="lg" />
+            ) : (
+              <AutomationGridChart
+                histories={histories || []}
+                title="Leader Platform Chart"
+                range={
+                  showOnlyAutomationHistory
+                    ? {
+                        from: bot.startedAt
+                          ? new Date(bot.startedAt)
+                          : new Date(),
+                        to: bot.endedAt ? new Date(bot.endedAt) : new Date(),
+                      }
+                    : undefined
+                }
+                mode="show_all_activity"
+              />
+            )}
 
             <Divider />
 
