@@ -611,6 +611,7 @@ type Query {
   findContract(id: Int!): Contract!
   findStrategy(id: Int!): Strategy
   findStrategyMetadata(key: String!): StrategyMetadata!
+  getActiveBots: [BotForwardDetails!]!
   getAlertTasks: [TaskBackwardDetails!]!
   getAllCategories: [TagCategory!]!
   getAllContracts: [Contract!]!

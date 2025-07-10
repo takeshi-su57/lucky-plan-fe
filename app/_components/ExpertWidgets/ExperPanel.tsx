@@ -12,9 +12,16 @@ import {
 import { Address, isAddress } from "viem";
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 
-import { useGetExpertPnlSnapshots } from "@/app/_hooks/usePlan";
+import {
+  GET_BLACKLIST_DOCUMENT,
+  GET_WHITELIST_DOCUMENT,
+  useGetExpertPnlSnapshots,
+} from "@/app/_hooks/usePlan";
 import { AnalyzeWidget } from "./AnalyzeWidget";
 import { shrinkAddress } from "@/utils";
+import { useGetActiveBots } from "@/app/_hooks/useAutomation";
+import { useQuery } from "@apollo/client";
+import { twMerge } from "tailwind-merge";
 
 const expertColumns: TableColumnProps[] = [
   {
@@ -58,16 +65,67 @@ const expertColumns: TableColumnProps[] = [
 export function ExperPanel() {
   const { pnlSnapshots, loading } = useGetExpertPnlSnapshots();
 
+  const { bots } = useGetActiveBots();
+  const { data: blacklist } = useQuery(GET_BLACKLIST_DOCUMENT);
+  const { data: whitelist } = useQuery(GET_WHITELIST_DOCUMENT);
+
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
   const [searchAddress, setSearchAddress] = useState<string>("");
 
   const expertRows = useMemo(() => {
+    const activeAddresses: Record<string, boolean> = {};
+    const blacklistedAddresses: Record<string, boolean> = {};
+    const whitelistedAddresses: Record<string, boolean> = {};
+
+    bots.forEach((bot) => {
+      activeAddresses[bot.leaderAddress.toLowerCase()] = true;
+    });
+
+    blacklist?.getBlacklist?.forEach((address) => {
+      blacklistedAddresses[address.toLowerCase()] = true;
+    });
+
+    whitelist?.getWhitelist?.forEach((params) => {
+      const { address } = JSON.parse(params);
+
+      whitelistedAddresses[address.toLowerCase()] = true;
+    });
+
     return pnlSnapshots.map((snapshot) => ({
       id: `${snapshot.address}`,
       className: "group",
       data: {
         address: {
-          component: shrinkAddress(snapshot.address as Address),
+          component: (
+            <span
+              className={twMerge(
+                activeAddresses[snapshot.address.toLowerCase()]
+                  ? "text-green-400"
+                  : whitelistedAddresses[snapshot.address.toLowerCase()]
+                    ? "text-yellow-400"
+                    : blacklistedAddresses[snapshot.address.toLowerCase()]
+                      ? "text-red-400"
+                      : "text-white",
+              )}
+            >
+              {shrinkAddress(snapshot.address as Address)}{" "}
+              {activeAddresses[snapshot.address.toLowerCase()] && (
+                <span className="rounded-md bg-green-400/10 p-1 text-green-400">
+                  Active
+                </span>
+              )}
+              {whitelistedAddresses[snapshot.address.toLowerCase()] && (
+                <span className="ml-2 rounded-md bg-yellow-400/10 p-1 text-yellow-400">
+                  Whitelisted
+                </span>
+              )}
+              {blacklistedAddresses[snapshot.address.toLowerCase()] && (
+                <span className="ml-2 rounded-md bg-red-400/10 p-1 text-red-400">
+                  Blacklisted
+                </span>
+              )}
+            </span>
+          ),
         },
         pnl: {
           component: snapshot.accUSDPnl.toFixed(2),
@@ -109,7 +167,7 @@ export function ExperPanel() {
         },
       },
     }));
-  }, [pnlSnapshots]);
+  }, [blacklist?.getBlacklist, bots, pnlSnapshots, whitelist?.getWhitelist]);
 
   return (
     <div className="flex flex-col gap-6">
