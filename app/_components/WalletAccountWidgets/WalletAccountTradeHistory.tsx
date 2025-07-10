@@ -16,7 +16,10 @@ export function WalletAccountTradeHistory({
   contractId,
   mode,
 }: WalletAccountTradeHistoryProps) {
-  const allHistories = useGetAllTradeHistory(address, contractId);
+  const { histories: allHistories } = useGetAllTradeHistory(
+    address,
+    contractId,
+  );
 
   return (
     <HistoriesWidget

@@ -26,11 +26,14 @@ export const GET_ALL_CONTRACT_DOCUMENT = graphql(`
 `);
 
 export const GET_ALL_TRADE_PAIRS_DOCUMENT = graphql(`
-  query getAllTradePairs($contractId: Int!) {
+  query getAllTradePairs($contractId: [Int!]!) {
     getTradePairs(contractId: $contractId) {
+      contractId
       from
       pairIndex
       to
+      onePercentDepthAboveUsd
+      onePercentDepthBelowUsd
     }
   }
 `);
@@ -47,9 +50,9 @@ export const GET_TRADE_COLLATERALS_DOCUMENT = graphql(`
   }
 `);
 
-export function useGetAllTradePairs(contractId?: number) {
+export function useGetAllTradePairs(contractIds?: number[]) {
   const { data } = useQuery(GET_ALL_TRADE_PAIRS_DOCUMENT, {
-    variables: contractId ? { contractId } : undefined,
+    variables: contractIds ? { contractId: contractIds } : undefined,
   });
 
   return data?.getTradePairs || [];

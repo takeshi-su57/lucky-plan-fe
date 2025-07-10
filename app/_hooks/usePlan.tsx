@@ -150,6 +150,43 @@ export const REMOVE_FROM_BLACKLIST_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_EXPERT_PNLSNAPSHOT_DOCUMENT = graphql(`
+  query getExpertPnlSnapshots {
+    getExpertPnlSnapshots {
+      accUSDPnl
+      address
+      contractId
+      dateStr
+      id
+      kind
+      maxSize
+      ratio
+      score
+      openedPositions
+      avgPnlRatio
+      avgDuration
+    }
+  }
+`);
+
+export const GET_WHITELIST_DOCUMENT = graphql(`
+  query getWhitelist {
+    getWhitelist
+  }
+`);
+
+export const ADD_TO_WHITELIST_DOCUMENT = graphql(`
+  mutation addToWhitelist($params: String!) {
+    addToWhitelist(params: $params)
+  }
+`);
+
+export const REMOVE_FROM_WHITELIST_DOCUMENT = graphql(`
+  mutation removeFromWhitelist($address: String!) {
+    removeFromWhitelist(address: $address)
+  }
+`);
+
 export function getPlanForwardDetails(
   plan: {
     __typename?: "PlanForwardDetails";
@@ -594,4 +631,25 @@ export function useCreateAutoPlan() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return { createAutoPlan, loading };
+}
+
+export function useGetExpertPnlSnapshots() {
+  const { data, loading } = useQuery(GET_EXPERT_PNLSNAPSHOT_DOCUMENT);
+
+  const pnlSnapshots = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return data.getExpertPnlSnapshots.map((snapshot) => {
+      return {
+        ...snapshot,
+      };
+    });
+  }, [data]);
+
+  return {
+    pnlSnapshots,
+    loading,
+  };
 }

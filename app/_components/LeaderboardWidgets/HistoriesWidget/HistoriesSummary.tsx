@@ -27,6 +27,10 @@ export type HistoriesSummaryProps = {
   ) => void;
   pnlChartData: HistoryChartData[];
   inOutChartData: HistoryChartData[];
+  openedHistoriesArr: string[];
+  avgDuration: number;
+  avgPnlP: number;
+  avgSize: number;
 };
 
 export function HistoriesSummary({
@@ -42,6 +46,10 @@ export function HistoriesSummary({
   label,
   pnlChartData,
   inOutChartData,
+  openedHistoriesArr,
+  avgDuration,
+  avgPnlP,
+  avgSize,
 }: HistoriesSummaryProps) {
   const [showMore, setShowMore] = useState(false);
 
@@ -87,6 +95,26 @@ export function HistoriesSummary({
       value: lastActivity
         ? dayjs(new Date(lastActivity)).format("YYYY/MM/DD")
         : "",
+    },
+    {
+      id: "openedHistories",
+      label: "Opened Histories",
+      value: openedHistoriesArr.length,
+    },
+    {
+      id: "avgDuration",
+      label: "Avg Duration",
+      value: `${(avgDuration / 1000 / 60).toFixed(2)}mins`,
+    },
+    {
+      id: "avgPnlP",
+      label: "Avg PnL %",
+      value: `${avgPnlP.toFixed(2)}%`,
+    },
+    {
+      id: "avgSize",
+      label: "Avg Size",
+      value: `${avgSize.toFixed(2)}`,
     },
   ];
 

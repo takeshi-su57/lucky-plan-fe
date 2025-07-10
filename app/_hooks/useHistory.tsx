@@ -648,7 +648,9 @@ export const GET_TESTING_REPORT_V5_DOCUMENT = graphql(`
   }
 `);
 
-function getPersonalTradeHistory(history: TradeHistory): PersonalTradeHistory {
+export function getPersonalTradeHistory(
+  history: TradeHistory,
+): PersonalTradeHistory {
   return {
     contractId: history.contractId,
     action: history.action as unknown as TradeActionType,
@@ -721,7 +723,9 @@ export function useGetAllTradeHistory(
   address: string | null,
   contractId: string | null,
 ) {
-  const [query, { data }] = useLazyQuery(GET_ALL_TRADEHISTORIES_DOCUMENT);
+  const [query, { data, loading }] = useLazyQuery(
+    GET_ALL_TRADEHISTORIES_DOCUMENT,
+  );
 
   useEffect(() => {
     if (address && contractId) {
@@ -734,7 +738,7 @@ export function useGetAllTradeHistory(
     }
   }, [address, contractId, query]);
 
-  return useMemo(() => {
+  const histories = useMemo(() => {
     if (!data) {
       return [];
     }
@@ -744,6 +748,11 @@ export function useGetAllTradeHistory(
       ),
     );
   }, [data]);
+
+  return {
+    histories,
+    loading,
+  };
 }
 
 export function useGetPnlSnapshots(dateStr: string, kind: PnlSnapshotKind) {
