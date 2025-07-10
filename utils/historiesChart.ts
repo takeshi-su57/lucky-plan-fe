@@ -30,7 +30,10 @@ export function getSortedPartialHistories(
   const openedHistories = new Map<string, boolean>();
   const pnlMaps = new Map<string, number>();
   const sizeMaps = new Map<string, number>();
-  const durationMaps = new Map<string, { min: number; max: number }>();
+  const durationMaps = new Map<
+    string,
+    { min: number | null; max: number | null }
+  >();
   const totalOpenHistories: PersonalTradeHistory[] = [];
 
   const sortedAndSupportedHistories = histories
@@ -50,22 +53,6 @@ export function getSortedPartialHistories(
 
   sortedAndSupportedHistories.forEach((history) => {
     if (
-      filters.range &&
-      filters.range.from &&
-      filters.range.from > new Date(history.date)
-    ) {
-      return;
-    }
-
-    if (
-      filters.range &&
-      filters.range.to &&
-      filters.range.to < new Date(history.date)
-    ) {
-      return;
-    }
-
-    if (
       history.action === TradeActionType.TradeOpenedMarket ||
       history.action === TradeActionType.TradeOpenedLimit
     ) {
@@ -73,7 +60,7 @@ export function getSortedPartialHistories(
 
       durationMaps.set(`${history.contractId}-${history.tradeIndex}`, {
         min: new Date(history.date).getTime(),
-        max: 0,
+        max: new Date().getTime(),
       });
 
       totalOpenHistories.push(history);
@@ -92,7 +79,7 @@ export function getSortedPartialHistories(
       );
 
       durationMaps.set(`${history.contractId}-${history.tradeIndex}`, {
-        min: prevDuration?.min || 0,
+        min: prevDuration?.min || null,
         max: new Date(history.date).getTime(),
       });
     }
@@ -113,6 +100,22 @@ export function getSortedPartialHistories(
       Math.max(prevSize, +history.size * +history.leverage),
     );
 
+    if (
+      filters.range &&
+      filters.range.from &&
+      filters.range.from > new Date(history.date)
+    ) {
+      return;
+    }
+
+    if (
+      filters.range &&
+      filters.range.to &&
+      filters.range.to < new Date(history.date)
+    ) {
+      return;
+    }
+
     if (filters.mode === "show_all_activity") {
       valideTradeIndexMap[
         `${history.contractId}-${history.address}-${history.tradeIndex}`
@@ -131,7 +134,7 @@ export function getSortedPartialHistories(
     .filter((item) => item[1])
     .map((item) => item[0]);
 
-  const chunkHistories = sortedAndSupportedHistories
+  const chunkForPnlHistories = sortedAndSupportedHistories
     .filter((item) => {
       const pair = pairMap.get(`${item.contractId}-${item.pair}`.toLowerCase());
 
@@ -147,8 +150,30 @@ export function getSortedPartialHistories(
     .slice(0, 512);
 
   let totalDuration = 0;
+  let durationCount = 0;
 
-  const pnlRatios = chunkHistories
+  sortedAndSupportedHistories
+    .reverse()
+    .slice(0, 512)
+    .filter(
+      (history) =>
+        history.action === TradeActionType.TradeClosedMarket ||
+        history.action === TradeActionType.TradeClosedLIQ ||
+        history.action === TradeActionType.TradeClosedSL ||
+        history.action === TradeActionType.TradeClosedTP,
+    )
+    .forEach((history) => {
+      const duration = durationMaps.get(
+        `${history.contractId}-${history.tradeIndex}`,
+      );
+
+      if (duration && duration.min !== null && duration.max !== null) {
+        totalDuration += duration.max - duration.min;
+        durationCount++;
+      }
+    });
+
+  const pnlRatios = chunkForPnlHistories
     .filter(
       (history) =>
         history.action === TradeActionType.TradeClosedMarket ||
@@ -157,23 +182,13 @@ export function getSortedPartialHistories(
         history.action === TradeActionType.TradeClosedTP,
     )
     .map((item) => {
-      const duration = durationMaps.get(
-        `${item.contractId}-${item.tradeIndex}`,
-      ) || {
-        min: 0,
-        max: 0,
-      };
-
-      totalDuration += duration.max - duration.min;
-
       const pnl = pnlMaps.get(`${item.contractId}-${item.tradeIndex}`) || 0;
       const size = sizeMaps.get(`${item.contractId}-${item.tradeIndex}`) || 0;
       return size > 0 ? (pnl / size) * 100 : null;
     })
     .filter((item) => item !== null);
 
-  const avgDuration =
-    chunkHistories.length > 0 ? totalDuration / chunkHistories.length : 0;
+  const avgDuration = durationCount > 0 ? totalDuration / durationCount : -1;
 
   const avgPnlP =
     pnlRatios.length > 0

@@ -213,12 +213,15 @@ scalar DateTime
 type ExpertPnlSnapshot {
   accUSDPnl: Float!
   address: String!
+  avgDuration: Float!
+  avgPnlRatio: Float!
   contractId: Int!
   dateStr: String!
   histories: [TradeHistory!]!
   id: Int!
   kind: PnlSnapshotKind!
   maxSize: Float!
+  openedPositions: Int!
   ratio: Float!
   score: Float!
 }

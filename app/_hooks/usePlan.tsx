@@ -162,7 +162,28 @@ export const GET_EXPERT_PNLSNAPSHOT_DOCUMENT = graphql(`
       maxSize
       ratio
       score
+      openedPositions
+      avgPnlRatio
+      avgDuration
     }
+  }
+`);
+
+export const GET_WHITELIST_DOCUMENT = graphql(`
+  query getWhitelist {
+    getWhitelist
+  }
+`);
+
+export const ADD_TO_WHITELIST_DOCUMENT = graphql(`
+  mutation addToWhitelist($params: String!) {
+    addToWhitelist(params: $params)
+  }
+`);
+
+export const REMOVE_FROM_WHITELIST_DOCUMENT = graphql(`
+  mutation removeFromWhitelist($address: String!) {
+    removeFromWhitelist(address: $address)
   }
 `);
 

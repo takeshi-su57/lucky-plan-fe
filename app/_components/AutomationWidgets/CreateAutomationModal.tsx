@@ -88,7 +88,7 @@ export function CreateAutomationModal({
   });
 
   const followerAvailableTradePairs = useGetAllTradePairs(
-    followerContractId ? +followerContractId : undefined,
+    followerContractId ? [+followerContractId] : undefined,
   );
 
   const leaderContract = leaderContractId
