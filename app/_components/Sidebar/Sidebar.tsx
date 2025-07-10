@@ -41,6 +41,12 @@ export const links = [
     limited: "Public",
   },
   {
+    id: "experts",
+    label: "Expert",
+    title: "",
+    limited: UserPermission.Trader,
+  },
+  {
     id: "settings",
     label: "Setting",
     title: "",

@@ -1,3 +1,4 @@
+import { TradePair } from "@/graphql/gql/graphql";
 import { PersonalTradeHistory, TradeActionType } from "@/types";
 
 export function getSortedPartialHistories(
@@ -7,6 +8,7 @@ export function getSortedPartialHistories(
     supportedPairs?: string[];
     range?: { from?: Date; to?: Date };
   },
+  pairs: TradePair[] = [],
 ) {
   const supportedPairsMap: Record<string, boolean> = {};
 
@@ -15,6 +17,21 @@ export function getSortedPartialHistories(
       supportedPairsMap[pair.toLowerCase()] = true;
     });
   }
+
+  const pairMap = new Map<string, TradePair>();
+
+  pairs.forEach((pair) => {
+    pairMap.set(
+      `${pair.contractId}-${pair.from}/${pair.to}`.toLowerCase(),
+      pair,
+    );
+  });
+
+  const openedHistories = new Map<string, boolean>();
+  const pnlMaps = new Map<string, number>();
+  const sizeMaps = new Map<string, number>();
+  const durationMaps = new Map<string, { min: number; max: number }>();
+  const totalOpenHistories: PersonalTradeHistory[] = [];
 
   const sortedAndSupportedHistories = histories
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -48,6 +65,54 @@ export function getSortedPartialHistories(
       return;
     }
 
+    if (
+      history.action === TradeActionType.TradeOpenedMarket ||
+      history.action === TradeActionType.TradeOpenedLimit
+    ) {
+      openedHistories.set(`${history.contractId}-${history.tradeIndex}`, true);
+
+      durationMaps.set(`${history.contractId}-${history.tradeIndex}`, {
+        min: new Date(history.date).getTime(),
+        max: 0,
+      });
+
+      totalOpenHistories.push(history);
+    }
+
+    if (
+      history.action === TradeActionType.TradeClosedMarket ||
+      history.action === TradeActionType.TradeClosedLIQ ||
+      history.action === TradeActionType.TradeClosedSL ||
+      history.action === TradeActionType.TradeClosedTP
+    ) {
+      openedHistories.set(`${history.contractId}-${history.tradeIndex}`, false);
+
+      const prevDuration = durationMaps.get(
+        `${history.contractId}-${history.tradeIndex}`,
+      );
+
+      durationMaps.set(`${history.contractId}-${history.tradeIndex}`, {
+        min: prevDuration?.min || 0,
+        max: new Date(history.date).getTime(),
+      });
+    }
+
+    const prevPnl =
+      pnlMaps.get(`${history.contractId}-${history.tradeIndex}`) || 0;
+
+    pnlMaps.set(
+      `${history.contractId}-${history.tradeIndex}`,
+      prevPnl + +history.pnl,
+    );
+
+    const prevSize =
+      sizeMaps.get(`${history.contractId}-${history.tradeIndex}`) || 0;
+
+    sizeMaps.set(
+      `${history.contractId}-${history.tradeIndex}`,
+      Math.max(prevSize, +history.size * +history.leverage),
+    );
+
     if (filters.mode === "show_all_activity") {
       valideTradeIndexMap[
         `${history.contractId}-${history.address}-${history.tradeIndex}`
@@ -61,6 +126,67 @@ export function getSortedPartialHistories(
       ] = true;
     }
   });
+
+  const openedHistoriesArr = Array.from(openedHistories.entries())
+    .filter((item) => item[1])
+    .map((item) => item[0]);
+
+  const chunkHistories = sortedAndSupportedHistories
+    .filter((item) => {
+      const pair = pairMap.get(`${item.contractId}-${item.pair}`.toLowerCase());
+
+      if (!pair) {
+        return false;
+      }
+
+      return (
+        +pair.onePercentDepthAboveUsd > 0 && +pair.onePercentDepthBelowUsd > 0
+      );
+    })
+    .reverse()
+    .slice(0, 512);
+
+  let totalDuration = 0;
+
+  const pnlRatios = chunkHistories
+    .filter(
+      (history) =>
+        history.action === TradeActionType.TradeClosedMarket ||
+        history.action === TradeActionType.TradeClosedLIQ ||
+        history.action === TradeActionType.TradeClosedSL ||
+        history.action === TradeActionType.TradeClosedTP,
+    )
+    .map((item) => {
+      const duration = durationMaps.get(
+        `${item.contractId}-${item.tradeIndex}`,
+      ) || {
+        min: 0,
+        max: 0,
+      };
+
+      totalDuration += duration.max - duration.min;
+
+      const pnl = pnlMaps.get(`${item.contractId}-${item.tradeIndex}`) || 0;
+      const size = sizeMaps.get(`${item.contractId}-${item.tradeIndex}`) || 0;
+      return size > 0 ? (pnl / size) * 100 : null;
+    })
+    .filter((item) => item !== null);
+
+  const avgDuration =
+    chunkHistories.length > 0 ? totalDuration / chunkHistories.length : 0;
+
+  const avgPnlP =
+    pnlRatios.length > 0
+      ? pnlRatios.reduce((acc, item) => acc + item, 0) / pnlRatios.length
+      : 1000_000_000;
+
+  const openHistories = totalOpenHistories.reverse().slice(0, 512);
+
+  const totalSize = openHistories.reduce((acc, history) => {
+    return acc + Number(history.size) * Number(history.collateralPriceUsd);
+  }, 0);
+
+  const avgSize = totalSize / openHistories.length;
 
   const historiesByTradeIndex: Record<string, PersonalTradeHistory[]> = {};
 
@@ -104,6 +230,10 @@ export function getSortedPartialHistories(
     sortedHistories: validHistories
       .flat()
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
+    openedHistoriesArr,
+    avgDuration,
+    avgPnlP,
+    avgSize,
   };
 }
 
@@ -114,6 +244,7 @@ export function getHistoriesChartData(
     supportedPairs?: string[];
     range?: { from?: Date; to?: Date };
   },
+  pairs: TradePair[] = [],
 ) {
   const pnlChartData: {
     value: number;
@@ -145,8 +276,14 @@ export function getHistoriesChartData(
   let countIn = 0;
   const actionCounts: Record<string, number> = {};
 
-  const { sortedHistories, historiesGroupedByTradeIndex } =
-    getSortedPartialHistories(histories, filters);
+  const {
+    sortedHistories,
+    historiesGroupedByTradeIndex,
+    openedHistoriesArr,
+    avgDuration,
+    avgPnlP,
+    avgSize,
+  } = getSortedPartialHistories(histories, filters, pairs);
 
   if (sortedHistories.length > 0) {
     [
@@ -371,6 +508,10 @@ export function getHistoriesChartData(
     maxIn,
     sumIn,
     countIn,
+    openedHistoriesArr,
+    avgDuration,
+    avgPnlP,
+    avgSize,
     firstActivity:
       sortedHistories.length > 0 ? new Date(sortedHistories[0].date) : null,
     lastActivity:

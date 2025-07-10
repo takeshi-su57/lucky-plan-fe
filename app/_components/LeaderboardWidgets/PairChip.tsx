@@ -12,7 +12,7 @@ export function PairChip({
   pairName?: string;
   count?: number;
 }) {
-  const pairs = useGetAllTradePairs(contractId);
+  const pairs = useGetAllTradePairs([contractId]);
 
   const pair = pairs.find(
     (pair) =>

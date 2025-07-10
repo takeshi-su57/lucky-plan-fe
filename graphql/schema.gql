@@ -210,6 +210,19 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type ExpertPnlSnapshot {
+  accUSDPnl: Float!
+  address: String!
+  contractId: Int!
+  dateStr: String!
+  histories: [TradeHistory!]!
+  id: Int!
+  kind: PnlSnapshotKind!
+  maxSize: Float!
+  ratio: Float!
+  score: Float!
+}
+
 input ExportFilter {
   closePositionCountsByPnlSnapshotKind: String!
   maxR2: Float!
@@ -409,6 +422,7 @@ enum MissionStatus {
 type Mutation {
   addTagToWalletAccount(input: ChangeUserTagInput!): WalletAccount!
   addToBlacklist(address: String!): Boolean!
+  addToWhitelist(params: String!): Boolean!
   addWalletAccount(input: AddUserInput!): WalletAccount!
   allowAuto(
     address: String!
@@ -458,6 +472,7 @@ type Mutation {
   pauseSystem: Boolean!
   performTask(id: Int!): Boolean!
   removeFromBlacklist(address: String!): Boolean!
+  removeFromWhitelist(address: String!): Boolean!
   removeTagFromWalletAccount(input: ChangeUserTagInput!): WalletAccount!
   resumeSystem(password: String): Boolean!
   startPlan(id: Int!): Boolean!
@@ -651,6 +666,7 @@ type Query {
     dateStr: String!
     filterParams: [ExportFilterV5!]!
   ): [PnlSnapshotDevDetailsV5!]!
+  getExpertPnlSnapshots: [ExpertPnlSnapshot!]!
   getLogsSeverityCounts: [SeverityCount!]!
   getMonthlyDevPnlSnapshots(
     dateStr: String!
@@ -678,7 +694,7 @@ type Query {
   getTestingReportV5(after: Int, first: Int!): TestingReportV5Connection!
   getTradeCollaterals(contractId: Int!): [TradeCollateral!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
-  getTradePairs(contractId: Int!): [TradePair!]!
+  getTradePairs(contractId: [Int!]!): [TradePair!]!
   getTradeTransactionCounts(
     addresses: [String!]!
     contractIds: [Int!]!
@@ -687,6 +703,7 @@ type Query {
     inputs: [GetUserTransactionCountsInput!]!
   ): [TradeTransactionCount!]!
   getWalletAccountByAddress(input: GetUserByAddressInput!): WalletAccount!
+  getWhitelist: [String!]
   getWholeCompressedHistories(
     filterParams: ExportFilter!
   ): WholeCompressedHistories!
@@ -1048,7 +1065,10 @@ type TradeHistory {
 }
 
 type TradePair {
+  contractId: Int!
   from: String!
+  onePercentDepthAboveUsd: String!
+  onePercentDepthBelowUsd: String!
   pairIndex: Int!
   to: String!
 }

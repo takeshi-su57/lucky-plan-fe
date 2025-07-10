@@ -10,7 +10,10 @@ export function DevHistoriesWidget({
 }: {
   item: { address: string; contractId: number; bots: TotalBot[] };
 }) {
-  const histories = useGetAllTradeHistory(item.address, `${item.contractId}`);
+  const { histories } = useGetAllTradeHistory(
+    item.address,
+    `${item.contractId}`,
+  );
 
   return (
     <div className="mb-10 flex flex-col gap-4">
