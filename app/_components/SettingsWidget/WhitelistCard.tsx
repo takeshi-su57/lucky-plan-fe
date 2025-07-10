@@ -56,8 +56,6 @@ export function WhitelistCard() {
       return [];
     }
 
-    console.log(whitelist.getWhitelist?.map((item) => JSON.parse(item)));
-
     return (whitelist.getWhitelist || [])
       .map(
         (whitelist) =>

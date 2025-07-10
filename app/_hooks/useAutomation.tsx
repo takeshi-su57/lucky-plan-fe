@@ -4,6 +4,7 @@ import {
   useApolloClient,
   useLazyQuery,
   useMutation,
+  useQuery,
   useSubscription,
 } from "@apollo/client";
 
@@ -149,6 +150,14 @@ export const GET_BOTS_BY_STATUS_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_ACTIVE_BOTS_DOCUMENT = graphql(`
+  query getActiveBots {
+    getActiveBots {
+      ...BotForwardDetailsInfo
+    }
+  }
+`);
+
 export const CREATE_BOT_DOCUMENT = graphql(`
   mutation createBot($input: CreateBotInput!) {
     createBot(input: $input) {
@@ -274,6 +283,22 @@ export function getBotForwardDetails(
       ...getFragmentData(STRATEGY_INFO_FRAGMENT_DOCUMENT, botInfo.strategy),
     },
     missions: botInfo.missions.map(getMissionForwardDetails),
+  };
+}
+
+export function useGetActiveBots() {
+  const { data, loading } = useQuery(GET_ACTIVE_BOTS_DOCUMENT);
+
+  const bots = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+    return data.getActiveBots.map(getBotForwardDetails);
+  }, [data]);
+
+  return {
+    bots,
+    loading,
   };
 }
 
