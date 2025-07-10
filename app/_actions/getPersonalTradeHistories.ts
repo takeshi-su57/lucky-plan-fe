@@ -8,8 +8,6 @@ export async function getPersonalTradeHistories(
   address: string,
 ): Promise<PersonalTradeHistory[]> {
   try {
-    console.log("fetching!!", backendUrl, address);
-
     const response = await fetch(
       `${backendUrl}/personal-trading-history-table/${address}`,
     );
