@@ -34,6 +34,8 @@ import { useGetPersonalTradeHistories } from "@/app/_hooks/useGetPersonalTradeHi
 
 import { ContractPnl } from "../MissionWidgets/ContractPnl";
 import { useGetAllTradeHistory } from "@/app/_hooks/useHistory";
+import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
+import { Address } from "viem";
 
 type TabType = "chart" | "missions";
 
@@ -125,6 +127,61 @@ export function AutomationDetails({
 
   return (
     <div className="flex flex-col gap-6 border-t border-t-neutral-400/20 py-6">
+      <div className="flex items-center gap-8">
+        <div className="flex flex-col gap-2">
+          <span className="text-xs text-neutral-400/80">Leader:</span>
+          <AddressWidget
+            address={bot.leaderAddress as Address}
+            className="text-sm"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <span className="text-xs text-neutral-400/80">Follower:</span>
+          <AddressWidget
+            address={bot.followerAddress as Address}
+            className="text-sm"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2 font-mono">
+          <span className="text-xs">
+            Max Collateral:
+            {`${Number(bot.strategy.maxCollateral)} USDC`}
+          </span>
+          <span className="text-xs">
+            Ratio:
+            {`${bot.strategy.ratio} x`}
+          </span>
+        </div>
+
+        {bot.status === BotStatus.Dead ? (
+          <div className="flex flex-col gap-2 font-mono">
+            {bot.startedAt ? (
+              <span className="text-xs">
+                Started:
+                {`${new Date(bot.startedAt).toLocaleString()}`}
+              </span>
+            ) : (
+              <span className="text-xs">
+                <span className="text-neutral-400">Not Started</span>
+              </span>
+            )}
+
+            {bot.endedAt ? (
+              <span className="text-xs">
+                Ended:
+                {`${new Date(bot.endedAt).toLocaleString()}`}
+              </span>
+            ) : (
+              <span className="text-xs">
+                <span className="text-neutral-400">Not Ended</span>
+              </span>
+            )}
+          </div>
+        ) : null}
+      </div>
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Tabs
