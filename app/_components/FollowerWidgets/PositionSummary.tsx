@@ -6,6 +6,7 @@ import { MissionStatus, Mission } from "@/graphql/gql/graphql";
 
 import { PairChip } from "../LeaderboardWidgets/PairChip";
 import { PositionTradeStatus } from "./PositionTradeStatus";
+import { twMerge } from "tailwind-merge";
 
 const colorsByMissionStatus: Record<
   MissionStatus,
@@ -39,10 +40,19 @@ export function PositionSummary({
   const leverage = data?.leverage ? Number(data.leverage) / 1e3 : 0;
 
   return (
-    <div className="flex w-full items-center justify-between gap-6">
+    <div className={twMerge("flex w-full items-center justify-between gap-6")}>
       <div className="flex items-center gap-6">
         <Chip>Trade {index}</Chip>
         {mission ? <Chip color="primary">System</Chip> : null}
+
+        <span
+          className={twMerge(
+            "text-xs",
+            data.long ? "text-green-700" : "text-red-700",
+          )}
+        >
+          {data.long ? "Long" : "Short"}
+        </span>
 
         <PairChip contractId={1} pairIndex={data.pairIndex} count={1} />
 

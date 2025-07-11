@@ -2,12 +2,11 @@
 
 import { useState, useMemo } from "react";
 import {
-  Card,
-  CardBody,
   Spinner,
   Divider,
   Input,
   Button,
+  useDisclosure,
 } from "@nextui-org/react";
 import { Address, isAddress } from "viem";
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
@@ -22,6 +21,8 @@ import { shrinkAddress } from "@/utils";
 import { useGetActiveBots } from "@/app/_hooks/useAutomation";
 import { useQuery } from "@apollo/client";
 import { twMerge } from "tailwind-merge";
+import { RightDrawer } from "@/components/modals/RightDrawer";
+import { TagsWidget } from "../TagWidgets/TagsWidget";
 
 const expertColumns: TableColumnProps[] = [
   {
@@ -29,20 +30,12 @@ const expertColumns: TableColumnProps[] = [
     component: "Address",
   },
   {
+    id: "tags",
+    component: "Tags",
+  },
+  {
     id: "pnl",
     component: "PNL",
-  },
-  {
-    id: "score",
-    component: "Score",
-  },
-  {
-    id: "maxSize",
-    component: "Max Size",
-  },
-  {
-    id: "ratio",
-    component: "Ratio",
   },
   {
     id: "openend",
@@ -71,6 +64,8 @@ export function ExperPanel() {
 
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
   const [searchAddress, setSearchAddress] = useState<string>("");
+
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const expertRows = useMemo(() => {
     const activeAddresses: Record<string, boolean> = {};
@@ -127,17 +122,11 @@ export function ExperPanel() {
             </span>
           ),
         },
+        tags: {
+          component: <TagsWidget address={snapshot.address as Address} />,
+        },
         pnl: {
           component: snapshot.accUSDPnl.toFixed(2),
-        },
-        score: {
-          component: snapshot.score.toFixed(2),
-        },
-        maxSize: {
-          component: snapshot.maxSize,
-        },
-        ratio: {
-          component: snapshot.ratio,
         },
         openend: {
           component: snapshot.openedPositions,
@@ -157,6 +146,7 @@ export function ExperPanel() {
                 variant="flat"
                 onClick={() => {
                   setSelectedAddress(snapshot.address);
+                  onOpen();
                 }}
                 className="w-full"
               >
@@ -167,10 +157,16 @@ export function ExperPanel() {
         },
       },
     }));
-  }, [blacklist?.getBlacklist, bots, pnlSnapshots, whitelist?.getWhitelist]);
+  }, [
+    blacklist?.getBlacklist,
+    bots,
+    onOpen,
+    pnlSnapshots,
+    whitelist?.getWhitelist,
+  ]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex w-full flex-col gap-6">
       <div className="flex items-center gap-4">
         <Input
           placeholder="Search by address"
@@ -182,9 +178,10 @@ export function ExperPanel() {
           isDisabled={!isAddress(searchAddress)}
           onClick={() => {
             setSelectedAddress(searchAddress.toLowerCase());
+            onOpen();
           }}
         >
-          Search
+          Analyze
         </Button>
       </div>
 
@@ -198,22 +195,27 @@ export function ExperPanel() {
         <Spinner color="warning" size="lg" />
       ) : (
         <DataTable
+          isHeaderSticky
           columns={expertColumns}
           rows={expertRows}
           classNames={{
+            wrapper: "h-[calc(100vh-300px)] overflow-auto",
             tr: "font-mono cursor-pointer",
             td: "py-3 ",
-            th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
+            th: "text-sm leading-tight bg-neutral-900 tracking-widest font-normal text-neutral-4 00 uppercase",
           }}
         />
       )}
-      {selectedAddress && (
-        <Card>
-          <CardBody>
-            <AnalyzeWidget address={selectedAddress} />
-          </CardBody>
-        </Card>
-      )}
+
+      <RightDrawer
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+        classNames={{ base: twMerge("max-w-[80%]") }}
+      >
+        <div className="flex w-full flex-col gap-6">
+          <AnalyzeWidget address={selectedAddress as Address} />
+        </div>
+      </RightDrawer>
     </div>
   );
 }
