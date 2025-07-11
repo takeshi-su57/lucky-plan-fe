@@ -102,6 +102,32 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
           </span>
         </div>
 
+        {bot.status === BotStatus.Dead ? (
+          <div className="flex flex-col font-mono">
+            {bot.startedAt ? (
+              <span className="text-xs">
+                Started:
+                {`${new Date(bot.startedAt).toLocaleString()}`}
+              </span>
+            ) : (
+              <span className="text-xs">
+                <span className="text-neutral-400">Not Started</span>
+              </span>
+            )}
+
+            {bot.endedAt ? (
+              <span className="text-xs">
+                Ended:
+                {`${new Date(bot.endedAt).toLocaleString()}`}
+              </span>
+            ) : (
+              <span className="text-xs">
+                <span className="text-neutral-400">Not Ended</span>
+              </span>
+            )}
+          </div>
+        ) : null}
+
         <div className="flex flex-row items-center gap-3 font-mono">
           <ContractPnl
             label="Leader"
