@@ -366,6 +366,12 @@ type LogsPageInfo {
   hasNextPage: Boolean!
 }
 
+input ManualParams {
+  collateralAmount: String!
+  leverage: Float!
+  long: Boolean!
+}
+
 type Mission {
   achievePositionId: Int
   botId: Int!
@@ -438,7 +444,7 @@ type Mutation {
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
   checkLog(id: Int!): Log!
-  cloneMission(id: Int!): Boolean!
+  cloneMission(id: Int!, manualParams: ManualParams): Boolean!
   closeMission(id: Int!, isForce: Boolean!): Boolean!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
   createAutoPlan: Boolean!
