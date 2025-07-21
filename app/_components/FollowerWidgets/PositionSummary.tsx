@@ -2,7 +2,7 @@
 
 import { Chip } from "@nextui-org/react";
 
-import { MissionStatus, Mission } from "@/graphql/gql/graphql";
+import { MissionStatus, MissionForwardDetails } from "@/graphql/gql/graphql";
 
 import { PairChip } from "../LeaderboardWidgets/PairChip";
 import { PositionTradeStatus } from "./PositionTradeStatus";
@@ -22,7 +22,7 @@ const colorsByMissionStatus: Record<
 
 export type PositionSummaryProps = {
   index: number;
-  mission: Mission | null;
+  mission: MissionForwardDetails | null;
   params: string;
 };
 
@@ -67,7 +67,7 @@ export function PositionSummary({
 
       {mission ? (
         <Chip color={colorsByMissionStatus[mission.status]}>
-          {mission.status}
+          Mission {mission.id} - {mission.status}
         </Chip>
       ) : null}
     </div>

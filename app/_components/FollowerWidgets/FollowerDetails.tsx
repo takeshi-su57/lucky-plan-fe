@@ -141,6 +141,7 @@ export function FollowerDetails({
                   index={trade.index}
                   contractId={follower.contractId}
                   params={trade.params}
+                  mission={trade.mission || null}
                 />
               </AccordionItem>
             ))}
