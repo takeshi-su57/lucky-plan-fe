@@ -12,7 +12,7 @@ import { useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
 
 import { useGetAllContracts } from "./useContract";
-import { MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT } from "./useMission";
+import { getMissionForwardDetails } from "./useMission";
 import { PNL_SNAPSHOT_INFO_FRAGMENT_DOCUMENT } from "./useHistory";
 
 export const FOLLOWER_INFO_FRAGMENT_DOCUMENT = graphql(`
@@ -243,14 +243,11 @@ export function useGetAllFollowerDetails(contractId: string | null) {
             trade,
           );
 
-          const mission = getFragmentData(
-            MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
-            tradeData.mission,
-          );
-
           return {
             ...tradeData,
-            mission: mission || null,
+            mission: tradeData.mission
+              ? getMissionForwardDetails(tradeData.mission)
+              : null,
           };
         });
 
