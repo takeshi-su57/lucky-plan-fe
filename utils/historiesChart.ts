@@ -197,10 +197,23 @@ export function getSortedPartialHistories(
 
   const openHistories = totalOpenHistories.reverse().slice(0, 512);
 
-  const totalSize = openHistories.reduce((acc, history) => {
+  const totalCollateral = openHistories.reduce((acc, history) => {
     return acc + Number(history.size) * Number(history.collateralPriceUsd);
   }, 0);
+  const totalLeverage = openHistories.reduce((acc, history) => {
+    return acc + Number(history.leverage);
+  }, 0);
+  const totalSize = openHistories.reduce((acc, history) => {
+    return (
+      acc +
+      Number(history.size) *
+        Number(history.collateralPriceUsd) *
+        Number(history.leverage)
+    );
+  }, 0);
 
+  const avgCollateral = totalCollateral / openHistories.length;
+  const avgLeverage = totalLeverage / openHistories.length;
   const avgSize = totalSize / openHistories.length;
 
   const historiesByTradeIndex: Record<string, PersonalTradeHistory[]> = {};
@@ -249,6 +262,8 @@ export function getSortedPartialHistories(
     avgDuration,
     avgPnlP,
     avgSize,
+    avgCollateral,
+    avgLeverage,
   };
 }
 
@@ -298,6 +313,8 @@ export function getHistoriesChartData(
     avgDuration,
     avgPnlP,
     avgSize,
+    avgCollateral,
+    avgLeverage,
   } = getSortedPartialHistories(histories, filters, pairs);
 
   if (sortedHistories.length > 0) {
@@ -527,6 +544,8 @@ export function getHistoriesChartData(
     avgDuration,
     avgPnlP,
     avgSize,
+    avgCollateral,
+    avgLeverage,
     firstActivity:
       sortedHistories.length > 0 ? new Date(sortedHistories[0].date) : null,
     lastActivity:

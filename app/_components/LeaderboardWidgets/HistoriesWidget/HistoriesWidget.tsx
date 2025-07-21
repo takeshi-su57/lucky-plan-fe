@@ -66,6 +66,8 @@ export function HistoriesWidget({
     avgDuration,
     avgPnlP,
     avgSize,
+    avgCollateral,
+    avgLeverage,
   } = useMemo(() => {
     return getHistoriesChartData(
       histories,
@@ -132,6 +134,8 @@ export function HistoriesWidget({
               avgDuration={avgDuration}
               avgPnlP={avgPnlP}
               avgSize={avgSize}
+              avgCollateral={avgCollateral}
+              avgLeverage={avgLeverage}
             />
 
             <div className="text-red-500">{score}</div>
