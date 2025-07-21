@@ -399,7 +399,10 @@ export function AutomationDetails({
                   />
                 }
               >
-                <MissionDetails mission={mission} />
+                <MissionDetails
+                  mission={mission}
+                  followerContractId={bot.followerContractId}
+                />
               </AccordionItem>
             ))}
         </Accordion>

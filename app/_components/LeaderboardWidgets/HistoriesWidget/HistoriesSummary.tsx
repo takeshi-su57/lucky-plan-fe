@@ -31,6 +31,8 @@ export type HistoriesSummaryProps = {
   avgDuration: number;
   avgPnlP: number;
   avgSize: number;
+  avgCollateral: number;
+  avgLeverage: number;
 };
 
 export function HistoriesSummary({
@@ -50,6 +52,8 @@ export function HistoriesSummary({
   avgDuration,
   avgPnlP,
   avgSize,
+  avgCollateral,
+  avgLeverage,
 }: HistoriesSummaryProps) {
   const [showMore, setShowMore] = useState(false);
 
@@ -114,7 +118,17 @@ export function HistoriesSummary({
     {
       id: "avgSize",
       label: "Avg Size",
-      value: `${avgSize.toFixed(2)}`,
+      value: `${getPriceStr(avgSize)}`,
+    },
+    {
+      id: "avgCollateral",
+      label: "Avg Collateral",
+      value: `$${getPriceStr(avgCollateral)}`,
+    },
+    {
+      id: "avgLeverage",
+      label: "Avg Leverage",
+      value: `${avgLeverage.toFixed(2)}x`,
     },
   ];
 
