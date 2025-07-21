@@ -69,7 +69,7 @@ export function MissionCloneButton({
         ).toFixed(2),
       );
       setLeverage((Number(args.t.leverage) / 1e3).toString());
-      setIsLong(args.t.isLong);
+      setIsLong(args.t.long);
     }
   }, [collaterals, mission]);
 
@@ -157,6 +157,8 @@ export function MissionCloneButton({
             onClick={handleCloneMission}
             isDisabled={isDisabled}
             isLoading={cloneMissionLoading}
+            color="warning"
+            size="sm"
           >
             Clone
           </Button>

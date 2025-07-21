@@ -315,7 +315,7 @@ type FollowerPendingOrder {
 type FollowerTrade {
   address: String!
   index: Int!
-  mission: Mission
+  mission: MissionForwardDetails
   params: String!
 }
 
