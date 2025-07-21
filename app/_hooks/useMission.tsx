@@ -82,8 +82,8 @@ export const MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
 `);
 
 export const CLONE_MISSION_DOCUMENT = graphql(`
-  mutation cloneMission($id: Int!) {
-    cloneMission(id: $id)
+  mutation cloneMission($id: Int!, $manualParams: ManualParams) {
+    cloneMission(id: $id, manualParams: $manualParams)
   }
 `);
 
@@ -334,7 +334,7 @@ export function useCloseMission() {
 }
 
 export function useCloneMission() {
-  const [cloneMission, { data: newData, error }] = useMutation(
+  const [cloneMission, { data: newData, error, loading }] = useMutation(
     CLONE_MISSION_DOCUMENT,
   );
   const { enqueueSnackbar } = useSnackbar();
@@ -353,7 +353,7 @@ export function useCloneMission() {
     }
   }, [newData, error, enqueueSnackbar]);
 
-  return cloneMission;
+  return { cloneMission, loading };
 }
 
 export function useIgnoreMission() {

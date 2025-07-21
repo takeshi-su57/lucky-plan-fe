@@ -4,30 +4,22 @@ import { useCallback } from "react";
 import { Accordion, AccordionItem, Button } from "@nextui-org/react";
 import { MissionStatus, MissionForwardDetails } from "@/graphql/gql/graphql";
 
-import {
-  useCloseMission,
-  useIgnoreMission,
-  useCloneMission,
-} from "@/app-hooks/useMission";
+import { useCloseMission, useIgnoreMission } from "@/app-hooks/useMission";
 import { TaskSummary } from "../TaskWidgets/TaskSummary";
 import { TaskDetails } from "../TaskWidgets/TaskDetails";
+import { MissionCloneButton } from "./MissionCloneButton";
 
 export type MissionDetailsProps = {
   mission: MissionForwardDetails;
+  followerContractId: number;
 };
 
-export function MissionDetails({ mission }: MissionDetailsProps) {
-  const cloneMission = useCloneMission();
+export function MissionDetails({
+  mission,
+  followerContractId,
+}: MissionDetailsProps) {
   const closeMission = useCloseMission();
   const ignoreMission = useIgnoreMission();
-
-  const handleCloneMission = useCallback(() => {
-    cloneMission({
-      variables: {
-        id: mission.id,
-      },
-    });
-  }, [cloneMission, mission.id]);
 
   const handleCloseMission = useCallback(() => {
     closeMission({
@@ -93,14 +85,10 @@ export function MissionDetails({ mission }: MissionDetailsProps) {
           ) : null}
         </div>
 
-        <Button
-          onClick={handleCloneMission}
-          color="secondary"
-          className="w-fit"
-          size="sm"
-        >
-          Clone
-        </Button>
+        <MissionCloneButton
+          mission={mission}
+          followerContractId={followerContractId}
+        />
       </div>
       <span className="px-2 text-base">Tasks</span>
 
