@@ -94,7 +94,7 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
         <div className="flex flex-col font-mono">
           <span className="text-xs">
             Max Collateral:
-            {`${Number(strategy.maxCollateral)} USDC`}
+            {`${Number(strategy.maxCollateral)} USDC * ${strategy.maxLeverage}x`}
           </span>
           <span className="text-xs">
             Ratio:
