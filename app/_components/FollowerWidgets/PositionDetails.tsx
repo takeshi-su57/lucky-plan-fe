@@ -7,6 +7,7 @@ import { useCloseTradeMarket } from "@/app-hooks/useFollower";
 import { MissionForwardDetails } from "@/graphql/gql/graphql";
 import { RightDrawer } from "@/components/modals/RightDrawer";
 import { MissionDetails } from "../MissionWidgets/MissionDetails";
+import { AnalyzeButton } from "../ExpertWidgets/AnalyzeButton";
 
 export type PositionDetailsProps = {
   address: string;
@@ -66,9 +67,13 @@ export function PositionDetails({
         </Button>
 
         {mission ? (
-          <Button onClick={onOpen} color="primary" size="sm">
-            Mission Details
-          </Button>
+          <div className="flex flex-row items-center gap-4">
+            <AnalyzeButton address={mission.targetPosition.address} />
+
+            <Button onClick={onOpen} color="primary" size="sm">
+              Mission Details
+            </Button>
+          </div>
         ) : null}
       </div>
 
