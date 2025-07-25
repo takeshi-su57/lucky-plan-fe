@@ -1,14 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import {
-  Spinner,
-  Divider,
-  Input,
-  Button,
-  useDisclosure,
-} from "@nextui-org/react";
-import { Address, isAddress } from "viem";
+import { Spinner, Divider, Input } from "@nextui-org/react";
+import { Address } from "viem";
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 
 import {
@@ -16,13 +10,12 @@ import {
   GET_WHITELIST_DOCUMENT,
   useGetExpertPnlSnapshots,
 } from "@/app/_hooks/usePlan";
-import { AnalyzeWidget } from "./AnalyzeWidget";
 import { shrinkAddress } from "@/utils";
 import { useGetActiveBots } from "@/app/_hooks/useAutomation";
 import { useQuery } from "@apollo/client";
 import { twMerge } from "tailwind-merge";
-import { RightDrawer } from "@/components/modals/RightDrawer";
 import { TagsWidget } from "../TagWidgets/TagsWidget";
+import { AnalyzeButton } from "./AnalyzeButton";
 
 const expertColumns: TableColumnProps[] = [
   {
@@ -62,10 +55,7 @@ export function ExperPanel() {
   const { data: blacklist } = useQuery(GET_BLACKLIST_DOCUMENT);
   const { data: whitelist } = useQuery(GET_WHITELIST_DOCUMENT);
 
-  const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
   const [searchAddress, setSearchAddress] = useState<string>("");
-
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const expertRows = useMemo(() => {
     const activeAddresses: Record<string, boolean> = {};
@@ -138,32 +128,11 @@ export function ExperPanel() {
           component: (snapshot.avgDuration / 1000 / 60).toFixed(2),
         },
         action: {
-          component: (
-            <div className="flex items-center gap-4">
-              <Button
-                isIconOnly
-                color="primary"
-                variant="flat"
-                onClick={() => {
-                  setSelectedAddress(snapshot.address);
-                  onOpen();
-                }}
-                className="w-full"
-              >
-                Analyze
-              </Button>
-            </div>
-          ),
+          component: <AnalyzeButton address={snapshot.address as Address} />,
         },
       },
     }));
-  }, [
-    blacklist?.getBlacklist,
-    bots,
-    onOpen,
-    pnlSnapshots,
-    whitelist?.getWhitelist,
-  ]);
+  }, [blacklist?.getBlacklist, bots, pnlSnapshots, whitelist?.getWhitelist]);
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -174,15 +143,7 @@ export function ExperPanel() {
           onChange={(e) => setSearchAddress(e.target.value)}
         />
 
-        <Button
-          isDisabled={!isAddress(searchAddress)}
-          onClick={() => {
-            setSelectedAddress(searchAddress.toLowerCase());
-            onOpen();
-          }}
-        >
-          Analyze
-        </Button>
+        <AnalyzeButton address={searchAddress} />
       </div>
 
       <div className="flex items-center gap-2">
@@ -206,16 +167,6 @@ export function ExperPanel() {
           }}
         />
       )}
-
-      <RightDrawer
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        classNames={{ base: twMerge("max-w-[80%]") }}
-      >
-        <div className="flex w-full flex-col gap-6">
-          <AnalyzeWidget address={selectedAddress as Address} />
-        </div>
-      </RightDrawer>
     </div>
   );
 }

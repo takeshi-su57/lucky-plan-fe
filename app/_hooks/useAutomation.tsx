@@ -391,10 +391,8 @@ export function useSubscribeBot() {
     if (updatedData && !error2) {
       const botInfos = updatedData.botUpdated.map(getBotBackwardDetails);
 
-      botInfos.forEach((botInfo) => {
-        enqueueSnackbar(<AutomationMessage bot={botInfo} />, {
-          variant: "info",
-        });
+      enqueueSnackbar(<AutomationMessage bots={botInfos} />, {
+        variant: "info",
       });
 
       botInfos.forEach((botInfo) => {
@@ -505,10 +503,8 @@ export function useSubscribeBot() {
     if (newData && !error1) {
       const botInfos = newData.botCreated.map(getBotBackwardDetails);
 
-      botInfos.forEach((botInfo) => {
-        enqueueSnackbar(<AutomationMessage bot={botInfo} />, {
-          variant: "info",
-        });
+      enqueueSnackbar(<AutomationMessage bots={botInfos} />, {
+        variant: "info",
       });
 
       botInfos.forEach((botInfo) => {

@@ -214,9 +214,15 @@ export function useSubscribeTask() {
       const taskInfos = updatedData.taskUpdated.map(getTaskBackwardDetails);
 
       taskInfos.forEach((taskInfo) => {
-        enqueueSnackbar(<TaskMessage task={taskInfo} />, {
-          variant: "info",
-        });
+        enqueueSnackbar(
+          <TaskMessage
+            contractId={taskInfo.mission.bot.followerContractId}
+            task={taskInfo}
+          />,
+          {
+            variant: "info",
+          },
+        );
       });
 
       taskInfos.forEach((taskInfo) => {
@@ -248,9 +254,15 @@ export function useSubscribeTask() {
       const taskInfos = newData.taskCreated.map(getTaskBackwardDetails);
 
       taskInfos.forEach((taskInfo) => {
-        enqueueSnackbar(<TaskMessage task={taskInfo} />, {
-          variant: "info",
-        });
+        enqueueSnackbar(
+          <TaskMessage
+            contractId={taskInfo.mission.bot.followerContractId}
+            task={taskInfo}
+          />,
+          {
+            variant: "info",
+          },
+        );
       });
 
       taskInfos.forEach((taskInfo) => {

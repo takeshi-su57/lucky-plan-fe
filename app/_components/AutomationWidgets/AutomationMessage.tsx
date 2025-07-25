@@ -11,16 +11,28 @@ const statusColors: Record<
   [BotStatus.Dead]: "secondary",
 };
 
-export function AutomationMessage({ bot }: { bot: BotBackwardDetails }) {
+export function AutomationMessage({ bots }: { bots: BotBackwardDetails[] }) {
+  const botsByStatus = bots.reduce(
+    (acc, bot) => {
+      acc[bot.status] = (acc[bot.status] || 0) + 1;
+      return acc;
+    },
+    {} as Record<BotStatus, number>,
+  );
+
   return (
     <div className="flex w-full flex-col gap-2">
-      <div className="flex items-center gap-2">
-        <span className="text-sm">Automation #{bot.id}</span>
-
-        <Chip variant="flat" color={statusColors[bot.status]}>
-          {bot.status}
-        </Chip>
-      </div>
+      {Object.entries(botsByStatus).map(([status, count]) => (
+        <div key={status} className="flex items-center gap-2">
+          <span className="text-sm">
+            {count} of{" "}
+            <Chip variant="flat" color={statusColors[status as BotStatus]}>
+              {status}
+            </Chip>{" "}
+            Automations
+          </span>
+        </div>
+      ))}
     </div>
   );
 }
