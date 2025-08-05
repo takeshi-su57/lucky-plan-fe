@@ -42,6 +42,8 @@ export const TRADEHISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
     size
     tradeId
     tradeIndex
+    isCounterTrade
+    meta
   }
 `);
 
@@ -672,6 +674,8 @@ export function getPersonalTradeHistory(
     tradeId: history.tradeId ? +history.tradeId : null,
     tradeIndex: history.tradeIndex,
     tx: "",
+    isCounterTrade: history.isCounterTrade || false,
+    meta: history.meta ? JSON.parse(history.meta) : {},
   };
 }
 

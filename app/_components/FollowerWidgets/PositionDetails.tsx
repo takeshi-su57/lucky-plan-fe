@@ -8,6 +8,9 @@ import { MissionForwardDetails } from "@/graphql/gql/graphql";
 import { RightDrawer } from "@/components/modals/RightDrawer";
 import { MissionDetails } from "../MissionWidgets/MissionDetails";
 import { AnalyzeButton } from "../ExpertWidgets/AnalyzeButton";
+import { SlUpdateButton } from "./SlUpdateButton";
+import { TpUpdateButton } from "./TpUpdateButton";
+import { WithdrawPositivePnlButton } from "./WithdrawPositivePnlButton";
 
 export type PositionDetailsProps = {
   address: string;
@@ -24,8 +27,9 @@ export function PositionDetails({
   params,
   mission,
 }: PositionDetailsProps) {
-  const { closeTradeMarket, loading } = useCloseTradeMarket();
   const { isOpen, onOpenChange, onOpen } = useDisclosure();
+
+  const { closeTradeMarket, loading } = useCloseTradeMarket();
 
   const trade = JSON.parse(params);
 
@@ -65,6 +69,24 @@ export function PositionDetails({
         >
           Close Position
         </Button>
+
+        <SlUpdateButton
+          address={address}
+          contractId={contractId}
+          index={index}
+        />
+
+        <TpUpdateButton
+          address={address}
+          contractId={contractId}
+          index={index}
+        />
+
+        <WithdrawPositivePnlButton
+          address={address}
+          contractId={contractId}
+          index={index}
+        />
 
         {mission ? (
           <div className="flex flex-row items-center gap-4">
