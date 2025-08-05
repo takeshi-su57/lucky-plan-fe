@@ -117,6 +117,42 @@ export const CANCEL_ORDER_AFTER_TIMEOUT_DOCUMENT = graphql(`
   }
 `);
 
+export const UPDATE_SL_DOCUMENT = graphql(`
+  mutation updateSl($input: UpdateSlInput!) {
+    updateSl(input: $input) {
+      message
+      success
+      address
+      contractId
+      index
+    }
+  }
+`);
+
+export const UPDATE_TP_DOCUMENT = graphql(`
+  mutation updateTp($input: UpdateTpInput!) {
+    updateTp(input: $input) {
+      message
+      success
+      address
+      contractId
+      index
+    }
+  }
+`);
+
+export const WITHDRAW_POSITIVE_PNL_DOCUMENT = graphql(`
+  mutation withdrawPositivePnl($input: WithdrawPositivePnlInput!) {
+    withdrawPositivePnl(input: $input) {
+      message
+      success
+      address
+      contractId
+      index
+    }
+  }
+`);
+
 export const GENERATE_NEW_FOLLOWER_DOCUMENT = graphql(`
   mutation generateNewFollower {
     generateNewFollower {
@@ -392,6 +428,98 @@ export function useCancelOrderAfterTimeout() {
   }, [client.cache, error, enqueueSnackbar, data]);
 
   return { cancelOrderAfterTimeout, loading };
+}
+
+export function useUpdateSl() {
+  const [updateSl, { data, error, loading }] = useMutation(UPDATE_SL_DOCUMENT);
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      if (data.updateSl.success) {
+        enqueueSnackbar("Success at update SL!", {
+          variant: "success",
+        });
+
+        client.cache.modify({
+          fields: {
+            getAllFollowerDetails: (_, { INVALIDATE }) => {
+              return INVALIDATE;
+            },
+          },
+        });
+      } else {
+        enqueueSnackbar(data.updateSl.message, {
+          variant: "error",
+        });
+      }
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return { updateSl, loading };
+}
+
+export function useUpdateTp() {
+  const [updateTp, { data, error, loading }] = useMutation(UPDATE_TP_DOCUMENT);
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      if (data.updateTp.success) {
+        enqueueSnackbar("Success at update TP!", {
+          variant: "success",
+        });
+
+        client.cache.modify({
+          fields: {
+            getAllFollowerDetails: (_, { INVALIDATE }) => {
+              return INVALIDATE;
+            },
+          },
+        });
+      } else {
+        enqueueSnackbar(data.updateTp.message, {
+          variant: "error",
+        });
+      }
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return { updateTp, loading };
+}
+
+export function useWithdrawPositivePnl() {
+  const [withdrawPositivePnl, { data, error, loading }] = useMutation(
+    WITHDRAW_POSITIVE_PNL_DOCUMENT,
+  );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      if (data.withdrawPositivePnl.success) {
+        enqueueSnackbar("Success at withdraw positive PNL!", {
+          variant: "success",
+        });
+
+        client.cache.modify({
+          fields: {
+            getAllFollowerDetails: (_, { INVALIDATE }) => {
+              return INVALIDATE;
+            },
+          },
+        });
+      } else {
+        enqueueSnackbar(data.withdrawPositivePnl.message, {
+          variant: "error",
+        });
+      }
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return { withdrawPositivePnl, loading };
 }
 
 export function useWithdrawAllUSDC() {

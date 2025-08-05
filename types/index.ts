@@ -44,6 +44,8 @@ export type PersonalTradeHistory = {
   tradeId: number | null;
   tradeIndex: number;
   tx: string;
+  isCounterTrade?: boolean;
+  meta?: object;
 };
 
 export type VirtualStrategy = {

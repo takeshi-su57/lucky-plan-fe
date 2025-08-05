@@ -10,7 +10,7 @@ export function AnalyzeButton({ address }: { address: string }) {
 
   return (
     <>
-      <Button isDisabled={!isAddress(address)} onClick={onOpen}>
+      <Button isDisabled={!isAddress(address)} size="sm" onClick={onOpen}>
         Analyze
       </Button>
 
