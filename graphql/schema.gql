@@ -488,6 +488,8 @@ type Mutation {
   stopBot(id: Int!): Boolean!
   stopTask(id: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
+  updateSl(input: UpdateSlInput!): ContractExecutionResult!
+  updateTp(input: UpdateTpInput!): ContractExecutionResult!
   upgradeSystem: Boolean!
   upsertCategory(input: TagCategoryInput!): TagCategory!
   upsertTag(input: TagInput!): Tag!
@@ -498,6 +500,9 @@ type Mutation {
     contractId: Int!
     password: String!
   ): Boolean!
+  withdrawPositivePnl(
+    input: WithdrawPositivePnlInput!
+  ): ContractExecutionResult!
   withdrawUSDCToUser(
     amount: Float!
     contractId: Int!
@@ -1040,6 +1045,7 @@ enum TradeActionType {
   TradeLeverageUpdate
   TradeOpenedLimit
   TradeOpenedMarket
+  TradePosPnlRealized
   TradePosSizeDecrease
   TradePosSizeIncrease
 }
@@ -1062,10 +1068,12 @@ type TradeHistory {
   contractId: Int!
   date: DateTime!
   id: Int!
+  isCounterTrade: Boolean
   leverage: Int!
   leverageDelta: Int
   long: Int!
   marketPrice: String
+  meta: String
   pair: String!
   pnl: String!
   price: String!
@@ -1098,6 +1106,20 @@ input UpdatePlanInput {
   startedAt: DateTime
   status: PlanStatus!
   title: String
+}
+
+input UpdateSlInput {
+  address: String!
+  contractId: Int!
+  index: Int!
+  newSl: String!
+}
+
+input UpdateTpInput {
+  address: String!
+  contractId: Int!
+  index: Int!
+  newTp: String!
 }
 
 type User {
@@ -1134,4 +1156,11 @@ type WholeCompressedHistories {
 input WithdrawAllInput {
   address: String!
   contractId: Int!
+}
+
+input WithdrawPositivePnlInput {
+  address: String!
+  amountCollateral: String!
+  contractId: Int!
+  index: Int!
 }
