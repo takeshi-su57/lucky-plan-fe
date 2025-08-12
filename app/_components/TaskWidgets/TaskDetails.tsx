@@ -18,9 +18,16 @@ import { TaskLogView } from "./TaskLogView";
 export type TaskDetailsProps = {
   task: TaskForwardDetails;
   missionStatus: MissionStatus;
+  leaderContractId: number;
+  followerContractId: number;
 };
 
-export function TaskDetails({ task, missionStatus }: TaskDetailsProps) {
+export function TaskDetails({
+  task,
+  missionStatus,
+  leaderContractId,
+  followerContractId,
+}: TaskDetailsProps) {
   const performTask = usePerformTask();
   const stopTask = useStopTask();
 
@@ -61,14 +68,18 @@ export function TaskDetails({ task, missionStatus }: TaskDetailsProps) {
           <div className="flex flex-col gap-2">
             <span className="px-2 text-base">Leader</span>
 
-            <ActionView action={task.action} />
+            <ActionView contractId={leaderContractId} action={task.action} />
           </div>
 
           <div className="flex flex-col gap-2">
             <span className="px-2 text-base">Follower</span>
 
             {task.followerActions.map((action) => (
-              <ActionView key={action.id} action={action.action} />
+              <ActionView
+                contractId={followerContractId}
+                key={action.id}
+                action={action.action}
+              />
             ))}
           </div>
         </div>

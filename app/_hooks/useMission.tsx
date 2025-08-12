@@ -6,6 +6,8 @@ import { useApolloClient, useMutation, useSubscription } from "@apollo/client";
 import { getFragmentData, graphql } from "@/gql/index";
 import {
   MissionBackwardDetailsInfoFragment,
+  MissionExtForwardDetailsInfoFragment,
+  MissionExtForwardDetails,
   MissionBackwardDetails,
   MissionForwardDetailsInfoFragment,
   MissionForwardDetails,
@@ -77,6 +79,44 @@ export const MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     }
     tasks {
       ...TaskForwardDetailsInfo
+    }
+  }
+`);
+
+export const MISSION_EXT_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment MissionExtForwardDetailsInfo on MissionExtForwardDetails {
+    id
+    botId
+    targetPositionId
+    achievePositionId
+    createdAt
+    updatedAt
+    status
+    achievePosition {
+      ...PositionInfo
+    }
+    targetPosition {
+      ...PositionInfo
+    }
+    tasks {
+      ...TaskForwardDetailsInfo
+    }
+    bot {
+      endedAt
+      followerAddress
+      followerContractId
+      followerEndedBlock
+      followerStartedBlock
+      id
+      leaderAddress
+      leaderCollateralBaseline
+      leaderContractId
+      leaderEndedBlock
+      leaderStartedBlock
+      planId
+      startedAt
+      status
+      strategyId
     }
   }
 `);
@@ -160,6 +200,40 @@ export function getMissionForwardDetails(
 ): MissionForwardDetails {
   const missionInfo = getFragmentData(
     MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
+    mission,
+  );
+
+  return {
+    ...missionInfo,
+    targetPosition: {
+      ...getFragmentData(
+        POSITION_INFO_FRAGMENT_DOCUMENT,
+        missionInfo.targetPosition,
+      ),
+    },
+    achievePosition: missionInfo?.achievePosition
+      ? {
+          ...getFragmentData(
+            POSITION_INFO_FRAGMENT_DOCUMENT,
+            missionInfo.achievePosition,
+          ),
+        }
+      : undefined,
+    tasks: missionInfo.tasks.map(getTaskForwardDetails),
+  };
+}
+
+export function getMissionExtForwardDetails(
+  mission: {
+    __typename?: "MissionExtForwardDetails";
+  } & {
+    " $fragmentRefs"?: {
+      MissionExtForwardDetailsInfoFragment: MissionExtForwardDetailsInfoFragment;
+    };
+  },
+): MissionExtForwardDetails {
+  const missionInfo = getFragmentData(
+    MISSION_EXT_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
     mission,
   );
 

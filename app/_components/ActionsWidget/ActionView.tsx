@@ -5,14 +5,18 @@ import { ActionSummary } from "./ActionSummary";
 
 export type ActionViewProps = {
   action: ActionInfoFragment;
+  contractId: number;
 };
 
-export function ActionView({ action }: ActionViewProps) {
+export function ActionView({ action, contractId }: ActionViewProps) {
   const args = JSON.parse(action.args);
 
   return (
     <Accordion isCompact variant="splitted">
-      <AccordionItem key={action.id} title={<ActionSummary action={action} />}>
+      <AccordionItem
+        key={action.id}
+        title={<ActionSummary contractId={contractId} action={action} />}
+      >
         <div className="border-t border-t-neutral-400/20 py-6">
           <JSONTree data={args} />
         </div>
