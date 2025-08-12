@@ -16,9 +16,9 @@ import dayjs from "dayjs";
 
 import { PersonalTradeHistory } from "@/types";
 
-import { AutomationGridChart } from "../../PlansWidget/AutomationChart";
-import { LeaderItem, LeaderParams } from "./LeaderItem";
+import { AutomationGridChart } from "../PlansWidget/AutomationChart";
 import { FutureChart } from "./FutureChart";
+import { LeaderItem, LeaderParams } from "./LeaderItem";
 import { getServerTimezone } from "@/utils";
 
 type TabType = "overview" | "details";

@@ -229,29 +229,6 @@ type ExpertPnlSnapshot {
 }
 
 input ExportFilter {
-  closePositionCountsByPnlSnapshotKind: String!
-  maxR2: Float!
-  maxSlope: Float!
-  minR2: Float!
-  minSlope: Float!
-  recentTradedDays: Int!
-}
-
-input ExportFilterV2 {
-  maxSlope: Float!
-  minSlope: Float!
-  r2MinsByPnlSnapshotKind: String!
-}
-
-input ExportFilterV3 {
-  maxCount: Float!
-  maxSize: Float!
-  minCount: Float!
-  minR2: Float!
-  minSize: Float!
-}
-
-input ExportFilterV5 {
   m: Float!
   maxAvgSize: Int!
   maxCount: Int!
@@ -436,8 +413,7 @@ type Mutation {
   addToWhitelist(params: String!): Boolean!
   addWalletAccount(input: AddUserInput!): WalletAccount!
   allowAuto(address: String!, allowAuto: Boolean!, budget: Float!, followerContractId: Int!, ratio: Float!): User!
-  autoTestingV4(startDate: String!): Boolean!
-  autoTestingV5: Boolean!
+  autoTesting: Boolean!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
   buildPnlSnapshots(dateStr: String!, isForceBuild: Boolean!): PnlSnapshotInitializedFlag
   cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
@@ -474,7 +450,6 @@ type Mutation {
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
   updateSl(input: UpdateSlInput!): ContractExecutionResult!
   updateTp(input: UpdateTpInput!): ContractExecutionResult!
-  upgradeSystem: Boolean!
   upsertCategory(input: TagCategoryInput!): TagCategory!
   upsertTag(input: TagInput!): Tag!
   withdrawAllETH(input: WithdrawAllInput!): Boolean!
@@ -573,18 +548,6 @@ type PnlSnapshotDevDetails {
   histories: [TradeHistory!]!
   id: Int!
   kind: PnlSnapshotKind!
-  regression: Regression!
-  statistic: Statistic!
-}
-
-type PnlSnapshotDevDetailsV5 {
-  accUSDPnl: Float!
-  address: String!
-  contractId: Int!
-  dateStr: String!
-  histories: [TradeHistory!]!
-  id: Int!
-  kind: PnlSnapshotKind!
   score: Float!
 }
 
@@ -633,12 +596,9 @@ type Query {
   getAllWalletAccounts: [WalletAccount!]!
   getBlacklist: [String!]
   getBotsByStatus(after: Int, first: Int!, status: BotStatus!): BotConnection!
-  getDevPnlSnapshots(dateStr: String!, filterParams: ExportFilter!): [PnlSnapshotDevDetails!]!
-  getDevPnlSnapshotsV4(dateStr: String!, filterParams: [ExportFilterV3!]!, ratio: Float!): [PnlSnapshotDevDetails!]!
-  getDevPnlSnapshotsV5(dateStr: String!, filterParams: [ExportFilterV5!]!): [PnlSnapshotDevDetailsV5!]!
+  getDevPnlSnapshots(dateStr: String!, filterParams: [ExportFilter!]!): [PnlSnapshotDevDetails!]!
   getExpertPnlSnapshots: [ExpertPnlSnapshot!]!
   getLogsSeverityCounts: [SeverityCount!]!
-  getMonthlyDevPnlSnapshots(dateStr: String!, filterParams: ExportFilter!): [TradeHistory!]!
   getPlanById(id: Int!): PlanForwardDetails
   getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
   getPnlSnapshotInitializedFlag: [PnlSnapshotInitializedFlag!]!
@@ -646,10 +606,6 @@ type Query {
   getPnlSnapshotsByAddress(address: String!, dateStr: String!): [PnlSnapshot!]!
   getServerTime: ServerTime!
   getTestingReport(after: Int, first: Int!): TestingReportConnection!
-  getTestingReportV2(after: Int, first: Int!): TestingReportV2Connection!
-  getTestingReportV3(after: Int, first: Int!): TestingReportV3Connection!
-  getTestingReportV4(after: Int, first: Int!): TestingReportV3Connection!
-  getTestingReportV5(after: Int, first: Int!): TestingReportV5Connection!
   getTradeCollaterals(contractId: Int!): [TradeCollateral!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getTradePairs(contractId: [Int!]!): [TradePair!]!
@@ -657,24 +613,10 @@ type Query {
   getUserTransactionCounts(inputs: [GetUserTransactionCountsInput!]!): [TradeTransactionCount!]!
   getWalletAccountByAddress(input: GetUserByAddressInput!): WalletAccount!
   getWhitelist: [String!]
-  getWholeCompressedHistories(filterParams: ExportFilter!): WholeCompressedHistories!
-  getWholeCompressedHistoriesV2(filterParams: [ExportFilterV2!]!): WholeCompressedHistories!
-  getWholeCompressedHistoriesV3(filterParams: [ExportFilterV3!]!): WholeCompressedHistories!
-  getWholeCompressedHistoriesV4(filterParams: [ExportFilterV3!]!, isTestnet: Boolean!, ratio: Float!, startDate: String!): WholeCompressedHistories!
-  getWholeCompressedHistoriesV5(filterParams: [ExportFilterV5!]!, isTestnet: Boolean!, startDate: String!): WholeCompressedHistories!
-  getWholeResultHistories(filterParams: ExportFilter!): [TradeHistory!]!
+  getWholeCompressedHistories(filterParams: [ExportFilter!]!, isTestnet: Boolean!, startDate: String!): WholeCompressedHistories!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
   isSafeApp: Boolean!
   systemStatus: Boolean!
-}
-
-type Regression {
-  chi2: Float!
-  intercept: Float!
-  r: Float!
-  r2: Float!
-  rmsd: Float!
-  slope: Float!
 }
 
 type ServerTime {
@@ -685,11 +627,6 @@ type ServerTime {
 type SeverityCount {
   counts: Int!
   severity: LogSeverity!
-}
-
-type Statistic {
-  averageIn: Float!
-  countIn: Int!
 }
 
 type Strategy {
@@ -784,128 +721,6 @@ enum TaskStatus {
 }
 
 type TestingReport {
-  avgLoss: Float!
-  avgProfit: Float!
-  bottomAccProfit: Float!
-  calculatedR2: Float!
-  calculatedSlope: Float!
-  closePositionCountsByPnlSnapshotKind: String!
-  id: Int!
-  investedUSD: Float!
-  lossCount: Int!
-  maxLoss: Float!
-  maxProfit: Float!
-  maxR2: Float!
-  maxSlope: Int!
-  minR2: Float!
-  minSlope: Int!
-  peakAccProfit: Float!
-  profitCount: Int!
-  recentTradedDays: Int!
-  totalPositions: Int!
-  totalTasks: Int!
-  totalTraders: Int!
-  totalUSDPnl: Float!
-  totalUniqueTraders: Int!
-  usdPnls: [Float!]!
-}
-
-type TestingReportConnection {
-  edges: [TestingReportEdge!]!
-  pageInfo: TestingReportPageInfo!
-}
-
-type TestingReportEdge {
-  cursor: Int!
-  node: TestingReport!
-}
-
-type TestingReportPageInfo {
-  endCursor: Int
-  hasNextPage: Boolean!
-}
-
-type TestingReportV2 {
-  avgLoss: Float!
-  avgProfit: Float!
-  bottomAccProfit: Float!
-  calculatedR2: Float!
-  calculatedSlope: Float!
-  id: Int!
-  investedUSD: Float!
-  lossCount: Int!
-  maxLoss: Float!
-  maxProfit: Float!
-  maxSlope: Int!
-  minSlope: Int!
-  peakAccProfit: Float!
-  profitCount: Int!
-  r2MinsByPnlSnapshotKind: String!
-  totalPositions: Int!
-  totalTasks: Int!
-  totalTraders: Int!
-  totalUSDPnl: Float!
-  totalUniqueTraders: Int!
-  usdPnls: [Float!]!
-}
-
-type TestingReportV2Connection {
-  edges: [TestingReportV2Edge!]!
-  pageInfo: TestingReportV2PageInfo!
-}
-
-type TestingReportV2Edge {
-  cursor: Int!
-  node: TestingReportV2!
-}
-
-type TestingReportV2PageInfo {
-  endCursor: Int
-  hasNextPage: Boolean!
-}
-
-type TestingReportV3 {
-  avgLoss: Float!
-  avgProfit: Float!
-  bottomAccProfit: Float!
-  calculatedR2: Float!
-  calculatedSlope: Float!
-  id: Int!
-  investedUSD: Float!
-  lossCount: Int!
-  maxCount: Int!
-  maxLoss: Float!
-  maxProfit: Float!
-  maxSize: Int!
-  minCount: Int!
-  minR2: String!
-  minSize: Int!
-  peakAccProfit: Float!
-  profitCount: Int!
-  totalPositions: Int!
-  totalTasks: Int!
-  totalTraders: Int!
-  totalUSDPnl: Float!
-  totalUniqueTraders: Int!
-  usdPnls: [Float!]!
-}
-
-type TestingReportV3Connection {
-  edges: [TestingReportV3Edge!]!
-  pageInfo: TestingReportV3PageInfo!
-}
-
-type TestingReportV3Edge {
-  cursor: Int!
-  node: TestingReportV3!
-}
-
-type TestingReportV3PageInfo {
-  endCursor: Int
-  hasNextPage: Boolean!
-}
-
-type TestingReportV5 {
   allTimeWeight: Int!
   avgLoss: Float!
   avgProfit: Float!
@@ -939,17 +754,17 @@ type TestingReportV5 {
   window: Int!
 }
 
-type TestingReportV5Connection {
-  edges: [TestingReportV5Edge!]!
-  pageInfo: TestingReportV5PageInfo!
+type TestingReportConnection {
+  edges: [TestingReportEdge!]!
+  pageInfo: TestingReportPageInfo!
 }
 
-type TestingReportV5Edge {
+type TestingReportEdge {
   cursor: Int!
-  node: TestingReportV5!
+  node: TestingReport!
 }
 
-type TestingReportV5PageInfo {
+type TestingReportPageInfo {
   endCursor: Int
   hasNextPage: Boolean!
 }

@@ -10,16 +10,13 @@ import {
 import { useSnackbar } from "notistack";
 import { getFragmentData, graphql } from "@/gql/index";
 import {
-  ExportFilterV5,
+  ExportFilter,
   PnlSnapshotKind,
   GetPnlSnapshotsQuery,
   TradeHistory,
 } from "@/graphql/gql/graphql";
 
 import { PersonalTradeHistory, TradeActionType } from "@/types";
-import { TestParams } from "../_components/DevWidget/v1/TestParams";
-import { TestParamsV2 } from "../_components/DevWidget/v2/TestParamsV2";
-import { TestParamsV3 } from "../_components/DevWidget/v3/TestParamsV3";
 
 export const TRADEHISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment TradeHistoryInfo on TradeHistory {
@@ -133,347 +130,6 @@ export const GET_PNL_SNAPSHOTS_DOCUMENT = graphql(`
   }
 `);
 
-export const GET_DEV_PNL_SNAPSHOTS_DOCUMENT = graphql(`
-  query getDevPnlSnapshots($dateStr: String!, $filterParams: ExportFilter!) {
-    getDevPnlSnapshots(dateStr: $dateStr, filterParams: $filterParams) {
-      accUSDPnl
-      address
-      contractId
-      dateStr
-      histories {
-        ...TradeHistoryInfo
-      }
-      id
-      kind
-      regression {
-        chi2
-        intercept
-        r
-        r2
-        rmsd
-        slope
-      }
-      statistic {
-        averageIn
-        countIn
-      }
-    }
-  }
-`);
-
-export const GET_MONTHLY_DEV_PNL_SNAPSHOTS_DOCUMENT = graphql(`
-  query getMonthlyDevPnlSnapshots(
-    $dateStr: String!
-    $filterParams: ExportFilter!
-  ) {
-    getMonthlyDevPnlSnapshots(dateStr: $dateStr, filterParams: $filterParams) {
-      ...TradeHistoryInfo
-    }
-  }
-`);
-
-export const GET_WHOLE_RESULT_HISTORIES_DOCUMENT = graphql(`
-  query getWholeResultHistories($filterParams: ExportFilter!) {
-    getWholeResultHistories(filterParams: $filterParams) {
-      ...TradeHistoryInfo
-    }
-  }
-`);
-
-export const GET_WHOLE_COMPRESSED_HISTORIES_DOCUMENT = graphql(`
-  query getWholeCompressedHistories($filterParams: ExportFilter!) {
-    getWholeCompressedHistories(filterParams: $filterParams) {
-      accPnls {
-        pnl
-        inOut
-        date
-        positionCount
-        taskCount
-        traderCount
-      }
-      botCounts {
-        botCount
-        date
-      }
-      maxInvested
-    }
-  }
-`);
-
-export const GET_WHOLE_COMPRESSED_HISTORIES_V2_DOCUMENT = graphql(`
-  query getWholeCompressedHistoriesV2($filterParams: [ExportFilterV2!]!) {
-    getWholeCompressedHistoriesV2(filterParams: $filterParams) {
-      accPnls {
-        pnl
-        inOut
-        date
-        positionCount
-        taskCount
-        traderCount
-      }
-      botCounts {
-        botCount
-        date
-      }
-      maxInvested
-    }
-  }
-`);
-
-export const GET_TESTING_REPORT_DOCUMENT = graphql(`
-  query getTestingReport($first: Int!, $after: Int) {
-    getTestingReport(first: $first, after: $after) {
-      edges {
-        cursor
-        node {
-          avgLoss
-          avgProfit
-          bottomAccProfit
-          calculatedR2
-          calculatedSlope
-          closePositionCountsByPnlSnapshotKind
-          id
-          investedUSD
-          lossCount
-          maxLoss
-          maxProfit
-          maxR2
-          maxSlope
-          minR2
-          minSlope
-          peakAccProfit
-          profitCount
-          recentTradedDays
-          totalPositions
-          totalTasks
-          totalTraders
-          totalUSDPnl
-          totalUniqueTraders
-          usdPnls
-        }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-    }
-  }
-`);
-
-export const GET_TESTING_REPORT_V2_DOCUMENT = graphql(`
-  query getTestingReportV2($first: Int!, $after: Int) {
-    getTestingReportV2(first: $first, after: $after) {
-      edges {
-        cursor
-        node {
-          avgLoss
-          avgProfit
-          bottomAccProfit
-          calculatedR2
-          calculatedSlope
-          id
-          investedUSD
-          lossCount
-          maxLoss
-          maxProfit
-          maxSlope
-          minSlope
-          peakAccProfit
-          profitCount
-          r2MinsByPnlSnapshotKind
-          totalPositions
-          totalTasks
-          totalTraders
-          totalUSDPnl
-          totalUniqueTraders
-          usdPnls
-        }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-    }
-  }
-`);
-
-export const GET_WHOLE_COMPRESSED_HISTORIES_V3_DOCUMENT = graphql(`
-  query getWholeCompressedHistoriesV3($filterParams: [ExportFilterV3!]!) {
-    getWholeCompressedHistoriesV3(filterParams: $filterParams) {
-      accPnls {
-        pnl
-        in
-        out
-        inOut
-        date
-        positionCount
-        taskCount
-        traderCount
-      }
-      botCounts {
-        botCount
-        date
-      }
-      maxInvested
-      actionTypeCount
-      uniqueTraders
-    }
-  }
-`);
-
-export const GET_TESTING_REPORT_V3_DOCUMENT = graphql(`
-  query getTestingReportV3($first: Int!, $after: Int) {
-    getTestingReportV3(first: $first, after: $after) {
-      edges {
-        cursor
-        node {
-          avgLoss
-          avgProfit
-          bottomAccProfit
-          calculatedR2
-          calculatedSlope
-          id
-          investedUSD
-          lossCount
-          maxCount
-          maxLoss
-          maxProfit
-          maxSize
-          minCount
-          minR2
-          minSize
-          peakAccProfit
-          profitCount
-          totalPositions
-          totalTasks
-          totalTraders
-          totalUSDPnl
-          totalUniqueTraders
-          usdPnls
-        }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-    }
-  }
-`);
-
-export const GET_WHOLE_COMPRESSED_HISTORIES_V4_DOCUMENT = graphql(`
-  query getWholeCompressedHistoriesV4(
-    $filterParams: [ExportFilterV3!]!
-    $ratio: Float!
-    $startDate: String!
-    $isTestnet: Boolean!
-  ) {
-    getWholeCompressedHistoriesV4(
-      filterParams: $filterParams
-      ratio: $ratio
-      startDate: $startDate
-      isTestnet: $isTestnet
-    ) {
-      accPnls {
-        pnl
-        in
-        out
-        inOut
-        date
-        positionCount
-        taskCount
-        traderCount
-      }
-      botCounts {
-        botCount
-        date
-      }
-      maxInvested
-      actionTypeCount
-      uniqueTraders
-      totalBots {
-        address
-        contractId
-        dateStr
-      }
-    }
-  }
-`);
-
-export const GET_DEV_PNL_SNAPSHOTS_V4_DOCUMENT = graphql(`
-  query getDevPnlSnapshotsV4(
-    $dateStr: String!
-    $filterParams: [ExportFilterV3!]!
-    $ratio: Float!
-  ) {
-    getDevPnlSnapshotsV4(
-      dateStr: $dateStr
-      filterParams: $filterParams
-      ratio: $ratio
-    ) {
-      accUSDPnl
-      address
-      contractId
-      dateStr
-      histories {
-        ...TradeHistoryInfo
-      }
-      id
-      kind
-      regression {
-        chi2
-        intercept
-        r
-        r2
-        rmsd
-        slope
-      }
-      statistic {
-        averageIn
-        countIn
-      }
-    }
-  }
-`);
-
-export const GET_TESTING_REPORT_V4_DOCUMENT = graphql(`
-  query getTestingReportV4($first: Int!, $after: Int) {
-    getTestingReportV4(first: $first, after: $after) {
-      edges {
-        cursor
-        node {
-          avgLoss
-          avgProfit
-          bottomAccProfit
-          calculatedR2
-          calculatedSlope
-          id
-          investedUSD
-          lossCount
-          maxCount
-          maxLoss
-          maxProfit
-          maxSize
-          minCount
-          minR2
-          minSize
-          peakAccProfit
-          profitCount
-          totalPositions
-          totalTasks
-          totalTraders
-          totalUSDPnl
-          totalUniqueTraders
-          usdPnls
-        }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-    }
-  }
-`);
-
 export const GET_PNL_SNAPSHOTS_BY_ADDRESS_DOCUMENT = graphql(`
   query getPnlSnapshotsByAddress($address: String!, $dateStr: String!) {
     getPnlSnapshotsByAddress(address: $address, dateStr: $dateStr) {
@@ -512,18 +168,6 @@ export const BUILD_PNL_SNAPSHOTS_DOCUMENT = graphql(`
   }
 `);
 
-export const AUTO_TESTING_V4_DOCUMENT = graphql(`
-  mutation autoTestingV4($startDate: String!) {
-    autoTestingV4(startDate: $startDate)
-  }
-`);
-
-export const AUTO_TESTING_V5_DOCUMENT = graphql(`
-  mutation autoTestingV5 {
-    autoTestingV5
-  }
-`);
-
 export const DYNAMIC_SNAPSHOT_BUILD_DOCUMENT = graphql(`
   mutation dynamicSnapshotBuild($dateStr: String!) {
     dynamicSnapshotBuild(dateStr: $dateStr) {
@@ -546,12 +190,15 @@ export const INITIALIZE_PNL_SNAPSHOT_DOCUMENT = graphql(`
   }
 `);
 
-export const GET_DEV_PNL_SNAPSHOTS_V5_DOCUMENT = graphql(`
-  query getDevPnlSnapshotsV5(
-    $dateStr: String!
-    $filterParams: [ExportFilterV5!]!
-  ) {
-    getDevPnlSnapshotsV5(dateStr: $dateStr, filterParams: $filterParams) {
+export const AUTO_TESTING_DOCUMENT = graphql(`
+  mutation autoTesting {
+    autoTesting
+  }
+`);
+
+export const GET_DEV_PNL_SNAPSHOTS_DOCUMENT = graphql(`
+  query getDevPnlSnapshots($dateStr: String!, $filterParams: [ExportFilter!]!) {
+    getDevPnlSnapshots(dateStr: $dateStr, filterParams: $filterParams) {
       accUSDPnl
       address
       contractId
@@ -566,13 +213,13 @@ export const GET_DEV_PNL_SNAPSHOTS_V5_DOCUMENT = graphql(`
   }
 `);
 
-export const GET_WHOLE_COMPRESSED_HISTORIES_V5_DOCUMENT = graphql(`
-  query getWholeCompressedHistoriesV5(
+export const GET_WHOLE_COMPRESSED_HISTORIES_DOCUMENT = graphql(`
+  query getWholeCompressedHistories(
     $startDate: String!
     $isTestnet: Boolean!
-    $filterParams: [ExportFilterV5!]!
+    $filterParams: [ExportFilter!]!
   ) {
-    getWholeCompressedHistoriesV5(
+    getWholeCompressedHistories(
       startDate: $startDate
       isTestnet: $isTestnet
       filterParams: $filterParams
@@ -603,9 +250,9 @@ export const GET_WHOLE_COMPRESSED_HISTORIES_V5_DOCUMENT = graphql(`
   }
 `);
 
-export const GET_TESTING_REPORT_V5_DOCUMENT = graphql(`
-  query getTestingReportV5($first: Int!, $after: Int) {
-    getTestingReportV5(first: $first, after: $after) {
+export const GET_TESTING_REPORT_DOCUMENT = graphql(`
+  query getTestingReport($first: Int!, $after: Int) {
+    getTestingReport(first: $first, after: $after) {
       edges {
         cursor
         node {
@@ -803,16 +450,14 @@ export function useGetPnlSnapshots(dateStr: string, kind: PnlSnapshotKind) {
   };
 }
 
-export function useGetDevPnlSnapshots(dateStr: string, testParams: TestParams) {
+export function useGetDevPnlSnapshots(
+  dateStr: string,
+  filterParams: ExportFilter[],
+) {
   const { data, loading } = useQuery(GET_DEV_PNL_SNAPSHOTS_DOCUMENT, {
     variables: {
       dateStr,
-      filterParams: {
-        ...testParams,
-        closePositionCountsByPnlSnapshotKind: JSON.stringify(
-          testParams.closePositionCountsByPnlSnapshotKind,
-        ),
-      },
+      filterParams,
     },
   });
 
@@ -837,79 +482,16 @@ export function useGetDevPnlSnapshots(dateStr: string, testParams: TestParams) {
   };
 }
 
-export function useGetMonthlyDevPnlSnapshots(
-  dateStr: string,
-  testParams: TestParams,
+export function useGetWholeCompressedHistories(
+  startDate: string,
+  isTestnet: boolean,
+  filterParams: ExportFilter[],
 ) {
-  const { data, loading } = useQuery(GET_MONTHLY_DEV_PNL_SNAPSHOTS_DOCUMENT, {
-    variables: {
-      dateStr,
-      filterParams: {
-        ...testParams,
-        closePositionCountsByPnlSnapshotKind: JSON.stringify(
-          testParams.closePositionCountsByPnlSnapshotKind,
-        ),
-      },
-    },
-  });
-
-  const histories = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-
-    return data.getMonthlyDevPnlSnapshots.map((item) =>
-      getPersonalTradeHistory(
-        getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, item),
-      ),
-    );
-  }, [data]);
-
-  return {
-    histories,
-    loading,
-  };
-}
-
-export function useGetWholeResultHistories(testParams: TestParams) {
-  const { data, loading } = useQuery(GET_WHOLE_RESULT_HISTORIES_DOCUMENT, {
-    variables: {
-      filterParams: {
-        ...testParams,
-        closePositionCountsByPnlSnapshotKind: JSON.stringify(
-          testParams.closePositionCountsByPnlSnapshotKind,
-        ),
-      },
-    },
-  });
-
-  const histories = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-
-    return data.getWholeResultHistories.map((item) =>
-      getPersonalTradeHistory(
-        getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, item),
-      ),
-    );
-  }, [data]);
-
-  return {
-    histories,
-    loading,
-  };
-}
-
-export function useGetWholeCompressedHistories(testParams: TestParams) {
   const { data, loading } = useQuery(GET_WHOLE_COMPRESSED_HISTORIES_DOCUMENT, {
     variables: {
-      filterParams: {
-        ...testParams,
-        closePositionCountsByPnlSnapshotKind: JSON.stringify(
-          testParams.closePositionCountsByPnlSnapshotKind,
-        ),
-      },
+      startDate,
+      isTestnet,
+      filterParams,
     },
   });
 
@@ -917,27 +499,9 @@ export function useGetWholeCompressedHistories(testParams: TestParams) {
     accPnls: data?.getWholeCompressedHistories.accPnls || [],
     botCounts: data?.getWholeCompressedHistories.botCounts || [],
     maxInvested: data?.getWholeCompressedHistories.maxInvested || 0,
-    loading,
-  };
-}
-
-export function useGetWholeCompressedHistoriesV2(testParams: TestParamsV2[]) {
-  const { data, loading } = useQuery(
-    GET_WHOLE_COMPRESSED_HISTORIES_V2_DOCUMENT,
-    {
-      variables: {
-        filterParams: testParams.map((item) => ({
-          ...item,
-          r2MinsByPnlSnapshotKind: JSON.stringify(item.r2MinsByPnlSnapshotKind),
-        })),
-      },
-    },
-  );
-
-  return {
-    accPnls: data?.getWholeCompressedHistoriesV2.accPnls || [],
-    botCounts: data?.getWholeCompressedHistoriesV2.botCounts || [],
-    maxInvested: data?.getWholeCompressedHistoriesV2.maxInvested || 0,
+    actionTypeCount: data?.getWholeCompressedHistories.actionTypeCount || 0,
+    uniqueTraders: data?.getWholeCompressedHistories.uniqueTraders || [],
+    totalBots: data?.getWholeCompressedHistories?.totalBots || [],
     loading,
   };
 }
@@ -956,7 +520,9 @@ export function useGetTestingReport() {
     if (!data) {
       return [];
     }
-    return data.getTestingReport.edges.map((edge) => edge.node);
+    return data.getTestingReport.edges
+      .map((edge) => edge.node)
+      .filter((item) => item.usdPnls.length > 0);
   }, [data]);
 
   const handleFetchMore = useCallback(() => {
@@ -972,296 +538,6 @@ export function useGetTestingReport() {
 
   return {
     hasMore: data?.getTestingReport.pageInfo.hasNextPage,
-    reports,
-    fetchMore: handleFetchMore,
-    loading,
-  };
-}
-
-export function useGetTestingReportV2() {
-  const { data, loading, fetchMore, error } = useQuery(
-    GET_TESTING_REPORT_V2_DOCUMENT,
-    {
-      variables: {
-        first: 20,
-      },
-    },
-  );
-
-  const reports = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-    return data.getTestingReportV2.edges.map((edge) => edge.node);
-  }, [data]);
-
-  const handleFetchMore = useCallback(() => {
-    if (data && !error) {
-      fetchMore({
-        variables: {
-          first: 20,
-          after: data.getTestingReportV2.pageInfo.endCursor,
-        },
-      });
-    }
-  }, [data, error, fetchMore]);
-
-  return {
-    hasMore: data?.getTestingReportV2.pageInfo.hasNextPage,
-    reports,
-    fetchMore: handleFetchMore,
-    loading,
-  };
-}
-
-export function useGetWholeCompressedHistoriesV3(testParams: TestParamsV3[]) {
-  const { data, loading } = useQuery(
-    GET_WHOLE_COMPRESSED_HISTORIES_V3_DOCUMENT,
-    {
-      variables: {
-        filterParams: testParams,
-      },
-    },
-  );
-
-  return {
-    accPnls: data?.getWholeCompressedHistoriesV3.accPnls || [],
-    botCounts: data?.getWholeCompressedHistoriesV3.botCounts || [],
-    maxInvested: data?.getWholeCompressedHistoriesV3.maxInvested || 0,
-    actionTypeCount: data?.getWholeCompressedHistoriesV3.actionTypeCount || 0,
-    uniqueTraders: data?.getWholeCompressedHistoriesV3.uniqueTraders || [],
-    loading,
-  };
-}
-
-export function useGetTestingReportV3() {
-  const { data, loading, fetchMore, error } = useQuery(
-    GET_TESTING_REPORT_V3_DOCUMENT,
-    {
-      variables: {
-        first: 20,
-      },
-    },
-  );
-
-  const reports = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-    return data.getTestingReportV3.edges.map((edge) => edge.node);
-  }, [data]);
-
-  const handleFetchMore = useCallback(() => {
-    if (data && !error) {
-      fetchMore({
-        variables: {
-          first: 20,
-          after: data.getTestingReportV3.pageInfo.endCursor,
-        },
-      });
-    }
-  }, [data, error, fetchMore]);
-
-  return {
-    hasMore: data?.getTestingReportV3.pageInfo.hasNextPage,
-    reports,
-    fetchMore: handleFetchMore,
-    loading,
-  };
-}
-
-export function useGetDevPnlSnapshotsV4(
-  dateStr: string,
-  testParams: TestParamsV3[],
-  ratio: number,
-) {
-  const { data, loading } = useQuery(GET_DEV_PNL_SNAPSHOTS_V4_DOCUMENT, {
-    variables: {
-      dateStr,
-      filterParams: testParams,
-      ratio,
-    },
-  });
-
-  const pnlSnapshots = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-
-    return data.getDevPnlSnapshotsV4.map((item) => ({
-      ...item,
-      histories: item.histories.map((history) =>
-        getPersonalTradeHistory(
-          getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, history),
-        ),
-      ),
-    }));
-  }, [data]);
-
-  return {
-    pnlSnapshots,
-    loading,
-  };
-}
-
-export function useGetWholeCompressedHistoriesV4(
-  startDate: string,
-  testParams: TestParamsV3[],
-  ratio: number,
-  isTestnet: boolean,
-) {
-  const { data, loading } = useQuery(
-    GET_WHOLE_COMPRESSED_HISTORIES_V4_DOCUMENT,
-    {
-      variables: {
-        filterParams: testParams,
-        ratio,
-        startDate,
-        isTestnet,
-      },
-    },
-  );
-
-  return {
-    accPnls: data?.getWholeCompressedHistoriesV4.accPnls || [],
-    botCounts: data?.getWholeCompressedHistoriesV4.botCounts || [],
-    maxInvested: data?.getWholeCompressedHistoriesV4.maxInvested || 0,
-    actionTypeCount: data?.getWholeCompressedHistoriesV4.actionTypeCount || 0,
-    uniqueTraders: data?.getWholeCompressedHistoriesV4.uniqueTraders || [],
-    totalBots: data?.getWholeCompressedHistoriesV4?.totalBots || [],
-    loading,
-  };
-}
-
-export function useGetTestingReportV4() {
-  const { data, loading, fetchMore, error } = useQuery(
-    GET_TESTING_REPORT_V4_DOCUMENT,
-    {
-      variables: {
-        first: 20,
-      },
-    },
-  );
-
-  const reports = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-    return data.getTestingReportV4.edges
-      .map((edge) => edge.node)
-      .filter((item) => item.usdPnls.length > 0);
-  }, [data]);
-
-  const handleFetchMore = useCallback(() => {
-    if (data && !error) {
-      fetchMore({
-        variables: {
-          first: 20,
-          after: data.getTestingReportV4.pageInfo.endCursor,
-        },
-      });
-    }
-  }, [data, error, fetchMore]);
-
-  return {
-    hasMore: data?.getTestingReportV4.pageInfo.hasNextPage,
-    reports,
-    fetchMore: handleFetchMore,
-    loading,
-  };
-}
-
-export function useGetDevPnlSnapshotsV5(
-  dateStr: string,
-  filterParams: ExportFilterV5[],
-) {
-  const { data, loading } = useQuery(GET_DEV_PNL_SNAPSHOTS_V5_DOCUMENT, {
-    variables: {
-      dateStr,
-      filterParams,
-    },
-  });
-
-  const pnlSnapshots = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-
-    return data.getDevPnlSnapshotsV5.map((item) => ({
-      ...item,
-      histories: item.histories.map((history) =>
-        getPersonalTradeHistory(
-          getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, history),
-        ),
-      ),
-    }));
-  }, [data]);
-
-  return {
-    pnlSnapshots,
-    loading,
-  };
-}
-
-export function useGetWholeCompressedHistoriesV5(
-  startDate: string,
-  isTestnet: boolean,
-  filterParams: ExportFilterV5[],
-) {
-  const { data, loading } = useQuery(
-    GET_WHOLE_COMPRESSED_HISTORIES_V5_DOCUMENT,
-    {
-      variables: {
-        startDate,
-        isTestnet,
-        filterParams,
-      },
-    },
-  );
-
-  return {
-    accPnls: data?.getWholeCompressedHistoriesV5.accPnls || [],
-    botCounts: data?.getWholeCompressedHistoriesV5.botCounts || [],
-    maxInvested: data?.getWholeCompressedHistoriesV5.maxInvested || 0,
-    actionTypeCount: data?.getWholeCompressedHistoriesV5.actionTypeCount || 0,
-    uniqueTraders: data?.getWholeCompressedHistoriesV5.uniqueTraders || [],
-    totalBots: data?.getWholeCompressedHistoriesV5?.totalBots || [],
-    loading,
-  };
-}
-
-export function useGetTestingReportV5() {
-  const { data, loading, fetchMore, error } = useQuery(
-    GET_TESTING_REPORT_V5_DOCUMENT,
-    {
-      variables: {
-        first: 20,
-      },
-    },
-  );
-
-  const reports = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-    return data.getTestingReportV5.edges
-      .map((edge) => edge.node)
-      .filter((item) => item.usdPnls.length > 0);
-  }, [data]);
-
-  const handleFetchMore = useCallback(() => {
-    if (data && !error) {
-      fetchMore({
-        variables: {
-          first: 20,
-          after: data.getTestingReportV5.pageInfo.endCursor,
-        },
-      });
-    }
-  }, [data, error, fetchMore]);
-
-  return {
-    hasMore: data?.getTestingReportV5.pageInfo.hasNextPage,
     reports,
     fetchMore: handleFetchMore,
     loading,
@@ -1404,14 +680,8 @@ export function useInitializePnlSnapshot() {
   return { initializePnlSnapshot, loading };
 }
 
-export function useAutoTestingV4() {
-  const [autoTesting, { loading }] = useMutation(AUTO_TESTING_V4_DOCUMENT);
-
-  return { autoTesting, loading };
-}
-
-export function useAutoTestingV5() {
-  const [autoTesting, { loading }] = useMutation(AUTO_TESTING_V5_DOCUMENT);
+export function useAutoTesting() {
+  const [autoTesting, { loading }] = useMutation(AUTO_TESTING_DOCUMENT);
 
   return { autoTesting, loading };
 }

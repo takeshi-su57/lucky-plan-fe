@@ -1,16 +1,16 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Button, Card, CardBody, Spinner } from "@nextui-org/react";
 import { Virtuoso } from "react-virtuoso";
 import { Address } from "viem";
 import dayjs from "dayjs";
 
+import { ExportFilter } from "@/graphql/gql/graphql";
 import { useGetDevPnlSnapshots } from "@/app-hooks/useHistory";
-
 import { HistoriesWidget } from "@/app-components/LeaderboardWidgets/HistoriesWidget/HistoriesWidget";
-import { useEffect, useState } from "react";
+
 import { PersonalTradeHistory } from "@/types";
-import { TestParams } from "./TestParams";
 
 export type DevLeaderboardProps = {
   selectionLabel?: string;
@@ -28,7 +28,8 @@ export type DevLeaderboardProps = {
   ) => void;
   endDate: Date;
   hideTags: boolean;
-  testParams: TestParams;
+  testParams: ExportFilter[];
+  ratio: number;
 };
 
 export function DevLeaderboard({
@@ -55,7 +56,7 @@ export function DevLeaderboard({
       onChangeSelection?.(
         snapshot.address as Address,
         snapshot.contractId,
-        snapshot.statistic.averageIn,
+        0,
         snapshot.histories,
         true,
       );
@@ -100,9 +101,7 @@ export function DevLeaderboard({
                   }
                   mode="show_all_activity"
                 />
-
-                <div>{snapshot.kind}</div>
-                <div>{JSON.stringify(snapshot.regression, null, 2)}</div>
+                <div>{snapshot.score}</div>
               </div>
             )}
             components={{

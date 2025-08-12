@@ -1,53 +1,39 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { parseDate } from "@internationalized/date";
+import { useState } from "react";
 import { Tab, Tabs } from "@nextui-org/react";
+import { parseDate } from "@internationalized/date";
+import dayjs from "dayjs";
 
-import { getServerTimezone } from "@/utils";
-import { Stepper } from "@/components/Stepper/Stepper";
+import { FastTotalDevPanel } from "./FastTotalDevPanel";
+import { TestParamsView } from "./TestParams";
+
+import { TestingReportPanel } from "./TestingReportPanel";
 import { PastDatePicker } from "./PastDatePicker";
 import { SelectLeaders } from "./SelectLeaders";
-import { BacktestResult } from "./BacktestResult";
-import { LeaderParams } from "./LeaderItem";
 import { MergedLeaderboard } from "./MergedLeaderboard";
+import { BacktestResult } from "./BacktestResult";
+import { Stepper } from "@/components/Stepper/Stepper";
 
-import { MonthlyDevPanel } from "./MonthlyDevPanel";
-import { TotalDevPanel } from "./TotalDevPanel";
-import { FastTotalDevPanel } from "./FastTotalDevPanel";
-import { TestParams, TestParamsView, initialTestParams } from "./TestParams";
-import { TestingReportPanel } from "./TestingReportPanel";
+import { bestCase, primaryBestCase } from "./subcase";
+import { LeaderParams } from "./LeaderItem";
+import { getServerTimezone } from "@/utils";
 
-type TabType = "one_day" | "one_month" | "total" | "fast_total" | "reports";
+type TabType = "one_day" | "applied_filter" | "wide_filter" | "reports";
 
 export function DevPanel() {
+  const [selected, setSelected] = useState<TabType>("one_day");
   const [currentStep, setCurrentStep] = useState(1);
+
+  const [ratio, setRatio] = useState(1);
 
   const [pastDate, setPastDate] = useState<Date>(
     parseDate("2024-12-01").toDate(getServerTimezone()),
   );
   const [leaders, setLeaders] = useState<LeaderParams[]>([]);
-  const [selected, setSelected] = useState<TabType>("one_day");
-
-  const [testParams, setTestParams] = useState<TestParams>(initialTestParams);
-
-  useEffect(() => {
-    try {
-      const jsonValue = localStorage.getItem("testParams");
-      if (jsonValue) {
-        setTestParams(JSON.parse(jsonValue) as TestParams);
-      } else {
-        setTestParams(initialTestParams);
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  }, []);
-
-  const handleChangeParams = (params: TestParams) => {
-    setTestParams(params);
-    localStorage.setItem("testParams", JSON.stringify(params));
-  };
+  const [startDate, setStartDate] = useState<Date>(
+    parseDate("2025-01-01").toDate(getServerTimezone()),
+  );
 
   const steps = [
     {
@@ -75,7 +61,8 @@ export function DevPanel() {
           hideTags={true}
           onNextStep={() => setCurrentStep(3)}
           onPrevStep={() => setCurrentStep(1)}
-          testParams={testParams}
+          testParams={bestCase}
+          ratio={ratio}
         />
       ),
     },
@@ -110,7 +97,14 @@ export function DevPanel() {
 
   return (
     <div className="flex flex-col gap-6">
-      <TestParamsView params={testParams} onChangeParams={handleChangeParams} />
+      <TestParamsView
+        ratio={ratio}
+        date={startDate}
+        onChangeParams={(ratio, date) => {
+          setRatio(ratio);
+          setStartDate(date);
+        }}
+      />
 
       <Tabs
         aria-label="dev-tabs"
@@ -122,20 +116,31 @@ export function DevPanel() {
         }}
       >
         <Tab key="one_day" title="One Day" />
-        <Tab key="one_month" title="One Month" />
-        <Tab key="total" title="Total" />
-        <Tab key="fast_total" title="Fast Total" />
-        <Tab key="reports" title="Test Reports" />
+        <Tab key="applied_filter" title="Applied Filter" />
+        <Tab key="wide_filter" title="Wide Filter" />
+        <Tab key="reports" title="Reports" />
       </Tabs>
 
       {selected === "one_day" && (
         <Stepper steps={steps} currentStep={currentStep} />
       )}
-      {selected === "one_month" && <MonthlyDevPanel testParams={testParams} />}
-      {selected === "total" && <TotalDevPanel testParams={testParams} />}
-      {selected === "fast_total" && (
-        <FastTotalDevPanel testParams={testParams} />
+
+      {selected === "applied_filter" && (
+        <FastTotalDevPanel
+          startDate={dayjs(startDate).format("YYYY-MM-DD")}
+          isTestnet={false}
+          filterParams={bestCase}
+        />
       )}
+
+      {selected === "wide_filter" && (
+        <FastTotalDevPanel
+          startDate={dayjs(startDate).format("YYYY-MM-DD")}
+          filterParams={primaryBestCase}
+          isTestnet={false}
+        />
+      )}
+
       {selected === "reports" && <TestingReportPanel />}
     </div>
   );

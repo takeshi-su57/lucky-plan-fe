@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Spinner, Tabs, Tab } from "@nextui-org/react";
 import dayjs from "dayjs";
 
-import { useGetWholeCompressedHistoriesV5 } from "@/app/_hooks/useHistory";
+import { useGetWholeCompressedHistories } from "@/app/_hooks/useHistory";
 
 import BarChart from "@/components/charts/BarChart";
 import LineChart from "@/components/charts/LineChart";
@@ -10,21 +10,21 @@ import { getPriceStr } from "@/utils/price";
 import { TradeHistories } from "./TradeHistories";
 
 import { getDevData } from "@/utils";
-import { ExportFilterV5 } from "@/graphql/gql/graphql";
+import { ExportFilter } from "@/graphql/gql/graphql";
 
 type TabType = "overview" | "details";
 
-export type FastTotalDevV6PanelProps = {
+export type FastTotalDevPanelProps = {
   startDate: string;
   isTestnet: boolean;
-  filterParams: ExportFilterV5[];
+  filterParams: ExportFilter[];
 };
 
-export function FastTotalDevV6Panel({
+export function FastTotalDevPanel({
   startDate,
   isTestnet,
   filterParams,
-}: FastTotalDevV6PanelProps) {
+}: FastTotalDevPanelProps) {
   const [selected, setSelected] = useState<TabType>("overview");
 
   const {
@@ -35,7 +35,7 @@ export function FastTotalDevV6Panel({
     maxInvested,
     totalBots,
     loading,
-  } = useGetWholeCompressedHistoriesV5(startDate, isTestnet, filterParams);
+  } = useGetWholeCompressedHistories(startDate, isTestnet, filterParams);
 
   const {
     dailyPnlChartData,

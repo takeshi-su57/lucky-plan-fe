@@ -9,12 +9,11 @@ import { useGetAllContracts } from "@/app/_hooks/useContract";
 import { useIsPnlSnapshotInitialized } from "@/app-hooks/useHistory";
 
 import { InitializePnlSnapshotBoard } from "./InitializePnlSnapshotBoard";
-import { UserPermission } from "@/graphql/gql/graphql";
+import { ExportFilter, UserPermission } from "@/graphql/gql/graphql";
 import { DevLeaderboard } from "./DevLeaderboard";
 import { LeaderParams } from "./LeaderItem";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { PersonalTradeHistory } from "@/types";
-import { TestParams } from "./TestParams";
 
 export type SelectLeadersProps = {
   leaders: LeaderParams[];
@@ -23,7 +22,8 @@ export type SelectLeadersProps = {
   hideTags: boolean;
   onNextStep: () => void;
   onPrevStep: () => void;
-  testParams: TestParams;
+  testParams: ExportFilter[];
+  ratio: number;
 };
 
 export function SelectLeaders({
@@ -34,6 +34,7 @@ export function SelectLeaders({
   onNextStep,
   onPrevStep,
   testParams,
+  ratio,
 }: SelectLeadersProps) {
   const { data: isPnlSnapshotInitialized, loading } =
     useIsPnlSnapshotInitialized(dayjs(endDate).format("YYYY-MM-DD"));
@@ -173,6 +174,7 @@ export function SelectLeaders({
         endDate={endDate}
         hideTags={hideTags}
         testParams={testParams}
+        ratio={ratio}
       />
 
       <div className="flex flex-row items-center gap-2">
