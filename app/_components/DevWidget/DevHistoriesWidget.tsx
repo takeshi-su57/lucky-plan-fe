@@ -1,9 +1,9 @@
+import { Chip } from "@nextui-org/react";
 import { Address } from "viem";
 import { TotalBot } from "@/graphql/gql/graphql";
 
 import { useGetAllTradeHistory } from "@/app/_hooks/useHistory";
-import { HistoriesWidget } from "../../LeaderboardWidgets/HistoriesWidget/HistoriesWidget";
-import { Chip } from "@nextui-org/react";
+import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget/HistoriesWidget";
 
 export function DevHistoriesWidget({
   item,
@@ -16,7 +16,7 @@ export function DevHistoriesWidget({
   );
 
   return (
-    <div>
+    <div className="mb-10 flex flex-col gap-4">
       <span>
         {item.address} - {item.contractId}
       </span>
@@ -26,6 +26,8 @@ export function DevHistoriesWidget({
           <Chip key={bot.dateStr}>{bot.dateStr}</Chip>
         ))}
       </div>
+
+      <span className="text-xl">App History</span>
 
       <HistoriesWidget
         address={item.address as Address}

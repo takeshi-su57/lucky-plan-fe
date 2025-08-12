@@ -251,29 +251,6 @@ export type ExpertPnlSnapshot = {
 };
 
 export type ExportFilter = {
-  closePositionCountsByPnlSnapshotKind: Scalars['String']['input'];
-  maxR2: Scalars['Float']['input'];
-  maxSlope: Scalars['Float']['input'];
-  minR2: Scalars['Float']['input'];
-  minSlope: Scalars['Float']['input'];
-  recentTradedDays: Scalars['Int']['input'];
-};
-
-export type ExportFilterV2 = {
-  maxSlope: Scalars['Float']['input'];
-  minSlope: Scalars['Float']['input'];
-  r2MinsByPnlSnapshotKind: Scalars['String']['input'];
-};
-
-export type ExportFilterV3 = {
-  maxCount: Scalars['Float']['input'];
-  maxSize: Scalars['Float']['input'];
-  minCount: Scalars['Float']['input'];
-  minR2: Scalars['Float']['input'];
-  minSize: Scalars['Float']['input'];
-};
-
-export type ExportFilterV5 = {
   m: Scalars['Float']['input'];
   maxAvgSize: Scalars['Int']['input'];
   maxCount: Scalars['Int']['input'];
@@ -475,8 +452,7 @@ export type Mutation = {
   addToWhitelist: Scalars['Boolean']['output'];
   addWalletAccount: WalletAccount;
   allowAuto: User;
-  autoTestingV4: Scalars['Boolean']['output'];
-  autoTestingV5: Scalars['Boolean']['output'];
+  autoTesting: Scalars['Boolean']['output'];
   batchCreateBots: Array<BotBackwardDetails>;
   buildPnlSnapshots?: Maybe<PnlSnapshotInitializedFlag>;
   cancelOrderAfterTimeout: ContractExecutionResult;
@@ -513,7 +489,6 @@ export type Mutation = {
   updatePlan: Plan;
   updateSl: ContractExecutionResult;
   updateTp: ContractExecutionResult;
-  upgradeSystem: Scalars['Boolean']['output'];
   upsertCategory: TagCategory;
   upsertTag: Tag;
   withdrawAllETH: Scalars['Boolean']['output'];
@@ -550,11 +525,6 @@ export type MutationAllowAutoArgs = {
   budget: Scalars['Float']['input'];
   followerContractId: Scalars['Int']['input'];
   ratio: Scalars['Float']['input'];
-};
-
-
-export type MutationAutoTestingV4Args = {
-  startDate: Scalars['String']['input'];
 };
 
 
@@ -869,19 +839,6 @@ export type PnlSnapshotDevDetails = {
   histories: Array<TradeHistory>;
   id: Scalars['Int']['output'];
   kind: PnlSnapshotKind;
-  regression: Regression;
-  statistic: Statistic;
-};
-
-export type PnlSnapshotDevDetailsV5 = {
-  __typename?: 'PnlSnapshotDevDetailsV5';
-  accUSDPnl: Scalars['Float']['output'];
-  address: Scalars['String']['output'];
-  contractId: Scalars['Int']['output'];
-  dateStr: Scalars['String']['output'];
-  histories: Array<TradeHistory>;
-  id: Scalars['Int']['output'];
-  kind: PnlSnapshotKind;
   score: Scalars['Float']['output'];
 };
 
@@ -935,11 +892,8 @@ export type Query = {
   getBlacklist?: Maybe<Array<Scalars['String']['output']>>;
   getBotsByStatus: BotConnection;
   getDevPnlSnapshots: Array<PnlSnapshotDevDetails>;
-  getDevPnlSnapshotsV4: Array<PnlSnapshotDevDetails>;
-  getDevPnlSnapshotsV5: Array<PnlSnapshotDevDetailsV5>;
   getExpertPnlSnapshots: Array<ExpertPnlSnapshot>;
   getLogsSeverityCounts: Array<SeverityCount>;
-  getMonthlyDevPnlSnapshots: Array<TradeHistory>;
   getPlanById?: Maybe<PlanForwardDetails>;
   getPlansByStatus: PlanConnection;
   getPnlSnapshotInitializedFlag: Array<PnlSnapshotInitializedFlag>;
@@ -947,10 +901,6 @@ export type Query = {
   getPnlSnapshotsByAddress: Array<PnlSnapshot>;
   getServerTime: ServerTime;
   getTestingReport: TestingReportConnection;
-  getTestingReportV2: TestingReportV2Connection;
-  getTestingReportV3: TestingReportV3Connection;
-  getTestingReportV4: TestingReportV3Connection;
-  getTestingReportV5: TestingReportV5Connection;
   getTradeCollaterals: Array<TradeCollateral>;
   getTradeHistories: Array<TradeHistory>;
   getTradePairs: Array<TradePair>;
@@ -959,11 +909,6 @@ export type Query = {
   getWalletAccountByAddress: WalletAccount;
   getWhitelist?: Maybe<Array<Scalars['String']['output']>>;
   getWholeCompressedHistories: WholeCompressedHistories;
-  getWholeCompressedHistoriesV2: WholeCompressedHistories;
-  getWholeCompressedHistoriesV3: WholeCompressedHistories;
-  getWholeCompressedHistoriesV4: WholeCompressedHistories;
-  getWholeCompressedHistoriesV5: WholeCompressedHistories;
-  getWholeResultHistories: Array<TradeHistory>;
   isPnlSnapshotInitialized?: Maybe<PnlSnapshotInitializedFlag>;
   isSafeApp: Scalars['Boolean']['output'];
   systemStatus: Scalars['Boolean']['output'];
@@ -1009,26 +954,7 @@ export type QueryGetBotsByStatusArgs = {
 
 export type QueryGetDevPnlSnapshotsArgs = {
   dateStr: Scalars['String']['input'];
-  filterParams: ExportFilter;
-};
-
-
-export type QueryGetDevPnlSnapshotsV4Args = {
-  dateStr: Scalars['String']['input'];
-  filterParams: Array<ExportFilterV3>;
-  ratio: Scalars['Float']['input'];
-};
-
-
-export type QueryGetDevPnlSnapshotsV5Args = {
-  dateStr: Scalars['String']['input'];
-  filterParams: Array<ExportFilterV5>;
-};
-
-
-export type QueryGetMonthlyDevPnlSnapshotsArgs = {
-  dateStr: Scalars['String']['input'];
-  filterParams: ExportFilter;
+  filterParams: Array<ExportFilter>;
 };
 
 
@@ -1059,30 +985,6 @@ export type QueryGetPnlSnapshotsByAddressArgs = {
 
 
 export type QueryGetTestingReportArgs = {
-  after?: InputMaybe<Scalars['Int']['input']>;
-  first: Scalars['Int']['input'];
-};
-
-
-export type QueryGetTestingReportV2Args = {
-  after?: InputMaybe<Scalars['Int']['input']>;
-  first: Scalars['Int']['input'];
-};
-
-
-export type QueryGetTestingReportV3Args = {
-  after?: InputMaybe<Scalars['Int']['input']>;
-  first: Scalars['Int']['input'];
-};
-
-
-export type QueryGetTestingReportV4Args = {
-  after?: InputMaybe<Scalars['Int']['input']>;
-  first: Scalars['Int']['input'];
-};
-
-
-export type QueryGetTestingReportV5Args = {
   after?: InputMaybe<Scalars['Int']['input']>;
   first: Scalars['Int']['input'];
 };
@@ -1121,52 +1023,14 @@ export type QueryGetWalletAccountByAddressArgs = {
 
 
 export type QueryGetWholeCompressedHistoriesArgs = {
-  filterParams: ExportFilter;
-};
-
-
-export type QueryGetWholeCompressedHistoriesV2Args = {
-  filterParams: Array<ExportFilterV2>;
-};
-
-
-export type QueryGetWholeCompressedHistoriesV3Args = {
-  filterParams: Array<ExportFilterV3>;
-};
-
-
-export type QueryGetWholeCompressedHistoriesV4Args = {
-  filterParams: Array<ExportFilterV3>;
-  isTestnet: Scalars['Boolean']['input'];
-  ratio: Scalars['Float']['input'];
-  startDate: Scalars['String']['input'];
-};
-
-
-export type QueryGetWholeCompressedHistoriesV5Args = {
-  filterParams: Array<ExportFilterV5>;
+  filterParams: Array<ExportFilter>;
   isTestnet: Scalars['Boolean']['input'];
   startDate: Scalars['String']['input'];
-};
-
-
-export type QueryGetWholeResultHistoriesArgs = {
-  filterParams: ExportFilter;
 };
 
 
 export type QueryIsPnlSnapshotInitializedArgs = {
   dateStr: Scalars['String']['input'];
-};
-
-export type Regression = {
-  __typename?: 'Regression';
-  chi2: Scalars['Float']['output'];
-  intercept: Scalars['Float']['output'];
-  r: Scalars['Float']['output'];
-  r2: Scalars['Float']['output'];
-  rmsd: Scalars['Float']['output'];
-  slope: Scalars['Float']['output'];
 };
 
 export type ServerTime = {
@@ -1179,12 +1043,6 @@ export type SeverityCount = {
   __typename?: 'SeverityCount';
   counts: Scalars['Int']['output'];
   severity: LogSeverity;
-};
-
-export type Statistic = {
-  __typename?: 'Statistic';
-  averageIn: Scalars['Float']['output'];
-  countIn: Scalars['Int']['output'];
 };
 
 export type Strategy = {
@@ -1333,140 +1191,6 @@ export enum TaskStatus {
 
 export type TestingReport = {
   __typename?: 'TestingReport';
-  avgLoss: Scalars['Float']['output'];
-  avgProfit: Scalars['Float']['output'];
-  bottomAccProfit: Scalars['Float']['output'];
-  calculatedR2: Scalars['Float']['output'];
-  calculatedSlope: Scalars['Float']['output'];
-  closePositionCountsByPnlSnapshotKind: Scalars['String']['output'];
-  id: Scalars['Int']['output'];
-  investedUSD: Scalars['Float']['output'];
-  lossCount: Scalars['Int']['output'];
-  maxLoss: Scalars['Float']['output'];
-  maxProfit: Scalars['Float']['output'];
-  maxR2: Scalars['Float']['output'];
-  maxSlope: Scalars['Int']['output'];
-  minR2: Scalars['Float']['output'];
-  minSlope: Scalars['Int']['output'];
-  peakAccProfit: Scalars['Float']['output'];
-  profitCount: Scalars['Int']['output'];
-  recentTradedDays: Scalars['Int']['output'];
-  totalPositions: Scalars['Int']['output'];
-  totalTasks: Scalars['Int']['output'];
-  totalTraders: Scalars['Int']['output'];
-  totalUSDPnl: Scalars['Float']['output'];
-  totalUniqueTraders: Scalars['Int']['output'];
-  usdPnls: Array<Scalars['Float']['output']>;
-};
-
-export type TestingReportConnection = {
-  __typename?: 'TestingReportConnection';
-  edges: Array<TestingReportEdge>;
-  pageInfo: TestingReportPageInfo;
-};
-
-export type TestingReportEdge = {
-  __typename?: 'TestingReportEdge';
-  cursor: Scalars['Int']['output'];
-  node: TestingReport;
-};
-
-export type TestingReportPageInfo = {
-  __typename?: 'TestingReportPageInfo';
-  endCursor?: Maybe<Scalars['Int']['output']>;
-  hasNextPage: Scalars['Boolean']['output'];
-};
-
-export type TestingReportV2 = {
-  __typename?: 'TestingReportV2';
-  avgLoss: Scalars['Float']['output'];
-  avgProfit: Scalars['Float']['output'];
-  bottomAccProfit: Scalars['Float']['output'];
-  calculatedR2: Scalars['Float']['output'];
-  calculatedSlope: Scalars['Float']['output'];
-  id: Scalars['Int']['output'];
-  investedUSD: Scalars['Float']['output'];
-  lossCount: Scalars['Int']['output'];
-  maxLoss: Scalars['Float']['output'];
-  maxProfit: Scalars['Float']['output'];
-  maxSlope: Scalars['Int']['output'];
-  minSlope: Scalars['Int']['output'];
-  peakAccProfit: Scalars['Float']['output'];
-  profitCount: Scalars['Int']['output'];
-  r2MinsByPnlSnapshotKind: Scalars['String']['output'];
-  totalPositions: Scalars['Int']['output'];
-  totalTasks: Scalars['Int']['output'];
-  totalTraders: Scalars['Int']['output'];
-  totalUSDPnl: Scalars['Float']['output'];
-  totalUniqueTraders: Scalars['Int']['output'];
-  usdPnls: Array<Scalars['Float']['output']>;
-};
-
-export type TestingReportV2Connection = {
-  __typename?: 'TestingReportV2Connection';
-  edges: Array<TestingReportV2Edge>;
-  pageInfo: TestingReportV2PageInfo;
-};
-
-export type TestingReportV2Edge = {
-  __typename?: 'TestingReportV2Edge';
-  cursor: Scalars['Int']['output'];
-  node: TestingReportV2;
-};
-
-export type TestingReportV2PageInfo = {
-  __typename?: 'TestingReportV2PageInfo';
-  endCursor?: Maybe<Scalars['Int']['output']>;
-  hasNextPage: Scalars['Boolean']['output'];
-};
-
-export type TestingReportV3 = {
-  __typename?: 'TestingReportV3';
-  avgLoss: Scalars['Float']['output'];
-  avgProfit: Scalars['Float']['output'];
-  bottomAccProfit: Scalars['Float']['output'];
-  calculatedR2: Scalars['Float']['output'];
-  calculatedSlope: Scalars['Float']['output'];
-  id: Scalars['Int']['output'];
-  investedUSD: Scalars['Float']['output'];
-  lossCount: Scalars['Int']['output'];
-  maxCount: Scalars['Int']['output'];
-  maxLoss: Scalars['Float']['output'];
-  maxProfit: Scalars['Float']['output'];
-  maxSize: Scalars['Int']['output'];
-  minCount: Scalars['Int']['output'];
-  minR2: Scalars['String']['output'];
-  minSize: Scalars['Int']['output'];
-  peakAccProfit: Scalars['Float']['output'];
-  profitCount: Scalars['Int']['output'];
-  totalPositions: Scalars['Int']['output'];
-  totalTasks: Scalars['Int']['output'];
-  totalTraders: Scalars['Int']['output'];
-  totalUSDPnl: Scalars['Float']['output'];
-  totalUniqueTraders: Scalars['Int']['output'];
-  usdPnls: Array<Scalars['Float']['output']>;
-};
-
-export type TestingReportV3Connection = {
-  __typename?: 'TestingReportV3Connection';
-  edges: Array<TestingReportV3Edge>;
-  pageInfo: TestingReportV3PageInfo;
-};
-
-export type TestingReportV3Edge = {
-  __typename?: 'TestingReportV3Edge';
-  cursor: Scalars['Int']['output'];
-  node: TestingReportV3;
-};
-
-export type TestingReportV3PageInfo = {
-  __typename?: 'TestingReportV3PageInfo';
-  endCursor?: Maybe<Scalars['Int']['output']>;
-  hasNextPage: Scalars['Boolean']['output'];
-};
-
-export type TestingReportV5 = {
-  __typename?: 'TestingReportV5';
   allTimeWeight: Scalars['Int']['output'];
   avgLoss: Scalars['Float']['output'];
   avgProfit: Scalars['Float']['output'];
@@ -1500,20 +1224,20 @@ export type TestingReportV5 = {
   window: Scalars['Int']['output'];
 };
 
-export type TestingReportV5Connection = {
-  __typename?: 'TestingReportV5Connection';
-  edges: Array<TestingReportV5Edge>;
-  pageInfo: TestingReportV5PageInfo;
+export type TestingReportConnection = {
+  __typename?: 'TestingReportConnection';
+  edges: Array<TestingReportEdge>;
+  pageInfo: TestingReportPageInfo;
 };
 
-export type TestingReportV5Edge = {
-  __typename?: 'TestingReportV5Edge';
+export type TestingReportEdge = {
+  __typename?: 'TestingReportEdge';
   cursor: Scalars['Int']['output'];
-  node: TestingReportV5;
+  node: TestingReport;
 };
 
-export type TestingReportV5PageInfo = {
-  __typename?: 'TestingReportV5PageInfo';
+export type TestingReportPageInfo = {
+  __typename?: 'TestingReportPageInfo';
   endCursor?: Maybe<Scalars['Int']['output']>;
   hasNextPage: Scalars['Boolean']['output'];
 };
@@ -1979,113 +1703,6 @@ export type GetPnlSnapshotsQuery = { __typename?: 'Query', getPnlSnapshots: { __
         & { ' $fragmentRefs'?: { 'PnlSnapshotDetailsInfoFragment': PnlSnapshotDetailsInfoFragment } }
       ) }>, pageInfo: { __typename?: 'PnlSnapshotDetailsPageInfo', endCursor?: number | null, hasNextPage: boolean } } };
 
-export type GetDevPnlSnapshotsQueryVariables = Exact<{
-  dateStr: Scalars['String']['input'];
-  filterParams: ExportFilter;
-}>;
-
-
-export type GetDevPnlSnapshotsQuery = { __typename?: 'Query', getDevPnlSnapshots: Array<{ __typename?: 'PnlSnapshotDevDetails', accUSDPnl: number, address: string, contractId: number, dateStr: string, id: number, kind: PnlSnapshotKind, histories: Array<(
-      { __typename?: 'TradeHistory' }
-      & { ' $fragmentRefs'?: { 'TradeHistoryInfoFragment': TradeHistoryInfoFragment } }
-    )>, regression: { __typename?: 'Regression', chi2: number, intercept: number, r: number, r2: number, rmsd: number, slope: number }, statistic: { __typename?: 'Statistic', averageIn: number, countIn: number } }> };
-
-export type GetMonthlyDevPnlSnapshotsQueryVariables = Exact<{
-  dateStr: Scalars['String']['input'];
-  filterParams: ExportFilter;
-}>;
-
-
-export type GetMonthlyDevPnlSnapshotsQuery = { __typename?: 'Query', getMonthlyDevPnlSnapshots: Array<(
-    { __typename?: 'TradeHistory' }
-    & { ' $fragmentRefs'?: { 'TradeHistoryInfoFragment': TradeHistoryInfoFragment } }
-  )> };
-
-export type GetWholeResultHistoriesQueryVariables = Exact<{
-  filterParams: ExportFilter;
-}>;
-
-
-export type GetWholeResultHistoriesQuery = { __typename?: 'Query', getWholeResultHistories: Array<(
-    { __typename?: 'TradeHistory' }
-    & { ' $fragmentRefs'?: { 'TradeHistoryInfoFragment': TradeHistoryInfoFragment } }
-  )> };
-
-export type GetWholeCompressedHistoriesQueryVariables = Exact<{
-  filterParams: ExportFilter;
-}>;
-
-
-export type GetWholeCompressedHistoriesQuery = { __typename?: 'Query', getWholeCompressedHistories: { __typename?: 'WholeCompressedHistories', maxInvested: number, accPnls: Array<{ __typename?: 'AccPnl', pnl: number, inOut: number, date: any, positionCount: number, taskCount: number, traderCount: number }>, botCounts: Array<{ __typename?: 'BotCount', botCount: number, date: any }> } };
-
-export type GetWholeCompressedHistoriesV2QueryVariables = Exact<{
-  filterParams: Array<ExportFilterV2> | ExportFilterV2;
-}>;
-
-
-export type GetWholeCompressedHistoriesV2Query = { __typename?: 'Query', getWholeCompressedHistoriesV2: { __typename?: 'WholeCompressedHistories', maxInvested: number, accPnls: Array<{ __typename?: 'AccPnl', pnl: number, inOut: number, date: any, positionCount: number, taskCount: number, traderCount: number }>, botCounts: Array<{ __typename?: 'BotCount', botCount: number, date: any }> } };
-
-export type GetTestingReportQueryVariables = Exact<{
-  first: Scalars['Int']['input'];
-  after?: InputMaybe<Scalars['Int']['input']>;
-}>;
-
-
-export type GetTestingReportQuery = { __typename?: 'Query', getTestingReport: { __typename?: 'TestingReportConnection', edges: Array<{ __typename?: 'TestingReportEdge', cursor: number, node: { __typename?: 'TestingReport', avgLoss: number, avgProfit: number, bottomAccProfit: number, calculatedR2: number, calculatedSlope: number, closePositionCountsByPnlSnapshotKind: string, id: number, investedUSD: number, lossCount: number, maxLoss: number, maxProfit: number, maxR2: number, maxSlope: number, minR2: number, minSlope: number, peakAccProfit: number, profitCount: number, recentTradedDays: number, totalPositions: number, totalTasks: number, totalTraders: number, totalUSDPnl: number, totalUniqueTraders: number, usdPnls: Array<number> } }>, pageInfo: { __typename?: 'TestingReportPageInfo', endCursor?: number | null, hasNextPage: boolean } } };
-
-export type GetTestingReportV2QueryVariables = Exact<{
-  first: Scalars['Int']['input'];
-  after?: InputMaybe<Scalars['Int']['input']>;
-}>;
-
-
-export type GetTestingReportV2Query = { __typename?: 'Query', getTestingReportV2: { __typename?: 'TestingReportV2Connection', edges: Array<{ __typename?: 'TestingReportV2Edge', cursor: number, node: { __typename?: 'TestingReportV2', avgLoss: number, avgProfit: number, bottomAccProfit: number, calculatedR2: number, calculatedSlope: number, id: number, investedUSD: number, lossCount: number, maxLoss: number, maxProfit: number, maxSlope: number, minSlope: number, peakAccProfit: number, profitCount: number, r2MinsByPnlSnapshotKind: string, totalPositions: number, totalTasks: number, totalTraders: number, totalUSDPnl: number, totalUniqueTraders: number, usdPnls: Array<number> } }>, pageInfo: { __typename?: 'TestingReportV2PageInfo', endCursor?: number | null, hasNextPage: boolean } } };
-
-export type GetWholeCompressedHistoriesV3QueryVariables = Exact<{
-  filterParams: Array<ExportFilterV3> | ExportFilterV3;
-}>;
-
-
-export type GetWholeCompressedHistoriesV3Query = { __typename?: 'Query', getWholeCompressedHistoriesV3: { __typename?: 'WholeCompressedHistories', maxInvested: number, actionTypeCount?: string | null, uniqueTraders?: Array<string> | null, accPnls: Array<{ __typename?: 'AccPnl', pnl: number, in: number, out: number, inOut: number, date: any, positionCount: number, taskCount: number, traderCount: number }>, botCounts: Array<{ __typename?: 'BotCount', botCount: number, date: any }> } };
-
-export type GetTestingReportV3QueryVariables = Exact<{
-  first: Scalars['Int']['input'];
-  after?: InputMaybe<Scalars['Int']['input']>;
-}>;
-
-
-export type GetTestingReportV3Query = { __typename?: 'Query', getTestingReportV3: { __typename?: 'TestingReportV3Connection', edges: Array<{ __typename?: 'TestingReportV3Edge', cursor: number, node: { __typename?: 'TestingReportV3', avgLoss: number, avgProfit: number, bottomAccProfit: number, calculatedR2: number, calculatedSlope: number, id: number, investedUSD: number, lossCount: number, maxCount: number, maxLoss: number, maxProfit: number, maxSize: number, minCount: number, minR2: string, minSize: number, peakAccProfit: number, profitCount: number, totalPositions: number, totalTasks: number, totalTraders: number, totalUSDPnl: number, totalUniqueTraders: number, usdPnls: Array<number> } }>, pageInfo: { __typename?: 'TestingReportV3PageInfo', endCursor?: number | null, hasNextPage: boolean } } };
-
-export type GetWholeCompressedHistoriesV4QueryVariables = Exact<{
-  filterParams: Array<ExportFilterV3> | ExportFilterV3;
-  ratio: Scalars['Float']['input'];
-  startDate: Scalars['String']['input'];
-  isTestnet: Scalars['Boolean']['input'];
-}>;
-
-
-export type GetWholeCompressedHistoriesV4Query = { __typename?: 'Query', getWholeCompressedHistoriesV4: { __typename?: 'WholeCompressedHistories', maxInvested: number, actionTypeCount?: string | null, uniqueTraders?: Array<string> | null, accPnls: Array<{ __typename?: 'AccPnl', pnl: number, in: number, out: number, inOut: number, date: any, positionCount: number, taskCount: number, traderCount: number }>, botCounts: Array<{ __typename?: 'BotCount', botCount: number, date: any }>, totalBots: Array<{ __typename?: 'TotalBot', address: string, contractId: number, dateStr: string }> } };
-
-export type GetDevPnlSnapshotsV4QueryVariables = Exact<{
-  dateStr: Scalars['String']['input'];
-  filterParams: Array<ExportFilterV3> | ExportFilterV3;
-  ratio: Scalars['Float']['input'];
-}>;
-
-
-export type GetDevPnlSnapshotsV4Query = { __typename?: 'Query', getDevPnlSnapshotsV4: Array<{ __typename?: 'PnlSnapshotDevDetails', accUSDPnl: number, address: string, contractId: number, dateStr: string, id: number, kind: PnlSnapshotKind, histories: Array<(
-      { __typename?: 'TradeHistory' }
-      & { ' $fragmentRefs'?: { 'TradeHistoryInfoFragment': TradeHistoryInfoFragment } }
-    )>, regression: { __typename?: 'Regression', chi2: number, intercept: number, r: number, r2: number, rmsd: number, slope: number }, statistic: { __typename?: 'Statistic', averageIn: number, countIn: number } }> };
-
-export type GetTestingReportV4QueryVariables = Exact<{
-  first: Scalars['Int']['input'];
-  after?: InputMaybe<Scalars['Int']['input']>;
-}>;
-
-
-export type GetTestingReportV4Query = { __typename?: 'Query', getTestingReportV4: { __typename?: 'TestingReportV3Connection', edges: Array<{ __typename?: 'TestingReportV3Edge', cursor: number, node: { __typename?: 'TestingReportV3', avgLoss: number, avgProfit: number, bottomAccProfit: number, calculatedR2: number, calculatedSlope: number, id: number, investedUSD: number, lossCount: number, maxCount: number, maxLoss: number, maxProfit: number, maxSize: number, minCount: number, minR2: string, minSize: number, peakAccProfit: number, profitCount: number, totalPositions: number, totalTasks: number, totalTraders: number, totalUSDPnl: number, totalUniqueTraders: number, usdPnls: Array<number> } }>, pageInfo: { __typename?: 'TestingReportV3PageInfo', endCursor?: number | null, hasNextPage: boolean } } };
-
 export type GetPnlSnapshotsByAddressQueryVariables = Exact<{
   address: Scalars['String']['input'];
   dateStr: Scalars['String']['input'];
@@ -2117,18 +1734,6 @@ export type BuildPnlSnapshotsMutationVariables = Exact<{
 
 export type BuildPnlSnapshotsMutation = { __typename?: 'Mutation', buildPnlSnapshots?: { __typename?: 'PnlSnapshotInitializedFlag', id: number, dateStr: string, isInit: boolean } | null };
 
-export type AutoTestingV4MutationVariables = Exact<{
-  startDate: Scalars['String']['input'];
-}>;
-
-
-export type AutoTestingV4Mutation = { __typename?: 'Mutation', autoTestingV4: boolean };
-
-export type AutoTestingV5MutationVariables = Exact<{ [key: string]: never; }>;
-
-
-export type AutoTestingV5Mutation = { __typename?: 'Mutation', autoTestingV5: boolean };
-
 export type DynamicSnapshotBuildMutationVariables = Exact<{
   dateStr: Scalars['String']['input'];
 }>;
@@ -2144,33 +1749,38 @@ export type InitializePnlSnapshotMutationVariables = Exact<{
 
 export type InitializePnlSnapshotMutation = { __typename?: 'Mutation', initializePnlSnapshot: boolean };
 
-export type GetDevPnlSnapshotsV5QueryVariables = Exact<{
+export type AutoTestingMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AutoTestingMutation = { __typename?: 'Mutation', autoTesting: boolean };
+
+export type GetDevPnlSnapshotsQueryVariables = Exact<{
   dateStr: Scalars['String']['input'];
-  filterParams: Array<ExportFilterV5> | ExportFilterV5;
+  filterParams: Array<ExportFilter> | ExportFilter;
 }>;
 
 
-export type GetDevPnlSnapshotsV5Query = { __typename?: 'Query', getDevPnlSnapshotsV5: Array<{ __typename?: 'PnlSnapshotDevDetailsV5', accUSDPnl: number, address: string, contractId: number, dateStr: string, id: number, kind: PnlSnapshotKind, score: number, histories: Array<(
+export type GetDevPnlSnapshotsQuery = { __typename?: 'Query', getDevPnlSnapshots: Array<{ __typename?: 'PnlSnapshotDevDetails', accUSDPnl: number, address: string, contractId: number, dateStr: string, id: number, kind: PnlSnapshotKind, score: number, histories: Array<(
       { __typename?: 'TradeHistory' }
       & { ' $fragmentRefs'?: { 'TradeHistoryInfoFragment': TradeHistoryInfoFragment } }
     )> }> };
 
-export type GetWholeCompressedHistoriesV5QueryVariables = Exact<{
+export type GetWholeCompressedHistoriesQueryVariables = Exact<{
   startDate: Scalars['String']['input'];
   isTestnet: Scalars['Boolean']['input'];
-  filterParams: Array<ExportFilterV5> | ExportFilterV5;
+  filterParams: Array<ExportFilter> | ExportFilter;
 }>;
 
 
-export type GetWholeCompressedHistoriesV5Query = { __typename?: 'Query', getWholeCompressedHistoriesV5: { __typename?: 'WholeCompressedHistories', maxInvested: number, actionTypeCount?: string | null, uniqueTraders?: Array<string> | null, accPnls: Array<{ __typename?: 'AccPnl', pnl: number, in: number, out: number, inOut: number, date: any, positionCount: number, taskCount: number, traderCount: number }>, botCounts: Array<{ __typename?: 'BotCount', botCount: number, date: any }>, totalBots: Array<{ __typename?: 'TotalBot', address: string, contractId: number, dateStr: string }> } };
+export type GetWholeCompressedHistoriesQuery = { __typename?: 'Query', getWholeCompressedHistories: { __typename?: 'WholeCompressedHistories', maxInvested: number, actionTypeCount?: string | null, uniqueTraders?: Array<string> | null, accPnls: Array<{ __typename?: 'AccPnl', pnl: number, in: number, out: number, inOut: number, date: any, positionCount: number, taskCount: number, traderCount: number }>, botCounts: Array<{ __typename?: 'BotCount', botCount: number, date: any }>, totalBots: Array<{ __typename?: 'TotalBot', address: string, contractId: number, dateStr: string }> } };
 
-export type GetTestingReportV5QueryVariables = Exact<{
+export type GetTestingReportQueryVariables = Exact<{
   first: Scalars['Int']['input'];
   after?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GetTestingReportV5Query = { __typename?: 'Query', getTestingReportV5: { __typename?: 'TestingReportV5Connection', edges: Array<{ __typename?: 'TestingReportV5Edge', cursor: number, node: { __typename?: 'TestingReportV5', maxAvgSize: number, minAvgSize: number, maxCount: number, minCount: number, avgLoss: number, monthWeight: number, threeMonthWeight: number, weekWeight: number, allTimeWeight: number, avgProfit: number, bottomAccProfit: number, calculatedR2: number, calculatedSlope: number, id: number, investedUSD: number, lossCount: number, m: number, maxLoss: number, maxProfit: number, minR2: number, minScore: number, n: number, peakAccProfit: number, profitCount: number, totalPositions: number, totalTasks: number, totalTraders: number, totalUSDPnl: number, totalUniqueTraders: number, usdPnls: Array<number>, window: number } }>, pageInfo: { __typename?: 'TestingReportV5PageInfo', endCursor?: number | null, hasNextPage: boolean } } };
+export type GetTestingReportQuery = { __typename?: 'Query', getTestingReport: { __typename?: 'TestingReportConnection', edges: Array<{ __typename?: 'TestingReportEdge', cursor: number, node: { __typename?: 'TestingReport', maxAvgSize: number, minAvgSize: number, maxCount: number, minCount: number, avgLoss: number, monthWeight: number, threeMonthWeight: number, weekWeight: number, allTimeWeight: number, avgProfit: number, bottomAccProfit: number, calculatedR2: number, calculatedSlope: number, id: number, investedUSD: number, lossCount: number, m: number, maxLoss: number, maxProfit: number, minR2: number, minScore: number, n: number, peakAccProfit: number, profitCount: number, totalPositions: number, totalTasks: number, totalTraders: number, totalUSDPnl: number, totalUniqueTraders: number, usdPnls: Array<number>, window: number } }>, pageInfo: { __typename?: 'TestingReportPageInfo', endCursor?: number | null, hasNextPage: boolean } } };
 
 export type LogInfoFragment = { __typename?: 'Log', id: number, severity: LogSeverity, summary: string, details?: string | null, timestamp: any, checked: boolean } & { ' $fragmentName'?: 'LogInfoFragment' };
 
@@ -2451,11 +2061,6 @@ export type ResumeSystemMutationVariables = Exact<{
 
 
 export type ResumeSystemMutation = { __typename?: 'Mutation', resumeSystem: boolean };
-
-export type UpgradeSystemMutationVariables = Exact<{ [key: string]: never; }>;
-
-
-export type UpgradeSystemMutation = { __typename?: 'Mutation', upgradeSystem: boolean };
 
 export type MakeSafeAppMutationVariables = Exact<{
   password: Scalars['String']['input'];
@@ -2746,29 +2351,16 @@ export const GetTradeTransactionCountsDocument = {"kind":"Document","definitions
 export const GetUserTransactionCountsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getUserTransactionCounts"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"inputs"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"GetUserTransactionCountsInput"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getUserTransactionCounts"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"inputs"},"value":{"kind":"Variable","name":{"kind":"Name","value":"inputs"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"daily"}},{"kind":"Field","name":{"kind":"Name","value":"weekly"}},{"kind":"Field","name":{"kind":"Name","value":"monthly"}}]}}]}}]} as unknown as DocumentNode<GetUserTransactionCountsQuery, GetUserTransactionCountsQueryVariables>;
 export const GetTradeHistoriesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getTradeHistories"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"address"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"contractId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getTradeHistories"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"address"},"value":{"kind":"Variable","name":{"kind":"Name","value":"address"}}},{"kind":"Argument","name":{"kind":"Name","value":"contractId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"contractId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TradeHistoryInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TradeHistoryInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TradeHistory"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"action"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"block"}},{"kind":"Field","name":{"kind":"Name","value":"collateralDelta"}},{"kind":"Field","name":{"kind":"Name","value":"collateralIndex"}},{"kind":"Field","name":{"kind":"Name","value":"collateralPriceUsd"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"leverage"}},{"kind":"Field","name":{"kind":"Name","value":"leverageDelta"}},{"kind":"Field","name":{"kind":"Name","value":"long"}},{"kind":"Field","name":{"kind":"Name","value":"marketPrice"}},{"kind":"Field","name":{"kind":"Name","value":"pair"}},{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"tradeId"}},{"kind":"Field","name":{"kind":"Name","value":"tradeIndex"}},{"kind":"Field","name":{"kind":"Name","value":"isCounterTrade"}},{"kind":"Field","name":{"kind":"Name","value":"meta"}}]}}]} as unknown as DocumentNode<GetTradeHistoriesQuery, GetTradeHistoriesQueryVariables>;
 export const GetPnlSnapshotsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getPnlSnapshots"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"kind"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PnlSnapshotKind"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getPnlSnapshots"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}},{"kind":"Argument","name":{"kind":"Name","value":"kind"},"value":{"kind":"Variable","name":{"kind":"Name","value":"kind"}}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PnlSnapshotDetailsInfo"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TradeHistoryInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TradeHistory"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"action"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"block"}},{"kind":"Field","name":{"kind":"Name","value":"collateralDelta"}},{"kind":"Field","name":{"kind":"Name","value":"collateralIndex"}},{"kind":"Field","name":{"kind":"Name","value":"collateralPriceUsd"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"leverage"}},{"kind":"Field","name":{"kind":"Name","value":"leverageDelta"}},{"kind":"Field","name":{"kind":"Name","value":"long"}},{"kind":"Field","name":{"kind":"Name","value":"marketPrice"}},{"kind":"Field","name":{"kind":"Name","value":"pair"}},{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"tradeId"}},{"kind":"Field","name":{"kind":"Name","value":"tradeIndex"}},{"kind":"Field","name":{"kind":"Name","value":"isCounterTrade"}},{"kind":"Field","name":{"kind":"Name","value":"meta"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PnlSnapshotDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PnlSnapshotDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"histories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TradeHistoryInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}}]}}]} as unknown as DocumentNode<GetPnlSnapshotsQuery, GetPnlSnapshotsQueryVariables>;
-export const GetDevPnlSnapshotsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getDevPnlSnapshots"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ExportFilter"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getDevPnlSnapshots"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}},{"kind":"Argument","name":{"kind":"Name","value":"filterParams"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"histories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TradeHistoryInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"regression"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"chi2"}},{"kind":"Field","name":{"kind":"Name","value":"intercept"}},{"kind":"Field","name":{"kind":"Name","value":"r"}},{"kind":"Field","name":{"kind":"Name","value":"r2"}},{"kind":"Field","name":{"kind":"Name","value":"rmsd"}},{"kind":"Field","name":{"kind":"Name","value":"slope"}}]}},{"kind":"Field","name":{"kind":"Name","value":"statistic"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"averageIn"}},{"kind":"Field","name":{"kind":"Name","value":"countIn"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TradeHistoryInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TradeHistory"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"action"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"block"}},{"kind":"Field","name":{"kind":"Name","value":"collateralDelta"}},{"kind":"Field","name":{"kind":"Name","value":"collateralIndex"}},{"kind":"Field","name":{"kind":"Name","value":"collateralPriceUsd"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"leverage"}},{"kind":"Field","name":{"kind":"Name","value":"leverageDelta"}},{"kind":"Field","name":{"kind":"Name","value":"long"}},{"kind":"Field","name":{"kind":"Name","value":"marketPrice"}},{"kind":"Field","name":{"kind":"Name","value":"pair"}},{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"tradeId"}},{"kind":"Field","name":{"kind":"Name","value":"tradeIndex"}},{"kind":"Field","name":{"kind":"Name","value":"isCounterTrade"}},{"kind":"Field","name":{"kind":"Name","value":"meta"}}]}}]} as unknown as DocumentNode<GetDevPnlSnapshotsQuery, GetDevPnlSnapshotsQueryVariables>;
-export const GetMonthlyDevPnlSnapshotsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getMonthlyDevPnlSnapshots"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ExportFilter"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getMonthlyDevPnlSnapshots"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}},{"kind":"Argument","name":{"kind":"Name","value":"filterParams"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TradeHistoryInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TradeHistoryInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TradeHistory"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"action"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"block"}},{"kind":"Field","name":{"kind":"Name","value":"collateralDelta"}},{"kind":"Field","name":{"kind":"Name","value":"collateralIndex"}},{"kind":"Field","name":{"kind":"Name","value":"collateralPriceUsd"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"leverage"}},{"kind":"Field","name":{"kind":"Name","value":"leverageDelta"}},{"kind":"Field","name":{"kind":"Name","value":"long"}},{"kind":"Field","name":{"kind":"Name","value":"marketPrice"}},{"kind":"Field","name":{"kind":"Name","value":"pair"}},{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"tradeId"}},{"kind":"Field","name":{"kind":"Name","value":"tradeIndex"}},{"kind":"Field","name":{"kind":"Name","value":"isCounterTrade"}},{"kind":"Field","name":{"kind":"Name","value":"meta"}}]}}]} as unknown as DocumentNode<GetMonthlyDevPnlSnapshotsQuery, GetMonthlyDevPnlSnapshotsQueryVariables>;
-export const GetWholeResultHistoriesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getWholeResultHistories"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ExportFilter"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getWholeResultHistories"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filterParams"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TradeHistoryInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TradeHistoryInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TradeHistory"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"action"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"block"}},{"kind":"Field","name":{"kind":"Name","value":"collateralDelta"}},{"kind":"Field","name":{"kind":"Name","value":"collateralIndex"}},{"kind":"Field","name":{"kind":"Name","value":"collateralPriceUsd"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"leverage"}},{"kind":"Field","name":{"kind":"Name","value":"leverageDelta"}},{"kind":"Field","name":{"kind":"Name","value":"long"}},{"kind":"Field","name":{"kind":"Name","value":"marketPrice"}},{"kind":"Field","name":{"kind":"Name","value":"pair"}},{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"tradeId"}},{"kind":"Field","name":{"kind":"Name","value":"tradeIndex"}},{"kind":"Field","name":{"kind":"Name","value":"isCounterTrade"}},{"kind":"Field","name":{"kind":"Name","value":"meta"}}]}}]} as unknown as DocumentNode<GetWholeResultHistoriesQuery, GetWholeResultHistoriesQueryVariables>;
-export const GetWholeCompressedHistoriesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getWholeCompressedHistories"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ExportFilter"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getWholeCompressedHistories"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filterParams"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accPnls"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"inOut"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"positionCount"}},{"kind":"Field","name":{"kind":"Name","value":"taskCount"}},{"kind":"Field","name":{"kind":"Name","value":"traderCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"botCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"botCount"}},{"kind":"Field","name":{"kind":"Name","value":"date"}}]}},{"kind":"Field","name":{"kind":"Name","value":"maxInvested"}}]}}]}}]} as unknown as DocumentNode<GetWholeCompressedHistoriesQuery, GetWholeCompressedHistoriesQueryVariables>;
-export const GetWholeCompressedHistoriesV2Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getWholeCompressedHistoriesV2"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ExportFilterV2"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getWholeCompressedHistoriesV2"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filterParams"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accPnls"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"inOut"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"positionCount"}},{"kind":"Field","name":{"kind":"Name","value":"taskCount"}},{"kind":"Field","name":{"kind":"Name","value":"traderCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"botCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"botCount"}},{"kind":"Field","name":{"kind":"Name","value":"date"}}]}},{"kind":"Field","name":{"kind":"Name","value":"maxInvested"}}]}}]}}]} as unknown as DocumentNode<GetWholeCompressedHistoriesV2Query, GetWholeCompressedHistoriesV2QueryVariables>;
-export const GetTestingReportDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getTestingReport"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getTestingReport"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"avgLoss"}},{"kind":"Field","name":{"kind":"Name","value":"avgProfit"}},{"kind":"Field","name":{"kind":"Name","value":"bottomAccProfit"}},{"kind":"Field","name":{"kind":"Name","value":"calculatedR2"}},{"kind":"Field","name":{"kind":"Name","value":"calculatedSlope"}},{"kind":"Field","name":{"kind":"Name","value":"closePositionCountsByPnlSnapshotKind"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"investedUSD"}},{"kind":"Field","name":{"kind":"Name","value":"lossCount"}},{"kind":"Field","name":{"kind":"Name","value":"maxLoss"}},{"kind":"Field","name":{"kind":"Name","value":"maxProfit"}},{"kind":"Field","name":{"kind":"Name","value":"maxR2"}},{"kind":"Field","name":{"kind":"Name","value":"maxSlope"}},{"kind":"Field","name":{"kind":"Name","value":"minR2"}},{"kind":"Field","name":{"kind":"Name","value":"minSlope"}},{"kind":"Field","name":{"kind":"Name","value":"peakAccProfit"}},{"kind":"Field","name":{"kind":"Name","value":"profitCount"}},{"kind":"Field","name":{"kind":"Name","value":"recentTradedDays"}},{"kind":"Field","name":{"kind":"Name","value":"totalPositions"}},{"kind":"Field","name":{"kind":"Name","value":"totalTasks"}},{"kind":"Field","name":{"kind":"Name","value":"totalTraders"}},{"kind":"Field","name":{"kind":"Name","value":"totalUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"totalUniqueTraders"}},{"kind":"Field","name":{"kind":"Name","value":"usdPnls"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}}]} as unknown as DocumentNode<GetTestingReportQuery, GetTestingReportQueryVariables>;
-export const GetTestingReportV2Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getTestingReportV2"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getTestingReportV2"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"avgLoss"}},{"kind":"Field","name":{"kind":"Name","value":"avgProfit"}},{"kind":"Field","name":{"kind":"Name","value":"bottomAccProfit"}},{"kind":"Field","name":{"kind":"Name","value":"calculatedR2"}},{"kind":"Field","name":{"kind":"Name","value":"calculatedSlope"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"investedUSD"}},{"kind":"Field","name":{"kind":"Name","value":"lossCount"}},{"kind":"Field","name":{"kind":"Name","value":"maxLoss"}},{"kind":"Field","name":{"kind":"Name","value":"maxProfit"}},{"kind":"Field","name":{"kind":"Name","value":"maxSlope"}},{"kind":"Field","name":{"kind":"Name","value":"minSlope"}},{"kind":"Field","name":{"kind":"Name","value":"peakAccProfit"}},{"kind":"Field","name":{"kind":"Name","value":"profitCount"}},{"kind":"Field","name":{"kind":"Name","value":"r2MinsByPnlSnapshotKind"}},{"kind":"Field","name":{"kind":"Name","value":"totalPositions"}},{"kind":"Field","name":{"kind":"Name","value":"totalTasks"}},{"kind":"Field","name":{"kind":"Name","value":"totalTraders"}},{"kind":"Field","name":{"kind":"Name","value":"totalUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"totalUniqueTraders"}},{"kind":"Field","name":{"kind":"Name","value":"usdPnls"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}}]} as unknown as DocumentNode<GetTestingReportV2Query, GetTestingReportV2QueryVariables>;
-export const GetWholeCompressedHistoriesV3Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getWholeCompressedHistoriesV3"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ExportFilterV3"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getWholeCompressedHistoriesV3"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filterParams"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accPnls"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"in"}},{"kind":"Field","name":{"kind":"Name","value":"out"}},{"kind":"Field","name":{"kind":"Name","value":"inOut"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"positionCount"}},{"kind":"Field","name":{"kind":"Name","value":"taskCount"}},{"kind":"Field","name":{"kind":"Name","value":"traderCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"botCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"botCount"}},{"kind":"Field","name":{"kind":"Name","value":"date"}}]}},{"kind":"Field","name":{"kind":"Name","value":"maxInvested"}},{"kind":"Field","name":{"kind":"Name","value":"actionTypeCount"}},{"kind":"Field","name":{"kind":"Name","value":"uniqueTraders"}}]}}]}}]} as unknown as DocumentNode<GetWholeCompressedHistoriesV3Query, GetWholeCompressedHistoriesV3QueryVariables>;
-export const GetTestingReportV3Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getTestingReportV3"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getTestingReportV3"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"avgLoss"}},{"kind":"Field","name":{"kind":"Name","value":"avgProfit"}},{"kind":"Field","name":{"kind":"Name","value":"bottomAccProfit"}},{"kind":"Field","name":{"kind":"Name","value":"calculatedR2"}},{"kind":"Field","name":{"kind":"Name","value":"calculatedSlope"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"investedUSD"}},{"kind":"Field","name":{"kind":"Name","value":"lossCount"}},{"kind":"Field","name":{"kind":"Name","value":"maxCount"}},{"kind":"Field","name":{"kind":"Name","value":"maxLoss"}},{"kind":"Field","name":{"kind":"Name","value":"maxProfit"}},{"kind":"Field","name":{"kind":"Name","value":"maxSize"}},{"kind":"Field","name":{"kind":"Name","value":"minCount"}},{"kind":"Field","name":{"kind":"Name","value":"minR2"}},{"kind":"Field","name":{"kind":"Name","value":"minSize"}},{"kind":"Field","name":{"kind":"Name","value":"peakAccProfit"}},{"kind":"Field","name":{"kind":"Name","value":"profitCount"}},{"kind":"Field","name":{"kind":"Name","value":"totalPositions"}},{"kind":"Field","name":{"kind":"Name","value":"totalTasks"}},{"kind":"Field","name":{"kind":"Name","value":"totalTraders"}},{"kind":"Field","name":{"kind":"Name","value":"totalUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"totalUniqueTraders"}},{"kind":"Field","name":{"kind":"Name","value":"usdPnls"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}}]} as unknown as DocumentNode<GetTestingReportV3Query, GetTestingReportV3QueryVariables>;
-export const GetWholeCompressedHistoriesV4Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getWholeCompressedHistoriesV4"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ExportFilterV3"}}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"ratio"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"startDate"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isTestnet"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getWholeCompressedHistoriesV4"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filterParams"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}}},{"kind":"Argument","name":{"kind":"Name","value":"ratio"},"value":{"kind":"Variable","name":{"kind":"Name","value":"ratio"}}},{"kind":"Argument","name":{"kind":"Name","value":"startDate"},"value":{"kind":"Variable","name":{"kind":"Name","value":"startDate"}}},{"kind":"Argument","name":{"kind":"Name","value":"isTestnet"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isTestnet"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accPnls"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"in"}},{"kind":"Field","name":{"kind":"Name","value":"out"}},{"kind":"Field","name":{"kind":"Name","value":"inOut"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"positionCount"}},{"kind":"Field","name":{"kind":"Name","value":"taskCount"}},{"kind":"Field","name":{"kind":"Name","value":"traderCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"botCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"botCount"}},{"kind":"Field","name":{"kind":"Name","value":"date"}}]}},{"kind":"Field","name":{"kind":"Name","value":"maxInvested"}},{"kind":"Field","name":{"kind":"Name","value":"actionTypeCount"}},{"kind":"Field","name":{"kind":"Name","value":"uniqueTraders"}},{"kind":"Field","name":{"kind":"Name","value":"totalBots"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}}]}}]}}]}}]} as unknown as DocumentNode<GetWholeCompressedHistoriesV4Query, GetWholeCompressedHistoriesV4QueryVariables>;
-export const GetDevPnlSnapshotsV4Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getDevPnlSnapshotsV4"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ExportFilterV3"}}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"ratio"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getDevPnlSnapshotsV4"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}},{"kind":"Argument","name":{"kind":"Name","value":"filterParams"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}}},{"kind":"Argument","name":{"kind":"Name","value":"ratio"},"value":{"kind":"Variable","name":{"kind":"Name","value":"ratio"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"histories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TradeHistoryInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"regression"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"chi2"}},{"kind":"Field","name":{"kind":"Name","value":"intercept"}},{"kind":"Field","name":{"kind":"Name","value":"r"}},{"kind":"Field","name":{"kind":"Name","value":"r2"}},{"kind":"Field","name":{"kind":"Name","value":"rmsd"}},{"kind":"Field","name":{"kind":"Name","value":"slope"}}]}},{"kind":"Field","name":{"kind":"Name","value":"statistic"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"averageIn"}},{"kind":"Field","name":{"kind":"Name","value":"countIn"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TradeHistoryInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TradeHistory"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"action"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"block"}},{"kind":"Field","name":{"kind":"Name","value":"collateralDelta"}},{"kind":"Field","name":{"kind":"Name","value":"collateralIndex"}},{"kind":"Field","name":{"kind":"Name","value":"collateralPriceUsd"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"leverage"}},{"kind":"Field","name":{"kind":"Name","value":"leverageDelta"}},{"kind":"Field","name":{"kind":"Name","value":"long"}},{"kind":"Field","name":{"kind":"Name","value":"marketPrice"}},{"kind":"Field","name":{"kind":"Name","value":"pair"}},{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"tradeId"}},{"kind":"Field","name":{"kind":"Name","value":"tradeIndex"}},{"kind":"Field","name":{"kind":"Name","value":"isCounterTrade"}},{"kind":"Field","name":{"kind":"Name","value":"meta"}}]}}]} as unknown as DocumentNode<GetDevPnlSnapshotsV4Query, GetDevPnlSnapshotsV4QueryVariables>;
-export const GetTestingReportV4Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getTestingReportV4"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getTestingReportV4"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"avgLoss"}},{"kind":"Field","name":{"kind":"Name","value":"avgProfit"}},{"kind":"Field","name":{"kind":"Name","value":"bottomAccProfit"}},{"kind":"Field","name":{"kind":"Name","value":"calculatedR2"}},{"kind":"Field","name":{"kind":"Name","value":"calculatedSlope"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"investedUSD"}},{"kind":"Field","name":{"kind":"Name","value":"lossCount"}},{"kind":"Field","name":{"kind":"Name","value":"maxCount"}},{"kind":"Field","name":{"kind":"Name","value":"maxLoss"}},{"kind":"Field","name":{"kind":"Name","value":"maxProfit"}},{"kind":"Field","name":{"kind":"Name","value":"maxSize"}},{"kind":"Field","name":{"kind":"Name","value":"minCount"}},{"kind":"Field","name":{"kind":"Name","value":"minR2"}},{"kind":"Field","name":{"kind":"Name","value":"minSize"}},{"kind":"Field","name":{"kind":"Name","value":"peakAccProfit"}},{"kind":"Field","name":{"kind":"Name","value":"profitCount"}},{"kind":"Field","name":{"kind":"Name","value":"totalPositions"}},{"kind":"Field","name":{"kind":"Name","value":"totalTasks"}},{"kind":"Field","name":{"kind":"Name","value":"totalTraders"}},{"kind":"Field","name":{"kind":"Name","value":"totalUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"totalUniqueTraders"}},{"kind":"Field","name":{"kind":"Name","value":"usdPnls"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}}]} as unknown as DocumentNode<GetTestingReportV4Query, GetTestingReportV4QueryVariables>;
 export const GetPnlSnapshotsByAddressDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getPnlSnapshotsByAddress"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"address"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getPnlSnapshotsByAddress"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"address"},"value":{"kind":"Variable","name":{"kind":"Name","value":"address"}}},{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PnlSnapshotInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PnlSnapshotInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PnlSnapshot"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}}]}}]} as unknown as DocumentNode<GetPnlSnapshotsByAddressQuery, GetPnlSnapshotsByAddressQueryVariables>;
 export const GetPnlSnapshotInitializedFlagDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getPnlSnapshotInitializedFlag"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getPnlSnapshotInitializedFlag"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"isInit"}}]}}]}}]} as unknown as DocumentNode<GetPnlSnapshotInitializedFlagQuery, GetPnlSnapshotInitializedFlagQueryVariables>;
 export const IsPnlSnapshotInitializedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"isPnlSnapshotInitialized"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"isPnlSnapshotInitialized"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"isInit"}}]}}]}}]} as unknown as DocumentNode<IsPnlSnapshotInitializedQuery, IsPnlSnapshotInitializedQueryVariables>;
 export const BuildPnlSnapshotsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"buildPnlSnapshots"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isForceBuild"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buildPnlSnapshots"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}},{"kind":"Argument","name":{"kind":"Name","value":"isForceBuild"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isForceBuild"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"isInit"}}]}}]}}]} as unknown as DocumentNode<BuildPnlSnapshotsMutation, BuildPnlSnapshotsMutationVariables>;
-export const AutoTestingV4Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"autoTestingV4"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"startDate"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"autoTestingV4"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"startDate"},"value":{"kind":"Variable","name":{"kind":"Name","value":"startDate"}}}]}]}}]} as unknown as DocumentNode<AutoTestingV4Mutation, AutoTestingV4MutationVariables>;
-export const AutoTestingV5Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"autoTestingV5"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"autoTestingV5"}}]}}]} as unknown as DocumentNode<AutoTestingV5Mutation, AutoTestingV5MutationVariables>;
 export const DynamicSnapshotBuildDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"dynamicSnapshotBuild"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dynamicSnapshotBuild"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"isInit"}}]}}]}}]} as unknown as DocumentNode<DynamicSnapshotBuildMutation, DynamicSnapshotBuildMutationVariables>;
 export const InitializePnlSnapshotDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"initializePnlSnapshot"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"beginingDate"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"DateTime"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isForceBuild"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"initializePnlSnapshot"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"beginingDate"},"value":{"kind":"Variable","name":{"kind":"Name","value":"beginingDate"}}},{"kind":"Argument","name":{"kind":"Name","value":"isForceBuild"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isForceBuild"}}}]}]}}]} as unknown as DocumentNode<InitializePnlSnapshotMutation, InitializePnlSnapshotMutationVariables>;
-export const GetDevPnlSnapshotsV5Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getDevPnlSnapshotsV5"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ExportFilterV5"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getDevPnlSnapshotsV5"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}},{"kind":"Argument","name":{"kind":"Name","value":"filterParams"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"histories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TradeHistoryInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"score"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TradeHistoryInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TradeHistory"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"action"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"block"}},{"kind":"Field","name":{"kind":"Name","value":"collateralDelta"}},{"kind":"Field","name":{"kind":"Name","value":"collateralIndex"}},{"kind":"Field","name":{"kind":"Name","value":"collateralPriceUsd"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"leverage"}},{"kind":"Field","name":{"kind":"Name","value":"leverageDelta"}},{"kind":"Field","name":{"kind":"Name","value":"long"}},{"kind":"Field","name":{"kind":"Name","value":"marketPrice"}},{"kind":"Field","name":{"kind":"Name","value":"pair"}},{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"tradeId"}},{"kind":"Field","name":{"kind":"Name","value":"tradeIndex"}},{"kind":"Field","name":{"kind":"Name","value":"isCounterTrade"}},{"kind":"Field","name":{"kind":"Name","value":"meta"}}]}}]} as unknown as DocumentNode<GetDevPnlSnapshotsV5Query, GetDevPnlSnapshotsV5QueryVariables>;
-export const GetWholeCompressedHistoriesV5Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getWholeCompressedHistoriesV5"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"startDate"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isTestnet"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ExportFilterV5"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getWholeCompressedHistoriesV5"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"startDate"},"value":{"kind":"Variable","name":{"kind":"Name","value":"startDate"}}},{"kind":"Argument","name":{"kind":"Name","value":"isTestnet"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isTestnet"}}},{"kind":"Argument","name":{"kind":"Name","value":"filterParams"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accPnls"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"in"}},{"kind":"Field","name":{"kind":"Name","value":"out"}},{"kind":"Field","name":{"kind":"Name","value":"inOut"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"positionCount"}},{"kind":"Field","name":{"kind":"Name","value":"taskCount"}},{"kind":"Field","name":{"kind":"Name","value":"traderCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"botCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"botCount"}},{"kind":"Field","name":{"kind":"Name","value":"date"}}]}},{"kind":"Field","name":{"kind":"Name","value":"maxInvested"}},{"kind":"Field","name":{"kind":"Name","value":"actionTypeCount"}},{"kind":"Field","name":{"kind":"Name","value":"uniqueTraders"}},{"kind":"Field","name":{"kind":"Name","value":"totalBots"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}}]}}]}}]}}]} as unknown as DocumentNode<GetWholeCompressedHistoriesV5Query, GetWholeCompressedHistoriesV5QueryVariables>;
-export const GetTestingReportV5Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getTestingReportV5"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getTestingReportV5"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"maxAvgSize"}},{"kind":"Field","name":{"kind":"Name","value":"minAvgSize"}},{"kind":"Field","name":{"kind":"Name","value":"maxCount"}},{"kind":"Field","name":{"kind":"Name","value":"minCount"}},{"kind":"Field","name":{"kind":"Name","value":"avgLoss"}},{"kind":"Field","name":{"kind":"Name","value":"monthWeight"}},{"kind":"Field","name":{"kind":"Name","value":"threeMonthWeight"}},{"kind":"Field","name":{"kind":"Name","value":"weekWeight"}},{"kind":"Field","name":{"kind":"Name","value":"allTimeWeight"}},{"kind":"Field","name":{"kind":"Name","value":"avgProfit"}},{"kind":"Field","name":{"kind":"Name","value":"bottomAccProfit"}},{"kind":"Field","name":{"kind":"Name","value":"calculatedR2"}},{"kind":"Field","name":{"kind":"Name","value":"calculatedSlope"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"investedUSD"}},{"kind":"Field","name":{"kind":"Name","value":"lossCount"}},{"kind":"Field","name":{"kind":"Name","value":"m"}},{"kind":"Field","name":{"kind":"Name","value":"maxLoss"}},{"kind":"Field","name":{"kind":"Name","value":"maxProfit"}},{"kind":"Field","name":{"kind":"Name","value":"minR2"}},{"kind":"Field","name":{"kind":"Name","value":"minScore"}},{"kind":"Field","name":{"kind":"Name","value":"n"}},{"kind":"Field","name":{"kind":"Name","value":"peakAccProfit"}},{"kind":"Field","name":{"kind":"Name","value":"profitCount"}},{"kind":"Field","name":{"kind":"Name","value":"totalPositions"}},{"kind":"Field","name":{"kind":"Name","value":"totalTasks"}},{"kind":"Field","name":{"kind":"Name","value":"totalTraders"}},{"kind":"Field","name":{"kind":"Name","value":"totalUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"totalUniqueTraders"}},{"kind":"Field","name":{"kind":"Name","value":"usdPnls"}},{"kind":"Field","name":{"kind":"Name","value":"window"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}}]} as unknown as DocumentNode<GetTestingReportV5Query, GetTestingReportV5QueryVariables>;
+export const AutoTestingDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"autoTesting"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"autoTesting"}}]}}]} as unknown as DocumentNode<AutoTestingMutation, AutoTestingMutationVariables>;
+export const GetDevPnlSnapshotsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getDevPnlSnapshots"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ExportFilter"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getDevPnlSnapshots"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}},{"kind":"Argument","name":{"kind":"Name","value":"filterParams"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"histories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TradeHistoryInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"score"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TradeHistoryInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TradeHistory"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"action"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"block"}},{"kind":"Field","name":{"kind":"Name","value":"collateralDelta"}},{"kind":"Field","name":{"kind":"Name","value":"collateralIndex"}},{"kind":"Field","name":{"kind":"Name","value":"collateralPriceUsd"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"leverage"}},{"kind":"Field","name":{"kind":"Name","value":"leverageDelta"}},{"kind":"Field","name":{"kind":"Name","value":"long"}},{"kind":"Field","name":{"kind":"Name","value":"marketPrice"}},{"kind":"Field","name":{"kind":"Name","value":"pair"}},{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"tradeId"}},{"kind":"Field","name":{"kind":"Name","value":"tradeIndex"}},{"kind":"Field","name":{"kind":"Name","value":"isCounterTrade"}},{"kind":"Field","name":{"kind":"Name","value":"meta"}}]}}]} as unknown as DocumentNode<GetDevPnlSnapshotsQuery, GetDevPnlSnapshotsQueryVariables>;
+export const GetWholeCompressedHistoriesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getWholeCompressedHistories"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"startDate"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isTestnet"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ExportFilter"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getWholeCompressedHistories"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"startDate"},"value":{"kind":"Variable","name":{"kind":"Name","value":"startDate"}}},{"kind":"Argument","name":{"kind":"Name","value":"isTestnet"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isTestnet"}}},{"kind":"Argument","name":{"kind":"Name","value":"filterParams"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accPnls"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"in"}},{"kind":"Field","name":{"kind":"Name","value":"out"}},{"kind":"Field","name":{"kind":"Name","value":"inOut"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"positionCount"}},{"kind":"Field","name":{"kind":"Name","value":"taskCount"}},{"kind":"Field","name":{"kind":"Name","value":"traderCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"botCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"botCount"}},{"kind":"Field","name":{"kind":"Name","value":"date"}}]}},{"kind":"Field","name":{"kind":"Name","value":"maxInvested"}},{"kind":"Field","name":{"kind":"Name","value":"actionTypeCount"}},{"kind":"Field","name":{"kind":"Name","value":"uniqueTraders"}},{"kind":"Field","name":{"kind":"Name","value":"totalBots"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}}]}}]}}]}}]} as unknown as DocumentNode<GetWholeCompressedHistoriesQuery, GetWholeCompressedHistoriesQueryVariables>;
+export const GetTestingReportDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getTestingReport"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getTestingReport"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"maxAvgSize"}},{"kind":"Field","name":{"kind":"Name","value":"minAvgSize"}},{"kind":"Field","name":{"kind":"Name","value":"maxCount"}},{"kind":"Field","name":{"kind":"Name","value":"minCount"}},{"kind":"Field","name":{"kind":"Name","value":"avgLoss"}},{"kind":"Field","name":{"kind":"Name","value":"monthWeight"}},{"kind":"Field","name":{"kind":"Name","value":"threeMonthWeight"}},{"kind":"Field","name":{"kind":"Name","value":"weekWeight"}},{"kind":"Field","name":{"kind":"Name","value":"allTimeWeight"}},{"kind":"Field","name":{"kind":"Name","value":"avgProfit"}},{"kind":"Field","name":{"kind":"Name","value":"bottomAccProfit"}},{"kind":"Field","name":{"kind":"Name","value":"calculatedR2"}},{"kind":"Field","name":{"kind":"Name","value":"calculatedSlope"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"investedUSD"}},{"kind":"Field","name":{"kind":"Name","value":"lossCount"}},{"kind":"Field","name":{"kind":"Name","value":"m"}},{"kind":"Field","name":{"kind":"Name","value":"maxLoss"}},{"kind":"Field","name":{"kind":"Name","value":"maxProfit"}},{"kind":"Field","name":{"kind":"Name","value":"minR2"}},{"kind":"Field","name":{"kind":"Name","value":"minScore"}},{"kind":"Field","name":{"kind":"Name","value":"n"}},{"kind":"Field","name":{"kind":"Name","value":"peakAccProfit"}},{"kind":"Field","name":{"kind":"Name","value":"profitCount"}},{"kind":"Field","name":{"kind":"Name","value":"totalPositions"}},{"kind":"Field","name":{"kind":"Name","value":"totalTasks"}},{"kind":"Field","name":{"kind":"Name","value":"totalTraders"}},{"kind":"Field","name":{"kind":"Name","value":"totalUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"totalUniqueTraders"}},{"kind":"Field","name":{"kind":"Name","value":"usdPnls"}},{"kind":"Field","name":{"kind":"Name","value":"window"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}}]} as unknown as DocumentNode<GetTestingReportQuery, GetTestingReportQueryVariables>;
 export const AllLogsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"allLogs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"severity"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"LogSeverity"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"checked"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allLogs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"severity"},"value":{"kind":"Variable","name":{"kind":"Name","value":"severity"}}},{"kind":"Argument","name":{"kind":"Name","value":"checked"},"value":{"kind":"Variable","name":{"kind":"Name","value":"checked"}}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LogInfo"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LogInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Log"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"severity"}},{"kind":"Field","name":{"kind":"Name","value":"summary"}},{"kind":"Field","name":{"kind":"Name","value":"details"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}},{"kind":"Field","name":{"kind":"Name","value":"checked"}}]}}]} as unknown as DocumentNode<AllLogsQuery, AllLogsQueryVariables>;
 export const GetLogsSeverityCountsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getLogsSeverityCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getLogsSeverityCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"severity"}},{"kind":"Field","name":{"kind":"Name","value":"counts"}}]}}]}}]} as unknown as DocumentNode<GetLogsSeverityCountsQuery, GetLogsSeverityCountsQueryVariables>;
 export const CheckLogDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"checkLog"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"checkLog"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LogInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LogInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Log"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"severity"}},{"kind":"Field","name":{"kind":"Name","value":"summary"}},{"kind":"Field","name":{"kind":"Name","value":"details"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}},{"kind":"Field","name":{"kind":"Name","value":"checked"}}]}}]} as unknown as DocumentNode<CheckLogMutation, CheckLogMutationVariables>;
@@ -2799,7 +2391,6 @@ export const GetAllStrategyMetadataDocument = {"kind":"Document","definitions":[
 export const GetAllStrategyDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getAllStrategy"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getAllStrategy"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"StrategyInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StrategyInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Strategy"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"lifeTime"}},{"kind":"Field","name":{"kind":"Name","value":"maxCollateral"}},{"kind":"Field","name":{"kind":"Name","value":"minCollateral"}},{"kind":"Field","name":{"kind":"Name","value":"maxLeverage"}},{"kind":"Field","name":{"kind":"Name","value":"minLeverage"}},{"kind":"Field","name":{"kind":"Name","value":"collateralBaseline"}},{"kind":"Field","name":{"kind":"Name","value":"params"}},{"kind":"Field","name":{"kind":"Name","value":"ratio"}},{"kind":"Field","name":{"kind":"Name","value":"strategyKey"}}]}}]} as unknown as DocumentNode<GetAllStrategyQuery, GetAllStrategyQueryVariables>;
 export const PauseSystemDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"pauseSystem"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pauseSystem"}}]}}]} as unknown as DocumentNode<PauseSystemMutation, PauseSystemMutationVariables>;
 export const ResumeSystemDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"resumeSystem"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"password"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resumeSystem"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"password"},"value":{"kind":"Variable","name":{"kind":"Name","value":"password"}}}]}]}}]} as unknown as DocumentNode<ResumeSystemMutation, ResumeSystemMutationVariables>;
-export const UpgradeSystemDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"upgradeSystem"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"upgradeSystem"}}]}}]} as unknown as DocumentNode<UpgradeSystemMutation, UpgradeSystemMutationVariables>;
 export const MakeSafeAppDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"makeSafeApp"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"password"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"makeSafeApp"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"password"},"value":{"kind":"Variable","name":{"kind":"Name","value":"password"}}}]}]}}]} as unknown as DocumentNode<MakeSafeAppMutation, MakeSafeAppMutationVariables>;
 export const ChangePasswordDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"changePassword"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newPassword"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"oldPassword"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"changePassword"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"newPassword"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newPassword"}}},{"kind":"Argument","name":{"kind":"Name","value":"oldPassword"},"value":{"kind":"Variable","name":{"kind":"Name","value":"oldPassword"}}}]}]}}]} as unknown as DocumentNode<ChangePasswordMutation, ChangePasswordMutationVariables>;
 export const GetSystemStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getSystemStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"systemStatus"}}]}}]} as unknown as DocumentNode<GetSystemStatusQuery, GetSystemStatusQueryVariables>;

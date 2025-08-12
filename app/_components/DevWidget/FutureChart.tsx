@@ -4,7 +4,7 @@ import { Address } from "viem";
 import { useState } from "react";
 import { Switch } from "@nextui-org/react";
 
-import { HistoriesWidget } from "../../LeaderboardWidgets/HistoriesWidget/HistoriesWidget";
+import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget/HistoriesWidget";
 
 import { PersonalTradeHistory } from "@/types/index";
 

@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import crypto from "crypto";
 import { SimpleLinearRegression } from "ml-regression-simple-linear";
 import { PersonalTradeHistory, TradeActionType } from "@/types";
-import { primaryBestCase } from "@/app/_components/DevWidget/v6/subcase";
+import { primaryBestCase } from "@/app/_components/DevWidget/subcase";
 
 export function shrinkAddress(address: Address, onlyFirst?: boolean) {
   if (onlyFirst) {

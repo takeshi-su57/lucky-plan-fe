@@ -9,12 +9,12 @@ import {
   Tabs,
 } from "@nextui-org/react";
 import { Address } from "viem";
+import dayjs from "dayjs";
 import { PersonalTradeHistory } from "@/types";
 
-import { AutomationGridChart } from "../../PlansWidget/AutomationChart";
-import { LeaderItem, LeaderParams } from "./LeaderItem";
+import { AutomationGridChart } from "../PlansWidget/AutomationChart";
 import { FutureChart } from "./FutureChart";
-import dayjs from "dayjs";
+import { LeaderItem, LeaderParams } from "./LeaderItem";
 import { getSortedPartialHistories } from "@/utils/historiesChart";
 
 type TabType = "overview" | "details";

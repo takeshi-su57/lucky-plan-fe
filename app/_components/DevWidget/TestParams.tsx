@@ -8,9 +8,9 @@ import { getServerTimezone } from "@/utils";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 import { NumericInput } from "@/components/inputs/NumericInput";
-import { ExportFilterV5 } from "@/graphql/gql/graphql";
+import { ExportFilter } from "@/graphql/gql/graphql";
 
-export const initialTestParams: ExportFilterV5 = {
+export const initialTestParams: ExportFilter = {
   minR2: 0.9,
   window: 6,
   minScore: 0,
@@ -23,7 +23,7 @@ export const initialTestParams: ExportFilterV5 = {
   ratio: 1,
 };
 
-export function TestParamsV6View({
+export function TestParamsView({
   ratio,
   date,
   onChangeParams,
