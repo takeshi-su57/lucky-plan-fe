@@ -8,14 +8,17 @@ import { useCloseMission, useIgnoreMission } from "@/app-hooks/useMission";
 import { TaskSummary } from "../TaskWidgets/TaskSummary";
 import { TaskDetails } from "../TaskWidgets/TaskDetails";
 import { MissionCloneButton } from "./MissionCloneButton";
+import { MissionHeader } from "./MissionHeader";
 
 export type MissionDetailsProps = {
   mission: MissionForwardDetails;
+  leaderContractId: number;
   followerContractId: number;
 };
 
 export function MissionDetails({
   mission,
+  leaderContractId,
   followerContractId,
 }: MissionDetailsProps) {
   const closeMission = useCloseMission();
@@ -47,8 +50,10 @@ export function MissionDetails({
     });
   }, [closeMission, mission.id]);
 
+  const task = mission.tasks.length > 0 ? mission.tasks[0] : null;
+
   return (
-    <div className="flex flex-col gap-2 border-t border-t-neutral-400/20 py-6">
+    <div className="flex flex-col gap-4 border-t border-t-neutral-400/20 py-6">
       <div className="flex flex-row items-center justify-between">
         <div className="flex flex-row items-center gap-4">
           {mission.status !== MissionStatus.Closed ? (
@@ -90,14 +95,22 @@ export function MissionDetails({
           followerContractId={followerContractId}
         />
       </div>
-      <span className="px-2 text-base">Tasks</span>
+
+      {task ? (
+        <MissionHeader task={task} contractId={leaderContractId} />
+      ) : null}
 
       <Accordion isCompact variant="splitted">
         {mission.tasks
           .sort((a, b) => a.id - b.id)
           .map((task) => (
             <AccordionItem key={task.id} title={<TaskSummary task={task} />}>
-              <TaskDetails task={task} missionStatus={mission.status} />
+              <TaskDetails
+                task={task}
+                leaderContractId={leaderContractId}
+                followerContractId={followerContractId}
+                missionStatus={mission.status}
+              />
             </AccordionItem>
           ))}
       </Accordion>

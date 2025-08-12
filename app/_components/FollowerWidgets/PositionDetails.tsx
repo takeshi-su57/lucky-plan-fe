@@ -4,7 +4,10 @@ import { Button, useDisclosure } from "@nextui-org/react";
 import { JSONTree } from "react-json-tree";
 
 import { useCloseTradeMarket } from "@/app-hooks/useFollower";
-import { MissionForwardDetails } from "@/graphql/gql/graphql";
+import {
+  MissionExtForwardDetails,
+  MissionForwardDetails,
+} from "@/graphql/gql/graphql";
 import { RightDrawer } from "@/components/modals/RightDrawer";
 import { MissionDetails } from "../MissionWidgets/MissionDetails";
 import { AnalyzeButton } from "../ExpertWidgets/AnalyzeButton";
@@ -15,16 +18,16 @@ import { WithdrawPositivePnlButton } from "./WithdrawPositivePnlButton";
 export type PositionDetailsProps = {
   address: string;
   index: number;
-  contractId: number;
   params: string;
-  mission: MissionForwardDetails | null;
+  followerContractId: number;
+  mission: MissionExtForwardDetails | null;
 };
 
 export function PositionDetails({
   address,
   index,
-  contractId,
   params,
+  followerContractId,
   mission,
 }: PositionDetailsProps) {
   const { isOpen, onOpenChange, onOpen } = useDisclosure();
@@ -48,7 +51,7 @@ export function PositionDetails({
       variables: {
         input: {
           address,
-          contractId,
+          contractId: followerContractId,
           pairIndex,
           index,
         },
@@ -72,19 +75,19 @@ export function PositionDetails({
 
         <SlUpdateButton
           address={address}
-          contractId={contractId}
+          contractId={followerContractId}
           index={index}
         />
 
         <TpUpdateButton
           address={address}
-          contractId={contractId}
+          contractId={followerContractId}
           index={index}
         />
 
         <WithdrawPositivePnlButton
           address={address}
-          contractId={contractId}
+          contractId={followerContractId}
           index={index}
         />
 
@@ -108,7 +111,11 @@ export function PositionDetails({
       >
         <div className="flex w-full flex-col gap-6">
           {mission ? (
-            <MissionDetails mission={mission} followerContractId={contractId} />
+            <MissionDetails
+              mission={mission as MissionForwardDetails}
+              leaderContractId={mission.bot.leaderContractId}
+              followerContractId={followerContractId}
+            />
           ) : null}
         </div>
       </RightDrawer>

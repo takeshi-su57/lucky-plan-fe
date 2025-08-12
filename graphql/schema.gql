@@ -31,6 +31,24 @@ input AddUserInput {
   address: String!
 }
 
+type Bot {
+  endedAt: DateTime
+  followerAddress: String!
+  followerContractId: Int!
+  followerEndedBlock: Int
+  followerStartedBlock: Int
+  id: Int!
+  leaderAddress: String!
+  leaderCollateralBaseline: Int!
+  leaderContractId: Int!
+  leaderEndedBlock: Int
+  leaderStartedBlock: Int
+  planId: Int!
+  startedAt: DateTime
+  status: BotStatus!
+  strategyId: Int!
+}
+
 type BotBackwardDetails {
   endedAt: DateTime
   follower: Follower!
@@ -313,7 +331,7 @@ type FollowerPendingOrder {
 type FollowerTrade {
   address: String!
   index: Int!
-  mission: MissionForwardDetails
+  mission: MissionExtForwardDetails
   params: String!
 }
 
@@ -390,6 +408,20 @@ type MissionBackwardDetails {
   status: MissionStatus!
   targetPosition: Position!
   targetPositionId: Int!
+  updatedAt: DateTime!
+}
+
+type MissionExtForwardDetails {
+  achievePosition: Position
+  achievePositionId: Int
+  bot: Bot!
+  botId: Int!
+  createdAt: DateTime!
+  id: Int!
+  status: MissionStatus!
+  targetPosition: Position!
+  targetPositionId: Int!
+  tasks: [TaskForwardDetails!]!
   updatedAt: DateTime!
 }
 

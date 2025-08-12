@@ -402,6 +402,7 @@ export function AutomationDetails({
                 <MissionDetails
                   mission={mission}
                   followerContractId={bot.followerContractId}
+                  leaderContractId={bot.leaderContractId}
                 />
               </AccordionItem>
             ))}
