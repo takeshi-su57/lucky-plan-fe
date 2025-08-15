@@ -5,7 +5,7 @@ schema {
 }
 
 type AccPnl {
-  date: DateTime!
+  date: Date!
   in: Float!
   inOut: Float!
   out: Float!
@@ -22,7 +22,7 @@ type AccessToken {
 type Action {
   args: String!
   blockNumber: Int!
-  createdAt: DateTime!
+  createdAt: Date!
   id: Int!
   name: String!
   orderInBlock: Int!
@@ -34,7 +34,7 @@ input AddUserInput {
 }
 
 type BotBackwardDetails {
-  endedAt: DateTime
+  endedAt: Date
   follower: Follower!
   followerAddress: String!
   followerContract: Contract!
@@ -50,7 +50,7 @@ type BotBackwardDetails {
   leaderStartedBlock: Int
   plan: Plan!
   planId: Int!
-  startedAt: DateTime
+  startedAt: Date
   status: BotStatus!
   strategy: Strategy!
   strategyId: Int!
@@ -63,11 +63,11 @@ type BotConnection {
 
 type BotCount {
   botCount: Int!
-  date: DateTime!
+  date: Date!
 }
 
 type BotDetails {
-  endedAt: DateTime
+  endedAt: Date
   follower: Follower!
   followerAddress: String!
   followerContract: Contract!
@@ -82,7 +82,7 @@ type BotDetails {
   leaderEndedBlock: Int
   leaderStartedBlock: Int
   planId: Int!
-  startedAt: DateTime
+  startedAt: Date
   status: BotStatus!
   strategy: Strategy!
   strategyId: Int!
@@ -94,7 +94,7 @@ type BotEdge {
 }
 
 type BotForwardDetails {
-  endedAt: DateTime
+  endedAt: Date
   follower: Follower!
   followerAddress: String!
   followerContract: Contract!
@@ -110,7 +110,7 @@ type BotForwardDetails {
   leaderStartedBlock: Int
   missions: [MissionForwardDetails!]!
   planId: Int!
-  startedAt: DateTime
+  startedAt: Date
   status: BotStatus!
   strategy: Strategy!
   strategyId: Int!
@@ -190,8 +190,8 @@ input CreateBotInput {
 
 input CreatePlanInput {
   description: String!
-  scheduledEnd: DateTime!
-  scheduledStart: DateTime!
+  scheduledEnd: Date!
+  scheduledStart: Date!
   title: String!
 }
 
@@ -207,10 +207,8 @@ input CreateStrategyInput {
   strategyKey: String!
 }
 
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
+"""Date custom scalar type"""
+scalar Date
 
 type ExpertPnlSnapshot {
   accUSDPnl: Float!
@@ -303,8 +301,8 @@ input GetUserByAddressInput {
 input GetUserTransactionCountsInput {
   address: String!
   contractId: Int!
-  endedAt: DateTime
-  startedAt: DateTime
+  endedAt: Date
+  startedAt: Date
 }
 
 type Log {
@@ -313,7 +311,7 @@ type Log {
   id: Int!
   severity: LogSeverity!
   summary: String!
-  timestamp: DateTime!
+  timestamp: Date!
 }
 
 enum LogSeverity {
@@ -352,11 +350,11 @@ input ManualParams {
 type Mission {
   achievePositionId: Int
   botId: Int!
-  createdAt: DateTime!
+  createdAt: Date!
   id: Int!
   status: MissionStatus!
   targetPositionId: Int!
-  updatedAt: DateTime!
+  updatedAt: Date!
 }
 
 type MissionBackwardDetails {
@@ -364,25 +362,25 @@ type MissionBackwardDetails {
   achievePositionId: Int
   bot: BotBackwardDetails!
   botId: Int!
-  createdAt: DateTime!
+  createdAt: Date!
   id: Int!
   status: MissionStatus!
   targetPosition: Position!
   targetPositionId: Int!
-  updatedAt: DateTime!
+  updatedAt: Date!
 }
 
 type MissionForwardDetails {
   achievePosition: Position
   achievePositionId: Int
   botId: Int!
-  createdAt: DateTime!
+  createdAt: Date!
   id: Int!
   status: MissionStatus!
   targetPosition: Position!
   targetPositionId: Int!
   tasks: [TaskForwardDetails!]!
-  updatedAt: DateTime!
+  updatedAt: Date!
 }
 
 type MissionShallowBackwardDetails {
@@ -390,12 +388,12 @@ type MissionShallowBackwardDetails {
   achievePositionId: Int
   bot: BotDetails!
   botId: Int!
-  createdAt: DateTime!
+  createdAt: Date!
   id: Int!
   status: MissionStatus!
   targetPosition: Position!
   targetPositionId: Int!
-  updatedAt: DateTime!
+  updatedAt: Date!
 }
 
 enum MissionStatus {
@@ -416,6 +414,7 @@ type Mutation {
   autoTesting: Boolean!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
   buildPnlSnapshots(dateStr: String!, isForceBuild: Boolean!): PnlSnapshotInitializedFlag
+  buildPnlSnapshotsV2(dateStr: String!, isForceBuild: Boolean!): PnlSnapshotV2InitializedFlag
   cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
@@ -430,13 +429,17 @@ type Mutation {
   deleteCategory(id: Int!): TagCategory!
   deletePlan(id: Int!): Int!
   deleteTag(tag: String!): Tag!
+  disableContract(contractId: Int!): Contract!
   dynamicSnapshotBuild(dateStr: String!): PnlSnapshotInitializedFlag
+  dynamicSnapshotBuildV2(dateStr: String!): PnlSnapshotV2InitializedFlag
   endPlan(id: Int!): Boolean!
   generateNewFollower: Follower!
   getToken(signature: String!, timestamp: String!, walletAddress: String!): AccessToken!
   ignoreMission(id: Int!): Boolean!
-  initializePnlSnapshot(beginingDate: DateTime!, isForceBuild: Boolean!): Boolean!
+  initializePnlSnapshot(beginingDate: Date!, isForceBuild: Boolean!): Boolean!
+  initializePnlSnapshotV2(beginingDate: Date!, isForceBuild: Boolean!): Boolean!
   liveBot(id: Int!): Boolean!
+  liveContract(contractId: Int!): Contract!
   makeSafeApp(password: String!): Boolean!
   pauseSystem: Boolean!
   performTask(id: Int!): Boolean!
@@ -444,6 +447,7 @@ type Mutation {
   removeFromWhitelist(address: String!): Boolean!
   removeTagFromWalletAccount(input: ChangeUserTagInput!): WalletAccount!
   resumeSystem(password: String): Boolean!
+  startAdaption(contractId: Int!, shouldRestart: Boolean!): Boolean!
   startPlan(id: Int!): Boolean!
   stopBot(id: Int!): Boolean!
   stopTask(id: Int!): Boolean!
@@ -459,13 +463,25 @@ type Mutation {
   withdrawUSDCToUser(amount: Float!, contractId: Int!, password: String!): Boolean!
 }
 
+type PerpTradingEventLog {
+  address: String!
+  block: Int!
+  contractId: Int!
+  date: Date!
+  id: Int!
+  jsonLog: String!
+  logIndex: Int!
+  platform: Platform!
+  usdPnl: Float!
+}
+
 type Plan {
   description: String!
-  endedAt: DateTime
+  endedAt: Date
   id: Int!
-  scheduledEnd: DateTime!
-  scheduledStart: DateTime!
-  startedAt: DateTime
+  scheduledEnd: Date!
+  scheduledStart: Date!
+  startedAt: Date
   status: PlanStatus!
   title: String!
   userId: String!
@@ -484,11 +500,11 @@ type PlanEdge {
 type PlanForwardDetails {
   bots: [BotForwardDetails!]!
   description: String!
-  endedAt: DateTime
+  endedAt: Date
   id: Int!
-  scheduledEnd: DateTime!
-  scheduledStart: DateTime!
-  startedAt: DateTime
+  scheduledEnd: Date!
+  scheduledStart: Date!
+  startedAt: Date
   status: PlanStatus!
   title: String!
   userId: String!
@@ -504,6 +520,10 @@ enum PlanStatus {
   Finished
   Started
   Stopped
+}
+
+enum Platform {
+  GNS
 }
 
 type PnlSnapshot {
@@ -565,6 +585,37 @@ enum PnlSnapshotKind {
   WEEK
 }
 
+type PnlSnapshotV2Details {
+  accUSDPnl: Float!
+  address: String!
+  dateStr: String!
+  id: Int!
+  kind: PnlSnapshotKind!
+  perpTradingEventLogs: [PerpTradingEventLog!]!
+  platform: Platform!
+}
+
+type PnlSnapshotV2DetailsConnection {
+  edges: [PnlSnapshotV2DetailsEdge!]!
+  pageInfo: PnlSnapshotV2DetailsPageInfo!
+}
+
+type PnlSnapshotV2DetailsEdge {
+  cursor: Int!
+  node: PnlSnapshotV2Details!
+}
+
+type PnlSnapshotV2DetailsPageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
+type PnlSnapshotV2InitializedFlag {
+  dateStr: String!
+  id: Int!
+  isInit: Boolean!
+}
+
 type Position {
   address: String!
   contractId: Int!
@@ -584,6 +635,7 @@ type Query {
   findStrategy(id: Int!): Strategy
   findStrategyMetadata(key: String!): StrategyMetadata!
   getActiveBots: [BotForwardDetails!]!
+  getAdaptionStatus: String!
   getAlertTasks: [TaskBackwardDetails!]!
   getAllCategories: [TagCategory!]!
   getAllContracts: [Contract!]!
@@ -599,11 +651,14 @@ type Query {
   getDevPnlSnapshots(dateStr: String!, filterParams: [ExportFilter!]!): [PnlSnapshotDevDetails!]!
   getExpertPnlSnapshots: [ExpertPnlSnapshot!]!
   getLogsSeverityCounts: [SeverityCount!]!
+  getPerpEventLogs(address: String!, platform: Platform!): [PerpTradingEventLog!]!
   getPlanById(id: Int!): PlanForwardDetails
   getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
   getPnlSnapshotInitializedFlag: [PnlSnapshotInitializedFlag!]!
+  getPnlSnapshotV2InitializedFlag: [PnlSnapshotV2InitializedFlag!]!
   getPnlSnapshots(after: Int, dateStr: String!, first: Int!, kind: PnlSnapshotKind!): PnlSnapshotDetailsConnection!
   getPnlSnapshotsByAddress(address: String!, dateStr: String!): [PnlSnapshot!]!
+  getPnlSnapshotsV2(after: Int, dateStr: String!, first: Int!, kind: PnlSnapshotKind!, platform: Platform!): PnlSnapshotV2DetailsConnection!
   getServerTime: ServerTime!
   getTestingReport(after: Int, first: Int!): TestingReportConnection!
   getTradeCollaterals(contractId: Int!): [TradeCollateral!]!
@@ -615,6 +670,7 @@ type Query {
   getWhitelist: [String!]
   getWholeCompressedHistories(filterParams: [ExportFilter!]!, isTestnet: Boolean!, startDate: String!): WholeCompressedHistories!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
+  isPnlSnapshotV2Initialized(dateStr: String!): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   systemStatus: Boolean!
 }
@@ -691,7 +747,7 @@ input TagInput {
 type TaskBackwardDetails {
   action: Action!
   actionId: Int!
-  createdAt: DateTime!
+  createdAt: Date!
   followerActions: [FollowerActionDetails!]!
   id: Int!
   logs: [String!]!
@@ -703,7 +759,7 @@ type TaskBackwardDetails {
 type TaskForwardDetails {
   action: Action!
   actionId: Int!
-  createdAt: DateTime!
+  createdAt: Date!
   followerActions: [FollowerActionDetails!]!
   id: Int!
   logs: [String!]!
@@ -804,7 +860,7 @@ type TradeHistory {
   collateralIndex: Int!
   collateralPriceUsd: String!
   contractId: Int!
-  date: DateTime!
+  date: Date!
   id: Int!
   isCounterTrade: Boolean
   leverage: Int!
@@ -837,11 +893,11 @@ type TradeTransactionCount {
 
 input UpdatePlanInput {
   description: String
-  endedAt: DateTime
+  endedAt: Date
   id: Int!
-  scheduledEnd: DateTime
-  scheduledStart: DateTime
-  startedAt: DateTime
+  scheduledEnd: Date
+  scheduledStart: Date
+  startedAt: Date
   status: PlanStatus!
   title: String
 }

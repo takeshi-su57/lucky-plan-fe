@@ -30,6 +30,10 @@ const documents = {
     "\n  query getAllContracts {\n    getAllContracts {\n      ...ContractInfo\n    }\n  }\n": types.GetAllContractsDocument,
     "\n  query getAllTradePairs($contractId: [Int!]!) {\n    getTradePairs(contractId: $contractId) {\n      contractId\n      from\n      pairIndex\n      to\n      onePercentDepthAboveUsd\n      onePercentDepthBelowUsd\n    }\n  }\n": types.GetAllTradePairsDocument,
     "\n  query getTradeCollaterals($contractId: Int!) {\n    getTradeCollaterals(contractId: $contractId) {\n      collateral\n      collateralIndex\n      isActive\n      precision\n      precisionDelta\n    }\n  }\n": types.GetTradeCollateralsDocument,
+    "\n  query getAdaptionStatus {\n    getAdaptionStatus\n  }\n": types.GetAdaptionStatusDocument,
+    "\n  mutation disableContract($contractId: Int!) {\n    disableContract(contractId: $contractId) {\n      ...ContractInfo\n    }\n  }\n": types.DisableContractDocument,
+    "\n  mutation liveContract($contractId: Int!) {\n    liveContract(contractId: $contractId) {\n      ...ContractInfo\n    }\n  }\n": types.LiveContractDocument,
+    "\n  mutation startAdaption($contractId: Int!, $shouldRestart: Boolean!) {\n    startAdaption(contractId: $contractId, shouldRestart: $shouldRestart)\n  }\n": types.StartAdaptionDocument,
     "\n  fragment FollowerInfo on Follower {\n    userId\n    address\n    accountIndex\n    publicKey\n  }\n": types.FollowerInfoFragmentDoc,
     "\n  fragment FollowerTradeInfo on FollowerTrade {\n    address\n    index\n    mission {\n      ...MissionForwardDetailsInfo\n    }\n    params\n  }\n": types.FollowerTradeInfoFragmentDoc,
     "\n  fragment FollowerPendingOrderInfo on FollowerPendingOrder {\n    params\n    address\n    index\n  }\n": types.FollowerPendingOrderInfoFragmentDoc,
@@ -49,6 +53,8 @@ const documents = {
     "\n  fragment TradeHistoryInfo on TradeHistory {\n    action\n    address\n    block\n    collateralDelta\n    collateralIndex\n    collateralPriceUsd\n    contractId\n    date\n    id\n    leverage\n    leverageDelta\n    long\n    marketPrice\n    pair\n    pnl\n    price\n    size\n    tradeId\n    tradeIndex\n    isCounterTrade\n    meta\n  }\n": types.TradeHistoryInfoFragmentDoc,
     "\n  fragment PnlSnapshotInfo on PnlSnapshot {\n    accUSDPnl\n    address\n    contractId\n    dateStr\n    id\n    kind\n  }\n": types.PnlSnapshotInfoFragmentDoc,
     "\n  fragment PnlSnapshotDetailsInfo on PnlSnapshotDetails {\n    accUSDPnl\n    address\n    contractId\n    dateStr\n    histories {\n      ...TradeHistoryInfo\n    }\n    id\n    kind\n  }\n": types.PnlSnapshotDetailsInfoFragmentDoc,
+    "\n  fragment PerpTradingEventLogInfo on PerpTradingEventLog {\n    address\n    block\n    contractId\n    date\n    id\n    jsonLog\n    logIndex\n    platform\n    usdPnl\n  }\n": types.PerpTradingEventLogInfoFragmentDoc,
+    "\n  fragment PnlSnapshotV2DetailsInfo on PnlSnapshotV2Details {\n    accUSDPnl\n    address\n    dateStr\n    id\n    kind\n    perpTradingEventLogs {\n      ...PerpTradingEventLogInfo\n    }\n    platform\n  }\n": types.PnlSnapshotV2DetailsInfoFragmentDoc,
     "\n  query getTradeTransactionCounts(\n    $addresses: [String!]!\n    $contractIds: [Int!]!\n  ) {\n    getTradeTransactionCounts(\n      addresses: $addresses\n      contractIds: $contractIds\n    ) {\n      daily\n      weekly\n      monthly\n    }\n  }\n": types.GetTradeTransactionCountsDocument,
     "\n  query getUserTransactionCounts($inputs: [GetUserTransactionCountsInput!]!) {\n    getUserTransactionCounts(inputs: $inputs) {\n      daily\n      weekly\n      monthly\n    }\n  }\n": types.GetUserTransactionCountsDocument,
     "\n  query getTradeHistories($address: String!, $contractId: Int!) {\n    getTradeHistories(address: $address, contractId: $contractId) {\n      ...TradeHistoryInfo\n    }\n  }\n": types.GetTradeHistoriesDocument,
@@ -58,11 +64,18 @@ const documents = {
     "\n  query isPnlSnapshotInitialized($dateStr: String!) {\n    isPnlSnapshotInitialized(dateStr: $dateStr) {\n      id\n      dateStr\n      isInit\n    }\n  }\n": types.IsPnlSnapshotInitializedDocument,
     "\n  mutation buildPnlSnapshots($dateStr: String!, $isForceBuild: Boolean!) {\n    buildPnlSnapshots(dateStr: $dateStr, isForceBuild: $isForceBuild) {\n      id\n      dateStr\n      isInit\n    }\n  }\n": types.BuildPnlSnapshotsDocument,
     "\n  mutation dynamicSnapshotBuild($dateStr: String!) {\n    dynamicSnapshotBuild(dateStr: $dateStr) {\n      id\n      dateStr\n      isInit\n    }\n  }\n": types.DynamicSnapshotBuildDocument,
-    "\n  mutation initializePnlSnapshot(\n    $beginingDate: DateTime!\n    $isForceBuild: Boolean!\n  ) {\n    initializePnlSnapshot(\n      beginingDate: $beginingDate\n      isForceBuild: $isForceBuild\n    )\n  }\n": types.InitializePnlSnapshotDocument,
+    "\n  mutation initializePnlSnapshot(\n    $beginingDate: Date!\n    $isForceBuild: Boolean!\n  ) {\n    initializePnlSnapshot(\n      beginingDate: $beginingDate\n      isForceBuild: $isForceBuild\n    )\n  }\n": types.InitializePnlSnapshotDocument,
     "\n  mutation autoTesting {\n    autoTesting\n  }\n": types.AutoTestingDocument,
     "\n  query getDevPnlSnapshots($dateStr: String!, $filterParams: [ExportFilter!]!) {\n    getDevPnlSnapshots(dateStr: $dateStr, filterParams: $filterParams) {\n      accUSDPnl\n      address\n      contractId\n      dateStr\n      histories {\n        ...TradeHistoryInfo\n      }\n      id\n      kind\n      score\n    }\n  }\n": types.GetDevPnlSnapshotsDocument,
     "\n  query getWholeCompressedHistories(\n    $startDate: String!\n    $isTestnet: Boolean!\n    $filterParams: [ExportFilter!]!\n  ) {\n    getWholeCompressedHistories(\n      startDate: $startDate\n      isTestnet: $isTestnet\n      filterParams: $filterParams\n    ) {\n      accPnls {\n        pnl\n        in\n        out\n        inOut\n        date\n        positionCount\n        taskCount\n        traderCount\n      }\n      botCounts {\n        botCount\n        date\n      }\n      maxInvested\n      actionTypeCount\n      uniqueTraders\n      totalBots {\n        address\n        contractId\n        dateStr\n      }\n    }\n  }\n": types.GetWholeCompressedHistoriesDocument,
     "\n  query getTestingReport($first: Int!, $after: Int) {\n    getTestingReport(first: $first, after: $after) {\n      edges {\n        cursor\n        node {\n          maxAvgSize\n          minAvgSize\n          maxCount\n          minCount\n          avgLoss\n          monthWeight\n          threeMonthWeight\n          weekWeight\n          allTimeWeight\n          avgProfit\n          bottomAccProfit\n          calculatedR2\n          calculatedSlope\n          id\n          investedUSD\n          lossCount\n          m\n          maxLoss\n          maxProfit\n          minR2\n          minScore\n          n\n          peakAccProfit\n          profitCount\n          totalPositions\n          totalTasks\n          totalTraders\n          totalUSDPnl\n          totalUniqueTraders\n          usdPnls\n          window\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n": types.GetTestingReportDocument,
+    "\n  query getPerpEventLogs($address: String!, $platform: Platform!) {\n    getPerpEventLogs(address: $address, platform: $platform) {\n      ...PerpTradingEventLogInfo\n    }\n  }\n": types.GetPerpEventLogsDocument,
+    "\n  query getPnlSnapshotV2InitializedFlag {\n    getPnlSnapshotV2InitializedFlag {\n      id\n      dateStr\n      isInit\n    }\n  }\n": types.GetPnlSnapshotV2InitializedFlagDocument,
+    "\n  query getPnlSnapshotsV2(\n    $dateStr: String!\n    $platform: Platform!\n    $first: Int!\n    $after: Int\n    $kind: PnlSnapshotKind!\n  ) {\n    getPnlSnapshotsV2(\n      dateStr: $dateStr\n      platform: $platform\n      first: $first\n      after: $after\n      kind: $kind\n    ) {\n      edges {\n        cursor\n        node {\n          ...PnlSnapshotV2DetailsInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n": types.GetPnlSnapshotsV2Document,
+    "\n  query isPnlSnapshotV2Initialized($dateStr: String!) {\n    isPnlSnapshotV2Initialized(dateStr: $dateStr) {\n      id\n      dateStr\n      isInit\n    }\n  }\n": types.IsPnlSnapshotV2InitializedDocument,
+    "\n  mutation buildPnlSnapshotsV2($dateStr: String!, $isForceBuild: Boolean!) {\n    buildPnlSnapshotsV2(dateStr: $dateStr, isForceBuild: $isForceBuild) {\n      id\n      dateStr\n      isInit\n    }\n  }\n": types.BuildPnlSnapshotsV2Document,
+    "\n  mutation dynamicSnapshotBuildV2($dateStr: String!) {\n    dynamicSnapshotBuildV2(dateStr: $dateStr) {\n      id\n      dateStr\n      isInit\n    }\n  }\n": types.DynamicSnapshotBuildV2Document,
+    "\n  mutation initializePnlSnapshotV2(\n    $beginingDate: Date!\n    $isForceBuild: Boolean!\n  ) {\n    initializePnlSnapshotV2(\n      beginingDate: $beginingDate\n      isForceBuild: $isForceBuild\n    )\n  }\n": types.InitializePnlSnapshotV2Document,
     "\n  fragment LogInfo on Log {\n    id\n    severity\n    summary\n    details\n    timestamp\n    checked\n  }\n": types.LogInfoFragmentDoc,
     "\n  query allLogs(\n    $severity: LogSeverity\n    $checked: Boolean!\n    $first: Int!\n    $after: Int\n  ) {\n    allLogs(\n      severity: $severity\n      checked: $checked\n      first: $first\n      after: $after\n    ) {\n      edges {\n        cursor\n        node {\n          ...LogInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n": types.AllLogsDocument,
     "\n  query getLogsSeverityCounts {\n    getLogsSeverityCounts {\n      severity\n      counts\n    }\n  }\n": types.GetLogsSeverityCountsDocument,
@@ -216,6 +229,22 @@ export function graphql(source: "\n  query getTradeCollaterals($contractId: Int!
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  query getAdaptionStatus {\n    getAdaptionStatus\n  }\n"): (typeof documents)["\n  query getAdaptionStatus {\n    getAdaptionStatus\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation disableContract($contractId: Int!) {\n    disableContract(contractId: $contractId) {\n      ...ContractInfo\n    }\n  }\n"): (typeof documents)["\n  mutation disableContract($contractId: Int!) {\n    disableContract(contractId: $contractId) {\n      ...ContractInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation liveContract($contractId: Int!) {\n    liveContract(contractId: $contractId) {\n      ...ContractInfo\n    }\n  }\n"): (typeof documents)["\n  mutation liveContract($contractId: Int!) {\n    liveContract(contractId: $contractId) {\n      ...ContractInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation startAdaption($contractId: Int!, $shouldRestart: Boolean!) {\n    startAdaption(contractId: $contractId, shouldRestart: $shouldRestart)\n  }\n"): (typeof documents)["\n  mutation startAdaption($contractId: Int!, $shouldRestart: Boolean!) {\n    startAdaption(contractId: $contractId, shouldRestart: $shouldRestart)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  fragment FollowerInfo on Follower {\n    userId\n    address\n    accountIndex\n    publicKey\n  }\n"): (typeof documents)["\n  fragment FollowerInfo on Follower {\n    userId\n    address\n    accountIndex\n    publicKey\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -292,6 +321,14 @@ export function graphql(source: "\n  fragment PnlSnapshotDetailsInfo on PnlSnaps
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  fragment PerpTradingEventLogInfo on PerpTradingEventLog {\n    address\n    block\n    contractId\n    date\n    id\n    jsonLog\n    logIndex\n    platform\n    usdPnl\n  }\n"): (typeof documents)["\n  fragment PerpTradingEventLogInfo on PerpTradingEventLog {\n    address\n    block\n    contractId\n    date\n    id\n    jsonLog\n    logIndex\n    platform\n    usdPnl\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment PnlSnapshotV2DetailsInfo on PnlSnapshotV2Details {\n    accUSDPnl\n    address\n    dateStr\n    id\n    kind\n    perpTradingEventLogs {\n      ...PerpTradingEventLogInfo\n    }\n    platform\n  }\n"): (typeof documents)["\n  fragment PnlSnapshotV2DetailsInfo on PnlSnapshotV2Details {\n    accUSDPnl\n    address\n    dateStr\n    id\n    kind\n    perpTradingEventLogs {\n      ...PerpTradingEventLogInfo\n    }\n    platform\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  query getTradeTransactionCounts(\n    $addresses: [String!]!\n    $contractIds: [Int!]!\n  ) {\n    getTradeTransactionCounts(\n      addresses: $addresses\n      contractIds: $contractIds\n    ) {\n      daily\n      weekly\n      monthly\n    }\n  }\n"): (typeof documents)["\n  query getTradeTransactionCounts(\n    $addresses: [String!]!\n    $contractIds: [Int!]!\n  ) {\n    getTradeTransactionCounts(\n      addresses: $addresses\n      contractIds: $contractIds\n    ) {\n      daily\n      weekly\n      monthly\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -328,7 +365,7 @@ export function graphql(source: "\n  mutation dynamicSnapshotBuild($dateStr: Str
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation initializePnlSnapshot(\n    $beginingDate: DateTime!\n    $isForceBuild: Boolean!\n  ) {\n    initializePnlSnapshot(\n      beginingDate: $beginingDate\n      isForceBuild: $isForceBuild\n    )\n  }\n"): (typeof documents)["\n  mutation initializePnlSnapshot(\n    $beginingDate: DateTime!\n    $isForceBuild: Boolean!\n  ) {\n    initializePnlSnapshot(\n      beginingDate: $beginingDate\n      isForceBuild: $isForceBuild\n    )\n  }\n"];
+export function graphql(source: "\n  mutation initializePnlSnapshot(\n    $beginingDate: Date!\n    $isForceBuild: Boolean!\n  ) {\n    initializePnlSnapshot(\n      beginingDate: $beginingDate\n      isForceBuild: $isForceBuild\n    )\n  }\n"): (typeof documents)["\n  mutation initializePnlSnapshot(\n    $beginingDate: Date!\n    $isForceBuild: Boolean!\n  ) {\n    initializePnlSnapshot(\n      beginingDate: $beginingDate\n      isForceBuild: $isForceBuild\n    )\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -345,6 +382,34 @@ export function graphql(source: "\n  query getWholeCompressedHistories(\n    $st
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query getTestingReport($first: Int!, $after: Int) {\n    getTestingReport(first: $first, after: $after) {\n      edges {\n        cursor\n        node {\n          maxAvgSize\n          minAvgSize\n          maxCount\n          minCount\n          avgLoss\n          monthWeight\n          threeMonthWeight\n          weekWeight\n          allTimeWeight\n          avgProfit\n          bottomAccProfit\n          calculatedR2\n          calculatedSlope\n          id\n          investedUSD\n          lossCount\n          m\n          maxLoss\n          maxProfit\n          minR2\n          minScore\n          n\n          peakAccProfit\n          profitCount\n          totalPositions\n          totalTasks\n          totalTraders\n          totalUSDPnl\n          totalUniqueTraders\n          usdPnls\n          window\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n"): (typeof documents)["\n  query getTestingReport($first: Int!, $after: Int) {\n    getTestingReport(first: $first, after: $after) {\n      edges {\n        cursor\n        node {\n          maxAvgSize\n          minAvgSize\n          maxCount\n          minCount\n          avgLoss\n          monthWeight\n          threeMonthWeight\n          weekWeight\n          allTimeWeight\n          avgProfit\n          bottomAccProfit\n          calculatedR2\n          calculatedSlope\n          id\n          investedUSD\n          lossCount\n          m\n          maxLoss\n          maxProfit\n          minR2\n          minScore\n          n\n          peakAccProfit\n          profitCount\n          totalPositions\n          totalTasks\n          totalTraders\n          totalUSDPnl\n          totalUniqueTraders\n          usdPnls\n          window\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query getPerpEventLogs($address: String!, $platform: Platform!) {\n    getPerpEventLogs(address: $address, platform: $platform) {\n      ...PerpTradingEventLogInfo\n    }\n  }\n"): (typeof documents)["\n  query getPerpEventLogs($address: String!, $platform: Platform!) {\n    getPerpEventLogs(address: $address, platform: $platform) {\n      ...PerpTradingEventLogInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query getPnlSnapshotV2InitializedFlag {\n    getPnlSnapshotV2InitializedFlag {\n      id\n      dateStr\n      isInit\n    }\n  }\n"): (typeof documents)["\n  query getPnlSnapshotV2InitializedFlag {\n    getPnlSnapshotV2InitializedFlag {\n      id\n      dateStr\n      isInit\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query getPnlSnapshotsV2(\n    $dateStr: String!\n    $platform: Platform!\n    $first: Int!\n    $after: Int\n    $kind: PnlSnapshotKind!\n  ) {\n    getPnlSnapshotsV2(\n      dateStr: $dateStr\n      platform: $platform\n      first: $first\n      after: $after\n      kind: $kind\n    ) {\n      edges {\n        cursor\n        node {\n          ...PnlSnapshotV2DetailsInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n"): (typeof documents)["\n  query getPnlSnapshotsV2(\n    $dateStr: String!\n    $platform: Platform!\n    $first: Int!\n    $after: Int\n    $kind: PnlSnapshotKind!\n  ) {\n    getPnlSnapshotsV2(\n      dateStr: $dateStr\n      platform: $platform\n      first: $first\n      after: $after\n      kind: $kind\n    ) {\n      edges {\n        cursor\n        node {\n          ...PnlSnapshotV2DetailsInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query isPnlSnapshotV2Initialized($dateStr: String!) {\n    isPnlSnapshotV2Initialized(dateStr: $dateStr) {\n      id\n      dateStr\n      isInit\n    }\n  }\n"): (typeof documents)["\n  query isPnlSnapshotV2Initialized($dateStr: String!) {\n    isPnlSnapshotV2Initialized(dateStr: $dateStr) {\n      id\n      dateStr\n      isInit\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation buildPnlSnapshotsV2($dateStr: String!, $isForceBuild: Boolean!) {\n    buildPnlSnapshotsV2(dateStr: $dateStr, isForceBuild: $isForceBuild) {\n      id\n      dateStr\n      isInit\n    }\n  }\n"): (typeof documents)["\n  mutation buildPnlSnapshotsV2($dateStr: String!, $isForceBuild: Boolean!) {\n    buildPnlSnapshotsV2(dateStr: $dateStr, isForceBuild: $isForceBuild) {\n      id\n      dateStr\n      isInit\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation dynamicSnapshotBuildV2($dateStr: String!) {\n    dynamicSnapshotBuildV2(dateStr: $dateStr) {\n      id\n      dateStr\n      isInit\n    }\n  }\n"): (typeof documents)["\n  mutation dynamicSnapshotBuildV2($dateStr: String!) {\n    dynamicSnapshotBuildV2(dateStr: $dateStr) {\n      id\n      dateStr\n      isInit\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation initializePnlSnapshotV2(\n    $beginingDate: Date!\n    $isForceBuild: Boolean!\n  ) {\n    initializePnlSnapshotV2(\n      beginingDate: $beginingDate\n      isForceBuild: $isForceBuild\n    )\n  }\n"): (typeof documents)["\n  mutation initializePnlSnapshotV2(\n    $beginingDate: Date!\n    $isForceBuild: Boolean!\n  ) {\n    initializePnlSnapshotV2(\n      beginingDate: $beginingDate\n      isForceBuild: $isForceBuild\n    )\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

@@ -69,6 +69,34 @@ export const PNL_SNAPSHOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment PerpTradingEventLogInfo on PerpTradingEventLog {
+    address
+    block
+    contractId
+    date
+    id
+    jsonLog
+    logIndex
+    platform
+    usdPnl
+  }
+`);
+
+export const PNL_SNAPSHOT_V2_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment PnlSnapshotV2DetailsInfo on PnlSnapshotV2Details {
+    accUSDPnl
+    address
+    dateStr
+    id
+    kind
+    perpTradingEventLogs {
+      ...PerpTradingEventLogInfo
+    }
+    platform
+  }
+`);
+
 export const GET_TRADE_TRANSACTION_COUNTS_DOCUMENT = graphql(`
   query getTradeTransactionCounts(
     $addresses: [String!]!
@@ -180,7 +208,7 @@ export const DYNAMIC_SNAPSHOT_BUILD_DOCUMENT = graphql(`
 
 export const INITIALIZE_PNL_SNAPSHOT_DOCUMENT = graphql(`
   mutation initializePnlSnapshot(
-    $beginingDate: DateTime!
+    $beginingDate: Date!
     $isForceBuild: Boolean!
   ) {
     initializePnlSnapshot(
@@ -294,6 +322,95 @@ export const GET_TESTING_REPORT_DOCUMENT = graphql(`
         hasNextPage
       }
     }
+  }
+`);
+
+export const GET_PERP_EVENT_LOGS_DOCUMENT = graphql(`
+  query getPerpEventLogs($address: String!, $platform: Platform!) {
+    getPerpEventLogs(address: $address, platform: $platform) {
+      ...PerpTradingEventLogInfo
+    }
+  }
+`);
+
+export const GET_PNL_SNAPSHOT_V2_INITIALIZED_FLAG_DOCUMENT = graphql(`
+  query getPnlSnapshotV2InitializedFlag {
+    getPnlSnapshotV2InitializedFlag {
+      id
+      dateStr
+      isInit
+    }
+  }
+`);
+
+export const GET_PNL_SNAPSHOT_V2_DETAILS_DOCUMENT = graphql(`
+  query getPnlSnapshotsV2(
+    $dateStr: String!
+    $platform: Platform!
+    $first: Int!
+    $after: Int
+    $kind: PnlSnapshotKind!
+  ) {
+    getPnlSnapshotsV2(
+      dateStr: $dateStr
+      platform: $platform
+      first: $first
+      after: $after
+      kind: $kind
+    ) {
+      edges {
+        cursor
+        node {
+          ...PnlSnapshotV2DetailsInfo
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+`);
+
+export const IS_PNL_SNAPSHOT_V2_INITIALIZED_DOCUMENT = graphql(`
+  query isPnlSnapshotV2Initialized($dateStr: String!) {
+    isPnlSnapshotV2Initialized(dateStr: $dateStr) {
+      id
+      dateStr
+      isInit
+    }
+  }
+`);
+
+export const BUILD_PNL_SNAPSHOTS_V2_DOCUMENT = graphql(`
+  mutation buildPnlSnapshotsV2($dateStr: String!, $isForceBuild: Boolean!) {
+    buildPnlSnapshotsV2(dateStr: $dateStr, isForceBuild: $isForceBuild) {
+      id
+      dateStr
+      isInit
+    }
+  }
+`);
+
+export const DYNAMIC_SNAPSHOT_BUILD_V2_DOCUMENT = graphql(`
+  mutation dynamicSnapshotBuildV2($dateStr: String!) {
+    dynamicSnapshotBuildV2(dateStr: $dateStr) {
+      id
+      dateStr
+      isInit
+    }
+  }
+`);
+
+export const INITIALIZE_PNL_SNAPSHOT_V2_DOCUMENT = graphql(`
+  mutation initializePnlSnapshotV2(
+    $beginingDate: Date!
+    $isForceBuild: Boolean!
+  ) {
+    initializePnlSnapshotV2(
+      beginingDate: $beginingDate
+      isForceBuild: $isForceBuild
+    )
   }
 `);
 

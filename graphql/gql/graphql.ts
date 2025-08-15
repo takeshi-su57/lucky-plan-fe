@@ -14,13 +14,13 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  /** A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format. */
-  DateTime: { input: any; output: any; }
+  /** Date custom scalar type */
+  Date: { input: any; output: any; }
 };
 
 export type AccPnl = {
   __typename?: 'AccPnl';
-  date: Scalars['DateTime']['output'];
+  date: Scalars['Date']['output'];
   in: Scalars['Float']['output'];
   inOut: Scalars['Float']['output'];
   out: Scalars['Float']['output'];
@@ -39,7 +39,7 @@ export type Action = {
   __typename?: 'Action';
   args: Scalars['String']['output'];
   blockNumber: Scalars['Int']['output'];
-  createdAt: Scalars['DateTime']['output'];
+  createdAt: Scalars['Date']['output'];
   id: Scalars['Int']['output'];
   name: Scalars['String']['output'];
   orderInBlock: Scalars['Int']['output'];
@@ -52,7 +52,7 @@ export type AddUserInput = {
 
 export type BotBackwardDetails = {
   __typename?: 'BotBackwardDetails';
-  endedAt?: Maybe<Scalars['DateTime']['output']>;
+  endedAt?: Maybe<Scalars['Date']['output']>;
   follower: Follower;
   followerAddress: Scalars['String']['output'];
   followerContract: Contract;
@@ -68,7 +68,7 @@ export type BotBackwardDetails = {
   leaderStartedBlock?: Maybe<Scalars['Int']['output']>;
   plan: Plan;
   planId: Scalars['Int']['output'];
-  startedAt?: Maybe<Scalars['DateTime']['output']>;
+  startedAt?: Maybe<Scalars['Date']['output']>;
   status: BotStatus;
   strategy: Strategy;
   strategyId: Scalars['Int']['output'];
@@ -83,12 +83,12 @@ export type BotConnection = {
 export type BotCount = {
   __typename?: 'BotCount';
   botCount: Scalars['Int']['output'];
-  date: Scalars['DateTime']['output'];
+  date: Scalars['Date']['output'];
 };
 
 export type BotDetails = {
   __typename?: 'BotDetails';
-  endedAt?: Maybe<Scalars['DateTime']['output']>;
+  endedAt?: Maybe<Scalars['Date']['output']>;
   follower: Follower;
   followerAddress: Scalars['String']['output'];
   followerContract: Contract;
@@ -103,7 +103,7 @@ export type BotDetails = {
   leaderEndedBlock?: Maybe<Scalars['Int']['output']>;
   leaderStartedBlock?: Maybe<Scalars['Int']['output']>;
   planId: Scalars['Int']['output'];
-  startedAt?: Maybe<Scalars['DateTime']['output']>;
+  startedAt?: Maybe<Scalars['Date']['output']>;
   status: BotStatus;
   strategy: Strategy;
   strategyId: Scalars['Int']['output'];
@@ -117,7 +117,7 @@ export type BotEdge = {
 
 export type BotForwardDetails = {
   __typename?: 'BotForwardDetails';
-  endedAt?: Maybe<Scalars['DateTime']['output']>;
+  endedAt?: Maybe<Scalars['Date']['output']>;
   follower: Follower;
   followerAddress: Scalars['String']['output'];
   followerContract: Contract;
@@ -133,7 +133,7 @@ export type BotForwardDetails = {
   leaderStartedBlock?: Maybe<Scalars['Int']['output']>;
   missions: Array<MissionForwardDetails>;
   planId: Scalars['Int']['output'];
-  startedAt?: Maybe<Scalars['DateTime']['output']>;
+  startedAt?: Maybe<Scalars['Date']['output']>;
   status: BotStatus;
   strategy: Strategy;
   strategyId: Scalars['Int']['output'];
@@ -216,8 +216,8 @@ export type CreateBotInput = {
 
 export type CreatePlanInput = {
   description: Scalars['String']['input'];
-  scheduledEnd: Scalars['DateTime']['input'];
-  scheduledStart: Scalars['DateTime']['input'];
+  scheduledEnd: Scalars['Date']['input'];
+  scheduledStart: Scalars['Date']['input'];
   title: Scalars['String']['input'];
 };
 
@@ -333,8 +333,8 @@ export type GetUserByAddressInput = {
 export type GetUserTransactionCountsInput = {
   address: Scalars['String']['input'];
   contractId: Scalars['Int']['input'];
-  endedAt?: InputMaybe<Scalars['DateTime']['input']>;
-  startedAt?: InputMaybe<Scalars['DateTime']['input']>;
+  endedAt?: InputMaybe<Scalars['Date']['input']>;
+  startedAt?: InputMaybe<Scalars['Date']['input']>;
 };
 
 export type Log = {
@@ -344,7 +344,7 @@ export type Log = {
   id: Scalars['Int']['output'];
   severity: LogSeverity;
   summary: Scalars['String']['output'];
-  timestamp: Scalars['DateTime']['output'];
+  timestamp: Scalars['Date']['output'];
 };
 
 export enum LogSeverity {
@@ -387,11 +387,11 @@ export type Mission = {
   __typename?: 'Mission';
   achievePositionId?: Maybe<Scalars['Int']['output']>;
   botId: Scalars['Int']['output'];
-  createdAt: Scalars['DateTime']['output'];
+  createdAt: Scalars['Date']['output'];
   id: Scalars['Int']['output'];
   status: MissionStatus;
   targetPositionId: Scalars['Int']['output'];
-  updatedAt: Scalars['DateTime']['output'];
+  updatedAt: Scalars['Date']['output'];
 };
 
 export type MissionBackwardDetails = {
@@ -400,12 +400,12 @@ export type MissionBackwardDetails = {
   achievePositionId?: Maybe<Scalars['Int']['output']>;
   bot: BotBackwardDetails;
   botId: Scalars['Int']['output'];
-  createdAt: Scalars['DateTime']['output'];
+  createdAt: Scalars['Date']['output'];
   id: Scalars['Int']['output'];
   status: MissionStatus;
   targetPosition: Position;
   targetPositionId: Scalars['Int']['output'];
-  updatedAt: Scalars['DateTime']['output'];
+  updatedAt: Scalars['Date']['output'];
 };
 
 export type MissionForwardDetails = {
@@ -413,13 +413,13 @@ export type MissionForwardDetails = {
   achievePosition?: Maybe<Position>;
   achievePositionId?: Maybe<Scalars['Int']['output']>;
   botId: Scalars['Int']['output'];
-  createdAt: Scalars['DateTime']['output'];
+  createdAt: Scalars['Date']['output'];
   id: Scalars['Int']['output'];
   status: MissionStatus;
   targetPosition: Position;
   targetPositionId: Scalars['Int']['output'];
   tasks: Array<TaskForwardDetails>;
-  updatedAt: Scalars['DateTime']['output'];
+  updatedAt: Scalars['Date']['output'];
 };
 
 export type MissionShallowBackwardDetails = {
@@ -428,12 +428,12 @@ export type MissionShallowBackwardDetails = {
   achievePositionId?: Maybe<Scalars['Int']['output']>;
   bot: BotDetails;
   botId: Scalars['Int']['output'];
-  createdAt: Scalars['DateTime']['output'];
+  createdAt: Scalars['Date']['output'];
   id: Scalars['Int']['output'];
   status: MissionStatus;
   targetPosition: Position;
   targetPositionId: Scalars['Int']['output'];
-  updatedAt: Scalars['DateTime']['output'];
+  updatedAt: Scalars['Date']['output'];
 };
 
 export enum MissionStatus {
@@ -455,6 +455,7 @@ export type Mutation = {
   autoTesting: Scalars['Boolean']['output'];
   batchCreateBots: Array<BotBackwardDetails>;
   buildPnlSnapshots?: Maybe<PnlSnapshotInitializedFlag>;
+  buildPnlSnapshotsV2?: Maybe<PnlSnapshotV2InitializedFlag>;
   cancelOrderAfterTimeout: ContractExecutionResult;
   changePassword: Scalars['Boolean']['output'];
   changeUserPermission: User;
@@ -469,13 +470,17 @@ export type Mutation = {
   deleteCategory: TagCategory;
   deletePlan: Scalars['Int']['output'];
   deleteTag: Tag;
+  disableContract: Contract;
   dynamicSnapshotBuild?: Maybe<PnlSnapshotInitializedFlag>;
+  dynamicSnapshotBuildV2?: Maybe<PnlSnapshotV2InitializedFlag>;
   endPlan: Scalars['Boolean']['output'];
   generateNewFollower: Follower;
   getToken: AccessToken;
   ignoreMission: Scalars['Boolean']['output'];
   initializePnlSnapshot: Scalars['Boolean']['output'];
+  initializePnlSnapshotV2: Scalars['Boolean']['output'];
   liveBot: Scalars['Boolean']['output'];
+  liveContract: Contract;
   makeSafeApp: Scalars['Boolean']['output'];
   pauseSystem: Scalars['Boolean']['output'];
   performTask: Scalars['Boolean']['output'];
@@ -483,6 +488,7 @@ export type Mutation = {
   removeFromWhitelist: Scalars['Boolean']['output'];
   removeTagFromWalletAccount: WalletAccount;
   resumeSystem: Scalars['Boolean']['output'];
+  startAdaption: Scalars['Boolean']['output'];
   startPlan: Scalars['Boolean']['output'];
   stopBot: Scalars['Boolean']['output'];
   stopTask: Scalars['Boolean']['output'];
@@ -534,6 +540,12 @@ export type MutationBatchCreateBotsArgs = {
 
 
 export type MutationBuildPnlSnapshotsArgs = {
+  dateStr: Scalars['String']['input'];
+  isForceBuild: Scalars['Boolean']['input'];
+};
+
+
+export type MutationBuildPnlSnapshotsV2Args = {
   dateStr: Scalars['String']['input'];
   isForceBuild: Scalars['Boolean']['input'];
 };
@@ -608,7 +620,17 @@ export type MutationDeleteTagArgs = {
 };
 
 
+export type MutationDisableContractArgs = {
+  contractId: Scalars['Int']['input'];
+};
+
+
 export type MutationDynamicSnapshotBuildArgs = {
+  dateStr: Scalars['String']['input'];
+};
+
+
+export type MutationDynamicSnapshotBuildV2Args = {
   dateStr: Scalars['String']['input'];
 };
 
@@ -631,13 +653,24 @@ export type MutationIgnoreMissionArgs = {
 
 
 export type MutationInitializePnlSnapshotArgs = {
-  beginingDate: Scalars['DateTime']['input'];
+  beginingDate: Scalars['Date']['input'];
+  isForceBuild: Scalars['Boolean']['input'];
+};
+
+
+export type MutationInitializePnlSnapshotV2Args = {
+  beginingDate: Scalars['Date']['input'];
   isForceBuild: Scalars['Boolean']['input'];
 };
 
 
 export type MutationLiveBotArgs = {
   id: Scalars['Int']['input'];
+};
+
+
+export type MutationLiveContractArgs = {
+  contractId: Scalars['Int']['input'];
 };
 
 
@@ -668,6 +701,12 @@ export type MutationRemoveTagFromWalletAccountArgs = {
 
 export type MutationResumeSystemArgs = {
   password?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationStartAdaptionArgs = {
+  contractId: Scalars['Int']['input'];
+  shouldRestart: Scalars['Boolean']['input'];
 };
 
 
@@ -739,14 +778,27 @@ export type MutationWithdrawUsdcToUserArgs = {
   password: Scalars['String']['input'];
 };
 
+export type PerpTradingEventLog = {
+  __typename?: 'PerpTradingEventLog';
+  address: Scalars['String']['output'];
+  block: Scalars['Int']['output'];
+  contractId: Scalars['Int']['output'];
+  date: Scalars['Date']['output'];
+  id: Scalars['Int']['output'];
+  jsonLog: Scalars['String']['output'];
+  logIndex: Scalars['Int']['output'];
+  platform: Platform;
+  usdPnl: Scalars['Float']['output'];
+};
+
 export type Plan = {
   __typename?: 'Plan';
   description: Scalars['String']['output'];
-  endedAt?: Maybe<Scalars['DateTime']['output']>;
+  endedAt?: Maybe<Scalars['Date']['output']>;
   id: Scalars['Int']['output'];
-  scheduledEnd: Scalars['DateTime']['output'];
-  scheduledStart: Scalars['DateTime']['output'];
-  startedAt?: Maybe<Scalars['DateTime']['output']>;
+  scheduledEnd: Scalars['Date']['output'];
+  scheduledStart: Scalars['Date']['output'];
+  startedAt?: Maybe<Scalars['Date']['output']>;
   status: PlanStatus;
   title: Scalars['String']['output'];
   userId: Scalars['String']['output'];
@@ -768,11 +820,11 @@ export type PlanForwardDetails = {
   __typename?: 'PlanForwardDetails';
   bots: Array<BotForwardDetails>;
   description: Scalars['String']['output'];
-  endedAt?: Maybe<Scalars['DateTime']['output']>;
+  endedAt?: Maybe<Scalars['Date']['output']>;
   id: Scalars['Int']['output'];
-  scheduledEnd: Scalars['DateTime']['output'];
-  scheduledStart: Scalars['DateTime']['output'];
-  startedAt?: Maybe<Scalars['DateTime']['output']>;
+  scheduledEnd: Scalars['Date']['output'];
+  scheduledStart: Scalars['Date']['output'];
+  startedAt?: Maybe<Scalars['Date']['output']>;
   status: PlanStatus;
   title: Scalars['String']['output'];
   userId: Scalars['String']['output'];
@@ -789,6 +841,10 @@ export enum PlanStatus {
   Finished = 'Finished',
   Started = 'Started',
   Stopped = 'Stopped'
+}
+
+export enum Platform {
+  Gns = 'GNS'
 }
 
 export type PnlSnapshot = {
@@ -857,6 +913,42 @@ export enum PnlSnapshotKind {
   Week = 'WEEK'
 }
 
+export type PnlSnapshotV2Details = {
+  __typename?: 'PnlSnapshotV2Details';
+  accUSDPnl: Scalars['Float']['output'];
+  address: Scalars['String']['output'];
+  dateStr: Scalars['String']['output'];
+  id: Scalars['Int']['output'];
+  kind: PnlSnapshotKind;
+  perpTradingEventLogs: Array<PerpTradingEventLog>;
+  platform: Platform;
+};
+
+export type PnlSnapshotV2DetailsConnection = {
+  __typename?: 'PnlSnapshotV2DetailsConnection';
+  edges: Array<PnlSnapshotV2DetailsEdge>;
+  pageInfo: PnlSnapshotV2DetailsPageInfo;
+};
+
+export type PnlSnapshotV2DetailsEdge = {
+  __typename?: 'PnlSnapshotV2DetailsEdge';
+  cursor: Scalars['Int']['output'];
+  node: PnlSnapshotV2Details;
+};
+
+export type PnlSnapshotV2DetailsPageInfo = {
+  __typename?: 'PnlSnapshotV2DetailsPageInfo';
+  endCursor?: Maybe<Scalars['Int']['output']>;
+  hasNextPage: Scalars['Boolean']['output'];
+};
+
+export type PnlSnapshotV2InitializedFlag = {
+  __typename?: 'PnlSnapshotV2InitializedFlag';
+  dateStr: Scalars['String']['output'];
+  id: Scalars['Int']['output'];
+  isInit: Scalars['Boolean']['output'];
+};
+
 export type Position = {
   __typename?: 'Position';
   address: Scalars['String']['output'];
@@ -879,6 +971,7 @@ export type Query = {
   findStrategy?: Maybe<Strategy>;
   findStrategyMetadata: StrategyMetadata;
   getActiveBots: Array<BotForwardDetails>;
+  getAdaptionStatus: Scalars['String']['output'];
   getAlertTasks: Array<TaskBackwardDetails>;
   getAllCategories: Array<TagCategory>;
   getAllContracts: Array<Contract>;
@@ -894,11 +987,14 @@ export type Query = {
   getDevPnlSnapshots: Array<PnlSnapshotDevDetails>;
   getExpertPnlSnapshots: Array<ExpertPnlSnapshot>;
   getLogsSeverityCounts: Array<SeverityCount>;
+  getPerpEventLogs: Array<PerpTradingEventLog>;
   getPlanById?: Maybe<PlanForwardDetails>;
   getPlansByStatus: PlanConnection;
   getPnlSnapshotInitializedFlag: Array<PnlSnapshotInitializedFlag>;
+  getPnlSnapshotV2InitializedFlag: Array<PnlSnapshotV2InitializedFlag>;
   getPnlSnapshots: PnlSnapshotDetailsConnection;
   getPnlSnapshotsByAddress: Array<PnlSnapshot>;
+  getPnlSnapshotsV2: PnlSnapshotV2DetailsConnection;
   getServerTime: ServerTime;
   getTestingReport: TestingReportConnection;
   getTradeCollaterals: Array<TradeCollateral>;
@@ -910,6 +1006,7 @@ export type Query = {
   getWhitelist?: Maybe<Array<Scalars['String']['output']>>;
   getWholeCompressedHistories: WholeCompressedHistories;
   isPnlSnapshotInitialized?: Maybe<PnlSnapshotInitializedFlag>;
+  isPnlSnapshotV2Initialized?: Maybe<PnlSnapshotV2InitializedFlag>;
   isSafeApp: Scalars['Boolean']['output'];
   systemStatus: Scalars['Boolean']['output'];
 };
@@ -958,6 +1055,12 @@ export type QueryGetDevPnlSnapshotsArgs = {
 };
 
 
+export type QueryGetPerpEventLogsArgs = {
+  address: Scalars['String']['input'];
+  platform: Platform;
+};
+
+
 export type QueryGetPlanByIdArgs = {
   id: Scalars['Int']['input'];
 };
@@ -981,6 +1084,15 @@ export type QueryGetPnlSnapshotsArgs = {
 export type QueryGetPnlSnapshotsByAddressArgs = {
   address: Scalars['String']['input'];
   dateStr: Scalars['String']['input'];
+};
+
+
+export type QueryGetPnlSnapshotsV2Args = {
+  after?: InputMaybe<Scalars['Int']['input']>;
+  dateStr: Scalars['String']['input'];
+  first: Scalars['Int']['input'];
+  kind: PnlSnapshotKind;
+  platform: Platform;
 };
 
 
@@ -1030,6 +1142,11 @@ export type QueryGetWholeCompressedHistoriesArgs = {
 
 
 export type QueryIsPnlSnapshotInitializedArgs = {
+  dateStr: Scalars['String']['input'];
+};
+
+
+export type QueryIsPnlSnapshotV2InitializedArgs = {
   dateStr: Scalars['String']['input'];
 };
 
@@ -1159,7 +1276,7 @@ export type TaskBackwardDetails = {
   __typename?: 'TaskBackwardDetails';
   action: Action;
   actionId: Scalars['Int']['output'];
-  createdAt: Scalars['DateTime']['output'];
+  createdAt: Scalars['Date']['output'];
   followerActions: Array<FollowerActionDetails>;
   id: Scalars['Int']['output'];
   logs: Array<Scalars['String']['output']>;
@@ -1172,7 +1289,7 @@ export type TaskForwardDetails = {
   __typename?: 'TaskForwardDetails';
   action: Action;
   actionId: Scalars['Int']['output'];
-  createdAt: Scalars['DateTime']['output'];
+  createdAt: Scalars['Date']['output'];
   followerActions: Array<FollowerActionDetails>;
   id: Scalars['Int']['output'];
   logs: Array<Scalars['String']['output']>;
@@ -1280,7 +1397,7 @@ export type TradeHistory = {
   collateralIndex: Scalars['Int']['output'];
   collateralPriceUsd: Scalars['String']['output'];
   contractId: Scalars['Int']['output'];
-  date: Scalars['DateTime']['output'];
+  date: Scalars['Date']['output'];
   id: Scalars['Int']['output'];
   isCounterTrade?: Maybe<Scalars['Boolean']['output']>;
   leverage: Scalars['Int']['output'];
@@ -1315,11 +1432,11 @@ export type TradeTransactionCount = {
 
 export type UpdatePlanInput = {
   description?: InputMaybe<Scalars['String']['input']>;
-  endedAt?: InputMaybe<Scalars['DateTime']['input']>;
+  endedAt?: InputMaybe<Scalars['Date']['input']>;
   id: Scalars['Int']['input'];
-  scheduledEnd?: InputMaybe<Scalars['DateTime']['input']>;
-  scheduledStart?: InputMaybe<Scalars['DateTime']['input']>;
-  startedAt?: InputMaybe<Scalars['DateTime']['input']>;
+  scheduledEnd?: InputMaybe<Scalars['Date']['input']>;
+  scheduledStart?: InputMaybe<Scalars['Date']['input']>;
+  startedAt?: InputMaybe<Scalars['Date']['input']>;
   status: PlanStatus;
   title?: InputMaybe<Scalars['String']['input']>;
 };
@@ -1540,6 +1657,39 @@ export type GetTradeCollateralsQueryVariables = Exact<{
 
 export type GetTradeCollateralsQuery = { __typename?: 'Query', getTradeCollaterals: Array<{ __typename?: 'TradeCollateral', collateral: string, collateralIndex: number, isActive: boolean, precision: string, precisionDelta: string }> };
 
+export type GetAdaptionStatusQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetAdaptionStatusQuery = { __typename?: 'Query', getAdaptionStatus: string };
+
+export type DisableContractMutationVariables = Exact<{
+  contractId: Scalars['Int']['input'];
+}>;
+
+
+export type DisableContractMutation = { __typename?: 'Mutation', disableContract: (
+    { __typename?: 'Contract' }
+    & { ' $fragmentRefs'?: { 'ContractInfoFragment': ContractInfoFragment } }
+  ) };
+
+export type LiveContractMutationVariables = Exact<{
+  contractId: Scalars['Int']['input'];
+}>;
+
+
+export type LiveContractMutation = { __typename?: 'Mutation', liveContract: (
+    { __typename?: 'Contract' }
+    & { ' $fragmentRefs'?: { 'ContractInfoFragment': ContractInfoFragment } }
+  ) };
+
+export type StartAdaptionMutationVariables = Exact<{
+  contractId: Scalars['Int']['input'];
+  shouldRestart: Scalars['Boolean']['input'];
+}>;
+
+
+export type StartAdaptionMutation = { __typename?: 'Mutation', startAdaption: boolean };
+
 export type FollowerInfoFragment = { __typename?: 'Follower', userId: string, address: string, accountIndex: number, publicKey: string } & { ' $fragmentName'?: 'FollowerInfoFragment' };
 
 export type FollowerTradeInfoFragment = { __typename?: 'FollowerTrade', address: string, index: number, params: string, mission?: (
@@ -1664,6 +1814,13 @@ export type PnlSnapshotDetailsInfoFragment = { __typename?: 'PnlSnapshotDetails'
     & { ' $fragmentRefs'?: { 'TradeHistoryInfoFragment': TradeHistoryInfoFragment } }
   )> } & { ' $fragmentName'?: 'PnlSnapshotDetailsInfoFragment' };
 
+export type PerpTradingEventLogInfoFragment = { __typename?: 'PerpTradingEventLog', address: string, block: number, contractId: number, date: any, id: number, jsonLog: string, logIndex: number, platform: Platform, usdPnl: number } & { ' $fragmentName'?: 'PerpTradingEventLogInfoFragment' };
+
+export type PnlSnapshotV2DetailsInfoFragment = { __typename?: 'PnlSnapshotV2Details', accUSDPnl: number, address: string, dateStr: string, id: number, kind: PnlSnapshotKind, platform: Platform, perpTradingEventLogs: Array<(
+    { __typename?: 'PerpTradingEventLog' }
+    & { ' $fragmentRefs'?: { 'PerpTradingEventLogInfoFragment': PerpTradingEventLogInfoFragment } }
+  )> } & { ' $fragmentName'?: 'PnlSnapshotV2DetailsInfoFragment' };
+
 export type GetTradeTransactionCountsQueryVariables = Exact<{
   addresses: Array<Scalars['String']['input']> | Scalars['String']['input'];
   contractIds: Array<Scalars['Int']['input']> | Scalars['Int']['input'];
@@ -1742,7 +1899,7 @@ export type DynamicSnapshotBuildMutationVariables = Exact<{
 export type DynamicSnapshotBuildMutation = { __typename?: 'Mutation', dynamicSnapshotBuild?: { __typename?: 'PnlSnapshotInitializedFlag', id: number, dateStr: string, isInit: boolean } | null };
 
 export type InitializePnlSnapshotMutationVariables = Exact<{
-  beginingDate: Scalars['DateTime']['input'];
+  beginingDate: Scalars['Date']['input'];
   isForceBuild: Scalars['Boolean']['input'];
 }>;
 
@@ -1781,6 +1938,66 @@ export type GetTestingReportQueryVariables = Exact<{
 
 
 export type GetTestingReportQuery = { __typename?: 'Query', getTestingReport: { __typename?: 'TestingReportConnection', edges: Array<{ __typename?: 'TestingReportEdge', cursor: number, node: { __typename?: 'TestingReport', maxAvgSize: number, minAvgSize: number, maxCount: number, minCount: number, avgLoss: number, monthWeight: number, threeMonthWeight: number, weekWeight: number, allTimeWeight: number, avgProfit: number, bottomAccProfit: number, calculatedR2: number, calculatedSlope: number, id: number, investedUSD: number, lossCount: number, m: number, maxLoss: number, maxProfit: number, minR2: number, minScore: number, n: number, peakAccProfit: number, profitCount: number, totalPositions: number, totalTasks: number, totalTraders: number, totalUSDPnl: number, totalUniqueTraders: number, usdPnls: Array<number>, window: number } }>, pageInfo: { __typename?: 'TestingReportPageInfo', endCursor?: number | null, hasNextPage: boolean } } };
+
+export type GetPerpEventLogsQueryVariables = Exact<{
+  address: Scalars['String']['input'];
+  platform: Platform;
+}>;
+
+
+export type GetPerpEventLogsQuery = { __typename?: 'Query', getPerpEventLogs: Array<(
+    { __typename?: 'PerpTradingEventLog' }
+    & { ' $fragmentRefs'?: { 'PerpTradingEventLogInfoFragment': PerpTradingEventLogInfoFragment } }
+  )> };
+
+export type GetPnlSnapshotV2InitializedFlagQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetPnlSnapshotV2InitializedFlagQuery = { __typename?: 'Query', getPnlSnapshotV2InitializedFlag: Array<{ __typename?: 'PnlSnapshotV2InitializedFlag', id: number, dateStr: string, isInit: boolean }> };
+
+export type GetPnlSnapshotsV2QueryVariables = Exact<{
+  dateStr: Scalars['String']['input'];
+  platform: Platform;
+  first: Scalars['Int']['input'];
+  after?: InputMaybe<Scalars['Int']['input']>;
+  kind: PnlSnapshotKind;
+}>;
+
+
+export type GetPnlSnapshotsV2Query = { __typename?: 'Query', getPnlSnapshotsV2: { __typename?: 'PnlSnapshotV2DetailsConnection', edges: Array<{ __typename?: 'PnlSnapshotV2DetailsEdge', cursor: number, node: (
+        { __typename?: 'PnlSnapshotV2Details' }
+        & { ' $fragmentRefs'?: { 'PnlSnapshotV2DetailsInfoFragment': PnlSnapshotV2DetailsInfoFragment } }
+      ) }>, pageInfo: { __typename?: 'PnlSnapshotV2DetailsPageInfo', endCursor?: number | null, hasNextPage: boolean } } };
+
+export type IsPnlSnapshotV2InitializedQueryVariables = Exact<{
+  dateStr: Scalars['String']['input'];
+}>;
+
+
+export type IsPnlSnapshotV2InitializedQuery = { __typename?: 'Query', isPnlSnapshotV2Initialized?: { __typename?: 'PnlSnapshotV2InitializedFlag', id: number, dateStr: string, isInit: boolean } | null };
+
+export type BuildPnlSnapshotsV2MutationVariables = Exact<{
+  dateStr: Scalars['String']['input'];
+  isForceBuild: Scalars['Boolean']['input'];
+}>;
+
+
+export type BuildPnlSnapshotsV2Mutation = { __typename?: 'Mutation', buildPnlSnapshotsV2?: { __typename?: 'PnlSnapshotV2InitializedFlag', id: number, dateStr: string, isInit: boolean } | null };
+
+export type DynamicSnapshotBuildV2MutationVariables = Exact<{
+  dateStr: Scalars['String']['input'];
+}>;
+
+
+export type DynamicSnapshotBuildV2Mutation = { __typename?: 'Mutation', dynamicSnapshotBuildV2?: { __typename?: 'PnlSnapshotV2InitializedFlag', id: number, dateStr: string, isInit: boolean } | null };
+
+export type InitializePnlSnapshotV2MutationVariables = Exact<{
+  beginingDate: Scalars['Date']['input'];
+  isForceBuild: Scalars['Boolean']['input'];
+}>;
+
+
+export type InitializePnlSnapshotV2Mutation = { __typename?: 'Mutation', initializePnlSnapshotV2: boolean };
 
 export type LogInfoFragment = { __typename?: 'Log', id: number, severity: LogSeverity, summary: string, details?: string | null, timestamp: any, checked: boolean } & { ' $fragmentName'?: 'LogInfoFragment' };
 
@@ -2311,6 +2528,8 @@ export const FollowerPendingOrderInfoFragmentDoc = {"kind":"Document","definitio
 export const FollowerDetailInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerDetailInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FollowerDetail"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"accountIndex"}},{"kind":"Field","name":{"kind":"Name","value":"publicKey"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"ethBalance"}},{"kind":"Field","name":{"kind":"Name","value":"usdcBalance"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"pnlSnapshots"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PnlSnapshotInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"trades"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FollowerTradeInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"pendingOrders"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FollowerPendingOrderInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PositionInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Position"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"index"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ActionInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Action"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"positionId"}},{"kind":"Field","name":{"kind":"Name","value":"args"}},{"kind":"Field","name":{"kind":"Name","value":"blockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"orderInBlock"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerActionDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FollowerActionDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"taskId"}},{"kind":"Field","name":{"kind":"Name","value":"actionId"}},{"kind":"Field","name":{"kind":"Name","value":"action"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ActionInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TaskForwardDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TaskForwardDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"missionId"}},{"kind":"Field","name":{"kind":"Name","value":"actionId"}},{"kind":"Field","name":{"kind":"Name","value":"logs"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"action"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ActionInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"followerActions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FollowerActionDetailsInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"MissionForwardDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"MissionForwardDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"botId"}},{"kind":"Field","name":{"kind":"Name","value":"targetPositionId"}},{"kind":"Field","name":{"kind":"Name","value":"achievePositionId"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"achievePosition"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PositionInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"targetPosition"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PositionInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"tasks"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TaskForwardDetailsInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PnlSnapshotInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PnlSnapshot"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerTradeInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FollowerTrade"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"index"}},{"kind":"Field","name":{"kind":"Name","value":"mission"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"MissionForwardDetailsInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"params"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerPendingOrderInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FollowerPendingOrder"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"params"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"index"}}]}}]} as unknown as DocumentNode<FollowerDetailInfoFragment, unknown>;
 export const TradeHistoryInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TradeHistoryInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TradeHistory"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"action"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"block"}},{"kind":"Field","name":{"kind":"Name","value":"collateralDelta"}},{"kind":"Field","name":{"kind":"Name","value":"collateralIndex"}},{"kind":"Field","name":{"kind":"Name","value":"collateralPriceUsd"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"leverage"}},{"kind":"Field","name":{"kind":"Name","value":"leverageDelta"}},{"kind":"Field","name":{"kind":"Name","value":"long"}},{"kind":"Field","name":{"kind":"Name","value":"marketPrice"}},{"kind":"Field","name":{"kind":"Name","value":"pair"}},{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"tradeId"}},{"kind":"Field","name":{"kind":"Name","value":"tradeIndex"}},{"kind":"Field","name":{"kind":"Name","value":"isCounterTrade"}},{"kind":"Field","name":{"kind":"Name","value":"meta"}}]}}]} as unknown as DocumentNode<TradeHistoryInfoFragment, unknown>;
 export const PnlSnapshotDetailsInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PnlSnapshotDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PnlSnapshotDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"histories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TradeHistoryInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TradeHistoryInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TradeHistory"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"action"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"block"}},{"kind":"Field","name":{"kind":"Name","value":"collateralDelta"}},{"kind":"Field","name":{"kind":"Name","value":"collateralIndex"}},{"kind":"Field","name":{"kind":"Name","value":"collateralPriceUsd"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"leverage"}},{"kind":"Field","name":{"kind":"Name","value":"leverageDelta"}},{"kind":"Field","name":{"kind":"Name","value":"long"}},{"kind":"Field","name":{"kind":"Name","value":"marketPrice"}},{"kind":"Field","name":{"kind":"Name","value":"pair"}},{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"tradeId"}},{"kind":"Field","name":{"kind":"Name","value":"tradeIndex"}},{"kind":"Field","name":{"kind":"Name","value":"isCounterTrade"}},{"kind":"Field","name":{"kind":"Name","value":"meta"}}]}}]} as unknown as DocumentNode<PnlSnapshotDetailsInfoFragment, unknown>;
+export const PerpTradingEventLogInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PerpTradingEventLogInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PerpTradingEventLog"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"block"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"jsonLog"}},{"kind":"Field","name":{"kind":"Name","value":"logIndex"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"usdPnl"}}]}}]} as unknown as DocumentNode<PerpTradingEventLogInfoFragment, unknown>;
+export const PnlSnapshotV2DetailsInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PnlSnapshotV2DetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PnlSnapshotV2Details"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"perpTradingEventLogs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PerpTradingEventLogInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"platform"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PerpTradingEventLogInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PerpTradingEventLog"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"block"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"jsonLog"}},{"kind":"Field","name":{"kind":"Name","value":"logIndex"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"usdPnl"}}]}}]} as unknown as DocumentNode<PnlSnapshotV2DetailsInfoFragment, unknown>;
 export const LogInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LogInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Log"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"severity"}},{"kind":"Field","name":{"kind":"Name","value":"summary"}},{"kind":"Field","name":{"kind":"Name","value":"details"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}},{"kind":"Field","name":{"kind":"Name","value":"checked"}}]}}]} as unknown as DocumentNode<LogInfoFragment, unknown>;
 export const MissionInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"MissionInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Mission"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"botId"}},{"kind":"Field","name":{"kind":"Name","value":"targetPositionId"}},{"kind":"Field","name":{"kind":"Name","value":"achievePositionId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]} as unknown as DocumentNode<MissionInfoFragment, unknown>;
 export const BotForwardDetailsInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BotForwardDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BotForwardDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"leaderAddress"}},{"kind":"Field","name":{"kind":"Name","value":"followerAddress"}},{"kind":"Field","name":{"kind":"Name","value":"strategyId"}},{"kind":"Field","name":{"kind":"Name","value":"planId"}},{"kind":"Field","name":{"kind":"Name","value":"leaderContractId"}},{"kind":"Field","name":{"kind":"Name","value":"leaderCollateralBaseline"}},{"kind":"Field","name":{"kind":"Name","value":"leaderStartedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"leaderEndedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"followerContractId"}},{"kind":"Field","name":{"kind":"Name","value":"followerStartedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"followerEndedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"endedAt"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"followerContract"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ContractInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"leaderContract"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ContractInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"follower"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FollowerInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"strategy"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"StrategyInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"missions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"MissionForwardDetailsInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PositionInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Position"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"index"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ActionInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Action"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"positionId"}},{"kind":"Field","name":{"kind":"Name","value":"args"}},{"kind":"Field","name":{"kind":"Name","value":"blockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"orderInBlock"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerActionDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FollowerActionDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"taskId"}},{"kind":"Field","name":{"kind":"Name","value":"actionId"}},{"kind":"Field","name":{"kind":"Name","value":"action"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ActionInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TaskForwardDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TaskForwardDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"missionId"}},{"kind":"Field","name":{"kind":"Name","value":"actionId"}},{"kind":"Field","name":{"kind":"Name","value":"logs"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"action"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ActionInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"followerActions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FollowerActionDetailsInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ContractInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Contract"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"backendUrl"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"isTestnet"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Follower"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"accountIndex"}},{"kind":"Field","name":{"kind":"Name","value":"publicKey"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StrategyInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Strategy"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"lifeTime"}},{"kind":"Field","name":{"kind":"Name","value":"maxCollateral"}},{"kind":"Field","name":{"kind":"Name","value":"minCollateral"}},{"kind":"Field","name":{"kind":"Name","value":"maxLeverage"}},{"kind":"Field","name":{"kind":"Name","value":"minLeverage"}},{"kind":"Field","name":{"kind":"Name","value":"collateralBaseline"}},{"kind":"Field","name":{"kind":"Name","value":"params"}},{"kind":"Field","name":{"kind":"Name","value":"ratio"}},{"kind":"Field","name":{"kind":"Name","value":"strategyKey"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"MissionForwardDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"MissionForwardDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"botId"}},{"kind":"Field","name":{"kind":"Name","value":"targetPositionId"}},{"kind":"Field","name":{"kind":"Name","value":"achievePositionId"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"achievePosition"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PositionInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"targetPosition"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PositionInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"tasks"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TaskForwardDetailsInfo"}}]}}]}}]} as unknown as DocumentNode<BotForwardDetailsInfoFragment, unknown>;
@@ -2335,6 +2554,10 @@ export const BotUpdatedDocument = {"kind":"Document","definitions":[{"kind":"Ope
 export const GetAllContractsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getAllContracts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getAllContracts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ContractInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ContractInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Contract"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"backendUrl"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"isTestnet"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]} as unknown as DocumentNode<GetAllContractsQuery, GetAllContractsQueryVariables>;
 export const GetAllTradePairsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getAllTradePairs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"contractId"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getTradePairs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"contractId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"contractId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"from"}},{"kind":"Field","name":{"kind":"Name","value":"pairIndex"}},{"kind":"Field","name":{"kind":"Name","value":"to"}},{"kind":"Field","name":{"kind":"Name","value":"onePercentDepthAboveUsd"}},{"kind":"Field","name":{"kind":"Name","value":"onePercentDepthBelowUsd"}}]}}]}}]} as unknown as DocumentNode<GetAllTradePairsQuery, GetAllTradePairsQueryVariables>;
 export const GetTradeCollateralsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getTradeCollaterals"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"contractId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getTradeCollaterals"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"contractId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"contractId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"collateral"}},{"kind":"Field","name":{"kind":"Name","value":"collateralIndex"}},{"kind":"Field","name":{"kind":"Name","value":"isActive"}},{"kind":"Field","name":{"kind":"Name","value":"precision"}},{"kind":"Field","name":{"kind":"Name","value":"precisionDelta"}}]}}]}}]} as unknown as DocumentNode<GetTradeCollateralsQuery, GetTradeCollateralsQueryVariables>;
+export const GetAdaptionStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getAdaptionStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getAdaptionStatus"}}]}}]} as unknown as DocumentNode<GetAdaptionStatusQuery, GetAdaptionStatusQueryVariables>;
+export const DisableContractDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"disableContract"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"contractId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"disableContract"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"contractId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"contractId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ContractInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ContractInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Contract"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"backendUrl"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"isTestnet"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]} as unknown as DocumentNode<DisableContractMutation, DisableContractMutationVariables>;
+export const LiveContractDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"liveContract"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"contractId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"liveContract"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"contractId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"contractId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ContractInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ContractInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Contract"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"backendUrl"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"isTestnet"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]} as unknown as DocumentNode<LiveContractMutation, LiveContractMutationVariables>;
+export const StartAdaptionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"startAdaption"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"contractId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"shouldRestart"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startAdaption"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"contractId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"contractId"}}},{"kind":"Argument","name":{"kind":"Name","value":"shouldRestart"},"value":{"kind":"Variable","name":{"kind":"Name","value":"shouldRestart"}}}]}]}}]} as unknown as DocumentNode<StartAdaptionMutation, StartAdaptionMutationVariables>;
 export const GetAllFollowersDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getAllFollowers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getAllFollowers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FollowerInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Follower"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"accountIndex"}},{"kind":"Field","name":{"kind":"Name","value":"publicKey"}}]}}]} as unknown as DocumentNode<GetAllFollowersQuery, GetAllFollowersQueryVariables>;
 export const GetAllFollowerDetailsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getAllFollowerDetails"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"contractId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getAllFollowerDetails"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"contractId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"contractId"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FollowerDetailInfo"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}},{"kind":"Field","name":{"kind":"Name","value":"endCursor"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PnlSnapshotInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PnlSnapshot"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PositionInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Position"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"index"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ActionInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Action"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"positionId"}},{"kind":"Field","name":{"kind":"Name","value":"args"}},{"kind":"Field","name":{"kind":"Name","value":"blockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"orderInBlock"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerActionDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FollowerActionDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"taskId"}},{"kind":"Field","name":{"kind":"Name","value":"actionId"}},{"kind":"Field","name":{"kind":"Name","value":"action"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ActionInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TaskForwardDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TaskForwardDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"missionId"}},{"kind":"Field","name":{"kind":"Name","value":"actionId"}},{"kind":"Field","name":{"kind":"Name","value":"logs"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"action"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ActionInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"followerActions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FollowerActionDetailsInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"MissionForwardDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"MissionForwardDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"botId"}},{"kind":"Field","name":{"kind":"Name","value":"targetPositionId"}},{"kind":"Field","name":{"kind":"Name","value":"achievePositionId"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"achievePosition"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PositionInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"targetPosition"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PositionInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"tasks"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TaskForwardDetailsInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerTradeInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FollowerTrade"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"index"}},{"kind":"Field","name":{"kind":"Name","value":"mission"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"MissionForwardDetailsInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"params"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerPendingOrderInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FollowerPendingOrder"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"params"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"index"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerDetailInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FollowerDetail"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"accountIndex"}},{"kind":"Field","name":{"kind":"Name","value":"publicKey"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"ethBalance"}},{"kind":"Field","name":{"kind":"Name","value":"usdcBalance"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"pnlSnapshots"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PnlSnapshotInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"trades"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FollowerTradeInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"pendingOrders"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FollowerPendingOrderInfo"}}]}}]}}]} as unknown as DocumentNode<GetAllFollowerDetailsQuery, GetAllFollowerDetailsQueryVariables>;
 export const CloseTradeMarketDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"closeTradeMarket"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CloseTradeInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"closeTradeMarket"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"index"}}]}}]}}]} as unknown as DocumentNode<CloseTradeMarketMutation, CloseTradeMarketMutationVariables>;
@@ -2356,11 +2579,18 @@ export const GetPnlSnapshotInitializedFlagDocument = {"kind":"Document","definit
 export const IsPnlSnapshotInitializedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"isPnlSnapshotInitialized"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"isPnlSnapshotInitialized"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"isInit"}}]}}]}}]} as unknown as DocumentNode<IsPnlSnapshotInitializedQuery, IsPnlSnapshotInitializedQueryVariables>;
 export const BuildPnlSnapshotsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"buildPnlSnapshots"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isForceBuild"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buildPnlSnapshots"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}},{"kind":"Argument","name":{"kind":"Name","value":"isForceBuild"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isForceBuild"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"isInit"}}]}}]}}]} as unknown as DocumentNode<BuildPnlSnapshotsMutation, BuildPnlSnapshotsMutationVariables>;
 export const DynamicSnapshotBuildDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"dynamicSnapshotBuild"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dynamicSnapshotBuild"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"isInit"}}]}}]}}]} as unknown as DocumentNode<DynamicSnapshotBuildMutation, DynamicSnapshotBuildMutationVariables>;
-export const InitializePnlSnapshotDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"initializePnlSnapshot"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"beginingDate"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"DateTime"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isForceBuild"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"initializePnlSnapshot"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"beginingDate"},"value":{"kind":"Variable","name":{"kind":"Name","value":"beginingDate"}}},{"kind":"Argument","name":{"kind":"Name","value":"isForceBuild"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isForceBuild"}}}]}]}}]} as unknown as DocumentNode<InitializePnlSnapshotMutation, InitializePnlSnapshotMutationVariables>;
+export const InitializePnlSnapshotDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"initializePnlSnapshot"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"beginingDate"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Date"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isForceBuild"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"initializePnlSnapshot"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"beginingDate"},"value":{"kind":"Variable","name":{"kind":"Name","value":"beginingDate"}}},{"kind":"Argument","name":{"kind":"Name","value":"isForceBuild"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isForceBuild"}}}]}]}}]} as unknown as DocumentNode<InitializePnlSnapshotMutation, InitializePnlSnapshotMutationVariables>;
 export const AutoTestingDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"autoTesting"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"autoTesting"}}]}}]} as unknown as DocumentNode<AutoTestingMutation, AutoTestingMutationVariables>;
 export const GetDevPnlSnapshotsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getDevPnlSnapshots"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ExportFilter"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getDevPnlSnapshots"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}},{"kind":"Argument","name":{"kind":"Name","value":"filterParams"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"histories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TradeHistoryInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"score"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TradeHistoryInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TradeHistory"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"action"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"block"}},{"kind":"Field","name":{"kind":"Name","value":"collateralDelta"}},{"kind":"Field","name":{"kind":"Name","value":"collateralIndex"}},{"kind":"Field","name":{"kind":"Name","value":"collateralPriceUsd"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"leverage"}},{"kind":"Field","name":{"kind":"Name","value":"leverageDelta"}},{"kind":"Field","name":{"kind":"Name","value":"long"}},{"kind":"Field","name":{"kind":"Name","value":"marketPrice"}},{"kind":"Field","name":{"kind":"Name","value":"pair"}},{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"tradeId"}},{"kind":"Field","name":{"kind":"Name","value":"tradeIndex"}},{"kind":"Field","name":{"kind":"Name","value":"isCounterTrade"}},{"kind":"Field","name":{"kind":"Name","value":"meta"}}]}}]} as unknown as DocumentNode<GetDevPnlSnapshotsQuery, GetDevPnlSnapshotsQueryVariables>;
 export const GetWholeCompressedHistoriesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getWholeCompressedHistories"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"startDate"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isTestnet"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ExportFilter"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getWholeCompressedHistories"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"startDate"},"value":{"kind":"Variable","name":{"kind":"Name","value":"startDate"}}},{"kind":"Argument","name":{"kind":"Name","value":"isTestnet"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isTestnet"}}},{"kind":"Argument","name":{"kind":"Name","value":"filterParams"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filterParams"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accPnls"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pnl"}},{"kind":"Field","name":{"kind":"Name","value":"in"}},{"kind":"Field","name":{"kind":"Name","value":"out"}},{"kind":"Field","name":{"kind":"Name","value":"inOut"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"positionCount"}},{"kind":"Field","name":{"kind":"Name","value":"taskCount"}},{"kind":"Field","name":{"kind":"Name","value":"traderCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"botCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"botCount"}},{"kind":"Field","name":{"kind":"Name","value":"date"}}]}},{"kind":"Field","name":{"kind":"Name","value":"maxInvested"}},{"kind":"Field","name":{"kind":"Name","value":"actionTypeCount"}},{"kind":"Field","name":{"kind":"Name","value":"uniqueTraders"}},{"kind":"Field","name":{"kind":"Name","value":"totalBots"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}}]}}]}}]}}]} as unknown as DocumentNode<GetWholeCompressedHistoriesQuery, GetWholeCompressedHistoriesQueryVariables>;
 export const GetTestingReportDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getTestingReport"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getTestingReport"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"maxAvgSize"}},{"kind":"Field","name":{"kind":"Name","value":"minAvgSize"}},{"kind":"Field","name":{"kind":"Name","value":"maxCount"}},{"kind":"Field","name":{"kind":"Name","value":"minCount"}},{"kind":"Field","name":{"kind":"Name","value":"avgLoss"}},{"kind":"Field","name":{"kind":"Name","value":"monthWeight"}},{"kind":"Field","name":{"kind":"Name","value":"threeMonthWeight"}},{"kind":"Field","name":{"kind":"Name","value":"weekWeight"}},{"kind":"Field","name":{"kind":"Name","value":"allTimeWeight"}},{"kind":"Field","name":{"kind":"Name","value":"avgProfit"}},{"kind":"Field","name":{"kind":"Name","value":"bottomAccProfit"}},{"kind":"Field","name":{"kind":"Name","value":"calculatedR2"}},{"kind":"Field","name":{"kind":"Name","value":"calculatedSlope"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"investedUSD"}},{"kind":"Field","name":{"kind":"Name","value":"lossCount"}},{"kind":"Field","name":{"kind":"Name","value":"m"}},{"kind":"Field","name":{"kind":"Name","value":"maxLoss"}},{"kind":"Field","name":{"kind":"Name","value":"maxProfit"}},{"kind":"Field","name":{"kind":"Name","value":"minR2"}},{"kind":"Field","name":{"kind":"Name","value":"minScore"}},{"kind":"Field","name":{"kind":"Name","value":"n"}},{"kind":"Field","name":{"kind":"Name","value":"peakAccProfit"}},{"kind":"Field","name":{"kind":"Name","value":"profitCount"}},{"kind":"Field","name":{"kind":"Name","value":"totalPositions"}},{"kind":"Field","name":{"kind":"Name","value":"totalTasks"}},{"kind":"Field","name":{"kind":"Name","value":"totalTraders"}},{"kind":"Field","name":{"kind":"Name","value":"totalUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"totalUniqueTraders"}},{"kind":"Field","name":{"kind":"Name","value":"usdPnls"}},{"kind":"Field","name":{"kind":"Name","value":"window"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}}]} as unknown as DocumentNode<GetTestingReportQuery, GetTestingReportQueryVariables>;
+export const GetPerpEventLogsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getPerpEventLogs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"address"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"platform"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Platform"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getPerpEventLogs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"address"},"value":{"kind":"Variable","name":{"kind":"Name","value":"address"}}},{"kind":"Argument","name":{"kind":"Name","value":"platform"},"value":{"kind":"Variable","name":{"kind":"Name","value":"platform"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PerpTradingEventLogInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PerpTradingEventLogInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PerpTradingEventLog"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"block"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"jsonLog"}},{"kind":"Field","name":{"kind":"Name","value":"logIndex"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"usdPnl"}}]}}]} as unknown as DocumentNode<GetPerpEventLogsQuery, GetPerpEventLogsQueryVariables>;
+export const GetPnlSnapshotV2InitializedFlagDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getPnlSnapshotV2InitializedFlag"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getPnlSnapshotV2InitializedFlag"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"isInit"}}]}}]}}]} as unknown as DocumentNode<GetPnlSnapshotV2InitializedFlagQuery, GetPnlSnapshotV2InitializedFlagQueryVariables>;
+export const GetPnlSnapshotsV2Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getPnlSnapshotsV2"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"platform"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Platform"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"kind"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PnlSnapshotKind"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getPnlSnapshotsV2"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}},{"kind":"Argument","name":{"kind":"Name","value":"platform"},"value":{"kind":"Variable","name":{"kind":"Name","value":"platform"}}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}},{"kind":"Argument","name":{"kind":"Name","value":"kind"},"value":{"kind":"Variable","name":{"kind":"Name","value":"kind"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PnlSnapshotV2DetailsInfo"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PerpTradingEventLogInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PerpTradingEventLog"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"block"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"jsonLog"}},{"kind":"Field","name":{"kind":"Name","value":"logIndex"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"usdPnl"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PnlSnapshotV2DetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PnlSnapshotV2Details"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"perpTradingEventLogs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PerpTradingEventLogInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"platform"}}]}}]} as unknown as DocumentNode<GetPnlSnapshotsV2Query, GetPnlSnapshotsV2QueryVariables>;
+export const IsPnlSnapshotV2InitializedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"isPnlSnapshotV2Initialized"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"isPnlSnapshotV2Initialized"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"isInit"}}]}}]}}]} as unknown as DocumentNode<IsPnlSnapshotV2InitializedQuery, IsPnlSnapshotV2InitializedQueryVariables>;
+export const BuildPnlSnapshotsV2Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"buildPnlSnapshotsV2"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isForceBuild"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"buildPnlSnapshotsV2"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}},{"kind":"Argument","name":{"kind":"Name","value":"isForceBuild"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isForceBuild"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"isInit"}}]}}]}}]} as unknown as DocumentNode<BuildPnlSnapshotsV2Mutation, BuildPnlSnapshotsV2MutationVariables>;
+export const DynamicSnapshotBuildV2Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"dynamicSnapshotBuildV2"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dynamicSnapshotBuildV2"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"dateStr"},"value":{"kind":"Variable","name":{"kind":"Name","value":"dateStr"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"isInit"}}]}}]}}]} as unknown as DocumentNode<DynamicSnapshotBuildV2Mutation, DynamicSnapshotBuildV2MutationVariables>;
+export const InitializePnlSnapshotV2Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"initializePnlSnapshotV2"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"beginingDate"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Date"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"isForceBuild"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"initializePnlSnapshotV2"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"beginingDate"},"value":{"kind":"Variable","name":{"kind":"Name","value":"beginingDate"}}},{"kind":"Argument","name":{"kind":"Name","value":"isForceBuild"},"value":{"kind":"Variable","name":{"kind":"Name","value":"isForceBuild"}}}]}]}}]} as unknown as DocumentNode<InitializePnlSnapshotV2Mutation, InitializePnlSnapshotV2MutationVariables>;
 export const AllLogsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"allLogs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"severity"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"LogSeverity"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"checked"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allLogs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"severity"},"value":{"kind":"Variable","name":{"kind":"Name","value":"severity"}}},{"kind":"Argument","name":{"kind":"Name","value":"checked"},"value":{"kind":"Variable","name":{"kind":"Name","value":"checked"}}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LogInfo"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LogInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Log"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"severity"}},{"kind":"Field","name":{"kind":"Name","value":"summary"}},{"kind":"Field","name":{"kind":"Name","value":"details"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}},{"kind":"Field","name":{"kind":"Name","value":"checked"}}]}}]} as unknown as DocumentNode<AllLogsQuery, AllLogsQueryVariables>;
 export const GetLogsSeverityCountsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getLogsSeverityCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getLogsSeverityCounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"severity"}},{"kind":"Field","name":{"kind":"Name","value":"counts"}}]}}]}}]} as unknown as DocumentNode<GetLogsSeverityCountsQuery, GetLogsSeverityCountsQueryVariables>;
 export const CheckLogDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"checkLog"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"checkLog"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"LogInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"LogInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Log"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"severity"}},{"kind":"Field","name":{"kind":"Name","value":"summary"}},{"kind":"Field","name":{"kind":"Name","value":"details"}},{"kind":"Field","name":{"kind":"Name","value":"timestamp"}},{"kind":"Field","name":{"kind":"Name","value":"checked"}}]}}]} as unknown as DocumentNode<CheckLogMutation, CheckLogMutationVariables>;
