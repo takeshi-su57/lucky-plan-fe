@@ -14,6 +14,7 @@ import {
   PnlSnapshotKind,
   GetPnlSnapshotsQuery,
   TradeHistory,
+  Platform,
 } from "@/graphql/gql/graphql";
 
 import { PersonalTradeHistory, TradeActionType } from "@/types";
@@ -334,11 +335,12 @@ export const GET_PERP_EVENT_LOGS_DOCUMENT = graphql(`
 `);
 
 export const GET_PNL_SNAPSHOT_V2_INITIALIZED_FLAG_DOCUMENT = graphql(`
-  query getPnlSnapshotV2InitializedFlag {
-    getPnlSnapshotV2InitializedFlag {
+  query getPnlSnapshotV2InitializedFlag($platform: Platform!) {
+    getPnlSnapshotV2InitializedFlag(platform: $platform) {
       id
       dateStr
       isInit
+      platform
     }
   }
 `);
@@ -373,30 +375,41 @@ export const GET_PNL_SNAPSHOT_V2_DETAILS_DOCUMENT = graphql(`
 `);
 
 export const IS_PNL_SNAPSHOT_V2_INITIALIZED_DOCUMENT = graphql(`
-  query isPnlSnapshotV2Initialized($dateStr: String!) {
-    isPnlSnapshotV2Initialized(dateStr: $dateStr) {
+  query isPnlSnapshotV2Initialized($dateStr: String!, $platform: Platform!) {
+    isPnlSnapshotV2Initialized(dateStr: $dateStr, platform: $platform) {
       id
       dateStr
       isInit
+      platform
     }
   }
 `);
 
 export const BUILD_PNL_SNAPSHOTS_V2_DOCUMENT = graphql(`
-  mutation buildPnlSnapshotsV2($dateStr: String!, $isForceBuild: Boolean!) {
-    buildPnlSnapshotsV2(dateStr: $dateStr, isForceBuild: $isForceBuild) {
+  mutation buildPnlSnapshotsV2(
+    $dateStr: String!
+    $isForceBuild: Boolean!
+    $platform: Platform!
+  ) {
+    buildPnlSnapshotsV2(
+      dateStr: $dateStr
+      isForceBuild: $isForceBuild
+      platform: $platform
+    ) {
       id
       dateStr
       isInit
+      platform
     }
   }
 `);
 
 export const DYNAMIC_SNAPSHOT_BUILD_V2_DOCUMENT = graphql(`
-  mutation dynamicSnapshotBuildV2($dateStr: String!) {
-    dynamicSnapshotBuildV2(dateStr: $dateStr) {
+  mutation dynamicSnapshotBuildV2($dateStr: String!, $platform: Platform!) {
+    dynamicSnapshotBuildV2(dateStr: $dateStr, platform: $platform) {
       id
       dateStr
+      platform
       isInit
     }
   }
@@ -406,10 +419,12 @@ export const INITIALIZE_PNL_SNAPSHOT_V2_DOCUMENT = graphql(`
   mutation initializePnlSnapshotV2(
     $beginingDate: Date!
     $isForceBuild: Boolean!
+    $platform: Platform!
   ) {
     initializePnlSnapshotV2(
       beginingDate: $beginingDate
       isForceBuild: $isForceBuild
+      platform: $platform
     )
   }
 `);
@@ -665,6 +680,10 @@ export function useGetPnlSnapshotInitializedFlag() {
   return useQuery(GET_PNL_SNAPSHOT_INITIALIZED_FLAG_DOCUMENT);
 }
 
+export function useGetPnlSnapshotV2InitializedFlag() {
+  return useQuery(GET_PNL_SNAPSHOT_V2_INITIALIZED_FLAG_DOCUMENT);
+}
+
 export function useGetPnlSnapshotsByAddress(dateStr: string, address: string) {
   const { data, loading } = useQuery(GET_PNL_SNAPSHOTS_BY_ADDRESS_DOCUMENT, {
     variables: {
@@ -801,4 +820,119 @@ export function useAutoTesting() {
   const [autoTesting, { loading }] = useMutation(AUTO_TESTING_DOCUMENT);
 
   return { autoTesting, loading };
+}
+
+export function useIsPnlSnapshotV2Initialized(
+  dateStr: string,
+  platform: Platform,
+) {
+  return useQuery(IS_PNL_SNAPSHOT_V2_INITIALIZED_DOCUMENT, {
+    variables: { dateStr, platform },
+  });
+}
+
+export function useBuildPnlSnapshotsV2() {
+  const [buildPnlSnapshotsV2, { data, error, loading }] = useMutation(
+    DYNAMIC_SNAPSHOT_BUILD_V2_DOCUMENT,
+  );
+
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data?.dynamicSnapshotBuildV2 && !error) {
+      enqueueSnackbar("Success at building PNL snapshots!", {
+        variant: "success",
+      });
+
+      const pnlSnapshotInitializedFlag = data.dynamicSnapshotBuildV2;
+
+      client.cache.updateQuery(
+        {
+          query: IS_PNL_SNAPSHOT_V2_INITIALIZED_DOCUMENT,
+          variables: {
+            dateStr: pnlSnapshotInitializedFlag.dateStr,
+            platform: pnlSnapshotInitializedFlag.platform,
+          },
+        },
+        (data) => {
+          if (data && data.isPnlSnapshotV2Initialized) {
+            return {
+              ...data,
+              isPnlSnapshotV2Initialized: pnlSnapshotInitializedFlag,
+            };
+          } else {
+            return {
+              isPnlSnapshotV2Initialized: pnlSnapshotInitializedFlag,
+            };
+          }
+        },
+      );
+
+      client.cache.updateQuery(
+        {
+          query: GET_PNL_SNAPSHOT_V2_INITIALIZED_FLAG_DOCUMENT,
+          variables: {
+            platform: pnlSnapshotInitializedFlag.platform,
+          },
+        },
+        (data) => {
+          if (data && data.getPnlSnapshotV2InitializedFlag) {
+            const exists = data.getPnlSnapshotV2InitializedFlag.find(
+              (item) => item.id === pnlSnapshotInitializedFlag.id,
+            );
+
+            if (exists) {
+              return {
+                ...data,
+                getPnlSnapshotV2InitializedFlag:
+                  data.getPnlSnapshotV2InitializedFlag.map((item) =>
+                    item.id === pnlSnapshotInitializedFlag.id
+                      ? pnlSnapshotInitializedFlag
+                      : item,
+                  ),
+              };
+            }
+
+            return {
+              ...data,
+              getPnlSnapshotV2InitializedFlag: [
+                ...data.getPnlSnapshotV2InitializedFlag,
+                pnlSnapshotInitializedFlag,
+              ],
+            };
+          } else {
+            return {
+              getPnlSnapshotV2InitializedFlag: [pnlSnapshotInitializedFlag],
+            };
+          }
+        },
+      );
+    }
+  }, [data, error, enqueueSnackbar, client]);
+
+  return { buildPnlSnapshotsV2, loading };
+}
+
+export function useInitializePnlSnapshotV2() {
+  const [initializePnlSnapshotV2, { data, error, loading }] = useMutation(
+    INITIALIZE_PNL_SNAPSHOT_V2_DOCUMENT,
+  );
+
+  const { refetch } = useGetPnlSnapshotV2InitializedFlag();
+
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data?.initializePnlSnapshotV2 && !error) {
+      enqueueSnackbar("Success at initializing PNL snapshots!", {
+        variant: "success",
+      });
+
+      refetch();
+    }
+  }, [data, error, enqueueSnackbar, client, refetch]);
+
+  return { initializePnlSnapshotV2, loading };
 }

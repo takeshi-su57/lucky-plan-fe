@@ -3,8 +3,10 @@
 import { useEffect, useMemo } from "react";
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 import { useSnackbar } from "notistack";
+import { useQuery as useTanstackQuery } from "@tanstack/react-query";
 
 import { getFragmentData, graphql } from "@/gql/index";
+import { ServiceStatus } from "@/types";
 
 export const CONTRACT_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment ContractInfo on Contract {
@@ -15,6 +17,12 @@ export const CONTRACT_INFO_FRAGMENT_DOCUMENT = graphql(`
     description
     isTestnet
     status
+    fromBlock
+    lastBlockNumber
+    lastLeaderboardBlockNumber
+    platform
+    toBlock
+    version
   }
 `);
 
@@ -85,6 +93,28 @@ export function useGetAllTradePairs(contractIds?: number[]) {
   });
 
   return data?.getTradePairs || [];
+}
+
+export function useGetAdaptionStatus() {
+  const client = useApolloClient();
+
+  const query = useTanstackQuery({
+    queryKey: ["GET_ADAPTION_STATUS_DOCUMENT"],
+    queryFn: async () => {
+      const result = await client.query({
+        query: GET_ADAPTION_STATUS_DOCUMENT,
+        fetchPolicy: "network-only", // always fresh
+      });
+      return JSON.parse(result.data.getAdaptionStatus) as Record<
+        string,
+        ServiceStatus
+      >;
+    },
+    refetchInterval: 10_000, // ⏳ auto refresh every 10s
+    enabled: !!client,
+  });
+
+  return query.data || {};
 }
 
 export function useGetTradeCollaterals(contractId?: number) {

@@ -151,9 +151,15 @@ type Contract {
   backendUrl: String
   chainId: Int!
   description: String!
+  fromBlock: Int!
   id: Int!
   isTestnet: Boolean!
+  lastBlockNumber: Int!
+  lastLeaderboardBlockNumber: Int!
+  platform: Platform!
   status: ContractStatus!
+  toBlock: Int
+  version: Version!
 }
 
 type ContractExecutionResult {
@@ -414,7 +420,7 @@ type Mutation {
   autoTesting: Boolean!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
   buildPnlSnapshots(dateStr: String!, isForceBuild: Boolean!): PnlSnapshotInitializedFlag
-  buildPnlSnapshotsV2(dateStr: String!, isForceBuild: Boolean!): PnlSnapshotV2InitializedFlag
+  buildPnlSnapshotsV2(dateStr: String!, isForceBuild: Boolean!, platform: Platform!): PnlSnapshotV2InitializedFlag
   cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
@@ -431,13 +437,13 @@ type Mutation {
   deleteTag(tag: String!): Tag!
   disableContract(contractId: Int!): Contract!
   dynamicSnapshotBuild(dateStr: String!): PnlSnapshotInitializedFlag
-  dynamicSnapshotBuildV2(dateStr: String!): PnlSnapshotV2InitializedFlag
+  dynamicSnapshotBuildV2(dateStr: String!, platform: Platform!): PnlSnapshotV2InitializedFlag
   endPlan(id: Int!): Boolean!
   generateNewFollower: Follower!
   getToken(signature: String!, timestamp: String!, walletAddress: String!): AccessToken!
   ignoreMission(id: Int!): Boolean!
   initializePnlSnapshot(beginingDate: Date!, isForceBuild: Boolean!): Boolean!
-  initializePnlSnapshotV2(beginingDate: Date!, isForceBuild: Boolean!): Boolean!
+  initializePnlSnapshotV2(beginingDate: Date!, isForceBuild: Boolean!, platform: Platform!): Boolean!
   liveBot(id: Int!): Boolean!
   liveContract(contractId: Int!): Contract!
   makeSafeApp(password: String!): Boolean!
@@ -614,6 +620,7 @@ type PnlSnapshotV2InitializedFlag {
   dateStr: String!
   id: Int!
   isInit: Boolean!
+  platform: Platform!
 }
 
 type Position {
@@ -655,7 +662,7 @@ type Query {
   getPlanById(id: Int!): PlanForwardDetails
   getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
   getPnlSnapshotInitializedFlag: [PnlSnapshotInitializedFlag!]!
-  getPnlSnapshotV2InitializedFlag: [PnlSnapshotV2InitializedFlag!]!
+  getPnlSnapshotV2InitializedFlag(platform: Platform!): [PnlSnapshotV2InitializedFlag!]!
   getPnlSnapshots(after: Int, dateStr: String!, first: Int!, kind: PnlSnapshotKind!): PnlSnapshotDetailsConnection!
   getPnlSnapshotsByAddress(address: String!, dateStr: String!): [PnlSnapshot!]!
   getPnlSnapshotsV2(after: Int, dateStr: String!, first: Int!, kind: PnlSnapshotKind!, platform: Platform!): PnlSnapshotV2DetailsConnection!
@@ -670,7 +677,7 @@ type Query {
   getWhitelist: [String!]
   getWholeCompressedHistories(filterParams: [ExportFilter!]!, isTestnet: Boolean!, startDate: String!): WholeCompressedHistories!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
-  isPnlSnapshotV2Initialized(dateStr: String!): PnlSnapshotV2InitializedFlag
+  isPnlSnapshotV2Initialized(dateStr: String!, platform: Platform!): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   systemStatus: Boolean!
 }
@@ -929,6 +936,11 @@ enum UserPermission {
   Admin
   Trader
   Trial
+}
+
+enum Version {
+  V9
+  V10
 }
 
 type WalletAccount {

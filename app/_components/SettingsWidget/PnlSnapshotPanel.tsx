@@ -1,7 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Button, Card, CardBody, Chip, DatePicker } from "@nextui-org/react";
+import {
+  Button,
+  Card,
+  CardBody,
+  Chip,
+  DatePicker,
+  Tab,
+  Tabs,
+  Select,
+  SelectItem,
+} from "@nextui-org/react";
 import { DateValue, parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
 
@@ -12,7 +22,11 @@ import {
   useGetPnlSnapshotInitializedFlag,
   useBuildPnlSnapshots,
   useInitializePnlSnapshot,
+  useGetPnlSnapshotV2InitializedFlag,
+  useBuildPnlSnapshotsV2,
+  useInitializePnlSnapshotV2,
 } from "@/app-hooks/useHistory";
+import { Platform } from "@/graphql/gql/graphql";
 
 const columns: TableColumnProps[] = [
   {
@@ -25,12 +39,33 @@ const columns: TableColumnProps[] = [
   },
 ];
 
+type TabType = "v1" | "v2";
+
 export function PnlSnapshotPanel() {
-  const { data } = useGetPnlSnapshotInitializedFlag();
-  const { buildPnlSnapshots, loading: buildPnlSnapshotsLoading } =
-    useBuildPnlSnapshots();
-  const { initializePnlSnapshot, loading: initializePnlSnapshotLoading } =
-    useInitializePnlSnapshot();
+  const { data: v1Data } = useGetPnlSnapshotInitializedFlag();
+  const {
+    buildPnlSnapshots: v1BuildPnlSnapshots,
+    loading: v1BuildPnlSnapshotsLoading,
+  } = useBuildPnlSnapshots();
+  const {
+    initializePnlSnapshot: v1InitializePnlSnapshot,
+    loading: v1InitializePnlSnapshotLoading,
+  } = useInitializePnlSnapshot();
+
+  const { data: v2Data } = useGetPnlSnapshotV2InitializedFlag();
+  const {
+    buildPnlSnapshotsV2: v2BuildPnlSnapshots,
+    loading: v2BuildPnlSnapshotsLoading,
+  } = useBuildPnlSnapshotsV2();
+  const {
+    initializePnlSnapshotV2: v2InitializePnlSnapshot,
+    loading: v2InitializePnlSnapshotLoading,
+  } = useInitializePnlSnapshotV2();
+
+  const [selected, setSelected] = useState<TabType>("v1");
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform>(
+    Platform.Gns,
+  );
 
   const [selectedDate, setSelectedDate] = useState<DateValue | null>(
     parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
@@ -41,13 +76,24 @@ export function PnlSnapshotPanel() {
       return;
     }
 
-    buildPnlSnapshots({
-      variables: {
-        dateStr: dayjs(selectedDate.toDate(getServerTimezone())).format(
-          "YYYY-MM-DD",
-        ),
-      },
-    });
+    if (selected === "v1") {
+      v1BuildPnlSnapshots({
+        variables: {
+          dateStr: dayjs(selectedDate.toDate(getServerTimezone())).format(
+            "YYYY-MM-DD",
+          ),
+        },
+      });
+    } else {
+      v2BuildPnlSnapshots({
+        variables: {
+          dateStr: dayjs(selectedDate.toDate(getServerTimezone())).format(
+            "YYYY-MM-DD",
+          ),
+          platform: selectedPlatform,
+        },
+      });
+    }
   };
 
   const handleInitializePnlSnapshot = () => {
@@ -55,12 +101,22 @@ export function PnlSnapshotPanel() {
       return;
     }
 
-    initializePnlSnapshot({
-      variables: {
-        beginingDate: selectedDate.toDate(getServerTimezone()),
-        isForceBuild: false,
-      },
-    });
+    if (selected === "v1") {
+      v1InitializePnlSnapshot({
+        variables: {
+          beginingDate: selectedDate.toDate(getServerTimezone()),
+          isForceBuild: false,
+        },
+      });
+    } else {
+      v2InitializePnlSnapshot({
+        variables: {
+          beginingDate: selectedDate.toDate(getServerTimezone()),
+          isForceBuild: false,
+          platform: selectedPlatform,
+        },
+      });
+    }
   };
 
   const handleForceInitializePnlSnapshot = () => {
@@ -68,30 +124,40 @@ export function PnlSnapshotPanel() {
       return;
     }
 
-    initializePnlSnapshot({
-      variables: {
-        beginingDate: selectedDate.toDate(getServerTimezone()),
-        isForceBuild: true,
-      },
-    });
+    if (selected === "v1") {
+      v1InitializePnlSnapshot({
+        variables: {
+          beginingDate: selectedDate.toDate(getServerTimezone()),
+          isForceBuild: true,
+        },
+      });
+    } else {
+      v2InitializePnlSnapshot({
+        variables: {
+          beginingDate: selectedDate.toDate(getServerTimezone()),
+          isForceBuild: true,
+          platform: selectedPlatform,
+        },
+      });
+    }
   };
 
-  const exists = useMemo(() => {
-    if (!data || !selectedDate) {
+  const v1Exists = useMemo(() => {
+    if (!v1Data || !selectedDate) {
       return false;
     }
-    return data.getPnlSnapshotInitializedFlag.some(
+    return v1Data.getPnlSnapshotInitializedFlag.some(
       (flag) =>
         flag.dateStr ===
         dayjs(selectedDate.toDate(getServerTimezone())).format("YYYY-MM-DD"),
     );
-  }, [data, selectedDate]);
+  }, [v1Data, selectedDate]);
 
-  const rows = useMemo(() => {
-    if (!data) {
+  const v1Rows = useMemo(() => {
+    if (!v1Data) {
       return [];
     }
-    return data.getPnlSnapshotInitializedFlag.map((flag) => ({
+    return v1Data.getPnlSnapshotInitializedFlag.map((flag) => ({
       id: `${flag.dateStr}`,
       className: "group",
       data: {
@@ -111,63 +177,153 @@ export function PnlSnapshotPanel() {
         },
       },
     }));
-  }, [data]);
+  }, [v1Data]);
+
+  const v2Exists = useMemo(() => {
+    if (!v2Data || !selectedDate) {
+      return false;
+    }
+    return v2Data.getPnlSnapshotV2InitializedFlag.some(
+      (flag) =>
+        flag.dateStr ===
+        dayjs(selectedDate.toDate(getServerTimezone())).format("YYYY-MM-DD"),
+    );
+  }, [v2Data, selectedDate]);
+
+  const v2Rows = useMemo(() => {
+    if (!v2Data) {
+      return [];
+    }
+    return v2Data.getPnlSnapshotV2InitializedFlag.map((flag) => ({
+      id: `${flag.dateStr}`,
+      className: "group",
+      data: {
+        dateStr: {
+          component: flag.dateStr,
+        },
+        isInit: {
+          component: flag.isInit ? (
+            <Chip color="primary" className="text-xs">
+              Initialized
+            </Chip>
+          ) : (
+            <Chip color="danger" className="text-xs">
+              Not Initialized
+            </Chip>
+          ),
+        },
+      },
+    }));
+  }, [v2Data]);
 
   return (
-    <Card>
-      <CardBody>
-        <div className="flex flex-row items-center gap-4">
-          <DatePicker
-            className="max-w-[284px]"
-            label="Pick a date"
-            value={selectedDate}
-            onChange={setSelectedDate}
+    <>
+      <Tabs
+        aria-label="users-table-tabs"
+        selectedKey={selected}
+        onSelectionChange={(value) => value && setSelected(value as TabType)}
+      >
+        <Tab key="v1" title="V1" />
+        <Tab key="v2" title="V2" />
+      </Tabs>
+
+      <Card>
+        <CardBody>
+          <div className="flex flex-row items-center gap-4">
+            {selected === "v2" ? (
+              <Select
+                isRequired
+                className="max-w-xs"
+                label="Platform"
+                placeholder="Select a platform"
+                selectedKeys={[selectedPlatform]}
+                onChange={(e) =>
+                  setSelectedPlatform(e.target.value as Platform)
+                }
+                selectionMode="single"
+              >
+                {Object.values(Platform).map((platform) => (
+                  <SelectItem key={platform}>{platform}</SelectItem>
+                ))}
+              </Select>
+            ) : null}
+
+            <DatePicker
+              className="max-w-[284px]"
+              label="Pick a date"
+              value={selectedDate}
+              onChange={setSelectedDate}
+            />
+
+            <Button
+              onClick={handleForceBuildPnlSnapshots}
+              isLoading={
+                selected === "v1"
+                  ? v1BuildPnlSnapshotsLoading
+                  : v2BuildPnlSnapshotsLoading
+              }
+              color="primary"
+              isDisabled={
+                selected === "v1"
+                  ? v1BuildPnlSnapshotsLoading || v1InitializePnlSnapshotLoading
+                  : v2BuildPnlSnapshotsLoading || v2InitializePnlSnapshotLoading
+              }
+            >
+              {selected === "v1"
+                ? v1Exists
+                  ? "Re-Run"
+                  : "Build"
+                : v2Exists
+                  ? "Re-Run"
+                  : "Build"}
+            </Button>
+
+            <Button
+              onClick={handleInitializePnlSnapshot}
+              isLoading={
+                selected === "v1"
+                  ? v1InitializePnlSnapshotLoading
+                  : v2InitializePnlSnapshotLoading
+              }
+              color="primary"
+              isDisabled={
+                selected === "v1"
+                  ? v1BuildPnlSnapshotsLoading || v1InitializePnlSnapshotLoading
+                  : v2BuildPnlSnapshotsLoading || v2InitializePnlSnapshotLoading
+              }
+            >
+              Sequence Initialization
+            </Button>
+
+            <Button
+              onClick={handleForceInitializePnlSnapshot}
+              isLoading={
+                selected === "v1"
+                  ? v1InitializePnlSnapshotLoading
+                  : v2InitializePnlSnapshotLoading
+              }
+              color="primary"
+              isDisabled={
+                selected === "v1"
+                  ? v1BuildPnlSnapshotsLoading || v1InitializePnlSnapshotLoading
+                  : v2BuildPnlSnapshotsLoading || v2InitializePnlSnapshotLoading
+              }
+            >
+              Force Initialization
+            </Button>
+          </div>
+
+          <DataTable
+            columns={columns}
+            rows={selected === "v1" ? v1Rows : v2Rows}
+            classNames={{
+              tr: "font-mono cursor-pointer",
+              td: "py-3 ",
+              th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
+            }}
           />
-
-          <Button
-            onClick={handleForceBuildPnlSnapshots}
-            isLoading={buildPnlSnapshotsLoading}
-            color="primary"
-            isDisabled={
-              buildPnlSnapshotsLoading || initializePnlSnapshotLoading
-            }
-          >
-            {exists ? "Re-Run" : "Build"}
-          </Button>
-
-          <Button
-            onClick={handleInitializePnlSnapshot}
-            isLoading={initializePnlSnapshotLoading}
-            color="primary"
-            isDisabled={
-              buildPnlSnapshotsLoading || initializePnlSnapshotLoading
-            }
-          >
-            Sequence Initialization
-          </Button>
-
-          <Button
-            onClick={handleForceInitializePnlSnapshot}
-            isLoading={initializePnlSnapshotLoading}
-            color="primary"
-            isDisabled={
-              buildPnlSnapshotsLoading || initializePnlSnapshotLoading
-            }
-          >
-            Force Initialization
-          </Button>
-        </div>
-
-        <DataTable
-          columns={columns}
-          rows={rows}
-          classNames={{
-            tr: "font-mono cursor-pointer",
-            td: "py-3 ",
-            th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
-          }}
-        />
-      </CardBody>
-    </Card>
+        </CardBody>
+      </Card>
+    </>
   );
 }

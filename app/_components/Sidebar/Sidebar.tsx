@@ -135,6 +135,7 @@ export function Sidebar() {
                   "bg-primary-400/20 !text-primary-400",
               )}
               showDivider={link.showDivider}
+              textValue={link.label}
             >
               <Link href={`/${link.id}`}>{link.label}</Link>
             </ListboxItem>

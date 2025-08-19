@@ -149,9 +149,15 @@ type Contract {
   backendUrl: String
   chainId: Int!
   description: String!
+  fromBlock: Int!
   id: Int!
   isTestnet: Boolean!
+  lastBlockNumber: Int!
+  lastLeaderboardBlockNumber: Int!
+  platform: Platform!
   status: ContractStatus!
+  toBlock: Int
+  version: Version!
 }
 
 type ContractExecutionResult {
@@ -426,6 +432,7 @@ type Mutation {
   buildPnlSnapshotsV2(
     dateStr: String!
     isForceBuild: Boolean!
+    platform: Platform!
   ): PnlSnapshotV2InitializedFlag
   cancelOrderAfterTimeout(
     input: CancelOrderAfterTimeoutInput!
@@ -445,7 +452,10 @@ type Mutation {
   deleteTag(tag: String!): Tag!
   disableContract(contractId: Int!): Contract!
   dynamicSnapshotBuild(dateStr: String!): PnlSnapshotInitializedFlag
-  dynamicSnapshotBuildV2(dateStr: String!): PnlSnapshotV2InitializedFlag
+  dynamicSnapshotBuildV2(
+    dateStr: String!
+    platform: Platform!
+  ): PnlSnapshotV2InitializedFlag
   endPlan(id: Int!): Boolean!
   generateNewFollower: Follower!
   getToken(
@@ -455,7 +465,11 @@ type Mutation {
   ): AccessToken!
   ignoreMission(id: Int!): Boolean!
   initializePnlSnapshot(beginingDate: Date!, isForceBuild: Boolean!): Boolean!
-  initializePnlSnapshotV2(beginingDate: Date!, isForceBuild: Boolean!): Boolean!
+  initializePnlSnapshotV2(
+    beginingDate: Date!
+    isForceBuild: Boolean!
+    platform: Platform!
+  ): Boolean!
   liveBot(id: Int!): Boolean!
   liveContract(contractId: Int!): Contract!
   makeSafeApp(password: String!): Boolean!
@@ -642,6 +656,7 @@ type PnlSnapshotV2InitializedFlag {
   dateStr: String!
   id: Int!
   isInit: Boolean!
+  platform: Platform!
 }
 
 type Position {
@@ -702,7 +717,9 @@ type Query {
     status: PlanStatus!
   ): PlanConnection!
   getPnlSnapshotInitializedFlag: [PnlSnapshotInitializedFlag!]!
-  getPnlSnapshotV2InitializedFlag: [PnlSnapshotV2InitializedFlag!]!
+  getPnlSnapshotV2InitializedFlag(
+    platform: Platform!
+  ): [PnlSnapshotV2InitializedFlag!]!
   getPnlSnapshots(
     after: Int
     dateStr: String!
@@ -737,7 +754,10 @@ type Query {
     startDate: String!
   ): WholeCompressedHistories!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
-  isPnlSnapshotV2Initialized(dateStr: String!): PnlSnapshotV2InitializedFlag
+  isPnlSnapshotV2Initialized(
+    dateStr: String!
+    platform: Platform!
+  ): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   systemStatus: Boolean!
 }
@@ -996,6 +1016,11 @@ enum UserPermission {
   Admin
   Trader
   Trial
+}
+
+enum Version {
+  V9
+  V10
 }
 
 type WalletAccount {
