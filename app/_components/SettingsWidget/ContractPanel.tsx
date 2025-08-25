@@ -57,6 +57,11 @@ const columns: TableColumnProps[] = [
   },
 ];
 
+const availableVersions = {
+  [Platform.Gns]: [Version.V9, Version.V10],
+  [Platform.Gmx]: [Version.V2],
+};
+
 export function ContractPanel() {
   const allContracts = useGetAllContracts();
   const { disableContract } = useDisableContract();
@@ -201,7 +206,7 @@ export function ContractPanel() {
             onChange={(e) => setSelectedVersion(e.target.value as Version)}
             selectionMode="single"
           >
-            {Object.values(Version).map((version) => (
+            {availableVersions[selectedPlatform].map((version) => (
               <SelectItem key={version}>{version}</SelectItem>
             ))}
           </Select>

@@ -52,7 +52,6 @@ export function PnlSnapshotPanel() {
     loading: v1InitializePnlSnapshotLoading,
   } = useInitializePnlSnapshot();
 
-  const { data: v2Data } = useGetPnlSnapshotV2InitializedFlag();
   const {
     buildPnlSnapshotsV2: v2BuildPnlSnapshots,
     loading: v2BuildPnlSnapshotsLoading,
@@ -66,6 +65,8 @@ export function PnlSnapshotPanel() {
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>(
     Platform.Gns,
   );
+
+  const { data: v2Data } = useGetPnlSnapshotV2InitializedFlag(selectedPlatform);
 
   const [selectedDate, setSelectedDate] = useState<DateValue | null>(
     parseDate(dayjs(new Date()).format("YYYY-MM-DD")),

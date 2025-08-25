@@ -529,6 +529,7 @@ enum PlanStatus {
 }
 
 enum Platform {
+  GMX
   GNS
 }
 
@@ -939,6 +940,7 @@ enum UserPermission {
 }
 
 enum Version {
+  V2
   V9
   V10
 }

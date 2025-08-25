@@ -680,8 +680,10 @@ export function useGetPnlSnapshotInitializedFlag() {
   return useQuery(GET_PNL_SNAPSHOT_INITIALIZED_FLAG_DOCUMENT);
 }
 
-export function useGetPnlSnapshotV2InitializedFlag() {
-  return useQuery(GET_PNL_SNAPSHOT_V2_INITIALIZED_FLAG_DOCUMENT);
+export function useGetPnlSnapshotV2InitializedFlag(platform: Platform) {
+  return useQuery(GET_PNL_SNAPSHOT_V2_INITIALIZED_FLAG_DOCUMENT, {
+    variables: { platform },
+  });
 }
 
 export function useGetPnlSnapshotsByAddress(dateStr: string, address: string) {
@@ -919,8 +921,6 @@ export function useInitializePnlSnapshotV2() {
     INITIALIZE_PNL_SNAPSHOT_V2_DOCUMENT,
   );
 
-  const { refetch } = useGetPnlSnapshotV2InitializedFlag();
-
   const client = useApolloClient();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -929,10 +929,8 @@ export function useInitializePnlSnapshotV2() {
       enqueueSnackbar("Success at initializing PNL snapshots!", {
         variant: "success",
       });
-
-      refetch();
     }
-  }, [data, error, enqueueSnackbar, client, refetch]);
+  }, [data, error, enqueueSnackbar, client]);
 
   return { initializePnlSnapshotV2, loading };
 }
