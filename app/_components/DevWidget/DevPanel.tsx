@@ -73,7 +73,7 @@ export function DevPanel() {
         "Visualize and analyze the aggregated performance metrics of selected leaders to evaluate overall strategy effectiveness.",
       content: (
         <MergedLeaderboard
-          endDate={pastDate}
+          endDate={dayjs(pastDate).add(1, "day").toDate()}
           leaders={leaders}
           onNextStep={() => setCurrentStep(4)}
           onPrevStep={() => setCurrentStep(2)}

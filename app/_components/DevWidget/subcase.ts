@@ -232,7 +232,7 @@ export const primaryBestCase = [
     minScore: 10,
     n: 2,
     m: 1,
-    maxAvgSize: 1000_000_000,
+    maxAvgSize: 300,
     maxCount: 1000_000_000,
     minAvgSize: 0,
     minCount: 0,

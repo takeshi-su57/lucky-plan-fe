@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { Spinner, Tabs, Tab } from "@nextui-org/react";
 import dayjs from "dayjs";
 
+import { ExportFilter } from "@/graphql/gql/graphql";
+
 import { useGetWholeCompressedHistories } from "@/app/_hooks/useHistory";
 
 import BarChart from "@/components/charts/BarChart";
@@ -10,9 +12,9 @@ import { getPriceStr } from "@/utils/price";
 import { TradeHistories } from "./TradeHistories";
 
 import { getDevData } from "@/utils";
-import { ExportFilter } from "@/graphql/gql/graphql";
+import { FastTotalNewPanel } from "./FastTotalNewPanel";
 
-type TabType = "overview" | "details";
+type TabType = "overview" | "details" | "monthly";
 
 export type FastTotalDevPanelProps = {
   startDate: string;
@@ -280,9 +282,10 @@ export function FastTotalDevPanel({
       >
         <Tab key="overview" title="Overview" />
         <Tab key="details" title="Details" />
+        <Tab key="monthly" title="Monthly" />
       </Tabs>
 
-      {selected === "overview" ? (
+      {selected === "overview" && (
         <>
           <div className="flex flex-row items-center gap-8">
             <span>Invested: {getPriceStr(-maxInvested)} USDC</span>
@@ -442,7 +445,9 @@ export function FastTotalDevPanel({
             className="h-[250px] rounded-2xl border border-neutral-800 bg-amber-950/5"
           />
         </>
-      ) : (
+      )}
+
+      {selected === "details" && (
         <>
           <div>
             {!!actionTypeCount
@@ -462,6 +467,14 @@ export function FastTotalDevPanel({
             <TradeHistories totalBots={totalBots} />
           </div>
         </>
+      )}
+
+      {selected === "monthly" && (
+        <FastTotalNewPanel
+          startDate={startDate}
+          accPnls={accPnls}
+          botCounts={botCounts}
+        />
       )}
     </div>
   );

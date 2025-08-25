@@ -16,6 +16,7 @@ import { AutomationGridChart } from "../PlansWidget/AutomationChart";
 import { FutureChart } from "./FutureChart";
 import { LeaderItem, LeaderParams } from "./LeaderItem";
 import { getSortedPartialHistories } from "@/utils/historiesChart";
+import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget/HistoriesWidget";
 
 type TabType = "overview" | "details";
 
@@ -37,21 +38,37 @@ export function BacktestResult({
   const [totalLeaderHistories, setTotalLeaderHistories] = useState<
     PersonalTradeHistory[]
   >([]);
+  const [activeLeaders, setActiveLeaders] = useState<
+    (LeaderParams & {
+      allHistories: PersonalTradeHistory[];
+    })[]
+  >([]);
 
   useEffect(() => {
-    const endDate = dayjs(startDate).add(1, "day").toDate();
+    const fromDate = dayjs(startDate).add(1, "day").toDate();
+    const toDate = dayjs(startDate).add(2, "day").toDate();
 
-    const histories = leaders.map(
-      (leader) =>
-        getSortedPartialHistories(leader.histories, {
-          mode: "show_only_valid_activity",
-          range: { from: startDate, to: endDate },
-        }).sortedHistories,
+    const _activeLeaders = leaders
+      .map((leader) => {
+        return {
+          ...leader,
+          histories: getSortedPartialHistories(leader.histories, {
+            mode: "show_only_valid_activity",
+            range: { from: fromDate, to: toDate },
+          }).sortedHistories,
+          allHistories: leader.histories,
+        };
+      })
+      .filter((leader) => leader.histories.length > 0);
+
+    setTotalLeaderHistories(
+      _activeLeaders.flatMap((leader) => leader.histories),
     );
-    setTotalLeaderHistories(histories.flat());
+    setActiveLeaders(_activeLeaders);
   }, [leaders, startDate]);
 
-  const endDate = dayjs(startDate).add(1, "day").toDate();
+  const fromDate = dayjs(startDate).add(1, "day").toDate();
+  const toDate = dayjs(startDate).add(2, "day").toDate();
 
   return (
     <div className="flex flex-col gap-2">
@@ -73,7 +90,7 @@ export function BacktestResult({
           mode="show_only_valid_activity"
           histories={totalLeaderHistories}
           title={`Total Result`}
-          range={{ from: startDate, to: endDate }}
+          range={{ from: fromDate, to: toDate }}
         />
       ) : null}
 
@@ -82,7 +99,7 @@ export function BacktestResult({
           <CardBody>
             <div className="flex h-[700px] w-full flex-col gap-2 overflow-y-auto">
               <Accordion isCompact variant="splitted">
-                {leaders.map((leader) => (
+                {activeLeaders.map((leader) => (
                   <AccordionItem
                     key={leader.virtualId}
                     title={
@@ -90,11 +107,18 @@ export function BacktestResult({
                     }
                   >
                     <FutureChart
-                      startDate={startDate}
-                      endDate={endDate}
-                      leaderContractId={leader.contract.contractId}
+                      startDate={fromDate}
+                      endDate={toDate}
                       address={leader.address as Address}
                       leaderHistories={leader.histories}
+                    />
+
+                    <HistoriesWidget
+                      address={leader.address as Address}
+                      histories={leader.allHistories}
+                      hideTags
+                      range={{ to: toDate }}
+                      mode="show_all_activity"
                     />
                   </AccordionItem>
                 ))}

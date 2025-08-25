@@ -98,23 +98,19 @@ export function ReportView({ report }: { report: TestingReport }) {
           <span className="text-red-700">
             Total Unique Traders: {report.totalUniqueTraders}
           </span>
+
+          <span>Week: {report.weekWeight}</span>
+          <span>Month: {report.monthWeight}</span>
+          <span>Three Month: {report.threeMonthWeight}</span>
+          <span>All Time: {report.allTimeWeight}</span>
         </div>
-
-        {/* <div className="flex items-center gap-3">
-          <span>Loss Count: {report.lossCount}</span>
-          <span>Profit Count: {report.profitCount}</span>
-
-          <span>R2: {report.calculatedR2}</span>
-          <span>Slope: {report.calculatedSlope}</span>
-          <span>Peak Acc Profit: {report.peakAccProfit}</span>
-          <span>Bottom Acc Profit: {report.bottomAccProfit}</span>
-        </div> */}
 
         <div className="flex items-center gap-3">
           {/* <span>n: {report.n}</span>
           <span>m: {report.m}</span>
           <span>minScore: {report.minScore}</span>
           <span>Window: {report.window}</span> */}
+
           <span>Min R2: {report.minR2}</span>
 
           <span>Min Avg Size: {report.minAvgSize}</span>

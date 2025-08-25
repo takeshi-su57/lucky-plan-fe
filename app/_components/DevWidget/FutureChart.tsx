@@ -11,7 +11,6 @@ import { PersonalTradeHistory } from "@/types/index";
 export type FutureChartProps = {
   startDate: Date;
   endDate: Date;
-  leaderContractId: number;
   address: string;
   leaderHistories: PersonalTradeHistory[];
   hideTags?: boolean;

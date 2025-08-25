@@ -16,12 +16,10 @@ export type DevLeaderboardProps = {
   selectionLabel?: string;
   selectedAddresses?: {
     address: string;
-    contractId: number;
     leaderCollateral: number;
   }[];
   onChangeSelection?: (
     address: string,
-    contractId: number,
     leaderCollateral: number,
     histories: PersonalTradeHistory[],
     isSelected: boolean,
@@ -55,7 +53,6 @@ export function DevLeaderboard({
     pnlSnapshots?.forEach((snapshot) => {
       onChangeSelection?.(
         snapshot.address as Address,
-        snapshot.contractId,
         0,
         snapshot.histories,
         true,
@@ -93,9 +90,8 @@ export function DevLeaderboard({
                     selectedAddresses
                       ? !!selectedAddresses.find(
                           (item) =>
-                            item.contractId === snapshot.contractId &&
                             item.address.toLowerCase() ===
-                              snapshot.address.toLowerCase(),
+                            snapshot.address.toLowerCase(),
                         )
                       : undefined
                   }
