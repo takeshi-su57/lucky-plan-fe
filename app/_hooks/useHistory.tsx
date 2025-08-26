@@ -15,6 +15,7 @@ import {
   GetPnlSnapshotsQuery,
   TradeHistory,
   Platform,
+  GetPnlSnapshotsV2Query,
 } from "@/graphql/gql/graphql";
 
 import { PersonalTradeHistory, TradeActionType } from "@/types";
@@ -345,7 +346,7 @@ export const GET_PNL_SNAPSHOT_V2_INITIALIZED_FLAG_DOCUMENT = graphql(`
   }
 `);
 
-export const GET_PNL_SNAPSHOT_V2_DETAILS_DOCUMENT = graphql(`
+export const GET_PNL_SNAPSHOT_V2_DOCUMENT = graphql(`
   query getPnlSnapshotsV2(
     $dateStr: String!
     $platform: Platform!
@@ -472,6 +473,22 @@ function getPnlSnapshotInfo(
       getPersonalTradeHistory(
         getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, history),
       ),
+    ),
+  };
+}
+
+function getPnlSnapshotV2Info(
+  snapshot: GetPnlSnapshotsV2Query["getPnlSnapshotsV2"]["edges"][number]["node"],
+) {
+  const snapshotInfo = getFragmentData(
+    PNL_SNAPSHOT_V2_DETAILS_INFO_FRAGMENT_DOCUMENT,
+    snapshot,
+  );
+
+  return {
+    ...snapshotInfo,
+    perpTradingEventLogs: snapshotInfo.perpTradingEventLogs.map((eventLog) =>
+      getFragmentData(GET_PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT, eventLog),
     ),
   };
 }
@@ -933,4 +950,54 @@ export function useInitializePnlSnapshotV2() {
   }, [data, error, enqueueSnackbar, client]);
 
   return { initializePnlSnapshotV2, loading };
+}
+
+export function useGetPnlSnapshotsV2(
+  dateStr: string,
+  kind: PnlSnapshotKind,
+  platform: Platform,
+) {
+  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
+    GET_PNL_SNAPSHOT_V2_DOCUMENT,
+  );
+
+  useEffect(() => {
+    query({
+      variables: {
+        dateStr,
+        kind,
+        first: 20,
+        platform,
+      },
+    });
+  }, [dateStr, kind, query, platform]);
+
+  const pnlSnapshots = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+    return data.getPnlSnapshotsV2.edges.map((edge) =>
+      getPnlSnapshotV2Info(edge.node),
+    );
+  }, [data]);
+
+  const handleFetchMore = useCallback(() => {
+    if (data && !error) {
+      fetchMore({
+        variables: {
+          kind,
+          first: 20,
+          after: data.getPnlSnapshotsV2.pageInfo.endCursor,
+          platform,
+        },
+      });
+    }
+  }, [data, error, fetchMore, kind, platform]);
+
+  return {
+    hasMore: data?.getPnlSnapshotsV2.pageInfo.hasNextPage,
+    pnlSnapshots,
+    fetchMore: handleFetchMore,
+    loading,
+  };
 }
