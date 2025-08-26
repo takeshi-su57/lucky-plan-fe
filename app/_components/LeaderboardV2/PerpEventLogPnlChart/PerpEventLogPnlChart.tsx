@@ -81,9 +81,9 @@ export function PerpEventLogPnlChart({
       : null;
 
   return (
-    <Card className={twMerge("mb-4")} isBlurred>
+    <Card className={twMerge("mb-4 w-full")} isBlurred>
       <CardBody>
-        <div className="flex min-h-[500px] gap-8 p-3">
+        <div className="flex gap-8 p-3">
           <div className="flex flex-col gap-4">
             <HistoriesSummary
               address={address}

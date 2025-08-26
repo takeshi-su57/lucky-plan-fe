@@ -15,13 +15,12 @@ export function LeaderboadWrapper() {
     const platformQuery = platform ? `platform=${platform}` : null;
 
     router.push(
-      `/leaderboards?${kindQuery || ""}${kindQuery && platformQuery && "&"}${platformQuery || ""}}`,
+      `/leaderboard-v2?${kindQuery || ""}${kindQuery && platformQuery && "&"}${platformQuery || ""}`,
     );
   };
 
   return (
     <Leaderboard
-      endDate={new Date()}
       initialKind={
         (searchParams.get("kind") as PnlSnapshotKind) || PnlSnapshotKind.Month
       }
