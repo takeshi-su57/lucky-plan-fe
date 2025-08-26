@@ -736,6 +736,7 @@ type Query {
     platform: Platform!
   ): PnlSnapshotV2DetailsConnection!
   getServerTime: ServerTime!
+  getStatisticData: [StatisticData!]!
   getTestingReport(after: Int, first: Int!): TestingReportConnection!
   getTradeCollaterals(contractId: Int!): [TradeCollateral!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
@@ -771,6 +772,14 @@ type ServerTime {
 type SeverityCount {
   counts: Int!
   severity: LogSeverity!
+}
+
+type StatisticData {
+  countOfLost: Float!
+  countOfWin: Int!
+  size: Float!
+  sumOfLost: Float!
+  sumOfWin: Float!
 }
 
 type Strategy {

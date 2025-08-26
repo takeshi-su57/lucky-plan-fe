@@ -386,6 +386,18 @@ export const IS_PNL_SNAPSHOT_V2_INITIALIZED_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_STATISTIC_DATA_DOCUMENT = graphql(`
+  query getStatisticData {
+    getStatisticData {
+      size
+      sumOfLost
+      sumOfWin
+      countOfLost
+      countOfWin
+    }
+  }
+`);
+
 export const BUILD_PNL_SNAPSHOTS_V2_DOCUMENT = graphql(`
   mutation buildPnlSnapshotsV2(
     $dateStr: String!
@@ -998,6 +1010,44 @@ export function useGetPnlSnapshotsV2(
     hasMore: data?.getPnlSnapshotsV2.pageInfo.hasNextPage,
     pnlSnapshots,
     fetchMore: handleFetchMore,
+    loading,
+  };
+}
+
+export function useGetStatisticData() {
+  const { data, loading } = useQuery(GET_STATISTIC_DATA_DOCUMENT);
+
+  return {
+    statisticData: data?.getStatisticData,
+    loading,
+  };
+}
+
+export function useGetPerpEventLogs(address: string, platform: Platform) {
+  const [query, { data, loading }] = useLazyQuery(GET_PERP_EVENT_LOGS_DOCUMENT);
+
+  useEffect(() => {
+    if (address && platform) {
+      query({
+        variables: {
+          address,
+          platform,
+        },
+      });
+    }
+  }, [address, platform, query]);
+
+  const eventLogs = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+    return data.getPerpEventLogs.map((eventLog) =>
+      getFragmentData(GET_PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT, eventLog),
+    );
+  }, [data]);
+
+  return {
+    eventLogs,
     loading,
   };
 }

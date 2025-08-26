@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Spinner } from "@nextui-org/react";
-import { LeaderboadWrapper } from "@/app-components/LeaderboardWidgets/LeaderboadWrapper";
+import { LeaderboadWrapper } from "@/app/_components/LeaderboardV2/LeaderboadWrapper";
 
 export default function Page() {
   return (
