@@ -13,7 +13,10 @@ import { twMerge } from "tailwind-merge";
 import { HistoriesSummary } from "./HistoriesSummary";
 import { HistoriesPositionList } from "./HistoriesPositionList";
 import { getScore } from "@/utils";
-import { useGetAllTradePairs } from "@/app/_hooks/useContract";
+import {
+  useGetAllGnsContracts,
+  useGetAllTradePairs,
+} from "@/app/_hooks/useContract";
 
 type TabType = "chart" | "positions";
 
@@ -48,7 +51,10 @@ export function HistoriesWidget({
   range,
 }: HistoriesWidgetProps) {
   const [selected, setSelected] = useState<TabType>("chart");
-  const allPairs = useGetAllTradePairs([1, 2, 3, 5]);
+  const contracts = useGetAllGnsContracts();
+  const allPairs = useGetAllTradePairs(
+    contracts.map((contract) => contract.id),
+  );
 
   const {
     historiesGroupedByTradeIndex,

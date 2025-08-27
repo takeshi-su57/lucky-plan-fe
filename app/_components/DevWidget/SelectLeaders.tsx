@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Button } from "@nextui-org/react";
 import dayjs from "dayjs";
 import { nanoid } from "nanoid";
-import { useGetAllContracts } from "@/app/_hooks/useContract";
 
 import { useIsPnlSnapshotInitialized } from "@/app-hooks/useHistory";
 
@@ -42,8 +41,6 @@ export function SelectLeaders({
 
   const isAdmin = userJwtQuery?.data?.permission === UserPermission.Admin;
 
-  const allContracts = useGetAllContracts();
-
   const [tempLeaders, setTempLeaders] = useState<LeaderParams[]>([]);
 
   useEffect(() => {
@@ -57,7 +54,6 @@ export function SelectLeaders({
 
   const handleChangeSelection = (
     address: string,
-    contractId: number,
     leaderCollateral: number,
     histories: PersonalTradeHistory[],
     isSelected: boolean,
@@ -65,18 +61,10 @@ export function SelectLeaders({
     if (isSelected) {
       setTempLeaders((prev) => {
         const exists = prev.find(
-          (item) =>
-            item.contract.contractId === contractId &&
-            item.address.toLowerCase() === address.toLowerCase(),
+          (item) => item.address.toLowerCase() === address.toLowerCase(),
         );
 
         if (exists) {
-          return prev;
-        }
-
-        const contract = allContracts.find((item) => item.id === contractId);
-
-        if (!contract) {
           return prev;
         }
 
@@ -86,12 +74,6 @@ export function SelectLeaders({
             virtualId: nanoid(),
             address,
             leaderCollateral,
-            contract: {
-              contractId: contract.id,
-              chainId: contract.chainId,
-              address: contract.address,
-              backendUrl: contract.backendUrl!,
-            },
             isConfirmed: false,
             histories,
           },
@@ -100,9 +82,7 @@ export function SelectLeaders({
     } else {
       setTempLeaders((prev) => {
         return prev.filter(
-          (item) =>
-            item.contract.contractId !== contractId ||
-            item.address.toLowerCase() !== address.toLowerCase(),
+          (item) => item.address.toLowerCase() !== address.toLowerCase(),
         );
       });
     }
@@ -167,7 +147,6 @@ export function SelectLeaders({
         selectionLabel="Pick as a Leader"
         selectedAddresses={tempLeaders.map((leader) => ({
           address: leader.address,
-          contractId: leader.contract.contractId,
           leaderCollateral: leader.leaderCollateral,
         }))}
         onChangeSelection={handleChangeSelection}

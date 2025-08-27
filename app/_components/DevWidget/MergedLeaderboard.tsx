@@ -116,7 +116,6 @@ export function MergedLeaderboard({
                     <FutureChart
                       startDate={startDate}
                       endDate={endDate}
-                      leaderContractId={leader.contract.contractId}
                       address={leader.address as Address}
                       leaderHistories={leader.histories}
                     />

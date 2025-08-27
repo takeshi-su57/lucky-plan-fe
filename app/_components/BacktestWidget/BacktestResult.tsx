@@ -16,7 +16,7 @@ import {
 } from "./BacktestParamtersForm";
 import { PersonalTradeHistory } from "@/types";
 import { getPersonalTradeHistories } from "@/app/_actions/getPersonalTradeHistories";
-import { useGetAllContracts } from "@/app/_hooks/useContract";
+import { useGetAllGnsContracts } from "@/app/_hooks/useContract";
 import { transformHistories } from "@/utils/historiesChart";
 
 import { AutomationGridChart } from "../PlansWidget/AutomationChart";
@@ -57,7 +57,7 @@ export function BacktestResult({
     PersonalTradeHistory[]
   >([]);
 
-  const allContracts = useGetAllContracts();
+  const allContracts = useGetAllGnsContracts();
 
   useEffect(() => {
     if (allContracts) {

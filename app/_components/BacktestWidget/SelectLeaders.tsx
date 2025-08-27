@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@nextui-org/react";
 import dayjs from "dayjs";
 import { nanoid } from "nanoid";
-import { useGetAllContracts } from "@/app/_hooks/useContract";
+import { useGetAllGnsContracts } from "@/app/_hooks/useContract";
 
 import { useIsPnlSnapshotInitialized } from "@/app-hooks/useHistory";
 
@@ -37,7 +37,7 @@ export function SelectLeaders({
 
   const isAdmin = userJwtQuery?.data?.permission === UserPermission.Admin;
 
-  const allContracts = useGetAllContracts();
+  const allContracts = useGetAllGnsContracts();
 
   const [tempLeaders, setTempLeaders] = useState<LeaderParams[]>([]);
 

@@ -5,19 +5,18 @@ import { RiVerifiedBadgeLine } from "react-icons/ri";
 import { GoUnverified } from "react-icons/go";
 
 import { getPriceStr } from "@/utils/price";
-import { ContractItem, PersonalTradeHistory } from "@/types";
+import { PersonalTradeHistory } from "@/types";
 
 export type LeaderParams = {
   virtualId: string;
   leaderCollateral: number;
   address: string;
-  contract: ContractItem;
   isConfirmed: boolean;
   histories: PersonalTradeHistory[];
 };
 
 export function LeaderItem({ params }: { params: LeaderParams }) {
-  const { address, contract, leaderCollateral, isConfirmed } = params;
+  const { address, leaderCollateral, isConfirmed } = params;
 
   return (
     <div className="flex flex-row gap-2 text-xs">
@@ -25,8 +24,6 @@ export function LeaderItem({ params }: { params: LeaderParams }) {
         <span>Address: {address}</span>
 
         <div className="flex flex-row gap-2">
-          <span>Contract ID: {contract.contractId}</span>
-          <span>Chain ID: {contract.chainId}</span>
           <span>Leader Collateral: {getPriceStr(leaderCollateral)} USDC</span>
         </div>
       </div>

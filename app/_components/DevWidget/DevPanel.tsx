@@ -18,8 +18,14 @@ import { Stepper } from "@/components/Stepper/Stepper";
 import { bestCase, primaryBestCase } from "./subcase";
 import { LeaderParams } from "./LeaderItem";
 import { getServerTimezone } from "@/utils";
+import { TempPanel } from "./TempPanel";
 
-type TabType = "one_day" | "applied_filter" | "wide_filter" | "reports";
+type TabType =
+  | "one_day"
+  | "applied_filter"
+  | "wide_filter"
+  | "reports"
+  | "temp";
 
 export function DevPanel() {
   const [selected, setSelected] = useState<TabType>("one_day");
@@ -73,7 +79,7 @@ export function DevPanel() {
         "Visualize and analyze the aggregated performance metrics of selected leaders to evaluate overall strategy effectiveness.",
       content: (
         <MergedLeaderboard
-          endDate={pastDate}
+          endDate={dayjs(pastDate).add(1, "day").toDate()}
           leaders={leaders}
           onNextStep={() => setCurrentStep(4)}
           onPrevStep={() => setCurrentStep(2)}
@@ -119,6 +125,7 @@ export function DevPanel() {
         <Tab key="applied_filter" title="Applied Filter" />
         <Tab key="wide_filter" title="Wide Filter" />
         <Tab key="reports" title="Reports" />
+        <Tab key="temp" title="Temp" />
       </Tabs>
 
       {selected === "one_day" && (
@@ -142,6 +149,8 @@ export function DevPanel() {
       )}
 
       {selected === "reports" && <TestingReportPanel />}
+
+      {selected === "temp" && <TempPanel />}
     </div>
   );
 }

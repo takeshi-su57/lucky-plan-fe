@@ -14,6 +14,8 @@ import {
   PnlSnapshotKind,
   GetPnlSnapshotsQuery,
   TradeHistory,
+  Platform,
+  GetPnlSnapshotsV2Query,
 } from "@/graphql/gql/graphql";
 
 import { PersonalTradeHistory, TradeActionType } from "@/types";
@@ -66,6 +68,34 @@ export const PNL_SNAPSHOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     }
     id
     kind
+  }
+`);
+
+export const GET_PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment PerpTradingEventLogInfo on PerpTradingEventLog {
+    address
+    block
+    contractId
+    date
+    id
+    jsonLog
+    logIndex
+    platform
+    usdPnl
+  }
+`);
+
+export const PNL_SNAPSHOT_V2_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment PnlSnapshotV2DetailsInfo on PnlSnapshotV2Details {
+    accUSDPnl
+    address
+    dateStr
+    id
+    kind
+    perpTradingEventLogs {
+      ...PerpTradingEventLogInfo
+    }
+    platform
   }
 `);
 
@@ -180,7 +210,7 @@ export const DYNAMIC_SNAPSHOT_BUILD_DOCUMENT = graphql(`
 
 export const INITIALIZE_PNL_SNAPSHOT_DOCUMENT = graphql(`
   mutation initializePnlSnapshot(
-    $beginingDate: DateTime!
+    $beginingDate: Date!
     $isForceBuild: Boolean!
   ) {
     initializePnlSnapshot(
@@ -297,6 +327,121 @@ export const GET_TESTING_REPORT_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_PERP_EVENT_LOGS_DOCUMENT = graphql(`
+  query getPerpEventLogs($address: String!, $platform: Platform!) {
+    getPerpEventLogs(address: $address, platform: $platform) {
+      ...PerpTradingEventLogInfo
+    }
+  }
+`);
+
+export const GET_PNL_SNAPSHOT_V2_INITIALIZED_FLAG_DOCUMENT = graphql(`
+  query getPnlSnapshotV2InitializedFlag($platform: Platform!) {
+    getPnlSnapshotV2InitializedFlag(platform: $platform) {
+      id
+      dateStr
+      isInit
+      platform
+    }
+  }
+`);
+
+export const GET_PNL_SNAPSHOT_V2_DOCUMENT = graphql(`
+  query getPnlSnapshotsV2(
+    $dateStr: String!
+    $platform: Platform!
+    $first: Int!
+    $after: Int
+    $kind: PnlSnapshotKind!
+  ) {
+    getPnlSnapshotsV2(
+      dateStr: $dateStr
+      platform: $platform
+      first: $first
+      after: $after
+      kind: $kind
+    ) {
+      edges {
+        cursor
+        node {
+          ...PnlSnapshotV2DetailsInfo
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+`);
+
+export const IS_PNL_SNAPSHOT_V2_INITIALIZED_DOCUMENT = graphql(`
+  query isPnlSnapshotV2Initialized($dateStr: String!, $platform: Platform!) {
+    isPnlSnapshotV2Initialized(dateStr: $dateStr, platform: $platform) {
+      id
+      dateStr
+      isInit
+      platform
+    }
+  }
+`);
+
+export const GET_STATISTIC_DATA_DOCUMENT = graphql(`
+  query getStatisticData {
+    getStatisticData {
+      size
+      sumOfLost
+      sumOfWin
+      countOfLost
+      countOfWin
+    }
+  }
+`);
+
+export const BUILD_PNL_SNAPSHOTS_V2_DOCUMENT = graphql(`
+  mutation buildPnlSnapshotsV2(
+    $dateStr: String!
+    $isForceBuild: Boolean!
+    $platform: Platform!
+  ) {
+    buildPnlSnapshotsV2(
+      dateStr: $dateStr
+      isForceBuild: $isForceBuild
+      platform: $platform
+    ) {
+      id
+      dateStr
+      isInit
+      platform
+    }
+  }
+`);
+
+export const DYNAMIC_SNAPSHOT_BUILD_V2_DOCUMENT = graphql(`
+  mutation dynamicSnapshotBuildV2($dateStr: String!, $platform: Platform!) {
+    dynamicSnapshotBuildV2(dateStr: $dateStr, platform: $platform) {
+      id
+      dateStr
+      platform
+      isInit
+    }
+  }
+`);
+
+export const INITIALIZE_PNL_SNAPSHOT_V2_DOCUMENT = graphql(`
+  mutation initializePnlSnapshotV2(
+    $beginingDate: Date!
+    $isForceBuild: Boolean!
+    $platform: Platform!
+  ) {
+    initializePnlSnapshotV2(
+      beginingDate: $beginingDate
+      isForceBuild: $isForceBuild
+      platform: $platform
+    )
+  }
+`);
+
 export function getPersonalTradeHistory(
   history: TradeHistory,
 ): PersonalTradeHistory {
@@ -340,6 +485,22 @@ function getPnlSnapshotInfo(
       getPersonalTradeHistory(
         getFragmentData(TRADEHISTORY_INFO_FRAGMENT_DOCUMENT, history),
       ),
+    ),
+  };
+}
+
+function getPnlSnapshotV2Info(
+  snapshot: GetPnlSnapshotsV2Query["getPnlSnapshotsV2"]["edges"][number]["node"],
+) {
+  const snapshotInfo = getFragmentData(
+    PNL_SNAPSHOT_V2_DETAILS_INFO_FRAGMENT_DOCUMENT,
+    snapshot,
+  );
+
+  return {
+    ...snapshotInfo,
+    perpTradingEventLogs: snapshotInfo.perpTradingEventLogs.map((eventLog) =>
+      getFragmentData(GET_PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT, eventLog),
     ),
   };
 }
@@ -548,6 +709,12 @@ export function useGetPnlSnapshotInitializedFlag() {
   return useQuery(GET_PNL_SNAPSHOT_INITIALIZED_FLAG_DOCUMENT);
 }
 
+export function useGetPnlSnapshotV2InitializedFlag(platform: Platform) {
+  return useQuery(GET_PNL_SNAPSHOT_V2_INITIALIZED_FLAG_DOCUMENT, {
+    variables: { platform },
+  });
+}
+
 export function useGetPnlSnapshotsByAddress(dateStr: string, address: string) {
   const { data, loading } = useQuery(GET_PNL_SNAPSHOTS_BY_ADDRESS_DOCUMENT, {
     variables: {
@@ -684,4 +851,203 @@ export function useAutoTesting() {
   const [autoTesting, { loading }] = useMutation(AUTO_TESTING_DOCUMENT);
 
   return { autoTesting, loading };
+}
+
+export function useIsPnlSnapshotV2Initialized(
+  dateStr: string,
+  platform: Platform,
+) {
+  return useQuery(IS_PNL_SNAPSHOT_V2_INITIALIZED_DOCUMENT, {
+    variables: { dateStr, platform },
+  });
+}
+
+export function useBuildPnlSnapshotsV2() {
+  const [buildPnlSnapshotsV2, { data, error, loading }] = useMutation(
+    DYNAMIC_SNAPSHOT_BUILD_V2_DOCUMENT,
+  );
+
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data?.dynamicSnapshotBuildV2 && !error) {
+      enqueueSnackbar("Success at building PNL snapshots!", {
+        variant: "success",
+      });
+
+      const pnlSnapshotInitializedFlag = data.dynamicSnapshotBuildV2;
+
+      client.cache.updateQuery(
+        {
+          query: IS_PNL_SNAPSHOT_V2_INITIALIZED_DOCUMENT,
+          variables: {
+            dateStr: pnlSnapshotInitializedFlag.dateStr,
+            platform: pnlSnapshotInitializedFlag.platform,
+          },
+        },
+        (data) => {
+          if (data && data.isPnlSnapshotV2Initialized) {
+            return {
+              ...data,
+              isPnlSnapshotV2Initialized: pnlSnapshotInitializedFlag,
+            };
+          } else {
+            return {
+              isPnlSnapshotV2Initialized: pnlSnapshotInitializedFlag,
+            };
+          }
+        },
+      );
+
+      client.cache.updateQuery(
+        {
+          query: GET_PNL_SNAPSHOT_V2_INITIALIZED_FLAG_DOCUMENT,
+          variables: {
+            platform: pnlSnapshotInitializedFlag.platform,
+          },
+        },
+        (data) => {
+          if (data && data.getPnlSnapshotV2InitializedFlag) {
+            const exists = data.getPnlSnapshotV2InitializedFlag.find(
+              (item) => item.id === pnlSnapshotInitializedFlag.id,
+            );
+
+            if (exists) {
+              return {
+                ...data,
+                getPnlSnapshotV2InitializedFlag:
+                  data.getPnlSnapshotV2InitializedFlag.map((item) =>
+                    item.id === pnlSnapshotInitializedFlag.id
+                      ? pnlSnapshotInitializedFlag
+                      : item,
+                  ),
+              };
+            }
+
+            return {
+              ...data,
+              getPnlSnapshotV2InitializedFlag: [
+                ...data.getPnlSnapshotV2InitializedFlag,
+                pnlSnapshotInitializedFlag,
+              ],
+            };
+          } else {
+            return {
+              getPnlSnapshotV2InitializedFlag: [pnlSnapshotInitializedFlag],
+            };
+          }
+        },
+      );
+    }
+  }, [data, error, enqueueSnackbar, client]);
+
+  return { buildPnlSnapshotsV2, loading };
+}
+
+export function useInitializePnlSnapshotV2() {
+  const [initializePnlSnapshotV2, { data, error, loading }] = useMutation(
+    INITIALIZE_PNL_SNAPSHOT_V2_DOCUMENT,
+  );
+
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data?.initializePnlSnapshotV2 && !error) {
+      enqueueSnackbar("Success at initializing PNL snapshots!", {
+        variant: "success",
+      });
+    }
+  }, [data, error, enqueueSnackbar, client]);
+
+  return { initializePnlSnapshotV2, loading };
+}
+
+export function useGetPnlSnapshotsV2(
+  dateStr: string,
+  kind: PnlSnapshotKind,
+  platform: Platform,
+) {
+  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
+    GET_PNL_SNAPSHOT_V2_DOCUMENT,
+  );
+
+  useEffect(() => {
+    query({
+      variables: {
+        dateStr,
+        kind,
+        first: 20,
+        platform,
+      },
+    });
+  }, [dateStr, kind, query, platform]);
+
+  const pnlSnapshots = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+    return data.getPnlSnapshotsV2.edges.map((edge) =>
+      getPnlSnapshotV2Info(edge.node),
+    );
+  }, [data]);
+
+  const handleFetchMore = useCallback(() => {
+    if (data && !error) {
+      fetchMore({
+        variables: {
+          kind,
+          first: 20,
+          after: data.getPnlSnapshotsV2.pageInfo.endCursor,
+          platform,
+        },
+      });
+    }
+  }, [data, error, fetchMore, kind, platform]);
+
+  return {
+    hasMore: data?.getPnlSnapshotsV2.pageInfo.hasNextPage,
+    pnlSnapshots,
+    fetchMore: handleFetchMore,
+    loading,
+  };
+}
+
+export function useGetStatisticData() {
+  const { data, loading } = useQuery(GET_STATISTIC_DATA_DOCUMENT);
+
+  return {
+    statisticData: data?.getStatisticData,
+    loading,
+  };
+}
+
+export function useGetPerpEventLogs(address: string, platform: Platform) {
+  const [query, { data, loading }] = useLazyQuery(GET_PERP_EVENT_LOGS_DOCUMENT);
+
+  useEffect(() => {
+    if (address && platform) {
+      query({
+        variables: {
+          address,
+          platform,
+        },
+      });
+    }
+  }, [address, platform, query]);
+
+  const eventLogs = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+    return data.getPerpEventLogs.map((eventLog) =>
+      getFragmentData(GET_PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT, eventLog),
+    );
+  }, [data]);
+
+  return {
+    eventLogs,
+    loading,
+  };
 }

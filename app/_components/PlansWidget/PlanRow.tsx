@@ -19,7 +19,7 @@ import {
 
 import { useGetAlertTasks } from "@/app-hooks/useTask";
 import { useDeletePlan } from "@/app-hooks/usePlan";
-import { useGetAllContracts } from "@/app-hooks/useContract";
+import { useGetAllGnsContracts } from "@/app-hooks/useContract";
 
 import { ContractPnl } from "@/app-components/MissionWidgets/ContractPnl";
 
@@ -38,7 +38,7 @@ export function PlanRow({ plan }: PlanRowProps) {
   const { deletePlan, loading } = useDeletePlan();
   const alertTasks = useGetAlertTasks();
 
-  const allContracts = useGetAllContracts();
+  const allContracts = useGetAllGnsContracts();
 
   const handleDelete = () => {
     deletePlan({

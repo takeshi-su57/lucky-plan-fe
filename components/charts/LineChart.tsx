@@ -193,7 +193,7 @@ export default function LineChart({
   }, [drawModalChart, isOpen]);
 
   return (
-    <div className="relative flex flex-col gap-3">
+    <div className="relative flex w-full flex-col gap-3">
       <div className="absolute left-4 top-3 z-[1000] flex flex-row items-center gap-1">
         <span className="text-sm font-bold">{title || ""}</span>
         <Button size="sm" variant="ghost" onPress={onOpen}>

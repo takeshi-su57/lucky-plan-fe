@@ -47,6 +47,12 @@ export const links = [
     limited: UserPermission.Trader,
   },
   {
+    id: "leaderboard-v2",
+    label: "Leaderboard V2",
+    title: "",
+    limited: "Public",
+  },
+  {
     id: "settings",
     label: "Setting",
     title: "",
@@ -135,6 +141,7 @@ export function Sidebar() {
                   "bg-primary-400/20 !text-primary-400",
               )}
               showDivider={link.showDivider}
+              textValue={link.label}
             >
               <Link href={`/${link.id}`}>{link.label}</Link>
             </ListboxItem>

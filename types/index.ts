@@ -81,3 +81,10 @@ export type VirtualBotParams = Partial<VirtualBot> & {
   leaderContract: ContractItem;
   leaderCollateralBaseline: number;
 };
+
+export enum ServiceStatus {
+  READY = "ready",
+  PROCESS = "process",
+  PAUSED = "paused",
+  KILLED = "killed",
+}

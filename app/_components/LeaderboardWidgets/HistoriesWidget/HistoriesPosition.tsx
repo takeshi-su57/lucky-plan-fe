@@ -9,7 +9,7 @@ import { FaLongArrowAltRight } from "react-icons/fa";
 import { PersonalTradeHistory } from "@/types";
 import { PairChip } from "../PairChip";
 import { getPriceStr } from "@/utils/price";
-import { useGetAllContracts } from "@/app-hooks/useContract";
+import { useGetAllGnsContracts } from "@/app-hooks/useContract";
 import { convertMillisToReadableTime } from "@/utils";
 
 const collateralNamesMap: Record<number, Record<number, string>> = {
@@ -53,7 +53,7 @@ export function HistoriesPosition({
   pair,
   actions,
 }: HistoriesPositionProps) {
-  const contracts = useGetAllContracts();
+  const contracts = useGetAllGnsContracts();
 
   const chainId = contracts.find((c) => c.id === contractId)?.chainId || 0;
 

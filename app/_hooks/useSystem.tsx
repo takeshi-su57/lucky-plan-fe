@@ -1,6 +1,7 @@
 "use client";
 
 import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { useQuery as useTanstackQuery } from "@tanstack/react-query";
 
 import { graphql } from "@/gql/index";
 import { useSnackbar } from "notistack";
@@ -15,6 +16,27 @@ export const PAUSE_SYSTEM_DOCUMENT = graphql(`
 export const RESUME_SYSTEM_DOCUMENT = graphql(`
   mutation resumeSystem($password: String) {
     resumeSystem(password: $password)
+  }
+`);
+
+export const KILL_SUB_SERVICE_DOCUMENT = graphql(`
+  mutation killSubService($service: String!) {
+    killSubService(service: $service)
+  }
+`);
+
+export const START_SUB_SERVICE_DOCUMENT = graphql(`
+  mutation startSubService($service: String!) {
+    startSubService(service: $service)
+  }
+`);
+
+export const GET_MICROSERVICE_STATUS_DOCUMENT = graphql(`
+  query getMicroserviceStatus {
+    getMicroserviceStatus {
+      pids
+      service
+    }
   }
 `);
 
@@ -79,6 +101,10 @@ export function usePauseSystem() {
           }
         },
       );
+    } else if (error) {
+      enqueueSnackbar("Failed at pausing system!", {
+        variant: "error",
+      });
     }
   }, [data, error, enqueueSnackbar, client.cache]);
 
@@ -116,6 +142,10 @@ export function useResumeSystem() {
           }
         },
       );
+    } else if (error) {
+      enqueueSnackbar("Failed at resuming system!", {
+        variant: "error",
+      });
     }
   }, [data, error, enqueueSnackbar, client.cache]);
 
@@ -160,6 +190,10 @@ export function useMakeSafeApp() {
           }
         },
       );
+    } else if (error) {
+      enqueueSnackbar("Failed at turn safe app!", {
+        variant: "error",
+      });
     }
   }, [data, error, enqueueSnackbar, client.cache]);
 
@@ -172,15 +206,81 @@ export function useChangePassword() {
   );
 
   const { enqueueSnackbar } = useSnackbar();
-  const client = useApolloClient();
 
   useEffect(() => {
     if (data?.changePassword && !error) {
       enqueueSnackbar("Success at changing password!", {
         variant: "success",
       });
+    } else if (error) {
+      enqueueSnackbar("Failed at changing password!", {
+        variant: "error",
+      });
     }
-  }, [data, error, enqueueSnackbar, client.cache]);
+  }, [data, error, enqueueSnackbar]);
 
   return { changePassword, loading };
+}
+
+export function useGetMicroserviceStatus() {
+  const client = useApolloClient();
+
+  const query = useTanstackQuery({
+    queryKey: ["GET_MICROSERVICE_STATUS_DOCUMENT"],
+    queryFn: async () => {
+      const result = await client.query({
+        query: GET_MICROSERVICE_STATUS_DOCUMENT,
+        fetchPolicy: "network-only", // always fresh
+      });
+      return result.data.getMicroserviceStatus;
+    },
+    refetchInterval: 10_000, // ⏳ auto refresh every 10s
+    enabled: !!client,
+  });
+
+  return query.data || [];
+}
+
+export function useKillSubService() {
+  const [killSubService, { data, error, loading }] = useMutation(
+    KILL_SUB_SERVICE_DOCUMENT,
+  );
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data?.killSubService && !error) {
+      enqueueSnackbar("Success at killing sub service!", {
+        variant: "success",
+      });
+    } else if (error) {
+      enqueueSnackbar("Failed at killing sub service!", {
+        variant: "error",
+      });
+    }
+  }, [data, error, enqueueSnackbar]);
+
+  return { killSubService, loading };
+}
+
+export function useStartSubService() {
+  const [startSubService, { data, error, loading }] = useMutation(
+    START_SUB_SERVICE_DOCUMENT,
+  );
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data?.startSubService && !error) {
+      enqueueSnackbar("Success at starting sub service!", {
+        variant: "success",
+      });
+    } else if (error) {
+      enqueueSnackbar("Failed at starting sub service!", {
+        variant: "error",
+      });
+    }
+  }, [data, error, enqueueSnackbar]);
+
+  return { startSubService, loading };
 }

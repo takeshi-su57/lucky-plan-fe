@@ -15,7 +15,7 @@ import { FaTrash } from "react-icons/fa";
 
 import { getServerTimezone } from "@/utils";
 
-import { useGetAllContracts } from "@/app-hooks/useContract";
+import { useGetAllGnsContracts } from "@/app-hooks/useContract";
 import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHistories";
 
 import { shrinkAddress } from "@/utils";
@@ -41,7 +41,7 @@ export function FollowerStrategyForm({
   onRemove,
   onChangeLeaderHistories,
 }: FollowerStrategyFormProps) {
-  const allContracts = useGetAllContracts();
+  const allContracts = useGetAllGnsContracts();
 
   const [followerContractId, setFollowerContractId] = useState<string | null>(
     null,

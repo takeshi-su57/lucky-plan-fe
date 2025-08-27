@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import { FaTrash } from "react-icons/fa";
 
 import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHistories";
-import { useGetAllContracts } from "@/app-hooks/useContract";
+import { useGetAllGnsContracts } from "@/app-hooks/useContract";
 
 import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget/HistoriesWidget";
 import {
@@ -43,7 +43,7 @@ export function PastChart({
   const [isAllTime, setIsAllTime] = useState(true);
   const [showAllActivity, setShowAllActivity] = useState(false);
 
-  const allContracts = useGetAllContracts();
+  const allContracts = useGetAllGnsContracts();
 
   const { data: allHistories } = useGetPersonalTradeHistories(
     contractId,
