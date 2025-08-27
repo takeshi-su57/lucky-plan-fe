@@ -42,7 +42,7 @@ export function ContractLiveButton({ contract }: { contract: Contract }) {
   const isValidFromBlock =
     fromBlockNumber > contract.fromBlock && fromBlockNumber < lastBlock;
 
-  const isDisabled = !shouldContinue && !isValidFromBlock;
+  const isDisabled = shouldContinue ? false : !isValidFromBlock;
 
   return (
     <>
