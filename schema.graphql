@@ -451,7 +451,7 @@ type Mutation {
   initializePnlSnapshotV2(beginingDate: Date!, isForceBuild: Boolean!, platform: Platform!): Boolean!
   killSubService(service: String!): Boolean!
   liveBot(id: Int!): Boolean!
-  liveContract(contractId: Int!): Contract!
+  liveContract(contractId: Int!, fromBlock: Int): Contract!
   makeSafeApp(password: String!): Boolean!
   pauseSystem: Boolean!
   performTask(id: Int!): Boolean!

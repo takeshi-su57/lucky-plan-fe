@@ -477,7 +477,7 @@ type Mutation {
   ): Boolean!
   killSubService(service: String!): Boolean!
   liveBot(id: Int!): Boolean!
-  liveContract(contractId: Int!): Contract!
+  liveContract(contractId: Int!, fromBlock: Int): Contract!
   makeSafeApp(password: String!): Boolean!
   pauseSystem: Boolean!
   performTask(id: Int!): Boolean!

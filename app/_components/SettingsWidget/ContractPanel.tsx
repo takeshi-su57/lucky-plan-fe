@@ -23,7 +23,6 @@ import {
   useDisableContract,
   useGetAdaptionStatus,
   useGetAllContracts,
-  useLiveContract,
 } from "@/app-hooks/useContract";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
@@ -31,6 +30,7 @@ import { ContractCircularProgress } from "./ContractCircularProgress";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { ServiceStatus } from "@/types";
 import { ContractAdaptionButton } from "./ContractAdaptionButton";
+import { ContractLiveButton } from "./ContractLiveButton";
 
 const columns: TableColumnProps[] = [
   {
@@ -65,7 +65,7 @@ const availableVersions = {
 export function ContractPanel() {
   const allContracts = useGetAllContracts();
   const { disableContract } = useDisableContract();
-  const { liveContract } = useLiveContract();
+
   const adaptionStatus = useGetAdaptionStatus();
 
   const { userJwtQuery } = useUserJWT();
@@ -77,15 +77,13 @@ export function ContractPanel() {
   );
   const [selectedVersion, setSelectedVersion] = useState<Version>(Version.V9);
 
-  const handleChangeStatus = useCallback(
+  const handleDisableContract = useCallback(
     (contract: Contract) => () => {
       if (contract.status === ContractStatus.Live) {
         disableContract({ variables: { contractId: contract.id } });
-      } else {
-        liveContract({ variables: { contractId: contract.id } });
       }
     },
-    [disableContract, liveContract],
+    [disableContract],
   );
 
   const rows = useMemo(() => {
@@ -149,18 +147,18 @@ export function ContractPanel() {
           actions: {
             component: isAdmin ? (
               <div className="flex items-center gap-6">
-                <Button
-                  size="sm"
-                  variant="solid"
-                  color={
-                    contract.status === ContractStatus.Live
-                      ? "danger"
-                      : "success"
-                  }
-                  onClick={handleChangeStatus(contract)}
-                >
-                  {contract.status === ContractStatus.Live ? "Disable" : "Live"}
-                </Button>
+                {contract.status === ContractStatus.Live ? (
+                  <Button
+                    size="sm"
+                    variant="solid"
+                    color="danger"
+                    onClick={handleDisableContract(contract)}
+                  >
+                    Disable
+                  </Button>
+                ) : (
+                  <ContractLiveButton contract={contract} />
+                )}
 
                 {adaptionStatus[contract.id] !== ServiceStatus.PROCESS ? (
                   <ContractAdaptionButton contractId={contract.id} />
@@ -173,7 +171,7 @@ export function ContractPanel() {
   }, [
     adaptionStatus,
     allContracts,
-    handleChangeStatus,
+    handleDisableContract,
     isAdmin,
     selectedPlatform,
     selectedVersion,

@@ -75,8 +75,8 @@ export const DISABLE_CONTRACT_DOCUMENT = graphql(`
 `);
 
 export const LIVE_CONTRACT_DOCUMENT = graphql(`
-  mutation liveContract($contractId: Int!) {
-    liveContract(contractId: $contractId) {
+  mutation liveContract($contractId: Int!, $fromBlock: Int) {
+    liveContract(contractId: $contractId, fromBlock: $fromBlock) {
       ...ContractInfo
     }
   }
