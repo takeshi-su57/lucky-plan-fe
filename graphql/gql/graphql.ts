@@ -389,6 +389,12 @@ export type ManualParams = {
   long: Scalars['Boolean']['input'];
 };
 
+export type MicroserviceStatus = {
+  __typename?: 'MicroserviceStatus';
+  pids: Array<Scalars['Int']['output']>;
+  service: Scalars['String']['output'];
+};
+
 export type Mission = {
   __typename?: 'Mission';
   achievePositionId?: Maybe<Scalars['Int']['output']>;
@@ -485,6 +491,7 @@ export type Mutation = {
   ignoreMission: Scalars['Boolean']['output'];
   initializePnlSnapshot: Scalars['Boolean']['output'];
   initializePnlSnapshotV2: Scalars['Boolean']['output'];
+  killSubService: Scalars['Boolean']['output'];
   liveBot: Scalars['Boolean']['output'];
   liveContract: Contract;
   makeSafeApp: Scalars['Boolean']['output'];
@@ -496,6 +503,7 @@ export type Mutation = {
   resumeSystem: Scalars['Boolean']['output'];
   startAdaption: Scalars['Boolean']['output'];
   startPlan: Scalars['Boolean']['output'];
+  startSubService: Scalars['Boolean']['output'];
   stopBot: Scalars['Boolean']['output'];
   stopTask: Scalars['Boolean']['output'];
   updatePlan: Plan;
@@ -673,6 +681,11 @@ export type MutationInitializePnlSnapshotV2Args = {
 };
 
 
+export type MutationKillSubServiceArgs = {
+  service: Scalars['String']['input'];
+};
+
+
 export type MutationLiveBotArgs = {
   id: Scalars['Int']['input'];
 };
@@ -721,6 +734,11 @@ export type MutationStartAdaptionArgs = {
 
 export type MutationStartPlanArgs = {
   id: Scalars['Int']['input'];
+};
+
+
+export type MutationStartSubServiceArgs = {
+  service: Scalars['String']['input'];
 };
 
 
@@ -998,6 +1016,7 @@ export type Query = {
   getDevPnlSnapshots: Array<PnlSnapshotDevDetails>;
   getExpertPnlSnapshots: Array<ExpertPnlSnapshot>;
   getLogsSeverityCounts: Array<SeverityCount>;
+  getMicroserviceStatus: Array<MicroserviceStatus>;
   getPerpEventLogs: Array<PerpTradingEventLog>;
   getPlanById?: Maybe<PlanForwardDetails>;
   getPlansByStatus: PlanConnection;
@@ -2323,6 +2342,25 @@ export type ResumeSystemMutationVariables = Exact<{
 
 export type ResumeSystemMutation = { __typename?: 'Mutation', resumeSystem: boolean };
 
+export type KillSubServiceMutationVariables = Exact<{
+  service: Scalars['String']['input'];
+}>;
+
+
+export type KillSubServiceMutation = { __typename?: 'Mutation', killSubService: boolean };
+
+export type StartSubServiceMutationVariables = Exact<{
+  service: Scalars['String']['input'];
+}>;
+
+
+export type StartSubServiceMutation = { __typename?: 'Mutation', startSubService: boolean };
+
+export type GetMicroserviceStatusQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetMicroserviceStatusQuery = { __typename?: 'Query', getMicroserviceStatus: Array<{ __typename?: 'MicroserviceStatus', pids: Array<number>, service: string }> };
+
 export type MakeSafeAppMutationVariables = Exact<{
   password: Scalars['String']['input'];
 }>;
@@ -2666,6 +2704,9 @@ export const GetAllStrategyMetadataDocument = {"kind":"Document","definitions":[
 export const GetAllStrategyDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getAllStrategy"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getAllStrategy"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"StrategyInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StrategyInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Strategy"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"lifeTime"}},{"kind":"Field","name":{"kind":"Name","value":"maxCollateral"}},{"kind":"Field","name":{"kind":"Name","value":"minCollateral"}},{"kind":"Field","name":{"kind":"Name","value":"maxLeverage"}},{"kind":"Field","name":{"kind":"Name","value":"minLeverage"}},{"kind":"Field","name":{"kind":"Name","value":"collateralBaseline"}},{"kind":"Field","name":{"kind":"Name","value":"params"}},{"kind":"Field","name":{"kind":"Name","value":"ratio"}},{"kind":"Field","name":{"kind":"Name","value":"strategyKey"}}]}}]} as unknown as DocumentNode<GetAllStrategyQuery, GetAllStrategyQueryVariables>;
 export const PauseSystemDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"pauseSystem"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pauseSystem"}}]}}]} as unknown as DocumentNode<PauseSystemMutation, PauseSystemMutationVariables>;
 export const ResumeSystemDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"resumeSystem"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"password"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resumeSystem"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"password"},"value":{"kind":"Variable","name":{"kind":"Name","value":"password"}}}]}]}}]} as unknown as DocumentNode<ResumeSystemMutation, ResumeSystemMutationVariables>;
+export const KillSubServiceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"killSubService"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"service"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"killSubService"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"service"},"value":{"kind":"Variable","name":{"kind":"Name","value":"service"}}}]}]}}]} as unknown as DocumentNode<KillSubServiceMutation, KillSubServiceMutationVariables>;
+export const StartSubServiceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"startSubService"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"service"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startSubService"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"service"},"value":{"kind":"Variable","name":{"kind":"Name","value":"service"}}}]}]}}]} as unknown as DocumentNode<StartSubServiceMutation, StartSubServiceMutationVariables>;
+export const GetMicroserviceStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getMicroserviceStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getMicroserviceStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pids"}},{"kind":"Field","name":{"kind":"Name","value":"service"}}]}}]}}]} as unknown as DocumentNode<GetMicroserviceStatusQuery, GetMicroserviceStatusQueryVariables>;
 export const MakeSafeAppDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"makeSafeApp"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"password"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"makeSafeApp"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"password"},"value":{"kind":"Variable","name":{"kind":"Name","value":"password"}}}]}]}}]} as unknown as DocumentNode<MakeSafeAppMutation, MakeSafeAppMutationVariables>;
 export const ChangePasswordDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"changePassword"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newPassword"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"oldPassword"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"changePassword"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"newPassword"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newPassword"}}},{"kind":"Argument","name":{"kind":"Name","value":"oldPassword"},"value":{"kind":"Variable","name":{"kind":"Name","value":"oldPassword"}}}]}]}}]} as unknown as DocumentNode<ChangePasswordMutation, ChangePasswordMutationVariables>;
 export const GetSystemStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getSystemStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"systemStatus"}}]}}]} as unknown as DocumentNode<GetSystemStatusQuery, GetSystemStatusQueryVariables>;

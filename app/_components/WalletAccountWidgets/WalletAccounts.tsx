@@ -20,7 +20,7 @@ import { Address } from "viem";
 
 import { useGetWalletAccountsByTags } from "@/app-hooks/useWalletAccount";
 import { useGetAllTags } from "@/app-hooks/useTag";
-import { useGetAllContracts } from "@/app-hooks/useContract";
+import { useGetAllGnsContracts } from "@/app-hooks/useContract";
 
 import { shrinkAddress } from "@/utils";
 import { WalletAccountTradeHistory } from "./WalletAccountTradeHistory";
@@ -33,7 +33,7 @@ export function WalletAccounts() {
   const router = useRouter();
 
   const allTags = useGetAllTags();
-  const allContracts = useGetAllContracts();
+  const allContracts = useGetAllGnsContracts();
 
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 

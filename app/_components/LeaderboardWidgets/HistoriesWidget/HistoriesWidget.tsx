@@ -14,7 +14,7 @@ import { HistoriesSummary } from "./HistoriesSummary";
 import { HistoriesPositionList } from "./HistoriesPositionList";
 import { getScore } from "@/utils";
 import {
-  useGetAllContracts,
+  useGetAllGnsContracts,
   useGetAllTradePairs,
 } from "@/app/_hooks/useContract";
 
@@ -51,7 +51,7 @@ export function HistoriesWidget({
   range,
 }: HistoriesWidgetProps) {
   const [selected, setSelected] = useState<TabType>("chart");
-  const contracts = useGetAllContracts();
+  const contracts = useGetAllGnsContracts();
   const allPairs = useGetAllTradePairs(
     contracts.map((contract) => contract.id),
   );

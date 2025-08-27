@@ -11,7 +11,7 @@ import { getFragmentData, graphql } from "@/gql/index";
 import { useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
 
-import { useGetAllContracts } from "./useContract";
+import { useGetAllGnsContracts } from "./useContract";
 import { getMissionForwardDetails } from "./useMission";
 import { PNL_SNAPSHOT_INFO_FRAGMENT_DOCUMENT } from "./useHistory";
 
@@ -315,7 +315,7 @@ export function useGenerateFollower() {
   const [generateFollower, { data: newData, error }] = useMutation(
     GENERATE_NEW_FOLLOWER_DOCUMENT,
   );
-  const contracts = useGetAllContracts();
+  const contracts = useGetAllGnsContracts();
 
   const client = useApolloClient();
   const { enqueueSnackbar } = useSnackbar();

@@ -7,6 +7,7 @@ import { useQuery as useTanstackQuery } from "@tanstack/react-query";
 
 import { getFragmentData, graphql } from "@/gql/index";
 import { ServiceStatus } from "@/types";
+import { Platform } from "@/graphql/gql/graphql";
 
 export const CONTRACT_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment ContractInfo on Contract {
@@ -139,6 +140,12 @@ export function useGetAllContracts() {
       ...getFragmentData(CONTRACT_INFO_FRAGMENT_DOCUMENT, contract),
     }));
   }, [data]);
+}
+
+export function useGetAllGnsContracts() {
+  const allContracts = useGetAllContracts();
+
+  return allContracts.filter((contract) => contract.platform === Platform.Gns);
 }
 
 export function useDisableContract() {

@@ -23,7 +23,7 @@ import { getServerTimezone } from "@/utils";
 import { StandardModal } from "@/components/modals/StandardModal";
 
 import {
-  useGetAllContracts,
+  useGetAllGnsContracts,
   useGetAllTradePairs,
 } from "@/app-hooks/useContract";
 import { useBatchCreateBots } from "@/app-hooks/useAutomation";
@@ -58,7 +58,7 @@ export function CreateAutomationModal({
   const { batchCreateBots, loading: createBotsLoading } = useBatchCreateBots();
 
   const allTags = useGetAllTags();
-  const allContracts = useGetAllContracts();
+  const allContracts = useGetAllGnsContracts();
 
   const [selectedTags, setSelectedTags] = useState<Selection>(
     new Set(["LEADER"]),

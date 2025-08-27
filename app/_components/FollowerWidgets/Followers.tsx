@@ -12,7 +12,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { useGetAllFollowerDetails } from "@/app-hooks/useFollower";
-import { useGetAllContracts } from "@/app-hooks/useContract";
+import { useGetAllGnsContracts } from "@/app-hooks/useContract";
 import { shrinkAddress } from "@/utils";
 import { FollowerInfoWidget } from "@/app-components/FollowerWidgets/FollowerInfoWidget";
 
@@ -23,7 +23,7 @@ export function Followers() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const allContracts = useGetAllContracts();
+  const allContracts = useGetAllGnsContracts();
 
   const [contractId, setContractId] = useState<string | null>(
     searchParams.get("contractId") || null,

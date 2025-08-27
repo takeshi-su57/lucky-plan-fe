@@ -16,7 +16,7 @@ import {
 } from "@nextui-org/react";
 
 import { useAllowAuto, useChangeUserPermission } from "@/app-hooks/useUser";
-import { useGetAllContracts } from "@/app-hooks/useContract";
+import { useGetAllGnsContracts } from "@/app-hooks/useContract";
 
 import { NumericInput } from "@/components/inputs/NumericInput";
 import { shrinkAddress } from "@/utils";
@@ -45,7 +45,7 @@ export function ChangePermissionModal({
   const { mutateAllowAuto, loading: allowAutoLoading } = useAllowAuto();
   const { createAutoPlan, loading: autoPlanLoading } = useCreateAutoPlan();
 
-  const allContracts = useGetAllContracts();
+  const allContracts = useGetAllGnsContracts();
 
   const [permission, setPermission] = useState<UserPermission | null>(null);
 
