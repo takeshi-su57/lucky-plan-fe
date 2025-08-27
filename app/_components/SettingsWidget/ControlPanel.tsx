@@ -149,22 +149,24 @@ export function ControlPanel() {
         </CardBody>
       </Card>
 
-      <Card>
-        <CardBody>
-          <div className="flex flex-col gap-6 p-4">
-            <h6 className="text-lg">Microservice Control</h6>
-            <DataTable
-              columns={columns}
-              rows={rows}
-              classNames={{
-                tr: "font-mono cursor-pointer",
-                td: "py-3 ",
-                th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
-              }}
-            />
-          </div>
-        </CardBody>
-      </Card>
+      {userJwtQuery?.data?.permission === UserPermission.Admin ? (
+        <Card>
+          <CardBody>
+            <div className="flex flex-col gap-6 p-4">
+              <h6 className="text-lg">Microservice Control</h6>
+              <DataTable
+                columns={columns}
+                rows={rows}
+                classNames={{
+                  tr: "font-mono cursor-pointer",
+                  td: "py-3 ",
+                  th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
+                }}
+              />
+            </div>
+          </CardBody>
+        </Card>
+      ) : null}
     </>
   );
 }
