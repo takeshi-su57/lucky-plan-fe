@@ -68,14 +68,6 @@ export const links = [
     showDivider: true,
     isDevMode: true,
   },
-
-  {
-    id: "backtesting",
-    label: "Dev Page 1",
-    title: "",
-    limited: "Public",
-    isDevMode: true,
-  },
   {
     id: "dev",
     label: "Dev Page 2",

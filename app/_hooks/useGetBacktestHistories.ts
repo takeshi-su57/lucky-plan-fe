@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { nanoid } from "nanoid";
 
 import { BacktestParameters } from "../_components/BacktestWidget/BacktestParamtersForm";
-import { LeaderParams } from "../_components/BacktestWidget/LeaderItem";
+import { LeaderParams } from "../_components/PlansWidget/LeaderItem";
 import { useSnackbar } from "notistack";
 
 export type BacktestHistory = {

@@ -20,11 +20,7 @@ export type HistoriesSummaryProps = {
   hideTags: boolean;
   label?: string;
   isSelected?: boolean;
-  onChangeSelection?: (
-    address: string,
-    leaderCollateral: number,
-    isSelected: boolean,
-  ) => void;
+  onChangeSelection?: (address: string, isSelected: boolean) => void;
   pnlChartData: HistoryChartData[];
   inOutChartData: HistoryChartData[];
   openedHistoriesArr: string[];
@@ -193,13 +189,7 @@ export function HistoriesSummary({
       {isSelected !== undefined ? (
         <Checkbox
           isSelected={isSelected}
-          onValueChange={(value) =>
-            onChangeSelection?.(
-              address,
-              countIn > 0 ? sumIn / countIn : 0,
-              value,
-            )
-          }
+          onValueChange={(value) => onChangeSelection?.(address, value)}
         >
           {label || ""}
         </Checkbox>

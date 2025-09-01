@@ -12,18 +12,15 @@ import { AutomationGridChart } from "./AutomationChart";
 
 export type PlanCreationOverviewProps = {
   leaderHistories: PersonalTradeHistory[];
-  followerHistories: PersonalTradeHistory[];
   onNextStep: () => void;
   onPrevStep: () => void;
 };
 
 export function PlanCreationOverview({
   leaderHistories,
-  followerHistories,
   onNextStep,
   onPrevStep,
 }: PlanCreationOverviewProps) {
-  const [isLeaderChart, setIsLeaderChart] = useState(true);
   const [range, setRange] = useState<RangeValue<DateValue> | null>({
     start: now(getServerTimezone()).subtract({ months: 3 }),
     end: now(getServerTimezone()),
@@ -50,14 +47,6 @@ export function PlanCreationOverview({
         />
 
         <Switch
-          isSelected={isLeaderChart}
-          onValueChange={setIsLeaderChart}
-          size="sm"
-        >
-          {isLeaderChart ? "Leader Chart" : "Follower Chart"}
-        </Switch>
-
-        <Switch
           isSelected={showAllActivity}
           onValueChange={setShowAllActivity}
           size="sm"
@@ -67,7 +56,7 @@ export function PlanCreationOverview({
       </div>
 
       <AutomationGridChart
-        histories={isLeaderChart ? leaderHistories : followerHistories}
+        histories={leaderHistories}
         title={`Total Result`}
         range={{
           from: range?.start?.toDate(getServerTimezone()) || new Date(),

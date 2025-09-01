@@ -23,14 +23,8 @@ export type LeaderboardProps = {
   selectionLabel?: string;
   selectedAddresses?: {
     address: string;
-    contractId: number;
-    leaderCollateral: number;
   }[];
-  onChangeSelection?: (
-    address: string,
-    leaderCollateral: number,
-    isSelected: boolean,
-  ) => void;
+  onChangeSelection?: (address: string, isSelected: boolean) => void;
   endDate: Date;
   initialKind: PnlSnapshotKind;
   onChangeParams: (kind: PnlSnapshotKind) => void;
@@ -120,9 +114,8 @@ export function Leaderboard({
                   selectedAddresses
                     ? !!selectedAddresses.find(
                         (item) =>
-                          item.contractId === snapshot.contractId &&
                           item.address.toLowerCase() ===
-                            snapshot.address.toLowerCase(),
+                          snapshot.address.toLowerCase(),
                       )
                     : undefined
                 }

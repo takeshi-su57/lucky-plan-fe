@@ -7,17 +7,17 @@ import { getServerTimezone } from "@/utils";
 
 import { Stepper } from "@/components/Stepper/Stepper";
 import { PlanMetadata, PlanMetadataForm } from "./PlanMetadataForm";
-import { SelectLeaders } from "@/app-components/BacktestWidget/SelectLeaders";
-import { LeaderParams } from "@/app-components/BacktestWidget/LeaderItem";
+import { SelectLeaders } from "@/app/_components/PlansWidget/SelectLeaders";
+import { LeaderParams } from "@/types";
 
 import { PlanSetupStep } from "./PlanSetupStep";
-import { SaveStep } from "../BacktestWidget/SaveStep";
+import { SaveStep } from "./SaveStep";
 
 import { PersonalTradeHistory, VirtualBotParams } from "@/types";
 import { PlanCreationOverview } from "./PlanCreationOverview";
-import { transformHistories } from "@/utils/historiesChart";
 
 import { PLAN_INFO_FRAGMENT_DOCUMENT } from "@/app-hooks/usePlan";
+import { useGetAllContracts } from "@/app-hooks/useContract";
 
 import { useBatchCreateBots } from "@/app-hooks/useAutomation";
 import { useCreatePlan } from "@/app-hooks/usePlan";
@@ -25,6 +25,7 @@ import { useCreatePlan } from "@/app-hooks/usePlan";
 export function PlanCreationPanel() {
   const { createPlan, loading: createPlanLoading } = useCreatePlan();
   const { batchCreateBots, loading: createBotsLoading } = useBatchCreateBots();
+  const allContracts = useGetAllContracts();
 
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -67,27 +68,35 @@ export function PlanCreationPanel() {
       planData.createPlan,
     ).id;
 
+    const availableContracts = allContracts.filter(
+      (item) => !item.isTestnet && item.id !== 4,
+    );
+
     if (virtualBotParams.length > 0) {
       await batchCreateBots({
         variables: {
-          input: virtualBotParams.map((item) => ({
-            planId: +planId,
-            followerContractId: item.followerContract!.contractId,
-            leaderAddress: item.leaderAddress,
-            leaderCollateralBaseline: item.leaderCollateralBaseline,
-            leaderContractId: item.leaderContract.contractId,
-            strategy: {
-              strategyKey: item.strategy!.strategyKey,
-              ratio: item.strategy!.ratio,
-              lifeTime: item.strategy!.lifeTime,
-              maxCollateral: item.strategy!.maxCollateral,
-              minCollateral: item.strategy!.minCollateral,
-              collateralBaseline: item.strategy!.collateralBaseline,
-              maxLeverage: Math.floor(+item.strategy!.maxLeverage * 1000),
-              minLeverage: Math.floor(+item.strategy!.minLeverage * 1000),
-              params: "{}",
-            },
-          })),
+          input: virtualBotParams
+            .map((item) => {
+              return availableContracts.map((contract) => ({
+                planId: +planId,
+                followerContractId: item.followerContract!.contractId,
+                leaderAddress: item.leaderAddress,
+                leaderCollateralBaseline: 0,
+                leaderContractId: contract.id,
+                strategy: {
+                  strategyKey: item.strategy!.strategyKey,
+                  ratio: item.strategy!.ratio,
+                  lifeTime: item.strategy!.lifeTime,
+                  maxCollateral: item.strategy!.maxCollateral,
+                  minCollateral: item.strategy!.minCollateral,
+                  collateralBaseline: item.strategy!.collateralBaseline,
+                  maxLeverage: Math.floor(+item.strategy!.maxLeverage * 1000),
+                  minLeverage: Math.floor(+item.strategy!.minLeverage * 1000),
+                  params: "{}",
+                },
+              }));
+            })
+            .flat(),
         },
       });
     }
@@ -105,8 +114,6 @@ export function PlanCreationPanel() {
           .map((item) => ({
             virtualId: item.virtualId,
             leaderAddress: item.address,
-            leaderContract: item.contract,
-            leaderCollateralBaseline: item.leaderCollateral,
           })),
       ];
     });
@@ -133,29 +140,13 @@ export function PlanCreationPanel() {
     );
   };
 
-  const { totalLeaderHistories, totalFollowerHistories } = useMemo(() => {
+  const { totalLeaderHistories } = useMemo(() => {
     const totalLeaderHistories = virtualBotParams
       .map((item) => leaderHistories[item.virtualId])
       .filter((item) => item && item.length > 0)
       .reduce((acc, curr) => [...acc, ...curr], []);
 
-    const totalFollowerHistories = virtualBotParams
-      .filter(
-        (item) =>
-          leaderHistories[item.virtualId] &&
-          leaderHistories[item.virtualId].length > 0 &&
-          item.strategy,
-      )
-      .map((item) =>
-        transformHistories(
-          leaderHistories[item.virtualId],
-          item.leaderCollateralBaseline,
-          item.strategy!,
-        ),
-      )
-      .reduce((acc, curr) => [...acc, ...curr], []);
-
-    return { totalLeaderHistories, totalFollowerHistories };
+    return { totalLeaderHistories };
   }, [leaderHistories, virtualBotParams]);
 
   const steps = [
@@ -216,7 +207,6 @@ export function PlanCreationPanel() {
       content: (
         <PlanCreationOverview
           leaderHistories={totalLeaderHistories}
-          followerHistories={totalFollowerHistories}
           onNextStep={() => setCurrentStep(5)}
           onPrevStep={() => setCurrentStep(3)}
         />

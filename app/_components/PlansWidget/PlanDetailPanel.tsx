@@ -1,80 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button, Chip, Tab, Tabs, useDisclosure } from "@nextui-org/react";
+import { Button, Chip, useDisclosure } from "@nextui-org/react";
 import dayjs from "dayjs";
-import { useSearchParams, useRouter } from "next/navigation";
 import { PlanStatus } from "@/graphql/gql/graphql";
 
 import { useEndPlan, useGetPlanById, useStartPlan } from "@/app-hooks/usePlan";
 
-import { PersonalTradeHistory } from "@/types";
-
-import { getPersonalTradeHistories } from "@/app-actions/getPersonalTradeHistories";
-
 import { chipColorsByPlanStatus } from "./PlanCard";
 
 import { PlanAutomations } from "./PlanAutomations";
-import { RealResultView } from "./RealResultView";
 
-import { getSortedPartialHistories } from "@/utils/historiesChart";
 import { CreateAutomationModal } from "../AutomationWidgets/CreateAutomationModal";
 import { FaPlus } from "react-icons/fa";
 
-type TabType = "overview" | "automations";
-
 export function PlanDetailPanel({ planId }: { planId: string }) {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
-
-  const [selected, setSelected] = useState<TabType>(
-    (searchParams.get("tab") as TabType) || "automations",
-  );
 
   const { startPlan, loading: startPlanLoading } = useStartPlan();
   const { endPlan, loading: endPlanLoading } = useEndPlan();
 
   const plan = useGetPlanById(+planId);
-
-  const [selectedBotIds, setSelectedBotIds] = useState<Record<number, boolean>>(
-    {},
-  );
-  const [showBotChartIds, setShowBotChartIds] = useState<
-    Record<number, boolean>
-  >({});
-
-  const [followerBotsHistories, setFollowerBotsHistories] = useState<
-    Record<string, PersonalTradeHistory[]>
-  >({});
-
-  useEffect(() => {
-    if (plan?.bots) {
-      setSelectedBotIds(
-        plan.bots.reduce((acc, bot) => ({ ...acc, [bot.id]: true }), {}),
-      );
-
-      plan.bots.forEach((bot) => {
-        getPersonalTradeHistories(
-          bot.followerContract.id,
-          bot.followerContract.backendUrl!,
-          bot.followerAddress,
-        ).then((histories) => {
-          setFollowerBotsHistories((prev) => ({
-            ...prev,
-            [bot.id]: getSortedPartialHistories(histories, {
-              mode: "show_all_activity",
-              range: {
-                from: new Date(bot.startedAt),
-                to: new Date(bot.endedAt),
-              },
-            }).sortedHistories,
-          }));
-        });
-      });
-    }
-  }, [plan?.bots]);
 
   const handleStartPlan = () => {
     if (plan?.status === PlanStatus.Created) {
@@ -86,32 +31,6 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
     if (plan?.status === PlanStatus.Started) {
       endPlan({ variables: { id: +planId } });
     }
-  };
-
-  const handleBotSelection = async (botId: number, isSelected: boolean) => {
-    setSelectedBotIds((prev) => ({
-      ...prev,
-      [botId]: isSelected,
-    }));
-
-    const bot = plan?.bots.find((bot) => bot.id === botId);
-
-    if (isSelected && bot && !followerBotsHistories[botId]) {
-      const histories =
-        (await getPersonalTradeHistories(
-          bot.followerContract.id,
-          bot.followerContract.backendUrl!,
-          bot.followerAddress,
-        )) || [];
-      setFollowerBotsHistories((prev) => ({ ...prev, [botId]: histories }));
-    }
-  };
-
-  const handleChartToggle = (botId: number) => {
-    setShowBotChartIds((prev) => ({
-      ...prev,
-      [botId]: !prev[botId],
-    }));
   };
 
   const items = plan
@@ -205,41 +124,14 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-2">
-          <Tabs
-            aria-label="plans-tab-tabs"
-            selectedKey={selected}
-            onSelectionChange={(value) => {
-              if (value) {
-                setSelected(value as TabType);
-                router.push(`/plans/${planId}?tab=${value}`);
-              }
-            }}
-          >
-            <Tab key="automations" title="Automations" />
-            <Tab key="overview" title="Overview" />
-          </Tabs>
-
+        <div className="flex items-center justify-end gap-2">
           <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>
             <FaPlus />
           </Button>
         </div>
       </div>
 
-      {selected === "automations" && (
-        <PlanAutomations bots={plan?.bots || []} />
-      )}
-
-      {selected === "overview" && (
-        <RealResultView
-          bots={plan?.bots || []}
-          selectedBotIds={selectedBotIds}
-          showBotChartIds={showBotChartIds}
-          botsHistories={followerBotsHistories}
-          onChangeBotSelection={handleBotSelection}
-          onToggleChart={handleChartToggle}
-        />
-      )}
+      <PlanAutomations bots={plan?.bots || []} />
 
       <CreateAutomationModal
         planId={+planId}
