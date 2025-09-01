@@ -78,8 +78,12 @@ export type VirtualBot = {
 export type VirtualBotParams = Partial<VirtualBot> & {
   virtualId: string;
   leaderAddress: string;
-  leaderContract: ContractItem;
-  leaderCollateralBaseline: number;
+};
+
+export type LeaderParams = {
+  virtualId: string;
+  address: string;
+  isConfirmed: boolean;
 };
 
 export enum ServiceStatus {

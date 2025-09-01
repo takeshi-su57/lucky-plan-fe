@@ -4,17 +4,16 @@ import { useEffect, useState } from "react";
 import { Button } from "@nextui-org/react";
 import dayjs from "dayjs";
 import { nanoid } from "nanoid";
-import { useGetAllGnsContracts } from "@/app/_hooks/useContract";
 
 import { useIsPnlSnapshotInitialized } from "@/app-hooks/useHistory";
 
 import { InitializePnlSnapshotBoard } from "./InitializePnlSnapshotBoard";
 import { PnlSnapshotKind, UserPermission } from "@/graphql/gql/graphql";
 import { Leaderboard } from "../LeaderboardWidgets/Leaderboard";
-import { LeaderParams } from "./LeaderItem";
+import { LeaderParams } from "@/types";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 
-export type SelectLeadersProps = {
+export type SelectLeadersFromLeaderboardProps = {
   leaders: LeaderParams[];
   onChangeLeaders: (leaders: LeaderParams[]) => void;
   endDate: Date;
@@ -23,21 +22,19 @@ export type SelectLeadersProps = {
   onPrevStep: () => void;
 };
 
-export function SelectLeaders({
+export function SelectLeadersFromLeaderboard({
   leaders,
   onChangeLeaders,
   endDate,
   hideTags,
   onNextStep,
   onPrevStep,
-}: SelectLeadersProps) {
+}: SelectLeadersFromLeaderboardProps) {
   const { data: isPnlSnapshotInitialized, loading } =
     useIsPnlSnapshotInitialized(dayjs(endDate).format("YYYY-MM-DD"));
   const { userJwtQuery } = useUserJWT();
 
   const isAdmin = userJwtQuery?.data?.permission === UserPermission.Admin;
-
-  const allContracts = useGetAllGnsContracts();
 
   const [tempLeaders, setTempLeaders] = useState<LeaderParams[]>([]);
 
@@ -54,11 +51,7 @@ export function SelectLeaders({
     onNextStep();
   };
 
-  const handleChangeSelection = (
-    address: string,
-    leaderCollateral: number,
-    isSelected: boolean,
-  ) => {
+  const handleChangeSelection = (address: string, isSelected: boolean) => {
     if (isSelected) {
       setTempLeaders((prev) => {
         const exists = prev.find(
@@ -69,22 +62,14 @@ export function SelectLeaders({
           return prev;
         }
 
-        const newLeaders = allContracts
-          .filter((item) => item.id !== 4)
-          .map((item) => ({
+        return [
+          ...prev,
+          {
             virtualId: nanoid(),
             address,
-            leaderCollateral,
-            contract: {
-              contractId: item.id,
-              chainId: item.chainId,
-              address: item.address,
-              backendUrl: item.backendUrl!,
-            },
             isConfirmed: false,
-          }));
-
-        return [...prev, ...newLeaders];
+          },
+        ];
       });
     } else {
       setTempLeaders((prev) => {
@@ -154,8 +139,6 @@ export function SelectLeaders({
         selectionLabel="Pick as a Leader"
         selectedAddresses={tempLeaders.map((leader) => ({
           address: leader.address,
-          contractId: leader.contract.contractId,
-          leaderCollateral: leader.leaderCollateral,
         }))}
         initialKind={initialKind}
         onChangeParams={(kind) => {
