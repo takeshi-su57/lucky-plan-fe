@@ -47,12 +47,6 @@ export const links = [
     limited: UserPermission.Trader,
   },
   {
-    id: "leaderboard-v2",
-    label: "Leaderboard V2",
-    title: "",
-    limited: "Public",
-  },
-  {
     id: "settings",
     label: "Setting",
     title: "",

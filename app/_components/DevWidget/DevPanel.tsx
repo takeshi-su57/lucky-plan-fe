@@ -19,11 +19,13 @@ import { bestCase, primaryBestCase } from "./subcase";
 import { LeaderParams } from "./LeaderItem";
 import { getServerTimezone } from "@/utils";
 import { TempPanel } from "./TempPanel";
+import { FastTotalDevPanelV2 } from "./FastTotalDevPanelV2";
 
 type TabType =
   | "one_day"
   | "applied_filter"
   | "wide_filter"
+  | "wide_filter_v2"
   | "reports"
   | "temp";
 
@@ -124,6 +126,7 @@ export function DevPanel() {
         <Tab key="one_day" title="One Day" />
         <Tab key="applied_filter" title="Applied Filter" />
         <Tab key="wide_filter" title="Wide Filter" />
+        <Tab key="wide_filter_v2" title="Wide Filter V2" />
         <Tab key="reports" title="Reports" />
         <Tab key="temp" title="Temp" />
       </Tabs>
@@ -145,6 +148,13 @@ export function DevPanel() {
           startDate={dayjs(startDate).format("YYYY-MM-DD")}
           filterParams={primaryBestCase}
           isTestnet={false}
+        />
+      )}
+
+      {selected === "wide_filter_v2" && (
+        <FastTotalDevPanelV2
+          startDate={dayjs(startDate).format("YYYY-MM-DD")}
+          filterParams={primaryBestCase}
         />
       )}
 

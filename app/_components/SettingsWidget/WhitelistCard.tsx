@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Card, CardHeader, Input, Button, CardBody } from "@nextui-org/react";
+import {
+  Card,
+  CardHeader,
+  Input,
+  Button,
+  CardBody,
+  Checkbox,
+} from "@nextui-org/react";
 import { useMutation, useQuery } from "@apollo/client";
 import { FaTrash } from "react-icons/fa";
 
@@ -33,6 +40,18 @@ const whitelistColumns: TableColumnProps[] = [
     component: "Max Size",
   },
   {
+    id: "lastCount",
+    component: "Last Count",
+  },
+  {
+    id: "ignoreMinPnlLimit",
+    component: "Ignore Min Pnl Limit",
+  },
+  {
+    id: "ignoreMinDurationLimit",
+    component: "Ignore Min Duration Limit",
+  },
+  {
     id: "action",
     component: "",
   },
@@ -50,6 +69,10 @@ export function WhitelistCard() {
   const [minR2, setMinR2] = useState("0");
   const [maxSize, setMaxSize] = useState("0");
   const [ratio, setRatio] = useState("0");
+  const [lastCount, setLastCount] = useState<string>("0");
+  const [ignoreMinPnlLimit, setIgnoreMinPnlLimit] = useState<boolean>(false);
+  const [ignoreMinDurationLimit, setIgnoreMinDurationLimit] =
+    useState<boolean>(false);
 
   const whitelistRows = useMemo(() => {
     if (!whitelist) {
@@ -64,6 +87,9 @@ export function WhitelistCard() {
             minR2: number;
             ratio: number;
             maxSize: number;
+            lastCount?: number;
+            ignoreMinPnlLimit?: boolean;
+            ignoreMinDurationLimit?: boolean;
           },
       )
       .map((whitelist) => ({
@@ -81,6 +107,15 @@ export function WhitelistCard() {
           },
           maxSize: {
             component: whitelist.maxSize,
+          },
+          lastCount: {
+            component: whitelist.lastCount || "No Limit",
+          },
+          ignoreMinPnlLimit: {
+            component: whitelist.ignoreMinPnlLimit ? "Yes" : "No",
+          },
+          ignoreMinDurationLimit: {
+            component: whitelist.ignoreMinDurationLimit ? "Yes" : "No",
           },
           action: {
             component: (
@@ -112,12 +147,14 @@ export function WhitelistCard() {
   const isValidRatio = !Number.isNaN(+ratio) && +ratio >= 0 && +ratio <= 1;
   const isValidMinR2 = !Number.isNaN(+minR2) && +minR2 >= 0 && +minR2 <= 1;
   const isValidMaxSize = !Number.isNaN(+maxSize) && +maxSize >= 0;
+  const isValidLastCount = !Number.isNaN(+lastCount);
 
   const isDisabled =
     !isAddress(whitelistAddress) ||
     !isValidRatio ||
     !isValidMinR2 ||
-    !isValidMaxSize;
+    !isValidMaxSize ||
+    !isValidLastCount;
 
   return (
     <Card>
@@ -136,6 +173,26 @@ export function WhitelistCard() {
 
         <NumericInput amount={maxSize} onChange={setMaxSize} label="Max Size" />
 
+        <NumericInput
+          amount={lastCount}
+          onChange={setLastCount}
+          label="Last Count"
+        />
+
+        <Checkbox
+          checked={ignoreMinPnlLimit}
+          onValueChange={setIgnoreMinPnlLimit}
+        >
+          Ignore Min Pnl Limit
+        </Checkbox>
+
+        <Checkbox
+          checked={ignoreMinDurationLimit}
+          onValueChange={setIgnoreMinDurationLimit}
+        >
+          Ignore Min Duration Limit
+        </Checkbox>
+
         <Button
           isDisabled={isDisabled}
           isLoading={addToWhitelistLoading}
@@ -147,6 +204,9 @@ export function WhitelistCard() {
                   minR2: +minR2,
                   ratio: +ratio,
                   maxSize: +maxSize,
+                  lastCount: +lastCount > 0 ? +lastCount : undefined,
+                  ignoreMinDurationLimit,
+                  ignoreMinPnlLimit,
                 }),
               },
               onCompleted: () => {
@@ -154,6 +214,9 @@ export function WhitelistCard() {
                 setMinR2("0");
                 setRatio("0");
                 setMaxSize("0");
+                setLastCount("0");
+                setIgnoreMinPnlLimit(false);
+                setIgnoreMinDurationLimit(false);
                 refetch();
               },
             });

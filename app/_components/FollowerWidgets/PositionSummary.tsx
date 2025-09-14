@@ -1,12 +1,13 @@
 "use client";
 
 import { Chip } from "@nextui-org/react";
+import { twMerge } from "tailwind-merge";
 
 import { MissionStatus, MissionForwardDetails } from "@/graphql/gql/graphql";
 
 import { PairChip } from "../LeaderboardWidgets/PairChip";
 import { PositionTradeStatus } from "./PositionTradeStatus";
-import { twMerge } from "tailwind-merge";
+import { getPairName } from "@/web3/gns/v10/configs";
 
 const colorsByMissionStatus: Record<
   MissionStatus,
@@ -39,6 +40,8 @@ export function PositionSummary({
     : 0;
   const leverage = data?.leverage ? Number(data.leverage) / 1e3 : 0;
 
+  const pairName = getPairName(42161, data.pairIndex);
+
   return (
     <div className={twMerge("flex w-full items-center justify-between gap-6")}>
       <div className="flex items-center gap-6">
@@ -54,7 +57,7 @@ export function PositionSummary({
           {data.long ? "Long" : "Short"}
         </span>
 
-        <PairChip contractId={1} pairIndex={data.pairIndex} count={1} />
+        <PairChip pairName={pairName ?? "Unknown"} />
 
         <PositionTradeStatus
           collateralAmount={collateralAmount}

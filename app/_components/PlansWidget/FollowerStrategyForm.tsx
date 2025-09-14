@@ -1,7 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
+import { useEffect, useState, ChangeEventHandler } from "react";
+import {
+  Autocomplete,
+  AutocompleteItem,
+  Button,
+  SelectItem,
+  Select,
+} from "@nextui-org/react";
 import { Address } from "viem";
 import { FaTrash } from "react-icons/fa";
 
@@ -13,6 +19,7 @@ import { PersonalTradeHistory, VirtualBotParams } from "@/types";
 import { NumericInput } from "@/components/inputs/NumericInput";
 import { FutureChart } from "./FutureChart";
 import { useGetAllTradeHistory } from "@/app/_hooks/useHistory";
+import { ContractStatus, Platform } from "@/graphql/gql/graphql";
 
 export type FollowerStrategyFormProps = {
   params: VirtualBotParams;
@@ -31,6 +38,8 @@ export function FollowerStrategyForm({
   onChangeLeaderHistories,
 }: FollowerStrategyFormProps) {
   const allContracts = useGetAllContracts();
+
+  const [platform, setPlatform] = useState<Platform>(Platform.Gns);
 
   const [followerContractId, setFollowerContractId] = useState<string | null>(
     null,
@@ -66,6 +75,16 @@ export function FollowerStrategyForm({
     setMaxLeverage(params.strategy?.maxLeverage.toString() || "200");
     setMinLeverage(params.strategy?.minLeverage.toString() || "1.1");
   }, [params]);
+
+  const handleChangePlatform: ChangeEventHandler<HTMLSelectElement> = (
+    event,
+  ) => {
+    const value = event.target.value;
+
+    if (value.trim() !== "") {
+      setPlatform(value as Platform);
+    }
+  };
 
   let maxCollateralHelper = "";
   let minCollateralHelper = "";
@@ -154,6 +173,7 @@ export function FollowerStrategyForm({
 
     onSave({
       virtualId: params.virtualId,
+      platform,
       followerContract: {
         chainId: followerContract.chainId,
         address: followerContract.address,
@@ -194,12 +214,26 @@ export function FollowerStrategyForm({
       <div className="flex w-full gap-8">
         <div className="flex w-[200px] flex-col gap-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
+            <Select
+              variant="underlined"
+              label="Platform"
+              selectedKeys={platform ? [platform] : undefined}
+              onChange={handleChangePlatform}
+              selectionMode="single"
+              className="w-[200px] font-mono"
+            >
+              {Object.values(Platform).map((item) => (
+                <SelectItem key={item}>{item}</SelectItem>
+              ))}
+            </Select>
+
             <Autocomplete
               label="Follower Contract"
               variant="underlined"
               // hide ape contract as a follower contract
               defaultItems={allContracts.filter(
-                (item) => item.chainId !== 33139,
+                (item) =>
+                  item.chainId !== 33139 && item.status === ContractStatus.Live,
               )}
               placeholder="Search contract"
               selectedKey={followerContractId}

@@ -618,3 +618,41 @@ export function getScore(
 
   return (traderScore * closeHistories.length) / primaryBestCase[0].window;
 }
+
+export function bigIntSafeJsonStringify(obj: unknown) {
+  return JSON.stringify(obj, (_, v) =>
+    typeof v === "bigint" ? v.toString() : v,
+  );
+}
+
+export function bigIntSafeJsonParse<T>(json: string): T {
+  const obj = JSON.parse(json);
+
+  const safeObj = (obj: unknown): unknown => {
+    if (Array.isArray(obj)) {
+      return obj.map((item: unknown) => {
+        if (typeof item === "object" && item !== null) {
+          if ("isBigInt" in item && "value" in item && item.isBigInt) {
+            return BigInt(item.value as string);
+          }
+
+          return safeObj(item);
+        }
+
+        return item;
+      });
+    } else if (typeof obj === "object" && obj !== null) {
+      if ("isBigInt" in obj && "value" in obj && obj.isBigInt) {
+        return BigInt(obj.value as string);
+      }
+
+      return Object.fromEntries(
+        Object.entries(obj).map(([key, value]) => [key, safeObj(value)]),
+      );
+    }
+
+    return obj;
+  };
+
+  return safeObj(obj) as T;
+}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Address } from "viem";
-import { UserPermission } from "@/graphql/gql/graphql";
+import { ContractStatus, UserPermission } from "@/graphql/gql/graphql";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 
@@ -201,7 +201,9 @@ export function ChangePermissionModal({
               <Autocomplete
                 label="Follower Contract"
                 variant="underlined"
-                defaultItems={allContracts}
+                defaultItems={allContracts.filter(
+                  (contract) => contract.status === ContractStatus.Live,
+                )}
                 placeholder="Search contract"
                 selectedKey={followerContractId}
                 onSelectionChange={(key) =>

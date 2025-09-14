@@ -90,7 +90,7 @@ export function PositionDetails({
 
         {mission ? (
           <div className="flex flex-row items-center gap-4">
-            <AnalyzeButton address={mission.targetPosition.address} />
+            <AnalyzeButton address={mission.tasks[0]?.action?.address} />
 
             <Button onClick={onOpen} color="primary" size="sm">
               Mission Details

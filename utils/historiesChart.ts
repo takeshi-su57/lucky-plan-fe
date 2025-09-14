@@ -1,4 +1,3 @@
-import { TradePair } from "@/graphql/gql/graphql";
 import { PersonalTradeHistory, TradeActionType } from "@/types";
 
 export function getSortedPartialHistories(
@@ -8,7 +7,6 @@ export function getSortedPartialHistories(
     supportedPairs?: string[];
     range?: { from?: Date; to?: Date };
   },
-  pairs: TradePair[] = [],
 ) {
   const supportedPairsMap: Record<string, boolean> = {};
 
@@ -17,15 +15,6 @@ export function getSortedPartialHistories(
       supportedPairsMap[pair.toLowerCase()] = true;
     });
   }
-
-  const pairMap = new Map<string, TradePair>();
-
-  pairs.forEach((pair) => {
-    pairMap.set(
-      `${pair.contractId}-${pair.from}/${pair.to}`.toLowerCase(),
-      pair,
-    );
-  });
 
   const openedHistories = new Map<string, boolean>();
   const pnlMaps = new Map<string, number>();
@@ -135,17 +124,6 @@ export function getSortedPartialHistories(
     .map((item) => item[0]);
 
   const chunkForPnlHistories = sortedAndSupportedHistories
-    .filter((item) => {
-      const pair = pairMap.get(`${item.contractId}-${item.pair}`.toLowerCase());
-
-      if (!pair) {
-        return false;
-      }
-
-      return (
-        +pair.onePercentDepthAboveUsd > 0 && +pair.onePercentDepthBelowUsd > 0
-      );
-    })
     .reverse()
     .slice(0, 512);
 
@@ -173,7 +151,10 @@ export function getSortedPartialHistories(
       }
     });
 
-  const pnlRatios = chunkForPnlHistories
+  let sumOfSize = 0;
+  let sumOfPnl = 0;
+
+  chunkForPnlHistories
     .filter(
       (history) =>
         history.action === TradeActionType.TradeClosedMarket ||
@@ -181,19 +162,16 @@ export function getSortedPartialHistories(
         history.action === TradeActionType.TradeClosedSL ||
         history.action === TradeActionType.TradeClosedTP,
     )
-    .map((item) => {
+    .forEach((item) => {
       const pnl = pnlMaps.get(`${item.contractId}-${item.tradeIndex}`) || 0;
       const size = sizeMaps.get(`${item.contractId}-${item.tradeIndex}`) || 0;
-      return size > 0 ? (pnl / size) * 100 : null;
-    })
-    .filter((item) => item !== null);
+      sumOfSize += size;
+      sumOfPnl += pnl;
+    });
 
   const avgDuration = durationCount > 0 ? totalDuration / durationCount : -1;
 
-  const avgPnlP =
-    pnlRatios.length > 0
-      ? pnlRatios.reduce((acc, item) => acc + item, 0) / pnlRatios.length
-      : 1000_000_000;
+  const avgPnlP = sumOfSize > 0 ? (sumOfPnl / sumOfSize) * 100 : 1000_000_000;
 
   const openHistories = totalOpenHistories.reverse().slice(0, 512);
 
@@ -274,7 +252,6 @@ export function getHistoriesChartData(
     supportedPairs?: string[];
     range?: { from?: Date; to?: Date };
   },
-  pairs: TradePair[] = [],
 ) {
   const pnlChartData: {
     value: number;
@@ -315,7 +292,7 @@ export function getHistoriesChartData(
     avgSize,
     avgCollateral,
     avgLeverage,
-  } = getSortedPartialHistories(histories, filters, pairs);
+  } = getSortedPartialHistories(histories, filters);
 
   if (sortedHistories.length > 0) {
     [

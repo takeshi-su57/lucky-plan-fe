@@ -38,7 +38,7 @@ export function PlanRow({ plan }: PlanRowProps) {
   const { deletePlan, loading } = useDeletePlan();
   const alertTasks = useGetAlertTasks();
 
-  const allContracts = useGetAllGnsContracts();
+  const gnsContracts = useGetAllGnsContracts();
 
   const handleDelete = () => {
     deletePlan({
@@ -126,7 +126,7 @@ export function PlanRow({ plan }: PlanRowProps) {
                 </span>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  {(allContracts || []).map((contract) => (
+                  {(gnsContracts || []).map((contract) => (
                     <ContractPnl
                       key={contract.id}
                       label={`Chain (${contract.chainId})`}
@@ -138,7 +138,7 @@ export function PlanRow({ plan }: PlanRowProps) {
                           bot.missions
                             .filter(
                               (mission) =>
-                                !!mission.achievePositionId &&
+                                !!mission.achievePositionKey &&
                                 mission.status === MissionStatus.Closed,
                             )
                             .map((mission) =>
@@ -151,7 +151,7 @@ export function PlanRow({ plan }: PlanRowProps) {
                           bot.missions
                             .filter(
                               (mission) =>
-                                !!mission.achievePositionId &&
+                                !!mission.achievePositionKey &&
                                 mission.status !== MissionStatus.Closed,
                             )
                             .map((mission) =>
@@ -169,7 +169,7 @@ export function PlanRow({ plan }: PlanRowProps) {
                 </span>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  {(allContracts || []).map((contract) => (
+                  {(gnsContracts || []).map((contract) => (
                     <ContractPnl
                       key={contract.id}
                       label={`Chain (${contract.chainId})`}
@@ -182,7 +182,7 @@ export function PlanRow({ plan }: PlanRowProps) {
                             .filter(
                               (mission) =>
                                 mission.status === MissionStatus.Closed &&
-                                !!mission.achievePositionId,
+                                !!mission.achievePositionKey,
                             )
                             .map((mission) =>
                               mission.tasks
@@ -212,7 +212,7 @@ export function PlanRow({ plan }: PlanRowProps) {
                             .filter(
                               (mission) =>
                                 mission.status !== MissionStatus.Closed &&
-                                !!mission.achievePositionId,
+                                !!mission.achievePositionKey,
                             )
                             .map((mission) =>
                               mission.tasks

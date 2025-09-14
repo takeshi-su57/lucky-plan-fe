@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { Spinner, Tab, Tabs } from "@nextui-org/react";
 
-import { ExperPanel } from "../_components/ExpertWidgets/ExperPanel";
+import { ExpertPanel } from "../_components/ExpertWidgets/ExpertPanel";
 import { TagsPanel } from "../_components/TagWidgets/TagsPanel";
 import { CategoriesPanel } from "../_components/TagWidgets/CategoriesPanel";
 
@@ -25,7 +25,7 @@ export default function Page() {
           <Tab key="category" title="Category" />
         </Tabs>
 
-        {selected === "expert" && <ExperPanel />}
+        {selected === "expert" && <ExpertPanel />}
         {selected === "tag" && <TagsPanel />}
         {selected === "category" && <CategoriesPanel />}
       </div>

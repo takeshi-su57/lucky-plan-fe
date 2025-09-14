@@ -1,16 +1,18 @@
-import { Action, TradeCollateral } from "@/graphql/gql/graphql";
+import { Action } from "@/graphql/gql/graphql";
 import {
   PendingOrderType,
   PersonalTradeHistory,
   TradeActionType,
 } from "@/types";
+import { bigIntSafeJsonParse } from ".";
+import { Collateral } from "@/web3/gns/v10/types";
 
 export function convertTradeActionToHistory(
   contractId: number,
   action: Action,
-  collaterals: TradeCollateral[],
+  collaterals: Collateral[],
 ): (Omit<PersonalTradeHistory, "pair"> & { pairIndex: number }) | null {
-  const args = JSON.parse(action.args);
+  const args = bigIntSafeJsonParse<any>(action.args);
 
   switch (action.name) {
     case "PositionSizeIncreaseExecuted": {

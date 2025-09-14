@@ -21,6 +21,7 @@ import { useGetAllContracts } from "@/app-hooks/useContract";
 
 import { useBatchCreateBots } from "@/app-hooks/useAutomation";
 import { useCreatePlan } from "@/app-hooks/usePlan";
+import { ContractStatus, Platform } from "@/graphql/gql/graphql";
 
 export function PlanCreationPanel() {
   const { createPlan, loading: createPlanLoading } = useCreatePlan();
@@ -69,7 +70,7 @@ export function PlanCreationPanel() {
     ).id;
 
     const availableContracts = allContracts.filter(
-      (item) => !item.isTestnet && item.id !== 4,
+      (item) => item.status === ContractStatus.Live,
     );
 
     if (virtualBotParams.length > 0) {
@@ -113,6 +114,7 @@ export function PlanCreationPanel() {
           .filter((item) => !prevIds.includes(item.virtualId))
           .map((item) => ({
             virtualId: item.virtualId,
+            platform: Platform.Gns,
             leaderAddress: item.address,
           })),
       ];

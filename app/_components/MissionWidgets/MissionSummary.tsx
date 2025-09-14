@@ -11,6 +11,7 @@ import {
 import { useGetAlertTasks } from "@/app-hooks/useTask";
 
 import { ContractPnl } from "./ContractPnl";
+import { useGetAllGnsContracts } from "@/app/_hooks/useContract";
 
 const colorsByMissionStatus: Record<
   MissionStatus,
@@ -36,6 +37,8 @@ export function MissionSummary({
   followerContractId,
 }: MissionSummaryProps) {
   const alertTasks = useGetAlertTasks();
+
+  const gnsContracts = useGetAllGnsContracts();
 
   const missionTasks = alertTasks.filter(
     (task) => task.missionId === mission.id,
@@ -63,32 +66,26 @@ export function MissionSummary({
         <Chip>Mission {mission.id}</Chip>
 
         <span className="text-xs text-neutral-600">
-          {mission.targetPositionId}
-        </span>
-
-        <span className="text-xs text-neutral-600">
-          {mission.achievePositionId || ""}
-        </span>
-
-        <span className="text-xs text-neutral-600">
           {dayjs(new Date(mission.createdAt)).format("YYYY/MM/DD hh:mm:ss")}
         </span>
 
-        <ContractPnl
-          label="Leader"
-          contractId={leaderContractId}
-          finished={false}
-          finishedMissionActions={
-            mission.status === MissionStatus.Closed
-              ? [mission.tasks.map((task) => task.action)]
-              : []
-          }
-          openedMissionActions={
-            mission.status !== MissionStatus.Closed
-              ? [mission.tasks.map((task) => task.action)]
-              : []
-          }
-        />
+        {gnsContracts.find((contract) => contract.id === leaderContractId) ? (
+          <ContractPnl
+            label="Leader"
+            contractId={leaderContractId}
+            finished={false}
+            finishedMissionActions={
+              mission.status === MissionStatus.Closed
+                ? [mission.tasks.map((task) => task.action)]
+                : []
+            }
+            openedMissionActions={
+              mission.status !== MissionStatus.Closed
+                ? [mission.tasks.map((task) => task.action)]
+                : []
+            }
+          />
+        ) : null}
 
         <ContractPnl
           label="Follower"

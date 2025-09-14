@@ -11,6 +11,7 @@ import {
 } from "@nextui-org/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { ContractStatus } from "@/graphql/gql/graphql";
 import { useGetAllFollowerDetails } from "@/app-hooks/useFollower";
 import { useGetAllGnsContracts } from "@/app-hooks/useContract";
 import { shrinkAddress } from "@/utils";
@@ -39,7 +40,9 @@ export function Followers() {
           <Autocomplete
             label="Follower Contract"
             variant="underlined"
-            defaultItems={allContracts}
+            defaultItems={allContracts.filter(
+              (contract) => contract.status === ContractStatus.Live,
+            )}
             placeholder="Search contract"
             selectedKey={contractId}
             className="w-[400px]"
