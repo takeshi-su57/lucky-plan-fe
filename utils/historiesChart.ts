@@ -173,7 +173,10 @@ export function getSortedPartialHistories(
       }
     });
 
-  const pnlRatios = chunkForPnlHistories
+  let sumOfSize = 0;
+  let sumOfPnl = 0;
+
+  chunkForPnlHistories
     .filter(
       (history) =>
         history.action === TradeActionType.TradeClosedMarket ||
@@ -181,19 +184,16 @@ export function getSortedPartialHistories(
         history.action === TradeActionType.TradeClosedSL ||
         history.action === TradeActionType.TradeClosedTP,
     )
-    .map((item) => {
+    .forEach((item) => {
       const pnl = pnlMaps.get(`${item.contractId}-${item.tradeIndex}`) || 0;
       const size = sizeMaps.get(`${item.contractId}-${item.tradeIndex}`) || 0;
-      return size > 0 ? (pnl / size) * 100 : null;
-    })
-    .filter((item) => item !== null);
+      sumOfSize += size;
+      sumOfPnl += pnl;
+    });
 
   const avgDuration = durationCount > 0 ? totalDuration / durationCount : -1;
 
-  const avgPnlP =
-    pnlRatios.length > 0
-      ? pnlRatios.reduce((acc, item) => acc + item, 0) / pnlRatios.length
-      : 1000_000_000;
+  const avgPnlP = sumOfSize > 0 ? (sumOfPnl / sumOfSize) * 100 : 1000_000_000;
 
   const openHistories = totalOpenHistories.reverse().slice(0, 512);
 

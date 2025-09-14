@@ -23,11 +23,7 @@ export type HistoriesWidgetProps = {
   hideTags: boolean;
   label?: string;
   isSelected?: boolean;
-  onChangeSelection?: (
-    address: string,
-    leaderCollateral: number,
-    isSelected: boolean,
-  ) => void;
+  onChangeSelection?: (address: string, isSelected: boolean) => void;
   mode: "show_all_activity" | "show_only_valid_activity";
   showLastTwoDaysTraders?: boolean;
   range?: {
