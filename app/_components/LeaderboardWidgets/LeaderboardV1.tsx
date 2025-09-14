@@ -1,14 +1,7 @@
 "use client";
 
-import { ChangeEventHandler, useState } from "react";
-import {
-  Card,
-  CardBody,
-  Spinner,
-  Select,
-  SelectItem,
-  Switch,
-} from "@nextui-org/react";
+import { useState } from "react";
+import { Card, CardBody, Spinner, Switch } from "@nextui-org/react";
 import { Virtuoso } from "react-virtuoso";
 import { Address } from "viem";
 import dayjs from "dayjs";
@@ -19,64 +12,36 @@ import { useGetPnlSnapshots } from "@/app-hooks/useHistory";
 
 import { HistoriesWidget } from "./HistoriesWidget/HistoriesWidget";
 
-export type LeaderboardProps = {
+export type LeaderboardV1Props = {
   selectionLabel?: string;
   selectedAddresses?: {
     address: string;
   }[];
   onChangeSelection?: (address: string, isSelected: boolean) => void;
-  endDate: Date;
-  initialKind: PnlSnapshotKind;
-  onChangeParams: (kind: PnlSnapshotKind) => void;
+  date: Date;
+  kind: PnlSnapshotKind;
   hideTags: boolean;
 };
 
-export function Leaderboard({
-  endDate,
-  initialKind,
-  onChangeParams,
+export function LeaderboardV1({
+  date,
+  kind,
   hideTags,
   selectionLabel,
   selectedAddresses,
   onChangeSelection,
-}: LeaderboardProps) {
-  const [kind, setKind] = useState<PnlSnapshotKind>(initialKind);
+}: LeaderboardV1Props) {
   const [showAllActivity, setShowAllActivity] = useState(true);
   const [showAllTraders, setShowAllTraders] = useState(true);
 
   const { pnlSnapshots, fetchMore, hasMore, loading } = useGetPnlSnapshots(
-    dayjs(endDate).format("YYYY-MM-DD"),
+    dayjs(date).format("YYYY-MM-DD"),
     kind,
   );
-
-  const handleChangeKind: ChangeEventHandler<HTMLSelectElement> = (event) => {
-    const value = event.target.value;
-
-    if (value.trim() !== "") {
-      setKind(value as PnlSnapshotKind);
-
-      onChangeParams(value as PnlSnapshotKind);
-    }
-  };
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Select
-            variant="underlined"
-            label="Before"
-            selectedKeys={kind ? [kind] : undefined}
-            onChange={handleChangeKind}
-            selectionMode="single"
-            className="w-[200px] font-mono"
-          >
-            {Object.values(PnlSnapshotKind).map((item) => (
-              <SelectItem key={item}>{item}</SelectItem>
-            ))}
-          </Select>
-        </div>
-
         <div className="flex items-center gap-8">
           <Switch
             isSelected={showAllActivity}
@@ -108,7 +73,7 @@ export function Leaderboard({
                 address={snapshot.address as Address}
                 histories={snapshot.histories}
                 hideTags={hideTags}
-                range={{ to: endDate }}
+                range={{ to: date }}
                 label={selectionLabel}
                 isSelected={
                   selectedAddresses

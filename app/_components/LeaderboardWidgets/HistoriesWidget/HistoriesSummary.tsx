@@ -23,7 +23,7 @@ export type HistoriesSummaryProps = {
   onChangeSelection?: (address: string, isSelected: boolean) => void;
   pnlChartData: HistoryChartData[];
   inOutChartData: HistoryChartData[];
-  openedHistoriesArr: string[];
+  openedPositions: number;
   avgDuration: number;
   avgPnlP: number;
   avgSize: number;
@@ -44,7 +44,7 @@ export function HistoriesSummary({
   label,
   pnlChartData,
   inOutChartData,
-  openedHistoriesArr,
+  openedPositions,
   avgDuration,
   avgPnlP,
   avgSize,
@@ -99,7 +99,7 @@ export function HistoriesSummary({
     {
       id: "openedHistories",
       label: "Opened Histories",
-      value: openedHistoriesArr.length,
+      value: openedPositions,
     },
     {
       id: "avgDuration",

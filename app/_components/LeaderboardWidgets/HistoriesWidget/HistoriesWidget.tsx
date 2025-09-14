@@ -13,7 +13,6 @@ import { twMerge } from "tailwind-merge";
 import { HistoriesSummary } from "./HistoriesSummary";
 import { HistoriesPositionList } from "./HistoriesPositionList";
 import { getScore } from "@/utils";
-import { useGetAllTradePairs } from "@/app/_hooks/useContract";
 
 type TabType = "chart" | "positions";
 
@@ -44,7 +43,6 @@ export function HistoriesWidget({
   range,
 }: HistoriesWidgetProps) {
   const [selected, setSelected] = useState<TabType>("chart");
-  const allPairs = useGetAllTradePairs([1, 2, 3, 5]);
 
   const {
     historiesGroupedByTradeIndex,
@@ -65,15 +63,11 @@ export function HistoriesWidget({
     avgCollateral,
     avgLeverage,
   } = useMemo(() => {
-    return getHistoriesChartData(
-      histories,
-      {
-        mode,
-        range,
-      },
-      allPairs,
-    );
-  }, [allPairs, histories, mode, range]);
+    return getHistoriesChartData(histories, {
+      mode,
+      range,
+    });
+  }, [histories, mode, range]);
 
   const score = useMemo(
     () =>
@@ -101,7 +95,7 @@ export function HistoriesWidget({
     >
       <CardBody>
         <div className="flex min-h-[500px] gap-8 p-3">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-1 flex-col gap-4">
             <Tabs
               selectedKey={selected}
               onSelectionChange={(value) =>
@@ -126,7 +120,7 @@ export function HistoriesWidget({
               label={label}
               pnlChartData={pnlChartData}
               inOutChartData={inOutChartData}
-              openedHistoriesArr={openedHistoriesArr}
+              openedPositions={openedHistoriesArr.length}
               avgDuration={avgDuration}
               avgPnlP={avgPnlP}
               avgSize={avgSize}
@@ -137,7 +131,7 @@ export function HistoriesWidget({
             <div className="text-red-500">{score}</div>
           </div>
 
-          <div className="flex flex-1 flex-col items-center justify-start gap-6">
+          <div className="flex w-[calc(100%-200px)] flex-col items-center justify-start gap-6">
             {selected === "chart" && (
               <HistoryCharts
                 pnlChartData={pnlChartData}
