@@ -15,6 +15,7 @@ import {
   PlanForwardDetailsInfoFragment,
   PlanForwardDetails,
   PlanStatus,
+  Platform,
 } from "@/graphql/gql/graphql";
 import { getBotForwardDetails } from "./useAutomation";
 import { PlanMessage } from "../_components/PlansWidget/PlanMessage";
@@ -156,6 +157,25 @@ export const GET_EXPERT_PNLSNAPSHOT_DOCUMENT = graphql(`
       accUSDPnl
       address
       contractId
+      dateStr
+      id
+      kind
+      maxSize
+      ratio
+      score
+      openedPositions
+      avgPnlRatio
+      avgDuration
+    }
+  }
+`);
+
+export const GET_EXPERT_PNLSNAPSHOT_V2_DOCUMENT = graphql(`
+  query getExpertPnlSnapshotsV2($platform: Platform!) {
+    getExpertPnlSnapshotsV2(platform: $platform) {
+      accUSDPnl
+      address
+      platform
       dateStr
       id
       kind
@@ -642,6 +662,29 @@ export function useGetExpertPnlSnapshots() {
     }
 
     return data.getExpertPnlSnapshots.map((snapshot) => {
+      return {
+        ...snapshot,
+      };
+    });
+  }, [data]);
+
+  return {
+    pnlSnapshots,
+    loading,
+  };
+}
+
+export function useGetExpertPnlSnapshotsV2(platform: Platform) {
+  const { data, loading } = useQuery(GET_EXPERT_PNLSNAPSHOT_V2_DOCUMENT, {
+    variables: { platform },
+  });
+
+  const pnlSnapshots = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return data.getExpertPnlSnapshotsV2.map((snapshot) => {
       return {
         ...snapshot,
       };

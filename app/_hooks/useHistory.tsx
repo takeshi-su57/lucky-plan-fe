@@ -190,21 +190,13 @@ export const IS_PNL_SNAPSHOT_INITIALIZED_DOCUMENT = graphql(`
 
 export const BUILD_PNL_SNAPSHOTS_DOCUMENT = graphql(`
   mutation buildPnlSnapshots($dateStr: String!, $isForceBuild: Boolean!) {
-    buildPnlSnapshots(dateStr: $dateStr, isForceBuild: $isForceBuild) {
-      id
-      dateStr
-      isInit
-    }
+    buildPnlSnapshots(dateStr: $dateStr, isForceBuild: $isForceBuild)
   }
 `);
 
 export const DYNAMIC_SNAPSHOT_BUILD_DOCUMENT = graphql(`
   mutation dynamicSnapshotBuild($dateStr: String!) {
-    dynamicSnapshotBuild(dateStr: $dateStr) {
-      id
-      dateStr
-      isInit
-    }
+    dynamicSnapshotBuild(dateStr: $dateStr)
   }
 `);
 
@@ -274,6 +266,41 @@ export const GET_WHOLE_COMPRESSED_HISTORIES_DOCUMENT = graphql(`
       totalBots {
         address
         contractId
+        dateStr
+      }
+    }
+  }
+`);
+
+export const GET_WHOLE_COMPRESSED_HISTORIES_DOCUMENT_V2 = graphql(`
+  query getWholeCompressedHistoriesV2(
+    $platform: Platform!
+    $startDate: String!
+    $filterParams: [ExportFilter!]!
+  ) {
+    getWholeCompressedHistoriesV2(
+      platform: $platform
+      startDate: $startDate
+      filterParams: $filterParams
+    ) {
+      accPnls {
+        date
+        in
+        inOut
+        out
+        pnl
+        positionCount
+        taskCount
+      }
+      botCounts {
+        botCount
+        date
+      }
+      maxInvested
+      uniqueTraders
+      totalBots {
+        address
+        platform
         dateStr
       }
     }
@@ -375,6 +402,33 @@ export const GET_PNL_SNAPSHOT_V2_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_PNL_SNAPSHOT_V2_BY_PAGINATION = graphql(`
+  query getPnlsnpashotsV2ByPagination(
+    $dateStr: String!
+    $kind: PnlSnapshotKind!
+    $limit: Int!
+    $page: Int!
+    $platform: Platform!
+  ) {
+    getPnlsnpashotsV2ByPagination(
+      dateStr: $dateStr
+      platform: $platform
+      kind: $kind
+      limit: $limit
+      page: $page
+    ) {
+      data {
+        ...PnlSnapshotV2DetailsInfo
+      }
+      pageInfo {
+        total
+        page
+        totalPages
+      }
+    }
+  }
+`);
+
 export const IS_PNL_SNAPSHOT_V2_INITIALIZED_DOCUMENT = graphql(`
   query isPnlSnapshotV2Initialized($dateStr: String!, $platform: Platform!) {
     isPnlSnapshotV2Initialized(dateStr: $dateStr, platform: $platform) {
@@ -408,23 +462,13 @@ export const BUILD_PNL_SNAPSHOTS_V2_DOCUMENT = graphql(`
       dateStr: $dateStr
       isForceBuild: $isForceBuild
       platform: $platform
-    ) {
-      id
-      dateStr
-      isInit
-      platform
-    }
+    )
   }
 `);
 
 export const DYNAMIC_SNAPSHOT_BUILD_V2_DOCUMENT = graphql(`
   mutation dynamicSnapshotBuildV2($dateStr: String!, $platform: Platform!) {
-    dynamicSnapshotBuildV2(dateStr: $dateStr, platform: $platform) {
-      id
-      dateStr
-      platform
-      isInit
-    }
+    dynamicSnapshotBuildV2(dateStr: $dateStr, platform: $platform)
   }
 `);
 
@@ -667,6 +711,32 @@ export function useGetWholeCompressedHistories(
   };
 }
 
+export function useGetWholeCompressedHistoriesV2(
+  platform: Platform,
+  startDate: string,
+  filterParams: ExportFilter[],
+) {
+  const { data, loading } = useQuery(
+    GET_WHOLE_COMPRESSED_HISTORIES_DOCUMENT_V2,
+    {
+      variables: {
+        platform,
+        startDate,
+        filterParams,
+      },
+    },
+  );
+
+  return {
+    accPnls: data?.getWholeCompressedHistoriesV2.accPnls || [],
+    botCounts: data?.getWholeCompressedHistoriesV2.botCounts || [],
+    maxInvested: data?.getWholeCompressedHistoriesV2.maxInvested || 0,
+    uniqueTraders: data?.getWholeCompressedHistoriesV2.uniqueTraders || [],
+    totalBots: data?.getWholeCompressedHistoriesV2?.totalBots || [],
+    loading,
+  };
+}
+
 export function useGetTestingReport() {
   const { data, loading, fetchMore, error } = useQuery(
     GET_TESTING_REPORT_DOCUMENT,
@@ -757,67 +827,6 @@ export function useBuildPnlSnapshots() {
       enqueueSnackbar("Success at building PNL snapshots!", {
         variant: "success",
       });
-
-      const pnlSnapshotInitializedFlag = data.dynamicSnapshotBuild;
-
-      client.cache.updateQuery(
-        {
-          query: IS_PNL_SNAPSHOT_INITIALIZED_DOCUMENT,
-          variables: {
-            dateStr: pnlSnapshotInitializedFlag.dateStr,
-          },
-        },
-        (data) => {
-          if (data && data.isPnlSnapshotInitialized) {
-            return {
-              ...data,
-              isPnlSnapshotInitialized: pnlSnapshotInitializedFlag,
-            };
-          } else {
-            return {
-              isPnlSnapshotInitialized: pnlSnapshotInitializedFlag,
-            };
-          }
-        },
-      );
-
-      client.cache.updateQuery(
-        {
-          query: GET_PNL_SNAPSHOT_INITIALIZED_FLAG_DOCUMENT,
-          variables: {},
-        },
-        (data) => {
-          if (data && data.getPnlSnapshotInitializedFlag) {
-            const exists = data.getPnlSnapshotInitializedFlag.find(
-              (item) => item.id === pnlSnapshotInitializedFlag.id,
-            );
-
-            if (exists) {
-              return {
-                ...data,
-                getPnlSnapshotInitializedFlag:
-                  data.getPnlSnapshotInitializedFlag.map((item) =>
-                    item.id === pnlSnapshotInitializedFlag.id
-                      ? pnlSnapshotInitializedFlag
-                      : item,
-                  ),
-              };
-            }
-
-            return {
-              ...data,
-              getPnlSnapshotInitializedFlag: [
-                ...data.getPnlSnapshotInitializedFlag,
-                pnlSnapshotInitializedFlag,
-              ],
-            };
-          } else {
-            return {
-              getPnlSnapshotInitializedFlag: [pnlSnapshotInitializedFlag],
-            };
-          }
-        },
-      );
     }
   }, [data, error, enqueueSnackbar, client]);
 
@@ -862,8 +871,8 @@ export function useIsPnlSnapshotV2Initialized(
   });
 }
 
-export function useBuildPnlSnapshotsV2() {
-  const [buildPnlSnapshotsV2, { data, error, loading }] = useMutation(
+export function useDynamicBuildPnlSnapshotsV2() {
+  const [dynamicBuildPnlSnapshotsV2, { data, error, loading }] = useMutation(
     DYNAMIC_SNAPSHOT_BUILD_V2_DOCUMENT,
   );
 
@@ -875,70 +884,25 @@ export function useBuildPnlSnapshotsV2() {
       enqueueSnackbar("Success at building PNL snapshots!", {
         variant: "success",
       });
+    }
+  }, [data, error, enqueueSnackbar, client]);
 
-      const pnlSnapshotInitializedFlag = data.dynamicSnapshotBuildV2;
+  return { dynamicBuildPnlSnapshotsV2, loading };
+}
 
-      client.cache.updateQuery(
-        {
-          query: IS_PNL_SNAPSHOT_V2_INITIALIZED_DOCUMENT,
-          variables: {
-            dateStr: pnlSnapshotInitializedFlag.dateStr,
-            platform: pnlSnapshotInitializedFlag.platform,
-          },
-        },
-        (data) => {
-          if (data && data.isPnlSnapshotV2Initialized) {
-            return {
-              ...data,
-              isPnlSnapshotV2Initialized: pnlSnapshotInitializedFlag,
-            };
-          } else {
-            return {
-              isPnlSnapshotV2Initialized: pnlSnapshotInitializedFlag,
-            };
-          }
-        },
-      );
+export function useBuildPnlSnapshotsV2() {
+  const [buildPnlSnapshotsV2, { data, error, loading }] = useMutation(
+    BUILD_PNL_SNAPSHOTS_V2_DOCUMENT,
+  );
 
-      client.cache.updateQuery(
-        {
-          query: GET_PNL_SNAPSHOT_V2_INITIALIZED_FLAG_DOCUMENT,
-          variables: {
-            platform: pnlSnapshotInitializedFlag.platform,
-          },
-        },
-        (data) => {
-          if (data && data.getPnlSnapshotV2InitializedFlag) {
-            const exists = data.getPnlSnapshotV2InitializedFlag.find(
-              (item) => item.id === pnlSnapshotInitializedFlag.id,
-            );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
 
-            if (exists) {
-              return {
-                ...data,
-                getPnlSnapshotV2InitializedFlag:
-                  data.getPnlSnapshotV2InitializedFlag.map((item) =>
-                    item.id === pnlSnapshotInitializedFlag.id
-                      ? pnlSnapshotInitializedFlag
-                      : item,
-                  ),
-              };
-            }
-
-            return {
-              ...data,
-              getPnlSnapshotV2InitializedFlag: [
-                ...data.getPnlSnapshotV2InitializedFlag,
-                pnlSnapshotInitializedFlag,
-              ],
-            };
-          } else {
-            return {
-              getPnlSnapshotV2InitializedFlag: [pnlSnapshotInitializedFlag],
-            };
-          }
-        },
-      );
+  useEffect(() => {
+    if (data?.buildPnlSnapshotsV2 && !error) {
+      enqueueSnackbar("Success at building PNL snapshots!", {
+        variant: "success",
+      });
     }
   }, [data, error, enqueueSnackbar, client]);
 
@@ -1010,6 +974,38 @@ export function useGetPnlSnapshotsV2(
     hasMore: data?.getPnlSnapshotsV2.pageInfo.hasNextPage,
     pnlSnapshots,
     fetchMore: handleFetchMore,
+    loading,
+  };
+}
+
+export function useGetPnlSnapshotsV2ForPagination(
+  dateStr: string,
+  kind: PnlSnapshotKind,
+  platform: Platform,
+  page: number,
+  limit: number,
+) {
+  const { data, loading } = useQuery(GET_PNL_SNAPSHOT_V2_BY_PAGINATION, {
+    variables: {
+      dateStr,
+      kind,
+      platform,
+      page,
+      limit,
+    },
+  });
+
+  const pnlSnapshots = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+    return data.getPnlsnpashotsV2ByPagination.data.map(getPnlSnapshotV2Info);
+  }, [data]);
+
+  return {
+    totalPages: data?.getPnlsnpashotsV2ByPagination.pageInfo.totalPages || 0,
+    total: data?.getPnlsnpashotsV2ByPagination.pageInfo.total || 0,
+    pnlSnapshots,
     loading,
   };
 }
