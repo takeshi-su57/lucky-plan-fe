@@ -53,7 +53,7 @@ export function eventToPerpTradeHistory(
     positionKey: getGnsPositionKey(event.args.trader, Number(event.args.index)),
     address: event.args.trader.toLowerCase() as `0x${string}`,
     pair: pairName,
-    operation: "updateLeverage",
+    operation: event.args.isIncrease ? "increaseLeverage" : "decreaseLeverage",
     usdPnl,
     sizeInUsd,
     leverage,
@@ -61,6 +61,8 @@ export function eventToPerpTradeHistory(
     collateralDeltaUsd,
     sizeDeltaUsd,
     leverageDelta,
+    isLong: true,
+    price: Number(event.args.oraclePrice) / 1e10,
   };
 }
 

@@ -68,14 +68,15 @@ export function eventToPerpTradeHistory(
     Math.floor((sizeDeltaUsd / collateralDeltaUsd) * 1e3) / 1e3;
   const leverage = Math.floor((sizeInUsd / collateralInUsd) * 1e3) / 1e3;
 
-  let operation: "updateLeverage" | "close" | "open" | "decrease" = "decrease";
+  let operation: "increaseLeverage" | "close" | "open" | "decreaseSize" =
+    "decreaseSize";
 
   if (Number(event.args.sizeInUsd) === 0) {
     operation = "close";
   }
 
   if (Number(event.args.sizeDeltaUsd) === 0) {
-    operation = "updateLeverage";
+    operation = "increaseLeverage";
   }
 
   const marketInfo = getMarketInfo(chainId, event.args.market);
@@ -96,6 +97,10 @@ export function eventToPerpTradeHistory(
     collateralDeltaUsd,
     sizeDeltaUsd,
     leverageDelta,
+    isLong: event.args.isLong,
+    price:
+      Number(event.args.executionPrice) /
+      Math.pow(10, 30 - (marketInfo?.indexToken.decimals || 0)),
   };
 }
 
