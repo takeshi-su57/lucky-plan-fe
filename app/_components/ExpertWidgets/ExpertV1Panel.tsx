@@ -48,7 +48,7 @@ const expertColumns: TableColumnProps[] = [
   },
 ];
 
-export function ExperPanel() {
+export function ExpertV1Panel() {
   const { pnlSnapshots, loading } = useGetExpertPnlSnapshots();
 
   const { bots } = useGetActiveBots();
