@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, ChangeEventHandler } from "react";
 import {
   Autocomplete,
   AutocompleteItem,
   Button,
   Switch,
   Input,
+  Select,
+  SelectItem,
 } from "@nextui-org/react";
 import { Address, isAddress } from "viem";
 
@@ -20,6 +22,7 @@ import { NumericInput } from "@/components/inputs/NumericInput";
 
 import { useGetAllTradeHistory } from "@/app/_hooks/useHistory";
 import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget/HistoriesWidget";
+import { ContractStatus, Platform } from "@/graphql/gql/graphql";
 
 export type CreateAutomationModalProps = {
   planId: number;
@@ -41,6 +44,8 @@ export function CreateAutomationModal({
   const [showAllActivity, setShowAllActivity] = useState(false);
 
   const [leaderAddress, setLeaderAddress] = useState<string>("");
+  const [platform, setPlatform] = useState<Platform>(Platform.Gns);
+
   const [followerContractId, setFollowerContractId] = useState<string | null>(
     null,
   );
@@ -55,6 +60,16 @@ export function CreateAutomationModal({
     isAddress(leaderAddress) ? leaderAddress : null,
     "0",
   );
+
+  const handleChangePlatform: ChangeEventHandler<HTMLSelectElement> = (
+    event,
+  ) => {
+    const value = event.target.value;
+
+    if (value.trim() !== "") {
+      setPlatform(value as Platform);
+    }
+  };
 
   let maxCollateralHelper = "";
   let minCollateralHelper = "";
@@ -137,9 +152,9 @@ export function CreateAutomationModal({
       return;
     }
 
-    const availableContracts = allContracts.filter(
-      (contract) => !contract.isTestnet && contract.id !== 4,
-    );
+    const availableContracts = allContracts
+      .filter((contract) => contract.status === ContractStatus.Live)
+      .filter((contract) => contract.platform === platform);
 
     batchCreateBots({
       variables: {
@@ -190,13 +205,26 @@ export function CreateAutomationModal({
                 onChange={(e) => setLeaderAddress(e.target.value)}
               />
 
+              <Select
+                variant="underlined"
+                label="Platform"
+                selectedKeys={platform ? [platform] : undefined}
+                onChange={handleChangePlatform}
+                selectionMode="single"
+                className="w-[200px] font-mono"
+              >
+                {Object.values(Platform).map((item) => (
+                  <SelectItem key={item}>{item}</SelectItem>
+                ))}
+              </Select>
+
               <Autocomplete
                 label="Follower Contract"
                 variant="underlined"
                 // hide ape contract as a follower contract
-                defaultItems={allContracts.filter(
-                  (item) => item.chainId !== 33139,
-                )}
+                defaultItems={allContracts
+                  .filter((contract) => contract.status === ContractStatus.Live)
+                  .filter((item) => item.chainId !== 33139)}
                 placeholder="Search contract"
                 selectedKey={followerContractId}
                 onSelectionChange={(key) =>

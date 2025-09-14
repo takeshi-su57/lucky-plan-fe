@@ -8,6 +8,7 @@ import {
   BotForwardDetails,
   BotStatus,
   MissionStatus,
+  Platform,
   TaskStatus,
 } from "@/graphql/gql/graphql";
 import { useGetAlertTasks } from "@/app/_hooks/useTask";
@@ -57,7 +58,7 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
   ).length;
 
   const validBotMisions = bot.missions.filter(
-    (mission) => mission.achievePosition,
+    (mission) => mission.achievePositionKey,
   );
 
   return (
@@ -129,17 +130,19 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
         ) : null}
 
         <div className="flex flex-row items-center gap-3 font-mono">
-          <ContractPnl
-            label="Leader"
-            contractId={bot.leaderContractId}
-            finished={false}
-            finishedMissionActions={validBotMisions
-              .filter((mission) => mission.status === MissionStatus.Closed)
-              .map((mission) => mission.tasks.map((task) => task.action))}
-            openedMissionActions={validBotMisions
-              .filter((mission) => mission.status !== MissionStatus.Closed)
-              .map((mission) => mission.tasks.map((task) => task.action))}
-          />
+          {bot.leaderContract.platform === Platform.Gns ? (
+            <ContractPnl
+              label="Leader"
+              contractId={bot.leaderContractId}
+              finished={false}
+              finishedMissionActions={validBotMisions
+                .filter((mission) => mission.status === MissionStatus.Closed)
+                .map((mission) => mission.tasks.map((task) => task.action))}
+              openedMissionActions={validBotMisions
+                .filter((mission) => mission.status !== MissionStatus.Closed)
+                .map((mission) => mission.tasks.map((task) => task.action))}
+            />
+          ) : null}
 
           <ContractPnl
             label="Follower"
