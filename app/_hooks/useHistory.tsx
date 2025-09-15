@@ -355,8 +355,8 @@ export const GET_TESTING_REPORT_DOCUMENT = graphql(`
 `);
 
 export const GET_PERP_EVENT_LOGS_DOCUMENT = graphql(`
-  query getPerpEventLogs($address: String!, $platform: Platform!) {
-    getPerpEventLogs(address: $address, platform: $platform) {
+  query getPerpEventLogs($addresses: [String!]!, $platform: Platform!) {
+    getPerpEventLogs(addresses: $addresses, platform: $platform) {
       ...PerpTradingEventLogInfo
     }
   }
@@ -1019,26 +1019,28 @@ export function useGetStatisticData() {
   };
 }
 
-export function useGetPerpEventLogs(address: string, platform: Platform) {
+export function useGetPerpEventLogs(addresses: string, platform: Platform) {
   const [query, { data, loading }] = useLazyQuery(GET_PERP_EVENT_LOGS_DOCUMENT);
 
   useEffect(() => {
-    if (address && platform) {
+    if (addresses.length > 0 && platform) {
       query({
         variables: {
-          address,
+          addresses: addresses.split(","),
           platform,
         },
       });
     }
-  }, [address, platform, query]);
+  }, [addresses, platform, query]);
 
   const eventLogs = useMemo(() => {
     if (!data) {
       return [];
     }
-    return data.getPerpEventLogs.map((eventLog) =>
-      getFragmentData(GET_PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT, eventLog),
+    return data.getPerpEventLogs.map((eventLogs) =>
+      eventLogs.map((eventLog) =>
+        getFragmentData(GET_PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT, eventLog),
+      ),
     );
   }, [data]);
 

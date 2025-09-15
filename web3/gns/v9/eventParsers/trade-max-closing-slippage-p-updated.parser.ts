@@ -21,7 +21,6 @@ export function eventToPerpTradeHistory(
   _chainId: number,
   _event: TradeMaxClosingSlippagePUpdatedEvent,
 ): PerpTradeHistory | null {
-  console.log("tradeMaxClosingSlippagePUpdatedEventParser", _event, _chainId);
   return null;
 }
 

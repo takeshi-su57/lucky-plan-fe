@@ -22,12 +22,6 @@ export function HistoriesView({ histories }: HistoriesViewProps) {
   return (
     <div className="mb-6 flex w-full flex-col gap-4 overflow-x-auto">
       <div className="flex flex-row items-center gap-2">
-        <Chip
-          variant="flat"
-          className={twMerge(isLong ? "bg-green-950" : "bg-red-950")}
-        >
-          {`${isLong ? "Long" : "Short"} Position - ${histories[0].positionKey}`}
-        </Chip>
         <PairChip pairName={histories[0].pair} />
 
         <span
@@ -39,6 +33,13 @@ export function HistoriesView({ histories }: HistoriesViewProps) {
         >
           {`PnL: $${getPriceStr(pnl)}`}
         </span>
+
+        <Chip
+          variant="flat"
+          className={twMerge(isLong ? "bg-green-950" : "bg-red-950")}
+        >
+          {`${isLong ? "Long" : "Short"} Position - ${histories[0].positionKey}`}
+        </Chip>
       </div>
 
       <div className="flex w-full flex-row items-center gap-6 overflow-x-auto">

@@ -1,4 +1,5 @@
 import { PersonalTradeHistory, TradeActionType } from "@/types";
+import { SimpleLinearRegression } from "ml-regression-simple-linear";
 
 export function getSortedPartialHistories(
   histories: PersonalTradeHistory[],
@@ -505,6 +506,12 @@ export function getHistoriesChartData(
     });
   }
 
+  const xs = pnlChartData.map((_, index) => index);
+  const pnlArrs = pnlChartData.map((item) => item.value);
+
+  const regression = new SimpleLinearRegression(xs, pnlArrs);
+  const score = regression.score(xs, pnlArrs);
+
   return {
     historiesGroupedByTradeIndex,
     pnlChartData,
@@ -529,6 +536,8 @@ export function getHistoriesChartData(
       sortedHistories.length > 0
         ? new Date(sortedHistories[sortedHistories.length - 1].date)
         : null,
+    slope: regression.slope,
+    r2: score.r2,
   };
 }
 

@@ -52,6 +52,8 @@ export function PerpEventLogPnlChart({
     avgSize,
     avgCollateral,
     avgLeverage,
+    slope,
+    r2,
   } = useMemo(() => {
     const contractsMapa: Record<number, Contract> = {};
 
@@ -67,7 +69,7 @@ export function PerpEventLogPnlChart({
   return (
     <Card className={twMerge("mb-4 w-full shrink-0")} isBlurred>
       <CardBody>
-        <div className="flex h-[500px] gap-8 p-3">
+        <div className="flex min-h-[500px] gap-8 p-3">
           <div className="flex flex-col gap-4">
             <Tabs
               selectedKey={selected}
@@ -96,10 +98,12 @@ export function PerpEventLogPnlChart({
               avgSize={avgSize}
               avgCollateral={avgCollateral}
               avgLeverage={avgLeverage}
+              slope={slope}
+              r2={r2}
             />
           </div>
 
-          <div className="flex h-full flex-1 flex-col items-center justify-start gap-6">
+          <div className="flex h-full w-[calc(100%-200px)] flex-col items-center justify-start gap-6">
             {selected === "chart" && (
               <HistoryCharts
                 pnlChartData={pnlChartData}

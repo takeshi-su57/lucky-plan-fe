@@ -6,8 +6,8 @@ import { Checkbox, Switch } from "@nextui-org/react";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { getPriceStr } from "@/utils/price";
-// import { TagsWidget } from "../../TagWidgets/TagsWidget";
 import { HistoryChartData } from "../HistoryCharts";
+import { TagsWidget } from "../../TagWidgets/TagsWidget";
 
 export type HistoriesSummaryProps = {
   address: Address;
@@ -29,6 +29,8 @@ export type HistoriesSummaryProps = {
   avgSize: number;
   avgCollateral: number;
   avgLeverage: number;
+  slope: number | null;
+  r2: number | null;
 };
 
 export function HistoriesSummary({
@@ -38,7 +40,7 @@ export function HistoriesSummary({
   countIn,
   firstActivity,
   lastActivity,
-  // hideTags,
+  hideTags,
   isSelected,
   onChangeSelection,
   label,
@@ -50,6 +52,8 @@ export function HistoriesSummary({
   avgSize,
   avgCollateral,
   avgLeverage,
+  slope,
+  r2,
 }: HistoriesSummaryProps) {
   const [showMore, setShowMore] = useState(false);
 
@@ -126,6 +130,16 @@ export function HistoriesSummary({
       label: "Avg Leverage",
       value: `${avgLeverage.toFixed(2)}x`,
     },
+    {
+      id: "slope",
+      label: "Slope",
+      value: slope ? slope.toFixed(2) : "CANT_CALCULATE",
+    },
+    {
+      id: "r2",
+      label: "R2",
+      value: r2 ? r2.toFixed(2) : "CANT_CALCULATE",
+    },
   ];
 
   const extraItems = [
@@ -184,7 +198,7 @@ export function HistoriesSummary({
         Show More
       </Switch>
 
-      {/* {!hideTags ? <TagsWidget address={address} /> : null} */}
+      {!hideTags ? <TagsWidget address={address} /> : null}
 
       {isSelected !== undefined ? (
         <Checkbox

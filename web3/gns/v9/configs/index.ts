@@ -90,7 +90,7 @@ export function getCollateral(
     throw new Error(`Collateral configs not found for chainId: ${chainId}`);
   }
 
-  return collateralConfigsMap[chainId][collateralIndex - 10] || null;
+  return collateralConfigsMap[chainId][collateralIndex - 1] || null;
 }
 
 export function getCollaterals(chainId: number) {

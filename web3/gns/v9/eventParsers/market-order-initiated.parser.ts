@@ -20,8 +20,6 @@ export function eventToPerpTradeHistory(
   _chainId: number,
   _event: MarketOrderInitiatedEvent,
 ): PerpTradeHistory | null {
-  console.log("marketOrderInitiatedEventParser", _event, _chainId);
-
   return null;
 }
 

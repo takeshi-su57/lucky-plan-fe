@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEventHandler, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   Tabs,
   DatePicker,

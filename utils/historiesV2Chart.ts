@@ -6,6 +6,7 @@ import {
 import { TradeActionType } from "@/types";
 import { PerpTradeHistory } from "@/web3/types";
 import { getWeb3Info } from "@/web3/utils";
+import { SimpleLinearRegression } from "ml-regression-simple-linear";
 
 export function getSortedPartialHistories(
   histories: (PerpTradeHistory & { date: Date })[],
@@ -102,7 +103,13 @@ export function getSortedPartialHistories(
   const avgDuration = totalPositions > 0 ? totalDuration / totalPositions : 0;
 
   return {
-    missionHistories,
+    missionHistories: missionHistories.sort((a, b) => {
+      if (a.length === 0 || b.length === 0) {
+        return a.length - b.length;
+      }
+
+      return b[b.length - 1].date.getTime() - a[a.length - 1].date.getTime();
+    }),
     sortedHistories,
     openedPositions,
     avgDuration,
@@ -318,6 +325,12 @@ export function getHistoriesChartData(
     });
   }
 
+  const xs = pnlChartData.map((_, index) => index);
+  const pnlArrs = pnlChartData.map((item) => item.value);
+
+  const regression = new SimpleLinearRegression(xs, pnlArrs);
+  const score = regression.score(xs, pnlArrs);
+
   return {
     missionHistories,
     pnlChartData,
@@ -341,5 +354,7 @@ export function getHistoriesChartData(
       sortedHistories.length > 0
         ? new Date(sortedHistories[sortedHistories.length - 1].date)
         : null,
+    slope: regression.slope,
+    r2: score.r2,
   };
 }
