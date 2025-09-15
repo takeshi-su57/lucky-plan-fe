@@ -20,7 +20,6 @@ export function eventToPerpTradeHistory(
   _chainId: number,
   _event: MarketOpenCanceledEvent,
 ): PerpTradeHistory | null {
-  console.log("marketOpenCanceledEventParser", _event, _chainId);
   return null;
 }
 

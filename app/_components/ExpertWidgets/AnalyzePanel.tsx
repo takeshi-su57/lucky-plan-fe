@@ -1,0 +1,186 @@
+"use client";
+
+import { Button, Input, Select, SelectItem } from "@nextui-org/react";
+import { Address, isAddress } from "viem";
+import { useState, useMemo, ChangeEventHandler } from "react";
+import { useGetPerpEventLogs } from "@/app/_hooks/useHistory";
+import { useGetAllContracts } from "@/app/_hooks/useContract";
+import { Contract, Platform } from "@/graphql/gql/graphql";
+import { getHistoriesChartData } from "@/utils/historiesV2Chart";
+import { PaginatedViews } from "@/components/views/PaginatedViews";
+import { PerpEventLogPnlChart } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
+
+const PAGE_SIZE = 10;
+
+enum Filters {
+  sort_by_r2 = "sort_by_r2",
+  sort_by_slope = "sort_by_slope",
+  sort_by_duration = "sort_by_duration",
+  sort_by_size = "sort_by_size",
+  sort_by_collateral = "sort_by_collateral",
+  sort_by_leverage = "sort_by_leverage",
+  sort_by_pnl_p = "sort_by_pnl_p",
+}
+
+export function AnalyzePanel() {
+  const [page, setPage] = useState(1);
+  const [platform, setPlatform] = useState<Platform>(Platform.Gns);
+  const [text, setText] = useState<string>("");
+  const [filteredAddresses, setFilteredAddresses] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<Filters>(Filters.sort_by_r2);
+
+  const allContracts = useGetAllContracts();
+
+  const { eventLogs, loading } = useGetPerpEventLogs(
+    filteredAddresses.join(","),
+    platform,
+  );
+
+  const handleParseFilters = () => {
+    const filters = text.trim().split(",");
+
+    setFilteredAddresses(
+      filters
+        .filter((filter) => isAddress(filter.trim()))
+        .map((filter) => filter.trim().toLowerCase()),
+    );
+  };
+
+  const handleChangePlatform: ChangeEventHandler<HTMLSelectElement> = (
+    event,
+  ) => {
+    const value = event.target.value;
+
+    if (value.trim() !== "") {
+      setPlatform(value as Platform);
+    }
+  };
+
+  const handleChangeSortBy: ChangeEventHandler<HTMLSelectElement> = (event) => {
+    const value = event.target.value;
+
+    if (value.trim() !== "") {
+      setSortBy(value as Filters);
+    }
+  };
+
+  const data = useMemo(() => {
+    const contractsMapa: Record<number, Contract> = {};
+
+    allContracts.forEach((contract) => {
+      contractsMapa[contract.id] = contract;
+    });
+
+    return eventLogs
+      .map((logs) => {
+        if (logs.length === 0) {
+          return null;
+        }
+
+        const calculated = getHistoriesChartData(logs, contractsMapa, {
+          range: undefined,
+        });
+
+        return {
+          address: logs[0].address,
+          calculated,
+          logs,
+        };
+      })
+      .filter((item) => item !== null)
+      .sort((a, b) => {
+        if (sortBy === Filters.sort_by_slope) {
+          return b.calculated.slope - a.calculated.slope;
+        }
+
+        if (sortBy === Filters.sort_by_duration) {
+          return b.calculated.avgDuration - a.calculated.avgDuration;
+        }
+
+        if (sortBy === Filters.sort_by_size) {
+          return b.calculated.avgSize - a.calculated.avgSize;
+        }
+
+        if (sortBy === Filters.sort_by_collateral) {
+          return b.calculated.avgCollateral - a.calculated.avgCollateral;
+        }
+
+        if (sortBy === Filters.sort_by_leverage) {
+          return b.calculated.avgLeverage - a.calculated.avgLeverage;
+        }
+
+        if (sortBy === Filters.sort_by_pnl_p) {
+          return b.calculated.avgPnlP - a.calculated.avgPnlP;
+        }
+
+        return b.calculated.r2 - a.calculated.r2;
+      });
+  }, [allContracts, eventLogs, sortBy]);
+
+  return (
+    <div className="flex w-full flex-col gap-6">
+      <div className="flex items-center gap-6">
+        <Select
+          variant="underlined"
+          label="Platform"
+          selectedKeys={platform ? [platform] : undefined}
+          onChange={handleChangePlatform}
+          selectionMode="single"
+          className="w-[200px] font-mono"
+        >
+          {Object.values(Platform).map((item) => (
+            <SelectItem key={item}>{item}</SelectItem>
+          ))}
+        </Select>
+
+        <Select
+          variant="underlined"
+          label="Sort by"
+          selectedKeys={sortBy ? [sortBy] : undefined}
+          onChange={handleChangeSortBy}
+          selectionMode="single"
+          className="w-[200px] font-mono"
+        >
+          {Object.values(Filters).map((item) => (
+            <SelectItem key={item}>{item}</SelectItem>
+          ))}
+        </Select>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <Input
+          placeholder="Filter by addresses"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+
+        <Button
+          color="primary"
+          size="sm"
+          isDisabled={text.trim().length === 0}
+          onClick={handleParseFilters}
+        >
+          Filter
+        </Button>
+      </div>
+
+      <PaginatedViews
+        currentPage={page}
+        totalPages={Math.ceil(data.length / PAGE_SIZE)}
+        onChangePage={setPage}
+        loading={loading}
+      >
+        <div className="flex h-[700px] w-full flex-col gap-6 overflow-y-auto">
+          {data.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((item) => (
+            <PerpEventLogPnlChart
+              key={item.address}
+              address={item.address as Address}
+              perpTradingEventLogs={item.logs}
+              hideTags={false}
+            />
+          ))}
+        </div>
+      </PaginatedViews>
+    </div>
+  );
+}

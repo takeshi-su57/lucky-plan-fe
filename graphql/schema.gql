@@ -790,9 +790,9 @@ type Query {
   getLogsSeverityCounts: [SeverityCount!]!
   getMicroserviceStatus: [MicroserviceStatus!]!
   getPerpEventLogs(
-    address: String!
+    addresses: [String!]!
     platform: Platform!
-  ): [PerpTradingEventLog!]!
+  ): [[PerpTradingEventLog!]!]!
   getPlanById(id: Int!): PlanForwardDetails
   getPlansByStatus(
     after: Int
