@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 
 import { TaskForwardDetails, TaskStatus } from "@/graphql/gql/graphql";
 import { PendingOrderType } from "@/types";
+import { bigIntSafeJsonParse } from "@/utils";
 
 const colorsByTaskStatus: Record<
   TaskStatus,
@@ -23,7 +24,7 @@ export type TaskSummaryProps = {
 };
 
 export function TaskSummary({ task }: TaskSummaryProps) {
-  const args = JSON.parse(task.action.args);
+  const args = bigIntSafeJsonParse<any>(task.action.args);
 
   let actionName = "";
 
@@ -80,6 +81,24 @@ export function TaskSummary({ task }: TaskSummaryProps) {
     }
     case "CloseMissionAction": {
       actionName = "Manual Close Task";
+
+      break;
+    }
+    case "PositionIncrease": {
+      if (args.sizeInUsd === args.sizeDeltaUsd) {
+        actionName = "Open Task";
+      } else {
+        actionName = "Position Size Increase";
+      }
+
+      break;
+    }
+    case "PositionDecrease": {
+      if (Number(args.sizeInUsd) === 0) {
+        actionName = "Close Task";
+      } else {
+        actionName = "Position Size Decrease";
+      }
 
       break;
     }

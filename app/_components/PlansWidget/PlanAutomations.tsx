@@ -8,6 +8,7 @@ import { BotForwardDetails } from "@/graphql/gql/graphql";
 import { AutomationSummary } from "@/app-components/AutomationWidgets/AutomationSummary";
 import { AutomationDetails } from "@/app-components/AutomationWidgets/AutomationDetails";
 import { ModaledItems } from "@/components/modals/ModaledItems";
+import { Virtuoso } from "react-virtuoso";
 
 export type PlanAutomationsProps = {
   bots: BotForwardDetails[];
@@ -28,9 +29,10 @@ export function PlanAutomations({ bots }: PlanAutomationsProps) {
         </Switch>
       </div>
 
-      {bots
-        .sort((a, b) => a.id - b.id)
-        .map((bot) => (
+      <Virtuoso
+        style={{ height: 750 }}
+        data={bots.sort((a, b) => a.id - b.id)}
+        itemContent={(_, bot) => (
           <ModaledItems
             key={bot.id}
             mode="rightDrawer"
@@ -41,7 +43,8 @@ export function PlanAutomations({ bots }: PlanAutomationsProps) {
               trigger: "border border-neutral-700 rounded-lg p-2 ",
             }}
           />
-        ))}
+        )}
+      />
     </div>
   );
 }

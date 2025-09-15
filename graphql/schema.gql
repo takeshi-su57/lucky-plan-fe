@@ -13,18 +13,29 @@ type AccPnl {
   traderCount: Int!
 }
 
+type AccPnlV2 {
+  date: Date!
+  in: Float!
+  inOut: Float!
+  out: Float!
+  pnl: Float!
+  positionCount: Int!
+  taskCount: Int!
+}
+
 type AccessToken {
   accessToken: String!
 }
 
 type Action {
+  address: String!
   args: String!
   blockNumber: Int!
   createdAt: Date!
   id: Int!
   name: String!
   orderInBlock: Int!
-  positionId: Int!
+  positionKey: String!
 }
 
 input AddUserInput {
@@ -232,6 +243,22 @@ type ExpertPnlSnapshot {
   score: Float!
 }
 
+type ExpertPnlSnapshotV2 {
+  accUSDPnl: Float!
+  address: String!
+  avgDuration: Float!
+  avgPnlRatio: Float!
+  dateStr: String!
+  histories: [PerpTradingEventLog!]!
+  id: Int!
+  kind: PnlSnapshotKind!
+  maxSize: Float!
+  openedPositions: Int!
+  platform: Platform!
+  ratio: Float!
+  score: Float!
+}
+
 input ExportFilter {
   m: Float!
   maxAvgSize: Int!
@@ -359,51 +386,61 @@ type MicroserviceStatus {
 }
 
 type Mission {
-  achievePositionId: Int
+  achievePositionBlockNumber: Int
+  achievePositionKey: String
+  achievePositionLogIndex: Int
   botId: Int!
   createdAt: Date!
   id: Int!
   status: MissionStatus!
-  targetPositionId: Int!
+  targetPositionBlockNumber: Int!
+  targetPositionKey: String!
+  targetPositionLogIndex: Int!
   updatedAt: Date!
 }
 
 type MissionBackwardDetails {
-  achievePosition: Position
-  achievePositionId: Int
+  achievePositionBlockNumber: Int
+  achievePositionKey: String
+  achievePositionLogIndex: Int
   bot: BotBackwardDetails!
   botId: Int!
   createdAt: Date!
   id: Int!
   status: MissionStatus!
-  targetPosition: Position!
-  targetPositionId: Int!
+  targetPositionBlockNumber: Int!
+  targetPositionKey: String!
+  targetPositionLogIndex: Int!
   updatedAt: Date!
 }
 
 type MissionForwardDetails {
-  achievePosition: Position
-  achievePositionId: Int
+  achievePositionBlockNumber: Int
+  achievePositionKey: String
+  achievePositionLogIndex: Int
   botId: Int!
   createdAt: Date!
   id: Int!
   status: MissionStatus!
-  targetPosition: Position!
-  targetPositionId: Int!
+  targetPositionBlockNumber: Int!
+  targetPositionKey: String!
+  targetPositionLogIndex: Int!
   tasks: [TaskForwardDetails!]!
   updatedAt: Date!
 }
 
 type MissionShallowBackwardDetails {
-  achievePosition: Position
-  achievePositionId: Int
+  achievePositionBlockNumber: Int
+  achievePositionKey: String
+  achievePositionLogIndex: Int
   bot: BotDetails!
   botId: Int!
   createdAt: Date!
   id: Int!
   status: MissionStatus!
-  targetPosition: Position!
-  targetPositionId: Int!
+  targetPositionBlockNumber: Int!
+  targetPositionKey: String!
+  targetPositionLogIndex: Int!
   updatedAt: Date!
 }
 
@@ -430,15 +467,12 @@ type Mutation {
   ): User!
   autoTesting: Boolean!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
-  buildPnlSnapshots(
-    dateStr: String!
-    isForceBuild: Boolean!
-  ): PnlSnapshotInitializedFlag
+  buildPnlSnapshots(dateStr: String!, isForceBuild: Boolean!): Boolean!
   buildPnlSnapshotsV2(
     dateStr: String!
     isForceBuild: Boolean!
     platform: Platform!
-  ): PnlSnapshotV2InitializedFlag
+  ): Boolean!
   cancelOrderAfterTimeout(
     input: CancelOrderAfterTimeoutInput!
   ): ContractExecutionResult!
@@ -456,11 +490,8 @@ type Mutation {
   deletePlan(id: Int!): Int!
   deleteTag(tag: String!): Tag!
   disableContract(contractId: Int!): Contract!
-  dynamicSnapshotBuild(dateStr: String!): PnlSnapshotInitializedFlag
-  dynamicSnapshotBuildV2(
-    dateStr: String!
-    platform: Platform!
-  ): PnlSnapshotV2InitializedFlag
+  dynamicSnapshotBuild(dateStr: String!): Boolean!
+  dynamicSnapshotBuildV2(dateStr: String!, platform: Platform!): Boolean!
   endPlan(id: Int!): Boolean!
   generateNewFollower: Follower!
   getToken(
@@ -510,6 +541,32 @@ type Mutation {
     contractId: Int!
     password: String!
   ): Boolean!
+}
+
+enum PerpTradeHistoryOperation {
+  CLOSE
+  DECREASE_LEVERAGE
+  DECREASE_SIZE
+  INCREASE_LEVERAGE
+  INCREASE_SIZE
+  OPEN
+}
+
+type PerpTradeHistoryWithDate {
+  address: String!
+  collateralDeltaUsd: Float!
+  collateralInUsd: Float!
+  date: Date!
+  isLong: Boolean!
+  leverage: Float!
+  leverageDelta: Float!
+  operation: PerpTradeHistoryOperation!
+  pair: String!
+  positionKey: String!
+  price: Float!
+  sizeDeltaUsd: Float!
+  sizeInUsd: Float!
+  usdPnl: Float!
 }
 
 type PerpTradingEventLog {
@@ -655,6 +712,17 @@ type PnlSnapshotV2DetailsEdge {
   node: PnlSnapshotV2Details!
 }
 
+type PnlSnapshotV2DetailsForPagination {
+  data: [PnlSnapshotV2Details!]!
+  pageInfo: PnlSnapshotV2DetailsForPaginationAPIPageInfo!
+}
+
+type PnlSnapshotV2DetailsForPaginationAPIPageInfo {
+  page: Int!
+  total: Int!
+  totalPages: Int!
+}
+
 type PnlSnapshotV2DetailsPageInfo {
   endCursor: Int
   hasNextPage: Boolean!
@@ -665,19 +733,6 @@ type PnlSnapshotV2InitializedFlag {
   id: Int!
   isInit: Boolean!
   platform: Platform!
-}
-
-type Position {
-  address: String!
-  contractId: Int!
-  id: Int!
-  index: Int!
-}
-
-type PositionInfo {
-  address: String!
-  contractId: Int!
-  index: Int!
 }
 
 type Query {
@@ -713,6 +768,7 @@ type Query {
     filterParams: [ExportFilter!]!
   ): [PnlSnapshotDevDetails!]!
   getExpertPnlSnapshots: [ExpertPnlSnapshot!]!
+  getExpertPnlSnapshotsV2(platform: Platform!): [ExpertPnlSnapshotV2!]!
   getLogsSeverityCounts: [SeverityCount!]!
   getMicroserviceStatus: [MicroserviceStatus!]!
   getPerpEventLogs(
@@ -743,12 +799,17 @@ type Query {
     kind: PnlSnapshotKind!
     platform: Platform!
   ): PnlSnapshotV2DetailsConnection!
+  getPnlsnpashotsV2ByPagination(
+    dateStr: String!
+    kind: PnlSnapshotKind!
+    limit: Int!
+    page: Int!
+    platform: Platform!
+  ): PnlSnapshotV2DetailsForPagination!
   getServerTime: ServerTime!
   getStatisticData: [StatisticData!]!
   getTestingReport(after: Int, first: Int!): TestingReportConnection!
-  getTradeCollaterals(contractId: Int!): [TradeCollateral!]!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
-  getTradePairs(contractId: [Int!]!): [TradePair!]!
   getTradeTransactionCounts(
     addresses: [String!]!
     contractIds: [Int!]!
@@ -763,6 +824,11 @@ type Query {
     isTestnet: Boolean!
     startDate: String!
   ): WholeCompressedHistories!
+  getWholeCompressedHistoriesV2(
+    filterParams: [ExportFilter!]!
+    platform: Platform!
+    startDate: String!
+  ): WholeCompressedHistoriesV2!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
   isPnlSnapshotV2Initialized(
     dateStr: String!
@@ -936,6 +1002,12 @@ type TotalBot {
   dateStr: String!
 }
 
+type TotalBotV2 {
+  address: String!
+  dateStr: String!
+  platform: Platform!
+}
+
 enum TradeActionType {
   TradeClosedLIQ
   TradeClosedMarket
@@ -947,14 +1019,6 @@ enum TradeActionType {
   TradePosPnlRealized
   TradePosSizeDecrease
   TradePosSizeIncrease
-}
-
-type TradeCollateral {
-  collateral: String!
-  collateralIndex: Int!
-  isActive: Boolean!
-  precision: String!
-  precisionDelta: String!
 }
 
 type TradeHistory {
@@ -979,15 +1043,6 @@ type TradeHistory {
   size: String!
   tradeId: String
   tradeIndex: Int!
-}
-
-type TradePair {
-  contractId: Int!
-  from: String!
-  onePercentDepthAboveUsd: String!
-  onePercentDepthBelowUsd: String!
-  pairIndex: Int!
-  to: String!
 }
 
 type TradeTransactionCount {
@@ -1055,6 +1110,14 @@ type WholeCompressedHistories {
   botCounts: [BotCount!]!
   maxInvested: Float!
   totalBots: [TotalBot!]!
+  uniqueTraders: [String!]
+}
+
+type WholeCompressedHistoriesV2 {
+  accPnls: [AccPnlV2!]!
+  botCounts: [BotCount!]!
+  maxInvested: Float!
+  totalBots: [TotalBotV2!]!
   uniqueTraders: [String!]
 }
 

@@ -1,3 +1,5 @@
+import { Platform } from "@/graphql/gql/graphql";
+
 export enum PendingOrderType {
   MARKET_OPEN,
   MARKET_CLOSE,
@@ -78,8 +80,13 @@ export type VirtualBot = {
 export type VirtualBotParams = Partial<VirtualBot> & {
   virtualId: string;
   leaderAddress: string;
-  leaderContract: ContractItem;
-  leaderCollateralBaseline: number;
+  platform: Platform;
+};
+
+export type LeaderParams = {
+  virtualId: string;
+  address: string;
+  isConfirmed: boolean;
 };
 
 export enum ServiceStatus {

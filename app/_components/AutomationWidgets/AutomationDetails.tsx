@@ -18,6 +18,7 @@ import {
   BotStatus,
   MissionStatus,
   BotForwardDetails,
+  Platform,
 } from "@/graphql/gql/graphql";
 
 import {
@@ -214,25 +215,27 @@ export function AutomationDetails({
         </div>
 
         <div className="flex items-center gap-3">
-          <ContractPnl
-            label="Leader"
-            contractId={bot.leaderContractId}
-            finished={false}
-            finishedMissionActions={bot.missions
-              .filter(
-                (mission) =>
-                  mission.status === MissionStatus.Closed &&
-                  !!mission.achievePositionId,
-              )
-              .map((mission) => mission.tasks.map((task) => task.action))}
-            openedMissionActions={bot.missions
-              .filter(
-                (mission) =>
-                  mission.status !== MissionStatus.Opened &&
-                  !mission.achievePositionId,
-              )
-              .map((mission) => mission.tasks.map((task) => task.action))}
-          />
+          {bot.leaderContract.platform === Platform.Gns ? (
+            <ContractPnl
+              label="Leader"
+              contractId={bot.leaderContractId}
+              finished={false}
+              finishedMissionActions={bot.missions
+                .filter(
+                  (mission) =>
+                    mission.status === MissionStatus.Closed &&
+                    !!mission.achievePositionKey,
+                )
+                .map((mission) => mission.tasks.map((task) => task.action))}
+              openedMissionActions={bot.missions
+                .filter(
+                  (mission) =>
+                    mission.status !== MissionStatus.Opened &&
+                    !mission.achievePositionKey,
+                )
+                .map((mission) => mission.tasks.map((task) => task.action))}
+            />
+          ) : null}
 
           <ContractPnl
             label="Follower"
@@ -242,7 +245,7 @@ export function AutomationDetails({
               .filter(
                 (mission) =>
                   mission.status === MissionStatus.Closed &&
-                  !!mission.achievePositionId,
+                  !!mission.achievePositionKey,
               )
               .map((mission) =>
                 mission.tasks
@@ -266,7 +269,7 @@ export function AutomationDetails({
               .filter(
                 (mission) =>
                   mission.status !== MissionStatus.Closed &&
-                  !mission.achievePositionId,
+                  !mission.achievePositionKey,
               )
               .map((mission) =>
                 mission.tasks

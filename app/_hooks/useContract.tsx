@@ -35,31 +35,6 @@ export const GET_ALL_CONTRACT_DOCUMENT = graphql(`
   }
 `);
 
-export const GET_ALL_TRADE_PAIRS_DOCUMENT = graphql(`
-  query getAllTradePairs($contractId: [Int!]!) {
-    getTradePairs(contractId: $contractId) {
-      contractId
-      from
-      pairIndex
-      to
-      onePercentDepthAboveUsd
-      onePercentDepthBelowUsd
-    }
-  }
-`);
-
-export const GET_TRADE_COLLATERALS_DOCUMENT = graphql(`
-  query getTradeCollaterals($contractId: Int!) {
-    getTradeCollaterals(contractId: $contractId) {
-      collateral
-      collateralIndex
-      isActive
-      precision
-      precisionDelta
-    }
-  }
-`);
-
 export const GET_ADAPTION_STATUS_DOCUMENT = graphql(`
   query getAdaptionStatus {
     getAdaptionStatus
@@ -88,14 +63,6 @@ export const START_ADAPTION_DOCUMENT = graphql(`
   }
 `);
 
-export function useGetAllTradePairs(contractIds?: number[]) {
-  const { data } = useQuery(GET_ALL_TRADE_PAIRS_DOCUMENT, {
-    variables: contractIds ? { contractId: contractIds } : undefined,
-  });
-
-  return data?.getTradePairs || [];
-}
-
 export function useGetAdaptionStatus() {
   const client = useApolloClient();
 
@@ -116,14 +83,6 @@ export function useGetAdaptionStatus() {
   });
 
   return query.data || {};
-}
-
-export function useGetTradeCollaterals(contractId?: number) {
-  const { data } = useQuery(GET_TRADE_COLLATERALS_DOCUMENT, {
-    variables: contractId ? { contractId } : undefined,
-  });
-
-  return data?.getTradeCollaterals || [];
 }
 
 export function useGetAllContracts() {

@@ -3,6 +3,7 @@ import { Chip } from "@nextui-org/react";
 import { TaskBackwardDetails, TaskStatus } from "@/graphql/gql/graphql";
 
 import { ContractPnl } from "../MissionWidgets/ContractPnl";
+import { useGetAllGnsContracts } from "@/app/_hooks/useContract";
 
 const statusColors: Record<
   TaskStatus,
@@ -23,6 +24,8 @@ export function TaskMessage({
   task: TaskBackwardDetails;
   contractId: number;
 }) {
+  const gnsContracts = useGetAllGnsContracts();
+
   return (
     <div className="flex w-full flex-col gap-2">
       <div className="flex items-center gap-2">
@@ -35,7 +38,8 @@ export function TaskMessage({
 
       <div className="flex items-center gap-2">
         <span className="text-base">{task.action.name}</span>
-        {task.followerActions.length > 0 ? (
+        {task.followerActions.length > 0 &&
+        gnsContracts.find((contract) => contract.id === contractId) ? (
           <ContractPnl
             label="PnL"
             contractId={contractId}

@@ -25,6 +25,7 @@ import {
   useGetPnlSnapshotV2InitializedFlag,
   useBuildPnlSnapshotsV2,
   useInitializePnlSnapshotV2,
+  useDynamicBuildPnlSnapshotsV2,
 } from "@/app-hooks/useHistory";
 import { Platform } from "@/graphql/gql/graphql";
 
@@ -57,6 +58,10 @@ export function PnlSnapshotPanel() {
     loading: v2BuildPnlSnapshotsLoading,
   } = useBuildPnlSnapshotsV2();
   const {
+    dynamicBuildPnlSnapshotsV2: v2DynamicBuildPnlSnapshots,
+    loading: v2DynamicBuildPnlSnapshotsLoading,
+  } = useDynamicBuildPnlSnapshotsV2();
+  const {
     initializePnlSnapshotV2: v2InitializePnlSnapshot,
     loading: v2InitializePnlSnapshotLoading,
   } = useInitializePnlSnapshotV2();
@@ -72,29 +77,49 @@ export function PnlSnapshotPanel() {
     parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
   );
 
-  const handleForceBuildPnlSnapshots = () => {
+  const handleForceBuildPnlSnapshotsV1 = () => {
     if (!selectedDate) {
       return;
     }
 
-    if (selected === "v1") {
-      v1BuildPnlSnapshots({
-        variables: {
-          dateStr: dayjs(selectedDate.toDate(getServerTimezone())).format(
-            "YYYY-MM-DD",
-          ),
-        },
-      });
-    } else {
-      v2BuildPnlSnapshots({
-        variables: {
-          dateStr: dayjs(selectedDate.toDate(getServerTimezone())).format(
-            "YYYY-MM-DD",
-          ),
-          platform: selectedPlatform,
-        },
-      });
+    v1BuildPnlSnapshots({
+      variables: {
+        dateStr: dayjs(selectedDate.toDate(getServerTimezone())).format(
+          "YYYY-MM-DD",
+        ),
+      },
+    });
+  };
+
+  const handleBuildPnlSnapshotsV2 = () => {
+    if (!selectedDate) {
+      return;
     }
+
+    v2BuildPnlSnapshots({
+      variables: {
+        dateStr: dayjs(selectedDate.toDate(getServerTimezone())).format(
+          "YYYY-MM-DD",
+        ),
+        isForceBuild: true,
+        platform: selectedPlatform,
+      },
+    });
+  };
+
+  const handleDynamicBuildPnlSnapshotsV2 = () => {
+    if (!selectedDate) {
+      return;
+    }
+
+    v2DynamicBuildPnlSnapshots({
+      variables: {
+        dateStr: dayjs(selectedDate.toDate(getServerTimezone())).format(
+          "YYYY-MM-DD",
+        ),
+        platform: selectedPlatform,
+      },
+    });
   };
 
   const handleInitializePnlSnapshot = () => {
@@ -256,28 +281,45 @@ export function PnlSnapshotPanel() {
               onChange={setSelectedDate}
             />
 
-            <Button
-              onClick={handleForceBuildPnlSnapshots}
-              isLoading={
-                selected === "v1"
-                  ? v1BuildPnlSnapshotsLoading
-                  : v2BuildPnlSnapshotsLoading
-              }
-              color="primary"
-              isDisabled={
-                selected === "v1"
-                  ? v1BuildPnlSnapshotsLoading || v1InitializePnlSnapshotLoading
-                  : v2BuildPnlSnapshotsLoading || v2InitializePnlSnapshotLoading
-              }
-            >
-              {selected === "v1"
-                ? v1Exists
-                  ? "Re-Run"
-                  : "Build"
-                : v2Exists
-                  ? "Re-Run"
-                  : "Build"}
-            </Button>
+            {selected === "v1" ? (
+              <Button
+                onClick={handleForceBuildPnlSnapshotsV1}
+                isLoading={v1BuildPnlSnapshotsLoading}
+                color="primary"
+                isDisabled={
+                  v1BuildPnlSnapshotsLoading || v1InitializePnlSnapshotLoading
+                }
+              >
+                {v1Exists ? "Re-Run" : "Build"}
+              </Button>
+            ) : null}
+
+            {selected === "v2" ? (
+              <Button
+                onClick={handleBuildPnlSnapshotsV2}
+                isLoading={v2BuildPnlSnapshotsLoading}
+                color="primary"
+                isDisabled={
+                  v2BuildPnlSnapshotsLoading || v2InitializePnlSnapshotLoading
+                }
+              >
+                {v2Exists ? "Re-Build" : "Build"}
+              </Button>
+            ) : null}
+
+            {selected === "v2" ? (
+              <Button
+                onClick={handleDynamicBuildPnlSnapshotsV2}
+                isLoading={v2DynamicBuildPnlSnapshotsLoading}
+                color="primary"
+                isDisabled={
+                  v2DynamicBuildPnlSnapshotsLoading ||
+                  v2InitializePnlSnapshotLoading
+                }
+              >
+                {v2Exists ? "Re-Build Dynamic" : "Build Dynamic"}
+              </Button>
+            ) : null}
 
             <Button
               onClick={handleInitializePnlSnapshot}

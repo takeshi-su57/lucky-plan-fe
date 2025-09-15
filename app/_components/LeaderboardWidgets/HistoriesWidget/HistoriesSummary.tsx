@@ -20,14 +20,10 @@ export type HistoriesSummaryProps = {
   hideTags: boolean;
   label?: string;
   isSelected?: boolean;
-  onChangeSelection?: (
-    address: string,
-    leaderCollateral: number,
-    isSelected: boolean,
-  ) => void;
+  onChangeSelection?: (address: string, isSelected: boolean) => void;
   pnlChartData: HistoryChartData[];
   inOutChartData: HistoryChartData[];
-  openedHistoriesArr: string[];
+  openedPositions: number;
   avgDuration: number;
   avgPnlP: number;
   avgSize: number;
@@ -48,7 +44,7 @@ export function HistoriesSummary({
   label,
   pnlChartData,
   inOutChartData,
-  openedHistoriesArr,
+  openedPositions,
   avgDuration,
   avgPnlP,
   avgSize,
@@ -103,7 +99,7 @@ export function HistoriesSummary({
     {
       id: "openedHistories",
       label: "Opened Histories",
-      value: openedHistoriesArr.length,
+      value: openedPositions,
     },
     {
       id: "avgDuration",
@@ -193,13 +189,7 @@ export function HistoriesSummary({
       {isSelected !== undefined ? (
         <Checkbox
           isSelected={isSelected}
-          onValueChange={(value) =>
-            onChangeSelection?.(
-              address,
-              countIn > 0 ? sumIn / countIn : 0,
-              value,
-            )
-          }
+          onValueChange={(value) => onChangeSelection?.(address, value)}
         >
           {label || ""}
         </Checkbox>

@@ -16,8 +16,6 @@ export function ActionSummary({ action }: ActionSummaryProps) {
 
       <span className="text-sm text-neutral-400">{action.name}</span>
 
-      <span className="text-xs text-neutral-600">{action.blockNumber}</span>
-
       <span className="text-xs text-neutral-600">
         {dayjs(new Date(action.createdAt)).format("YYYY/MM/DD hh:mm:ss")}
       </span>

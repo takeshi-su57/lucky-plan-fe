@@ -27,7 +27,8 @@ export const ACTION_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment ActionInfo on Action {
     id
     name
-    positionId
+    positionKey
+    address
     args
     blockNumber
     orderInBlock

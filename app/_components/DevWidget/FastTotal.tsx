@@ -37,7 +37,6 @@ export function FastTotal({
     hourPnlChartData,
     dailyTaskCountChartData,
     dailyPositionCountChartData,
-    dailyTraderCountChartData,
   } = useMemo(() => {
     const startTimestamp = startDate.getTime();
     const endTimestamp = endDate.getTime();
@@ -125,16 +124,6 @@ export function FastTotal({
     const { data: dailyPositionCountChartData } = getDevData(
       accPnls.map((item) => ({
         pnl: item.positionCount,
-        date: item.date,
-      })),
-      dailyScales,
-      "YYYY-MM-DD",
-      "sum",
-    );
-
-    const { data: dailyTraderCountChartData } = getDevData(
-      accPnls.map((item) => ({
-        pnl: item.traderCount,
         date: item.date,
       })),
       dailyScales,
@@ -233,7 +222,6 @@ export function FastTotal({
       hourPnlChartData,
       dailyTaskCountChartData,
       dailyPositionCountChartData,
-      dailyTraderCountChartData,
     };
   }, [accPnls, endDate, startDate]);
 
@@ -333,15 +321,6 @@ export function FastTotal({
             value: item.botCount,
             label: dayjs(item.date).format("MM/DD"),
           }))}
-        className="h-[250px] rounded-2xl border border-neutral-800 bg-amber-950/5"
-      />
-
-      <BarChart
-        title={`Daily Trader Count`}
-        data={dailyTraderCountChartData.map((item) => ({
-          ...item,
-          label: dayjs(item.label).format("MM/DD"),
-        }))}
         className="h-[250px] rounded-2xl border border-neutral-800 bg-amber-950/5"
       />
 

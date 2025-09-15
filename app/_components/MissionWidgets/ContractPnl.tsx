@@ -2,8 +2,6 @@
 
 import { useMemo } from "react";
 
-import { useGetTradeCollaterals } from "@/app-hooks/useContract";
-
 import { convertTradeActionToHistory } from "@/utils/convertTradeActionToHistory";
 import { getPriceStr } from "@/utils/price";
 import { TradeActionType } from "@/types";
@@ -13,6 +11,8 @@ import { Action } from "@/graphql/gql/graphql";
 import { useGetPrices } from "@/app-hooks/useGetPrices";
 import { Skeleton } from "@nextui-org/react";
 import { getPNLPercentage } from "@/utils";
+import { useGetAllGnsContracts } from "@/app/_hooks/useContract";
+import { getCollaterals } from "@/web3/gns/v10/configs";
 
 export type ContractPnlProps = {
   label: string;
@@ -29,11 +29,19 @@ export function ContractPnl({
   openedMissionActions,
   finished,
 }: ContractPnlProps) {
-  const collaterals = useGetTradeCollaterals(contractId);
+  const gnsContracts = useGetAllGnsContracts();
 
   const prices = useGetPrices();
 
   const { totalPnl, count, positions } = useMemo(() => {
+    const contract = gnsContracts.find((c) => c.id === contractId);
+
+    if (!contract) {
+      return { totalPnl: 0, count: 0, positions: [] };
+    }
+
+    const collaterals = getCollaterals(contract.chainId);
+
     if (collaterals.length === 0) {
       return { totalPnl: 0, count: 0, positions: [] };
     }
@@ -107,7 +115,7 @@ export function ContractPnl({
 
     return { positions: !finished ? positions : [], totalPnl, count };
   }, [
-    collaterals,
+    gnsContracts,
     finishedMissionActions,
     openedMissionActions,
     finished,

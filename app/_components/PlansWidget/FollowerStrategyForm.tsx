@@ -1,29 +1,25 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, ChangeEventHandler } from "react";
 import {
   Autocomplete,
   AutocompleteItem,
   Button,
-  DateRangePicker,
+  SelectItem,
+  Select,
 } from "@nextui-org/react";
 import { Address } from "viem";
-import type { RangeValue } from "@react-types/shared";
-import type { DateValue } from "@react-types/datepicker";
-import { now } from "@internationalized/date";
 import { FaTrash } from "react-icons/fa";
 
-import { getServerTimezone } from "@/utils";
-
-import { useGetAllGnsContracts } from "@/app-hooks/useContract";
-import { useGetPersonalTradeHistories } from "@/app-hooks/useGetPersonalTradeHistories";
+import { useGetAllContracts } from "@/app-hooks/useContract";
 
 import { shrinkAddress } from "@/utils";
 import { PersonalTradeHistory, VirtualBotParams } from "@/types";
 
 import { NumericInput } from "@/components/inputs/NumericInput";
-import { FutureChart } from "../BacktestWidget/FutureChart";
-import { transformHistories } from "@/utils/historiesChart";
+import { FutureChart } from "./FutureChart";
+import { useGetAllTradeHistory } from "@/app/_hooks/useHistory";
+import { ContractStatus, Platform } from "@/graphql/gql/graphql";
 
 export type FollowerStrategyFormProps = {
   params: VirtualBotParams;
@@ -41,7 +37,9 @@ export function FollowerStrategyForm({
   onRemove,
   onChangeLeaderHistories,
 }: FollowerStrategyFormProps) {
-  const allContracts = useGetAllGnsContracts();
+  const allContracts = useGetAllContracts();
+
+  const [platform, setPlatform] = useState<Platform>(Platform.Gns);
 
   const [followerContractId, setFollowerContractId] = useState<string | null>(
     null,
@@ -51,19 +49,13 @@ export function FollowerStrategyForm({
 
   const [maxCollateral, setMaxCollateral] = useState("200");
   const [minCollateral, setMinCollateral] = useState("5");
-  const [collateralBaseline, setCollateralBaseline] = useState("100");
+  const [ratio, setRatio] = useState("1");
   const [maxLeverage, setMaxLeverage] = useState("200");
   const [minLeverage, setMinLeverage] = useState("1.1");
 
-  const [range, setRange] = useState<RangeValue<DateValue> | null>({
-    start: now(getServerTimezone()).subtract({ months: 3 }),
-    end: now(getServerTimezone()),
-  });
-
-  const { data: originalHistories } = useGetPersonalTradeHistories(
-    params.leaderContract.contractId,
-    params.leaderContract.backendUrl || null,
-    params.leaderAddress || null,
+  const { histories: originalHistories } = useGetAllTradeHistory(
+    params.leaderAddress,
+    "0",
   );
 
   useEffect(() => {
@@ -76,20 +68,27 @@ export function FollowerStrategyForm({
     setFollowerContractId(
       params.followerContract?.contractId?.toString() || null,
     );
-    setLeaderCollateralBaseline(params.leaderCollateralBaseline.toString());
 
-    setCollateralBaseline(
-      params.strategy?.collateralBaseline.toString() || "100",
-    );
+    setRatio(params.strategy?.ratio.toString() || "1");
     setMaxCollateral(params.strategy?.maxCollateral.toString() || "200");
     setMinCollateral(params.strategy?.minCollateral.toString() || "5");
     setMaxLeverage(params.strategy?.maxLeverage.toString() || "200");
     setMinLeverage(params.strategy?.minLeverage.toString() || "1.1");
   }, [params]);
 
+  const handleChangePlatform: ChangeEventHandler<HTMLSelectElement> = (
+    event,
+  ) => {
+    const value = event.target.value;
+
+    if (value.trim() !== "") {
+      setPlatform(value as Platform);
+    }
+  };
+
   let maxCollateralHelper = "";
   let minCollateralHelper = "";
-  let collateralBaselineHelper = "";
+  let ratioHelper = "";
   let maxLeverageHelper = "";
   let minLeverageHelper = "";
 
@@ -113,16 +112,8 @@ export function FollowerStrategyForm({
     }
   }
 
-  if (Number.isNaN(+collateralBaseline)) {
-    collateralBaselineHelper = "Invalid collateral baseline";
-  } else {
-    if (+collateralBaseline > +maxCollateral) {
-      collateralBaselineHelper = "Too big collateral baseline";
-    }
-
-    if (+collateralBaseline < +minCollateral) {
-      collateralBaselineHelper = "Too small collateral baseline";
-    }
+  if (Number.isNaN(+ratio)) {
+    ratioHelper = "Invalid ratio";
   }
 
   if (Number.isNaN(+maxLeverage)) {
@@ -165,7 +156,7 @@ export function FollowerStrategyForm({
     if (
       maxCollateral.trim() === "" ||
       minCollateral.trim() === "" ||
-      collateralBaseline.trim() === "" ||
+      ratio.trim() === "" ||
       maxLeverage.trim() === "" ||
       minLeverage.trim() === ""
     ) {
@@ -182,6 +173,7 @@ export function FollowerStrategyForm({
 
     onSave({
       virtualId: params.virtualId,
+      platform,
       followerContract: {
         chainId: followerContract.chainId,
         address: followerContract.address,
@@ -192,9 +184,9 @@ export function FollowerStrategyForm({
       leaderContract: params.leaderContract,
       leaderCollateralBaseline: Math.floor(+leaderCollateralBaseline),
       strategy: {
-        strategyKey: "scaleCopy",
-        ratio: 1,
-        collateralBaseline: +collateralBaseline,
+        strategyKey: "ratioCopy",
+        ratio: +ratio,
+        collateralBaseline: 0,
         lifeTime: 365 * 24 * 60, // 1 year lifetime
         maxCollateral: +maxCollateral,
         maxLeverage: +maxLeverage,
@@ -205,31 +197,6 @@ export function FollowerStrategyForm({
 
     setLeaderCollateralBaseline("");
   };
-
-  const followerHistories = useMemo(() => {
-    const baseline = Math.floor(+collateralBaseline);
-    const leaderBaseline = Math.floor(+leaderCollateralBaseline);
-
-    if (
-      !originalHistories ||
-      Number.isNaN(baseline) ||
-      Number.isNaN(leaderBaseline)
-    ) {
-      return [];
-    }
-
-    return transformHistories(originalHistories, leaderBaseline, {
-      strategyKey: "scaleCopy",
-      ratio: 1,
-      collateralBaseline: baseline,
-    });
-  }, [collateralBaseline, leaderCollateralBaseline, originalHistories]);
-
-  let rangeHelper = "";
-
-  if (range === null) {
-    rangeHelper = "Please select a valid date range";
-  }
 
   return (
     <div className="flex w-full flex-col gap-8">
@@ -247,18 +214,26 @@ export function FollowerStrategyForm({
       <div className="flex w-full gap-8">
         <div className="flex w-[200px] flex-col gap-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <NumericInput
-              amount={leaderCollateralBaseline}
-              onChange={setLeaderCollateralBaseline}
-              label="Leader Collateral Baseline"
-            />
+            <Select
+              variant="underlined"
+              label="Platform"
+              selectedKeys={platform ? [platform] : undefined}
+              onChange={handleChangePlatform}
+              selectionMode="single"
+              className="w-[200px] font-mono"
+            >
+              {Object.values(Platform).map((item) => (
+                <SelectItem key={item}>{item}</SelectItem>
+              ))}
+            </Select>
 
             <Autocomplete
               label="Follower Contract"
               variant="underlined"
               // hide ape contract as a follower contract
               defaultItems={allContracts.filter(
-                (item) => item.chainId !== 33139,
+                (item) =>
+                  item.chainId !== 33139 && item.status === ContractStatus.Live,
               )}
               placeholder="Search contract"
               selectedKey={followerContractId}
@@ -286,6 +261,14 @@ export function FollowerStrategyForm({
             </Autocomplete>
 
             <NumericInput
+              amount={ratio}
+              onChange={setRatio}
+              label="Ratio"
+              errorMessage={ratioHelper}
+              isInvalid={ratioHelper.trim() !== ""}
+            />
+
+            <NumericInput
               amount={maxCollateral}
               onChange={setMaxCollateral}
               label="Max Collateral"
@@ -300,15 +283,6 @@ export function FollowerStrategyForm({
               isDisabled={maxCollateralHelper.trim() !== ""}
               errorMessage={minCollateralHelper}
               isInvalid={minCollateralHelper.trim() !== ""}
-            />
-
-            <NumericInput
-              amount={collateralBaseline}
-              onChange={setCollateralBaseline}
-              label="Collateral Baseline"
-              isDisabled={minCollateralHelper.trim() !== ""}
-              errorMessage={collateralBaselineHelper}
-              isInvalid={collateralBaselineHelper.trim() !== ""}
             />
 
             <NumericInput
@@ -339,30 +313,9 @@ export function FollowerStrategyForm({
         </div>
 
         <div className="flex flex-1 flex-col gap-6">
-          <DateRangePicker
-            label="Back Test Duration"
-            visibleMonths={2}
-            value={range}
-            onChange={setRange}
-            maxValue={now(getServerTimezone())}
-            errorMessage={rangeHelper}
-            className="w-fit"
-          />
-
-          {range && originalHistories && (
+          {originalHistories && (
             <FutureChart
-              startDate={
-                range?.start?.toDate(getServerTimezone()) || new Date()
-              }
-              endDate={range?.end?.toDate(getServerTimezone()) || new Date()}
-              leaderContractId={params.leaderContract.contractId}
-              followerContractId={
-                followerContractId
-                  ? +followerContractId
-                  : +params.leaderContract.contractId
-              }
               address={params.leaderAddress}
-              followerHistories={followerHistories}
               leaderHistories={originalHistories || []}
               hideTags={false}
             />

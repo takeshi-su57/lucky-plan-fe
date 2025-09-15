@@ -13,10 +13,6 @@ import { twMerge } from "tailwind-merge";
 import { HistoriesSummary } from "./HistoriesSummary";
 import { HistoriesPositionList } from "./HistoriesPositionList";
 import { getScore } from "@/utils";
-import {
-  useGetAllGnsContracts,
-  useGetAllTradePairs,
-} from "@/app/_hooks/useContract";
 
 type TabType = "chart" | "positions";
 
@@ -26,11 +22,7 @@ export type HistoriesWidgetProps = {
   hideTags: boolean;
   label?: string;
   isSelected?: boolean;
-  onChangeSelection?: (
-    address: string,
-    leaderCollateral: number,
-    isSelected: boolean,
-  ) => void;
+  onChangeSelection?: (address: string, isSelected: boolean) => void;
   mode: "show_all_activity" | "show_only_valid_activity";
   showLastTwoDaysTraders?: boolean;
   range?: {
@@ -51,10 +43,6 @@ export function HistoriesWidget({
   range,
 }: HistoriesWidgetProps) {
   const [selected, setSelected] = useState<TabType>("chart");
-  const contracts = useGetAllGnsContracts();
-  const allPairs = useGetAllTradePairs(
-    contracts.map((contract) => contract.id),
-  );
 
   const {
     historiesGroupedByTradeIndex,
@@ -75,15 +63,11 @@ export function HistoriesWidget({
     avgCollateral,
     avgLeverage,
   } = useMemo(() => {
-    return getHistoriesChartData(
-      histories,
-      {
-        mode,
-        range,
-      },
-      allPairs,
-    );
-  }, [allPairs, histories, mode, range]);
+    return getHistoriesChartData(histories, {
+      mode,
+      range,
+    });
+  }, [histories, mode, range]);
 
   const score = useMemo(
     () =>
@@ -111,7 +95,7 @@ export function HistoriesWidget({
     >
       <CardBody>
         <div className="flex min-h-[500px] gap-8 p-3">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-1 flex-col gap-4">
             <Tabs
               selectedKey={selected}
               onSelectionChange={(value) =>
@@ -136,7 +120,7 @@ export function HistoriesWidget({
               label={label}
               pnlChartData={pnlChartData}
               inOutChartData={inOutChartData}
-              openedHistoriesArr={openedHistoriesArr}
+              openedPositions={openedHistoriesArr.length}
               avgDuration={avgDuration}
               avgPnlP={avgPnlP}
               avgSize={avgSize}
@@ -147,7 +131,7 @@ export function HistoriesWidget({
             <div className="text-red-500">{score}</div>
           </div>
 
-          <div className="flex flex-1 flex-col items-center justify-start gap-6">
+          <div className="flex w-[calc(100%-200px)] flex-col items-center justify-start gap-6">
             {selected === "chart" && (
               <HistoryCharts
                 pnlChartData={pnlChartData}

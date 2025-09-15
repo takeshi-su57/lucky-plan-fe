@@ -16,6 +16,7 @@ export type NumericInputProps = {
   label?: string;
   errorMessage?: ReactNode;
   isInvalid?: boolean;
+  labelPlacement?: "outside" | "outside-left" | "inside";
 };
 
 export function NumericInput({
@@ -27,6 +28,7 @@ export function NumericInput({
   max,
   step,
   label,
+  labelPlacement,
   errorMessage,
   isInvalid,
 }: NumericInputProps) {
@@ -42,6 +44,7 @@ export function NumericInput({
     <NumericFormat
       variant="underlined"
       label={label}
+      labelPlacement={labelPlacement}
       placeholder="0.00"
       autoComplete="off"
       value={amount || undefined}

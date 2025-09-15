@@ -72,7 +72,7 @@ export function HistoriesPosition({
         >
           {`${long ? "Long" : "Short"} Position - ${tradeIndex}`}
         </Chip>
-        <PairChip contractId={contractId} pairName={pair} />
+        <PairChip pairName={pair} />
 
         <span
           className={twMerge(

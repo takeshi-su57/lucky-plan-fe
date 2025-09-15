@@ -9,7 +9,9 @@ import { StandardModal } from "@/components/modals/StandardModal";
 import { useCloneMission } from "@/app-hooks/useMission";
 import { NumericInput } from "@/components/inputs/NumericInput";
 import { PendingOrderType } from "@/types";
-import { useGetTradeCollaterals } from "@/app/_hooks/useContract";
+import { useGetAllGnsContracts } from "@/app/_hooks/useContract";
+import { bigIntSafeJsonParse } from "@/utils";
+import { getCollaterals } from "@/web3/gns/v10/configs";
 
 export type MissionCloneButtonProps = {
   mission: MissionForwardDetails;
@@ -21,7 +23,7 @@ export function MissionCloneButton({
   followerContractId,
 }: MissionCloneButtonProps) {
   const { cloneMission, loading: cloneMissionLoading } = useCloneMission();
-  const collaterals = useGetTradeCollaterals(followerContractId);
+  const gnsContracts = useGetAllGnsContracts();
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
@@ -32,7 +34,7 @@ export function MissionCloneButton({
 
   useEffect(() => {
     const openAction = mission.tasks.find((task) => {
-      const args = JSON.parse(task.action.args);
+      const args = bigIntSafeJsonParse<any>(task.action.args);
 
       if (
         task.action.name === "LimitExecuted" &&
@@ -51,9 +53,15 @@ export function MissionCloneButton({
     });
 
     if (openAction) {
-      const args = JSON.parse(openAction.action.args);
+      const args = bigIntSafeJsonParse<any>(openAction.action.args);
 
-      const collateral = collaterals.find(
+      const contract = gnsContracts.find((c) => c.id === followerContractId);
+
+      if (!contract) {
+        return;
+      }
+
+      const collateral = getCollaterals(contract.chainId).find(
         (c) => c.collateralIndex === args.t.collateralIndex,
       );
 
@@ -71,7 +79,7 @@ export function MissionCloneButton({
       setLeverage((Number(args.t.leverage) / 1e3).toString());
       setIsLong(args.t.long);
     }
-  }, [collaterals, mission]);
+  }, [followerContractId, gnsContracts, mission]);
 
   const isInvalidCollateralAmount =
     Number.isNaN(+collateralUsdAmount) || +collateralUsdAmount < 5;

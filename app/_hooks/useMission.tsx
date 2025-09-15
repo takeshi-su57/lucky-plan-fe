@@ -18,21 +18,16 @@ import { getTaskForwardDetails } from "./useTask";
 import { MissionMessage } from "../_components/MissionWidgets/MissionMessage";
 import { useAccount } from "wagmi";
 
-export const POSITION_INFO_FRAGMENT_DOCUMENT = graphql(`
-  fragment PositionInfo on Position {
-    id
-    contractId
-    address
-    index
-  }
-`);
-
 export const MISSION_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment MissionInfo on Mission {
     id
     botId
-    targetPositionId
-    achievePositionId
+    targetPositionKey
+    targetPositionBlockNumber
+    targetPositionLogIndex
+    achievePositionKey
+    achievePositionBlockNumber
+    achievePositionLogIndex
     status
     createdAt
     updatedAt
@@ -43,17 +38,15 @@ export const MISSION_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment MissionBackwardDetailsInfo on MissionBackwardDetails {
     id
     botId
-    targetPositionId
-    achievePositionId
+    targetPositionKey
+    targetPositionBlockNumber
+    targetPositionLogIndex
+    achievePositionKey
+    achievePositionBlockNumber
+    achievePositionLogIndex
     createdAt
     updatedAt
     status
-    achievePosition {
-      ...PositionInfo
-    }
-    targetPosition {
-      ...PositionInfo
-    }
     bot {
       ...BotBackwardDetailsInfo
     }
@@ -64,17 +57,15 @@ export const MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment MissionForwardDetailsInfo on MissionForwardDetails {
     id
     botId
-    targetPositionId
-    achievePositionId
+    targetPositionKey
+    targetPositionBlockNumber
+    targetPositionLogIndex
+    achievePositionKey
+    achievePositionBlockNumber
+    achievePositionLogIndex
     createdAt
     updatedAt
     status
-    achievePosition {
-      ...PositionInfo
-    }
-    targetPosition {
-      ...PositionInfo
-    }
     tasks {
       ...TaskForwardDetailsInfo
     }
@@ -131,20 +122,6 @@ export function getMissionBackwardDetails(
 
   return {
     ...missionInfo,
-    targetPosition: {
-      ...getFragmentData(
-        POSITION_INFO_FRAGMENT_DOCUMENT,
-        missionInfo.targetPosition,
-      ),
-    },
-    achievePosition: missionInfo?.achievePosition
-      ? {
-          ...getFragmentData(
-            POSITION_INFO_FRAGMENT_DOCUMENT,
-            missionInfo.achievePosition,
-          ),
-        }
-      : undefined,
     bot: getBotBackwardDetails(missionInfo.bot),
   };
 }
@@ -165,20 +142,6 @@ export function getMissionForwardDetails(
 
   return {
     ...missionInfo,
-    targetPosition: {
-      ...getFragmentData(
-        POSITION_INFO_FRAGMENT_DOCUMENT,
-        missionInfo.targetPosition,
-      ),
-    },
-    achievePosition: missionInfo?.achievePosition
-      ? {
-          ...getFragmentData(
-            POSITION_INFO_FRAGMENT_DOCUMENT,
-            missionInfo.achievePosition,
-          ),
-        }
-      : undefined,
     tasks: missionInfo.tasks.map(getTaskForwardDetails),
   };
 }
@@ -238,14 +201,17 @@ export function useSubscribeMission() {
             fragmentName: "MissionForwardDetailsInfo",
             data: {
               ...missionForwardDetails,
-              achievePosition: missionInfo.achievePosition,
-              achievePositionId: missionInfo.achievePositionId,
+              achievePositionKey: missionInfo.achievePositionKey,
+              achievePositionBlockNumber:
+                missionInfo.achievePositionBlockNumber,
+              achievePositionLogIndex: missionInfo.achievePositionLogIndex,
               botId: missionInfo.botId,
               createdAt: missionInfo.createdAt,
               id: missionInfo.id,
               status: missionInfo.status,
-              targetPosition: missionInfo.targetPosition,
-              targetPositionId: missionInfo.targetPositionId,
+              targetPositionKey: missionInfo.targetPositionKey,
+              targetPositionBlockNumber: missionInfo.targetPositionBlockNumber,
+              targetPositionLogIndex: missionInfo.targetPositionLogIndex,
               updatedAt: missionInfo.updatedAt,
             },
           });
@@ -290,14 +256,18 @@ export function useSubscribeMission() {
                 ...bot.missions,
                 {
                   __typename: "MissionForwardDetails",
-                  achievePosition: missionInfo.achievePosition,
-                  achievePositionId: missionInfo.achievePositionId,
+                  achievePositionKey: missionInfo.achievePositionKey,
+                  achievePositionBlockNumber:
+                    missionInfo.achievePositionBlockNumber,
+                  achievePositionLogIndex: missionInfo.achievePositionLogIndex,
                   botId: missionInfo.botId,
                   createdAt: missionInfo.createdAt,
                   id: missionInfo.id,
                   status: missionInfo.status,
-                  targetPosition: missionInfo.targetPosition,
-                  targetPositionId: missionInfo.targetPositionId,
+                  targetPositionKey: missionInfo.targetPositionKey,
+                  targetPositionBlockNumber:
+                    missionInfo.targetPositionBlockNumber,
+                  targetPositionLogIndex: missionInfo.targetPositionLogIndex,
                   tasks: [],
                   updatedAt: missionInfo.updatedAt,
                 },

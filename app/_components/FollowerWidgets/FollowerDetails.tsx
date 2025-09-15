@@ -24,7 +24,11 @@ import { PendingOrderSummary } from "./PendingOrderSummary";
 import { PendingOrderDetails } from "./PendingOrderDetails";
 import { FollowerDetail } from "@/graphql/gql/graphql";
 
+import { PaginatedViews } from "@/components/views/PaginatedViews";
+
 type TabType = "chart" | "positions";
+
+const PAGE_SIZE = 10;
 
 export type FollowerDetailsProps = {
   follower: FollowerDetail;
@@ -36,6 +40,7 @@ export function FollowerDetails({
   isChatFirst,
 }: FollowerDetailsProps) {
   const [selected, setSelected] = useState<TabType>("positions");
+  const [page, setPage] = useState(1);
 
   const withdrawAllETH = useWithdrawAllETH();
   const withdrawAllUSDC = useWithdrawAllUSDC();
@@ -124,28 +129,37 @@ export function FollowerDetails({
         </Card>
       ) : (
         <>
-          <Accordion isCompact variant="splitted">
-            {follower.trades.map((trade) => (
-              <AccordionItem
-                key={`${trade.address}-${trade.index}`}
-                title={
-                  <PositionSummary
-                    index={trade.index}
-                    mission={trade.mission || null}
-                    params={trade.params}
-                  />
-                }
-              >
-                <PositionDetails
-                  address={trade.address}
-                  index={trade.index}
-                  contractId={follower.contractId}
-                  params={trade.params}
-                  mission={trade.mission || null}
-                />
-              </AccordionItem>
-            ))}
-          </Accordion>
+          <PaginatedViews
+            currentPage={page}
+            totalPages={Math.ceil(follower.trades.length / PAGE_SIZE)}
+            onChangePage={setPage}
+            loading={false}
+          >
+            <Accordion isCompact variant="splitted">
+              {follower.trades
+                .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+                .map((trade) => (
+                  <AccordionItem
+                    key={`${trade.address}-${trade.index}`}
+                    title={
+                      <PositionSummary
+                        index={trade.index}
+                        mission={trade.mission || null}
+                        params={trade.params}
+                      />
+                    }
+                  >
+                    <PositionDetails
+                      address={trade.address}
+                      index={trade.index}
+                      contractId={follower.contractId}
+                      params={trade.params}
+                      mission={trade.mission || null}
+                    />
+                  </AccordionItem>
+                ))}
+            </Accordion>
+          </PaginatedViews>
 
           <Accordion isCompact variant="splitted">
             {follower.pendingOrders.map((pendingOrder) => (
