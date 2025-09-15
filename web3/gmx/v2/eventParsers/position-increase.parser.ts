@@ -1,5 +1,6 @@
 import { PerpTradeHistory } from "../../../types";
 import { getMarketInfo } from "../configs";
+import { PerpTradeHistoryOperation } from "@/graphql/gql/graphql";
 
 export const eventName = "PositionIncrease";
 
@@ -64,15 +65,15 @@ export function eventToPerpTradeHistory(
     Math.floor((sizeDeltaUsd / collateralDeltaUsd) * 1e3) / 1e3;
   const leverage = Math.floor((sizeInUsd / collateralInUsd) * 1e3) / 1e3;
 
-  let operation: "decreaseLeverage" | "close" | "open" | "increaseSize" =
-    "increaseSize";
+  let operation: PerpTradeHistoryOperation =
+    PerpTradeHistoryOperation.IncreaseSize;
 
   if (Number(event.args.sizeInUsd) === Number(event.args.sizeDeltaUsd)) {
-    operation = "open";
+    operation = PerpTradeHistoryOperation.Open;
   }
 
   if (Number(event.args.sizeDeltaUsd) === 0) {
-    operation = "decreaseLeverage";
+    operation = PerpTradeHistoryOperation.DecreaseLeverage;
   }
 
   const marketInfo = getMarketInfo(chainId, event.args.market);

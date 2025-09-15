@@ -116,6 +116,7 @@ const cache = new InMemoryCache({
         getTestingReportV4: relayStylePagination(),
         getTestingReportV5: relayStylePagination(),
         getAllFollowerDetails: relayStylePagination(["contractId"]),
+        getExpertPnlSnapshotsV2: relayStylePagination(["platform"]),
       },
     },
     TagCategory: { keyFields: ["id"] },
@@ -235,6 +236,12 @@ const cache = new InMemoryCache({
     },
     LogsEdge: {
       keyFields: ["cursor"],
+    },
+    ExpertPnlSnapshotV2Edge: {
+      keyFields: ["cursor"],
+    },
+    ExpertPnlSnapshotV2: {
+      keyFields: ["id"],
     },
   },
 });

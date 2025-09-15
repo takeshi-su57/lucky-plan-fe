@@ -4,6 +4,7 @@ import { gnsMultiCollatDiamondAbi } from "../abi/GNSMultiCollatDiamond";
 import { getGnsPositionKey } from "../../utils";
 import { PerpTradeHistory } from "../../../types";
 import { getCollateral, getPairName } from "../configs";
+import { PerpTradeHistoryOperation } from "@/graphql/gql/graphql";
 
 export const eventName = "MarketExecuted";
 
@@ -30,12 +31,14 @@ export function eventToPerpTradeHistory(
     return null;
   }
 
-  const operation = event.args.open ? "open" : "close";
+  const operation = event.args.open
+    ? PerpTradeHistoryOperation.Open
+    : PerpTradeHistoryOperation.Close;
 
   const collateralUsdPrice = Number(event.args.collateralPriceUsd) / 1e8;
 
   const usdPnl =
-    operation === "open"
+    operation === PerpTradeHistoryOperation.Open
       ? 0
       : Number(
           (Number(event.args.amountSentToTrader) -
@@ -48,12 +51,14 @@ export function eventToPerpTradeHistory(
       Number(event.args.t.collateralAmount) / Number(collateral.precision),
     ) * collateralUsdPrice;
 
-  const collateralInUsd = operation === "open" ? collateralUsd : 0;
+  const collateralInUsd =
+    operation === PerpTradeHistoryOperation.Open ? collateralUsd : 0;
   const leverage = Number(event.args.t.leverage) / 1e3;
 
   const sizeInUsd = collateralInUsd * leverage;
 
-  const collateralDeltaUsd = operation === "open" ? 0 : collateralUsd;
+  const collateralDeltaUsd =
+    operation === PerpTradeHistoryOperation.Open ? 0 : collateralUsd;
   const leverageDelta = Number(event.args.t.leverage) / 1e3;
   const sizeDeltaUsd = collateralDeltaUsd * leverageDelta;
 
