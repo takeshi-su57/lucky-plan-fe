@@ -3,6 +3,7 @@ import { gnsMultiCollatDiamondAbi } from "../abi/GNSMultiCollatDiamond";
 import { getGnsPositionKey } from "../../utils";
 import { PerpTradeHistory } from "../../../types";
 import { getCollateral, getPairName } from "../configs";
+import { PerpTradeHistoryOperation } from "@/graphql/gql/graphql";
 
 export const eventName = "LeverageUpdateExecuted";
 
@@ -53,7 +54,9 @@ export function eventToPerpTradeHistory(
     positionKey: getGnsPositionKey(event.args.trader, Number(event.args.index)),
     address: event.args.trader.toLowerCase() as `0x${string}`,
     pair: pairName,
-    operation: event.args.isIncrease ? "increaseLeverage" : "decreaseLeverage",
+    operation: event.args.isIncrease
+      ? PerpTradeHistoryOperation.IncreaseLeverage
+      : PerpTradeHistoryOperation.DecreaseLeverage,
     usdPnl,
     sizeInUsd,
     leverage,

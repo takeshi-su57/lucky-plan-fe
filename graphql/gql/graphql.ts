@@ -285,6 +285,24 @@ export type ExpertPnlSnapshotV2 = {
   score: Scalars['Float']['output'];
 };
 
+export type ExpertPnlSnapshotV2Connection = {
+  __typename?: 'ExpertPnlSnapshotV2Connection';
+  edges: Array<ExpertPnlSnapshotV2Edge>;
+  pageInfo: ExpertPnlSnapshotV2PageInfo;
+};
+
+export type ExpertPnlSnapshotV2Edge = {
+  __typename?: 'ExpertPnlSnapshotV2Edge';
+  cursor: Scalars['Int']['output'];
+  node: ExpertPnlSnapshotV2;
+};
+
+export type ExpertPnlSnapshotV2PageInfo = {
+  __typename?: 'ExpertPnlSnapshotV2PageInfo';
+  endCursor?: Maybe<Scalars['Int']['output']>;
+  hasNextPage: Scalars['Boolean']['output'];
+};
+
 export type ExportFilter = {
   m: Scalars['Float']['input'];
   maxAvgSize: Scalars['Int']['input'];
@@ -1080,7 +1098,7 @@ export type Query = {
   getBotsByStatus: BotConnection;
   getDevPnlSnapshots: Array<PnlSnapshotDevDetails>;
   getExpertPnlSnapshots: Array<ExpertPnlSnapshot>;
-  getExpertPnlSnapshotsV2: Array<ExpertPnlSnapshotV2>;
+  getExpertPnlSnapshotsV2: ExpertPnlSnapshotV2Connection;
   getLogsSeverityCounts: Array<SeverityCount>;
   getMicroserviceStatus: Array<MicroserviceStatus>;
   getPerpEventLogs: Array<PerpTradingEventLog>;
@@ -1153,6 +1171,7 @@ export type QueryGetDevPnlSnapshotsArgs = {
 
 
 export type QueryGetExpertPnlSnapshotsV2Args = {
+  after?: InputMaybe<Scalars['Int']['input']>;
   platform: Platform;
 };
 
@@ -2363,10 +2382,11 @@ export type GetExpertPnlSnapshotsQuery = { __typename?: 'Query', getExpertPnlSna
 
 export type GetExpertPnlSnapshotsV2QueryVariables = Exact<{
   platform: Platform;
+  after?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GetExpertPnlSnapshotsV2Query = { __typename?: 'Query', getExpertPnlSnapshotsV2: Array<{ __typename?: 'ExpertPnlSnapshotV2', accUSDPnl: number, address: string, platform: Platform, dateStr: string, id: number, kind: PnlSnapshotKind, maxSize: number, ratio: number, score: number, openedPositions: number, avgPnlRatio: number, avgDuration: number }> };
+export type GetExpertPnlSnapshotsV2Query = { __typename?: 'Query', getExpertPnlSnapshotsV2: { __typename?: 'ExpertPnlSnapshotV2Connection', edges: Array<{ __typename?: 'ExpertPnlSnapshotV2Edge', cursor: number, node: { __typename?: 'ExpertPnlSnapshotV2', accUSDPnl: number, address: string, platform: Platform, dateStr: string, id: number, kind: PnlSnapshotKind, maxSize: number, ratio: number, score: number, openedPositions: number, avgPnlRatio: number, avgDuration: number } }>, pageInfo: { __typename?: 'ExpertPnlSnapshotV2PageInfo', endCursor?: number | null, hasNextPage: boolean } } };
 
 export type GetWhitelistQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2773,7 +2793,7 @@ export const GetBlacklistDocument = {"kind":"Document","definitions":[{"kind":"O
 export const AddToBlacklistDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"addToBlacklist"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"address"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addToBlacklist"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"address"},"value":{"kind":"Variable","name":{"kind":"Name","value":"address"}}}]}]}}]} as unknown as DocumentNode<AddToBlacklistMutation, AddToBlacklistMutationVariables>;
 export const RemoveFromBlacklistDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"removeFromBlacklist"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"address"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"removeFromBlacklist"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"address"},"value":{"kind":"Variable","name":{"kind":"Name","value":"address"}}}]}]}}]} as unknown as DocumentNode<RemoveFromBlacklistMutation, RemoveFromBlacklistMutationVariables>;
 export const GetExpertPnlSnapshotsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getExpertPnlSnapshots"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getExpertPnlSnapshots"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"maxSize"}},{"kind":"Field","name":{"kind":"Name","value":"ratio"}},{"kind":"Field","name":{"kind":"Name","value":"score"}},{"kind":"Field","name":{"kind":"Name","value":"openedPositions"}},{"kind":"Field","name":{"kind":"Name","value":"avgPnlRatio"}},{"kind":"Field","name":{"kind":"Name","value":"avgDuration"}}]}}]}}]} as unknown as DocumentNode<GetExpertPnlSnapshotsQuery, GetExpertPnlSnapshotsQueryVariables>;
-export const GetExpertPnlSnapshotsV2Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getExpertPnlSnapshotsV2"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"platform"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Platform"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getExpertPnlSnapshotsV2"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"platform"},"value":{"kind":"Variable","name":{"kind":"Name","value":"platform"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"maxSize"}},{"kind":"Field","name":{"kind":"Name","value":"ratio"}},{"kind":"Field","name":{"kind":"Name","value":"score"}},{"kind":"Field","name":{"kind":"Name","value":"openedPositions"}},{"kind":"Field","name":{"kind":"Name","value":"avgPnlRatio"}},{"kind":"Field","name":{"kind":"Name","value":"avgDuration"}}]}}]}}]} as unknown as DocumentNode<GetExpertPnlSnapshotsV2Query, GetExpertPnlSnapshotsV2QueryVariables>;
+export const GetExpertPnlSnapshotsV2Document = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getExpertPnlSnapshotsV2"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"platform"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Platform"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getExpertPnlSnapshotsV2"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"platform"},"value":{"kind":"Variable","name":{"kind":"Name","value":"platform"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"maxSize"}},{"kind":"Field","name":{"kind":"Name","value":"ratio"}},{"kind":"Field","name":{"kind":"Name","value":"score"}},{"kind":"Field","name":{"kind":"Name","value":"openedPositions"}},{"kind":"Field","name":{"kind":"Name","value":"avgPnlRatio"}},{"kind":"Field","name":{"kind":"Name","value":"avgDuration"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}}]} as unknown as DocumentNode<GetExpertPnlSnapshotsV2Query, GetExpertPnlSnapshotsV2QueryVariables>;
 export const GetWhitelistDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getWhitelist"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getWhitelist"}}]}}]} as unknown as DocumentNode<GetWhitelistQuery, GetWhitelistQueryVariables>;
 export const AddToWhitelistDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"addToWhitelist"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"params"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addToWhitelist"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"params"},"value":{"kind":"Variable","name":{"kind":"Name","value":"params"}}}]}]}}]} as unknown as DocumentNode<AddToWhitelistMutation, AddToWhitelistMutationVariables>;
 export const RemoveFromWhitelistDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"removeFromWhitelist"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"address"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"removeFromWhitelist"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"address"},"value":{"kind":"Variable","name":{"kind":"Name","value":"address"}}}]}]}}]} as unknown as DocumentNode<RemoveFromWhitelistMutation, RemoveFromWhitelistMutationVariables>;

@@ -43,7 +43,6 @@ export function TaskDetails({ task, missionStatus }: TaskDetailsProps) {
   return (
     <div className="flex flex-col gap-6 border-t border-t-neutral-400/20 py-6 text-neutral-400">
       {missionStatus === MissionStatus.Opened &&
-      task.status !== TaskStatus.Await &&
       task.status !== TaskStatus.Stopped &&
       task.status !== TaskStatus.Completed ? (
         <div className="flex items-center gap-2">

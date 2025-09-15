@@ -259,6 +259,21 @@ type ExpertPnlSnapshotV2 {
   score: Float!
 }
 
+type ExpertPnlSnapshotV2Connection {
+  edges: [ExpertPnlSnapshotV2Edge!]!
+  pageInfo: ExpertPnlSnapshotV2PageInfo!
+}
+
+type ExpertPnlSnapshotV2Edge {
+  cursor: Int!
+  node: ExpertPnlSnapshotV2!
+}
+
+type ExpertPnlSnapshotV2PageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
 input ExportFilter {
   m: Float!
   maxAvgSize: Int!
@@ -768,7 +783,10 @@ type Query {
     filterParams: [ExportFilter!]!
   ): [PnlSnapshotDevDetails!]!
   getExpertPnlSnapshots: [ExpertPnlSnapshot!]!
-  getExpertPnlSnapshotsV2(platform: Platform!): [ExpertPnlSnapshotV2!]!
+  getExpertPnlSnapshotsV2(
+    after: Int
+    platform: Platform!
+  ): ExpertPnlSnapshotV2Connection!
   getLogsSeverityCounts: [SeverityCount!]!
   getMicroserviceStatus: [MicroserviceStatus!]!
   getPerpEventLogs(
