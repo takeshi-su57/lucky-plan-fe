@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, ChangeEventHandler } from "react";
-import { Spinner, Input, Select, SelectItem } from "@nextui-org/react";
+import { Spinner, Input, Select, SelectItem, Button } from "@nextui-org/react";
 import { Address } from "viem";
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 import { Platform } from "@/graphql/gql/graphql";
@@ -19,6 +19,10 @@ import { TagsWidget } from "../TagWidgets/TagsWidget";
 import { EventLogsModalButton } from "../LeaderboardWidgets/EventLogsModalButton";
 
 const expertColumns: TableColumnProps[] = [
+  {
+    id: "no",
+    component: "No",
+  },
   {
     id: "address",
     component: "Address",
@@ -53,7 +57,8 @@ export function ExpertV2Panel() {
   const [searchAddress, setSearchAddress] = useState<string>("");
   const [platform, setPlatform] = useState<Platform>(Platform.Gns);
 
-  const { pnlSnapshots, loading } = useGetExpertPnlSnapshotsV2(platform);
+  const { pnlSnapshots, loading, fetchMore, hasMore } =
+    useGetExpertPnlSnapshotsV2(platform);
 
   const { bots } = useGetActiveBots();
   const { data: blacklist } = useQuery(GET_BLACKLIST_DOCUMENT);
@@ -88,10 +93,13 @@ export function ExpertV2Panel() {
       whitelistedAddresses[address.toLowerCase()] = true;
     });
 
-    return pnlSnapshots.map((snapshot) => ({
+    return pnlSnapshots.map((snapshot, index) => ({
       id: `${snapshot.address}`,
       className: "group",
       data: {
+        no: {
+          component: index + 1,
+        },
         address: {
           component: (
             <span
@@ -184,9 +192,7 @@ export function ExpertV2Panel() {
         </div>
       </div>
 
-      {loading ? (
-        <Spinner color="warning" size="lg" />
-      ) : (
+      {expertRows.length > 0 && (
         <DataTable
           isHeaderSticky
           columns={expertColumns}
@@ -199,6 +205,21 @@ export function ExpertV2Panel() {
           }}
         />
       )}
+
+      {loading ? <Spinner color="warning" size="lg" /> : null}
+
+      {hasMore ? (
+        <Button
+          onClick={fetchMore}
+          color="primary"
+          variant="flat"
+          size="sm"
+          isLoading={loading}
+          isDisabled={loading}
+        >
+          Load More
+        </Button>
+      ) : null}
     </div>
   );
 }

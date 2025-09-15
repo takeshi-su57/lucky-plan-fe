@@ -171,20 +171,29 @@ export const GET_EXPERT_PNLSNAPSHOT_DOCUMENT = graphql(`
 `);
 
 export const GET_EXPERT_PNLSNAPSHOT_V2_DOCUMENT = graphql(`
-  query getExpertPnlSnapshotsV2($platform: Platform!) {
-    getExpertPnlSnapshotsV2(platform: $platform) {
-      accUSDPnl
-      address
-      platform
-      dateStr
-      id
-      kind
-      maxSize
-      ratio
-      score
-      openedPositions
-      avgPnlRatio
-      avgDuration
+  query getExpertPnlSnapshotsV2($platform: Platform!, $after: Int) {
+    getExpertPnlSnapshotsV2(platform: $platform, after: $after) {
+      edges {
+        cursor
+        node {
+          accUSDPnl
+          address
+          platform
+          dateStr
+          id
+          kind
+          maxSize
+          ratio
+          score
+          openedPositions
+          avgPnlRatio
+          avgDuration
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
     }
   }
 `);
@@ -675,24 +684,46 @@ export function useGetExpertPnlSnapshots() {
 }
 
 export function useGetExpertPnlSnapshotsV2(platform: Platform) {
-  const { data, loading } = useQuery(GET_EXPERT_PNLSNAPSHOT_V2_DOCUMENT, {
-    variables: { platform },
-  });
+  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
+    GET_EXPERT_PNLSNAPSHOT_V2_DOCUMENT,
+  );
+
+  // first loading
+  useEffect(() => {
+    query({
+      variables: {
+        platform,
+      },
+    });
+  }, [query, platform]);
 
   const pnlSnapshots = useMemo(() => {
     if (!data) {
       return [];
     }
 
-    return data.getExpertPnlSnapshotsV2.map((snapshot) => {
+    return data.getExpertPnlSnapshotsV2.edges.map((edge) => {
       return {
-        ...snapshot,
+        ...edge.node,
       };
     });
   }, [data]);
 
+  const handleFetchMore = useCallback(() => {
+    if (data && !error && data.getExpertPnlSnapshotsV2?.pageInfo?.hasNextPage) {
+      fetchMore({
+        variables: {
+          platform,
+          after: data.getExpertPnlSnapshotsV2.pageInfo.endCursor,
+        },
+      });
+    }
+  }, [data, error, fetchMore, platform]);
+
   return {
     pnlSnapshots,
+    fetchMore: handleFetchMore,
     loading,
+    hasMore: data?.getExpertPnlSnapshotsV2?.pageInfo?.hasNextPage,
   };
 }

@@ -4,6 +4,7 @@ import { getGnsPositionKey } from "../../utils";
 import { PerpTradeHistory } from "../../../types";
 import { getCollateral, getPairName } from "../configs";
 import { CancelReason } from "../types";
+import { PerpTradeHistoryOperation } from "@/graphql/gql/graphql";
 
 export const eventName = "PositionSizeDecreaseExecuted";
 
@@ -63,7 +64,7 @@ export function eventToPerpTradeHistory(
     positionKey: getGnsPositionKey(event.args.trader, Number(event.args.index)),
     address: event.args.trader.toLowerCase() as `0x${string}`,
     pair: pairName,
-    operation: "decreaseSize",
+    operation: PerpTradeHistoryOperation.DecreaseSize,
     usdPnl,
     sizeInUsd,
     leverage,

@@ -1,4 +1,8 @@
-import { Contract, PerpTradingEventLog } from "@/graphql/gql/graphql";
+import {
+  Contract,
+  PerpTradeHistoryOperation,
+  PerpTradingEventLog,
+} from "@/graphql/gql/graphql";
 import { TradeActionType } from "@/types";
 import { PerpTradeHistory } from "@/web3/types";
 import { getWeb3Info } from "@/web3/utils";
@@ -62,7 +66,7 @@ export function getSortedPartialHistories(
     for (let i = 0; i < histories.length; i++) {
       const history = histories[i];
 
-      if (history.operation !== "open") {
+      if (history.operation !== PerpTradeHistoryOperation.Open) {
         continue;
       }
 
@@ -82,7 +86,7 @@ export function getSortedPartialHistories(
 
         tempHistories.push(nextHistory);
 
-        if (nextHistory.operation === "close") {
+        if (nextHistory.operation === PerpTradeHistoryOperation.Close) {
           openedPositions--;
 
           totalDuration +=
@@ -234,7 +238,7 @@ export function getHistoriesChartData(
       pnlSum += history.usdPnl;
 
       switch (history.operation) {
-        case "open": {
+        case PerpTradeHistoryOperation.Open: {
           inOutSum -= history.collateralInUsd;
 
           inChartData.push({
@@ -249,7 +253,7 @@ export function getHistoriesChartData(
 
           break;
         }
-        case "close": {
+        case PerpTradeHistoryOperation.Close: {
           inOutSum += history.usdPnl + history.collateralDeltaUsd;
 
           outChartData.push({
@@ -259,7 +263,7 @@ export function getHistoriesChartData(
 
           break;
         }
-        case "increaseLeverage": {
+        case PerpTradeHistoryOperation.IncreaseLeverage: {
           inOutSum += history.collateralDeltaUsd;
 
           outChartData.push({
@@ -269,7 +273,7 @@ export function getHistoriesChartData(
 
           break;
         }
-        case "decreaseLeverage": {
+        case PerpTradeHistoryOperation.DecreaseLeverage: {
           inOutSum -= history.collateralDeltaUsd;
 
           inChartData.push({
@@ -278,7 +282,7 @@ export function getHistoriesChartData(
           });
           break;
         }
-        case "increaseSize": {
+        case PerpTradeHistoryOperation.IncreaseSize: {
           inOutSum -= history.collateralDeltaUsd;
 
           inChartData.push({
@@ -288,7 +292,7 @@ export function getHistoriesChartData(
 
           break;
         }
-        case "decreaseSize": {
+        case PerpTradeHistoryOperation.DecreaseSize: {
           const delta = history.collateralDeltaUsd + history.usdPnl;
 
           inOutSum += delta;
