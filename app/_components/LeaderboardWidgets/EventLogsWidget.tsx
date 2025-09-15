@@ -15,15 +15,13 @@ export function EventLogsWidget({ address, platform }: EventLogsWidgetProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <h6>Analyze User</h6>
-      <span>Address: {address}</span>
       {loading ? (
         <Spinner color="warning" size="lg" />
       ) : (
         <PerpEventLogPnlChart
           address={address as Address}
-          perpTradingEventLogs={eventLogs}
-          hideTags
+          perpTradingEventLogs={eventLogs[0] || []}
+          hideTags={false}
         />
       )}
     </div>

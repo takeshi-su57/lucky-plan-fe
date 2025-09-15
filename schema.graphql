@@ -744,7 +744,7 @@ type Query {
   getExpertPnlSnapshotsV2(after: Int, platform: Platform!): ExpertPnlSnapshotV2Connection!
   getLogsSeverityCounts: [SeverityCount!]!
   getMicroserviceStatus: [MicroserviceStatus!]!
-  getPerpEventLogs(address: String!, platform: Platform!): [PerpTradingEventLog!]!
+  getPerpEventLogs(addresses: [String!]!, platform: Platform!): [[PerpTradingEventLog!]!]!
   getPlanById(id: Int!): PlanForwardDetails
   getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
   getPnlSnapshotInitializedFlag: [PnlSnapshotInitializedFlag!]!

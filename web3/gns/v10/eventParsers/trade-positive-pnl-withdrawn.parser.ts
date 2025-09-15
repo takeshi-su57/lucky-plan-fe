@@ -21,8 +21,6 @@ export function eventToPerpTradeHistory(
   _chainId: number,
   _event: TradePositivePnlWithdrawnEvent,
 ): PerpTradeHistory | null {
-  console.log("tradePositivePnlWithdrawnEventParser", _event, _chainId);
-
   return null;
 }
 
