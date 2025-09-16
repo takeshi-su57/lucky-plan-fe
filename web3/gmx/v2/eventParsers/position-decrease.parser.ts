@@ -66,8 +66,13 @@ export function eventToPerpTradeHistory(
     1e30;
 
   const leverageDelta =
-    Math.floor((sizeDeltaUsd / collateralDeltaUsd) * 1e3) / 1e3;
-  const leverage = Math.floor((sizeInUsd / collateralInUsd) * 1e3) / 1e3;
+    collateralDeltaUsd > 0
+      ? Math.floor((sizeDeltaUsd / collateralDeltaUsd) * 1e3) / 1e3
+      : 0;
+  const leverage =
+    collateralInUsd > 0
+      ? Math.floor((sizeInUsd / collateralInUsd) * 1e3) / 1e3
+      : 0;
 
   let operation: PerpTradeHistoryOperation =
     PerpTradeHistoryOperation.DecreaseSize;

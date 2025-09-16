@@ -78,24 +78,26 @@ export function PlanCreationPanel() {
         variables: {
           input: virtualBotParams
             .map((item) => {
-              return availableContracts.map((contract) => ({
-                planId: +planId,
-                followerContractId: item.followerContract!.contractId,
-                leaderAddress: item.leaderAddress,
-                leaderCollateralBaseline: 0,
-                leaderContractId: contract.id,
-                strategy: {
-                  strategyKey: item.strategy!.strategyKey,
-                  ratio: item.strategy!.ratio,
-                  lifeTime: item.strategy!.lifeTime,
-                  maxCollateral: item.strategy!.maxCollateral,
-                  minCollateral: item.strategy!.minCollateral,
-                  collateralBaseline: item.strategy!.collateralBaseline,
-                  maxLeverage: Math.floor(+item.strategy!.maxLeverage * 1000),
-                  minLeverage: Math.floor(+item.strategy!.minLeverage * 1000),
-                  params: "{}",
-                },
-              }));
+              return availableContracts
+                .filter((contract) => contract.platform === item.platform)
+                .map((contract) => ({
+                  planId: +planId,
+                  followerContractId: item.followerContract!.contractId,
+                  leaderAddress: item.leaderAddress,
+                  leaderCollateralBaseline: 0,
+                  leaderContractId: contract.id,
+                  strategy: {
+                    strategyKey: item.strategy!.strategyKey,
+                    ratio: item.strategy!.ratio,
+                    lifeTime: item.strategy!.lifeTime,
+                    maxCollateral: item.strategy!.maxCollateral,
+                    minCollateral: item.strategy!.minCollateral,
+                    collateralBaseline: item.strategy!.collateralBaseline,
+                    maxLeverage: Math.floor(+item.strategy!.maxLeverage * 1000),
+                    minLeverage: Math.floor(+item.strategy!.minLeverage * 1000),
+                    params: "{}",
+                  },
+                }));
             })
             .flat(),
         },
