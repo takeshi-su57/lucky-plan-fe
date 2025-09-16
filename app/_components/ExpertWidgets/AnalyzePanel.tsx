@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Input, Select, SelectItem } from "@nextui-org/react";
+import { Button, Checkbox, Input, Select, SelectItem } from "@nextui-org/react";
 import { Address, isAddress } from "viem";
 import { useState, useMemo, ChangeEventHandler } from "react";
 import { useGetPerpEventLogs } from "@/app/_hooks/useHistory";
@@ -28,6 +28,7 @@ export function AnalyzePanel() {
   const [text, setText] = useState<string>("");
   const [filteredAddresses, setFilteredAddresses] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<Filters>(Filters.sort_by_r2);
+  const [checkByLatest128Trades, setCheckByLatest128Trades] = useState(false);
 
   const allContracts = useGetAllContracts();
 
@@ -90,32 +91,47 @@ export function AnalyzePanel() {
       .filter((item) => item !== null)
       .sort((a, b) => {
         if (sortBy === Filters.sort_by_slope) {
-          return b.calculated.slope - a.calculated.slope;
+          return checkByLatest128Trades
+            ? b.calculated.latestSlope - a.calculated.latestSlope
+            : b.calculated.slope - a.calculated.slope;
         }
 
         if (sortBy === Filters.sort_by_duration) {
-          return b.calculated.avgDuration - a.calculated.avgDuration;
+          return checkByLatest128Trades
+            ? b.calculated.latestAvgDuration - a.calculated.latestAvgDuration
+            : b.calculated.avgDuration - a.calculated.avgDuration;
         }
 
         if (sortBy === Filters.sort_by_size) {
-          return b.calculated.avgSize - a.calculated.avgSize;
+          return checkByLatest128Trades
+            ? b.calculated.latestAvgSize - a.calculated.latestAvgSize
+            : b.calculated.avgSize - a.calculated.avgSize;
         }
 
         if (sortBy === Filters.sort_by_collateral) {
-          return b.calculated.avgCollateral - a.calculated.avgCollateral;
+          return checkByLatest128Trades
+            ? b.calculated.latestAvgCollateral -
+                a.calculated.latestAvgCollateral
+            : b.calculated.avgCollateral - a.calculated.avgCollateral;
         }
 
         if (sortBy === Filters.sort_by_leverage) {
-          return b.calculated.avgLeverage - a.calculated.avgLeverage;
+          return checkByLatest128Trades
+            ? b.calculated.latestAvgLeverage - a.calculated.latestAvgLeverage
+            : b.calculated.avgLeverage - a.calculated.avgLeverage;
         }
 
         if (sortBy === Filters.sort_by_pnl_p) {
-          return b.calculated.avgPnlP - a.calculated.avgPnlP;
+          return checkByLatest128Trades
+            ? b.calculated.latestAvgPnlP - a.calculated.latestAvgPnlP
+            : b.calculated.avgPnlP - a.calculated.avgPnlP;
         }
 
-        return b.calculated.r2 - a.calculated.r2;
+        return checkByLatest128Trades
+          ? b.calculated.latestR2 - a.calculated.latestR2
+          : b.calculated.r2 - a.calculated.r2;
       });
-  }, [allContracts, eventLogs, sortBy]);
+  }, [allContracts, checkByLatest128Trades, eventLogs, sortBy]);
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -145,6 +161,13 @@ export function AnalyzePanel() {
             <SelectItem key={item}>{item}</SelectItem>
           ))}
         </Select>
+
+        <Checkbox
+          checked={checkByLatest128Trades}
+          onValueChange={setCheckByLatest128Trades}
+        >
+          Check by latest 128 trades
+        </Checkbox>
       </div>
 
       <div className="flex items-center gap-4">
@@ -177,6 +200,7 @@ export function AnalyzePanel() {
               address={item.address as Address}
               perpTradingEventLogs={item.logs}
               hideTags={false}
+              showLatestStats={checkByLatest128Trades}
             />
           ))}
         </div>

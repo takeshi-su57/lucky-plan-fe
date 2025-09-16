@@ -44,12 +44,12 @@ export function getSortedPartialHistories(
   let sumOfCollaterals = 0;
   let sumOfLeverages = 0;
 
+  const missionHistories: (PerpTradeHistory & { date: Date })[][] = [];
+
   const groupedByPositionKey: Record<
     string,
     (PerpTradeHistory & { date: Date })[]
   > = {};
-
-  const missionHistories: (PerpTradeHistory & { date: Date })[][] = [];
 
   sortedHistories.forEach((history) => {
     if (!history) {
@@ -72,11 +72,12 @@ export function getSortedPartialHistories(
       }
 
       openedPositions++;
+
       totalPositions++;
 
-      sumOfSize += history.sizeInUsd;
-      sumOfCollaterals += history.collateralInUsd;
-      sumOfLeverages += history.leverage;
+      let maxSizeIn = 0;
+      let maxCollaterals = 0;
+      let maxLeverages = 0;
 
       const tempHistories: (PerpTradeHistory & { date: Date })[] = [];
 
@@ -84,19 +85,86 @@ export function getSortedPartialHistories(
         const nextHistory = histories[j];
 
         sumOfPnl += +nextHistory.usdPnl;
+        maxSizeIn = Math.max(maxSizeIn, +nextHistory.sizeInUsd);
+        maxCollaterals = Math.max(maxCollaterals, +nextHistory.collateralInUsd);
+        maxLeverages = Math.max(maxLeverages, +nextHistory.leverage);
 
         tempHistories.push(nextHistory);
 
         if (nextHistory.operation === PerpTradeHistoryOperation.Close) {
-          openedPositions--;
-
           totalDuration +=
+            histories[j].date.getTime() - histories[i].date.getTime();
+          openedPositions--;
+          break;
+        }
+      }
+
+      sumOfSize += maxSizeIn;
+      sumOfCollaterals += maxCollaterals;
+      sumOfLeverages += maxLeverages;
+
+      missionHistories.push(tempHistories);
+    }
+  }
+
+  let latestTotalDuration = 0;
+  let latestTotalPositions = 0;
+  let latestSumOfPnl = 0;
+  let latestSumOfSize = 0;
+  let latestSumOfCollaterals = 0;
+  let latestSumOfLeverages = 0;
+
+  const groupedByPositionKey2: Record<
+    string,
+    (PerpTradeHistory & { date: Date })[]
+  > = {};
+
+  sortedHistories
+    .slice(sortedHistories.length - 128, sortedHistories.length)
+    .forEach((history) => {
+      if (!history) {
+        return;
+      }
+
+      if (groupedByPositionKey2[history.positionKey]) {
+        groupedByPositionKey2[history.positionKey].push(history);
+      } else {
+        groupedByPositionKey2[history.positionKey] = [history];
+      }
+    });
+
+  for (const histories of Object.values(groupedByPositionKey2)) {
+    for (let i = 0; i < histories.length; i++) {
+      const history = histories[i];
+
+      if (history.operation !== PerpTradeHistoryOperation.Open) {
+        continue;
+      }
+
+      latestTotalPositions++;
+
+      let maxSizeIn = 0;
+      let maxCollaterals = 0;
+      let maxLeverages = 0;
+
+      for (let j = i; j < histories.length; j++) {
+        const nextHistory = histories[j];
+
+        latestSumOfPnl += +nextHistory.usdPnl;
+        maxSizeIn = Math.max(maxSizeIn, +nextHistory.sizeInUsd);
+        maxCollaterals = Math.max(maxCollaterals, +nextHistory.collateralInUsd);
+        maxLeverages = Math.max(maxLeverages, +nextHistory.leverage);
+
+        if (nextHistory.operation === PerpTradeHistoryOperation.Close) {
+          latestTotalDuration +=
             histories[j].date.getTime() - histories[i].date.getTime();
           break;
         }
       }
 
-      missionHistories.push(tempHistories);
+      latestSumOfSize += maxSizeIn;
+      latestSumOfCollaterals += maxCollaterals;
+      latestSumOfLeverages += maxLeverages;
     }
   }
 
@@ -117,6 +185,22 @@ export function getSortedPartialHistories(
     avgSize: totalPositions > 0 ? sumOfSize / totalPositions : 0,
     avgCollateral: totalPositions > 0 ? sumOfCollaterals / totalPositions : 0,
     avgLeverage: totalPositions > 0 ? sumOfLeverages / totalPositions : 0,
+    latestAvgDuration:
+      latestTotalPositions > 0 ? latestTotalDuration / latestTotalPositions : 0,
+    latestAvgPnlP:
+      latestSumOfSize > 0
+        ? (latestSumOfPnl / latestSumOfSize) * 100
+        : 1000_000_000,
+    latestAvgSize:
+      latestSumOfSize > 0 ? latestSumOfSize / latestTotalPositions : 0,
+    latestAvgCollateral:
+      latestSumOfCollaterals > 0
+        ? latestSumOfCollaterals / latestTotalPositions
+        : 0,
+    latestAvgLeverage:
+      latestSumOfLeverages > 0
+        ? latestSumOfLeverages / latestTotalPositions
+        : 0,
   };
 }
 
@@ -187,6 +271,11 @@ export function getHistoriesChartData(
     avgSize,
     avgCollateral,
     avgLeverage,
+    latestAvgDuration,
+    latestAvgPnlP,
+    latestAvgSize,
+    latestAvgCollateral,
+    latestAvgLeverage,
   } = getSortedPartialHistories(perpHistories, filters);
 
   if (sortedHistories.length > 0) {
@@ -331,6 +420,15 @@ export function getHistoriesChartData(
   const regression = new SimpleLinearRegression(xs, pnlArrs);
   const score = regression.score(xs, pnlArrs);
 
+  const latestRegression = new SimpleLinearRegression(
+    xs.slice(xs.length - 128, xs.length),
+    pnlArrs.slice(xs.length - 128, xs.length),
+  );
+  const latestScore = latestRegression.score(
+    xs.slice(xs.length - 128, xs.length),
+    pnlArrs.slice(xs.length - 128, xs.length),
+  );
+
   return {
     missionHistories,
     pnlChartData,
@@ -356,5 +454,12 @@ export function getHistoriesChartData(
         : null,
     slope: regression.slope,
     r2: score.r2,
+    latestAvgDuration,
+    latestAvgPnlP,
+    latestAvgSize,
+    latestAvgCollateral,
+    latestAvgLeverage,
+    latestSlope: latestRegression.slope,
+    latestR2: latestScore.r2,
   };
 }
