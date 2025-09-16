@@ -23,6 +23,7 @@ export type PerpEventLogPnlChartProps = {
     to?: Date;
   };
   hideTags: boolean;
+  showLatestStats?: boolean;
 };
 
 export function PerpEventLogPnlChart({
@@ -30,6 +31,7 @@ export function PerpEventLogPnlChart({
   perpTradingEventLogs,
   range,
   hideTags,
+  showLatestStats,
 }: PerpEventLogPnlChartProps) {
   const [selected, setSelected] = useState<TabType>("chart");
 
@@ -54,6 +56,13 @@ export function PerpEventLogPnlChart({
     avgLeverage,
     slope,
     r2,
+    latestAvgDuration,
+    latestAvgPnlP,
+    latestAvgSize,
+    latestAvgCollateral,
+    latestAvgLeverage,
+    latestSlope,
+    latestR2,
   } = useMemo(() => {
     const contractsMapa: Record<number, Contract> = {};
 
@@ -93,13 +102,15 @@ export function PerpEventLogPnlChart({
               pnlChartData={pnlChartData}
               inOutChartData={inOutChartData}
               openedPositions={openedPositions}
-              avgDuration={avgDuration}
-              avgPnlP={avgPnlP}
-              avgSize={avgSize}
-              avgCollateral={avgCollateral}
-              avgLeverage={avgLeverage}
-              slope={slope}
-              r2={r2}
+              avgDuration={showLatestStats ? latestAvgDuration : avgDuration}
+              avgPnlP={showLatestStats ? latestAvgPnlP : avgPnlP}
+              avgSize={showLatestStats ? latestAvgSize : avgSize}
+              avgCollateral={
+                showLatestStats ? latestAvgCollateral : avgCollateral
+              }
+              avgLeverage={showLatestStats ? latestAvgLeverage : avgLeverage}
+              slope={showLatestStats ? latestSlope : slope}
+              r2={showLatestStats ? latestR2 : r2}
             />
           </div>
 
