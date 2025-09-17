@@ -155,7 +155,7 @@ export function ControlPanel() {
                 <div
                   className={twMerge(
                     "z-10 h-2 w-2 rounded-full bg-red-500",
-                    isBotHookRunning?.isBotHookRunning === true
+                    isBotHookRunning?.isBotHookRunning !== true
                       ? "bg-red-500"
                       : "bg-green-400",
                   )}
@@ -163,7 +163,7 @@ export function ControlPanel() {
                 <div
                   className={twMerge(
                     "absolute h-2 w-2 animate-ping rounded-full bg-red-500",
-                    isBotHookRunning?.isBotHookRunning === true
+                    isBotHookRunning?.isBotHookRunning !== true
                       ? "bg-red-500"
                       : "bg-green-400",
                   )}
