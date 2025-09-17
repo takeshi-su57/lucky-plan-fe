@@ -13,6 +13,7 @@ import {
   Tab,
   Tabs,
 } from "@nextui-org/react";
+import { Address } from "viem";
 
 import {
   BotStatus,
@@ -33,10 +34,11 @@ import { useCloseMission } from "@/app/_hooks/useMission";
 import { AutomationGridChart } from "../PlansWidget/AutomationChart";
 import { useGetPersonalTradeHistories } from "@/app/_hooks/useGetPersonalTradeHistories";
 
+import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import { ContractPnl } from "../MissionWidgets/ContractPnl";
 import { useGetAllTradeHistory } from "@/app/_hooks/useHistory";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
-import { Address } from "viem";
+import { EditStrategyModal } from "./EditAutomationModal";
 
 type TabType = "chart" | "missions";
 
@@ -291,27 +293,31 @@ export function AutomationDetails({
               )}
           />
 
+          {bot.status !== BotStatus.Dead ? (
+            <EditStrategyModal strategy={bot.strategy} />
+          ) : null}
+
           {bot.status === BotStatus.Created ? (
             <div className="flex items-center gap-2">
-              <Button onClick={handleDelete} color="default">
+              <ButtonWithConfirm onClick={handleDelete} color="default">
                 Delete
-              </Button>
-              <Button onClick={handleLive} color="danger">
+              </ButtonWithConfirm>
+              <ButtonWithConfirm onClick={handleLive} color="danger">
                 Live
-              </Button>
+              </ButtonWithConfirm>
             </div>
           ) : null}
           {bot.status === BotStatus.Live ? (
             <div className="flex items-center gap-2">
-              <Button onClick={handleStop} color="primary">
+              <ButtonWithConfirm onClick={handleStop} color="primary">
                 Stop
-              </Button>
+              </ButtonWithConfirm>
             </div>
           ) : null}
           {bot.status === BotStatus.Stop ? (
-            <Button color="danger" onClick={handleCloseAllMissions}>
+            <ButtonWithConfirm color="danger" onClick={handleCloseAllMissions}>
               Close All Missions
-            </Button>
+            </ButtonWithConfirm>
           ) : null}
           {bot.status === BotStatus.Dead ? (
             <Button isIconOnly disabled variant="flat">

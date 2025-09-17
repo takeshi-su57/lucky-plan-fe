@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
-import { useQuery } from "@apollo/client";
+import { useEffect, useMemo } from "react";
+import { useMutation, useQuery } from "@apollo/client";
 
 import { getFragmentData, graphql } from "@/gql/index";
+import { useSnackbar } from "notistack";
 
 export const STRATEGY_METADATA_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment StrategyMetadataInfo on StrategyMetadata {
@@ -44,6 +45,14 @@ export const GET_ALL_STRATEGY_DOCUMENT = graphql(`
   }
 `);
 
+export const UPDATE_STRATEGY_DOCUMENT = graphql(`
+  mutation updateStrategy($id: Int!, $input: UpdateStrategyInput!) {
+    updateStrategy(id: $id, input: $input) {
+      ...StrategyInfo
+    }
+  }
+`);
+
 export function useGetAllStrategyMetadata() {
   const { data } = useQuery(GET_ALL_STRATEGY_METADATA_DOCUMENT, {
     variables: {},
@@ -74,4 +83,31 @@ export function useGetAllStrategy() {
       ...getFragmentData(STRATEGY_INFO_FRAGMENT_DOCUMENT, strategy),
     }));
   }, [data]);
+}
+
+export function useUpdateStrategy() {
+  const [updateStrategy, { error, loading, data }] = useMutation(
+    UPDATE_STRATEGY_DOCUMENT,
+  );
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      enqueueSnackbar("Success at updating strategy!", {
+        variant: "success",
+      });
+    }
+
+    if (data && error) {
+      enqueueSnackbar("Error at updating strategy!", {
+        variant: "error",
+      });
+    }
+  }, [data, error, enqueueSnackbar]);
+
+  return {
+    updateStrategy,
+    loading,
+  };
 }
