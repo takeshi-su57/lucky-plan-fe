@@ -763,6 +763,7 @@ type Query {
   getWhitelist: [String!]
   getWholeCompressedHistories(filterParams: [ExportFilter!]!, isTestnet: Boolean!, startDate: String!): WholeCompressedHistories!
   getWholeCompressedHistoriesV2(filterParams: [ExportFilter!]!, platform: Platform!, startDate: String!): WholeCompressedHistoriesV2!
+  isBotHookRunning: Boolean!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
   isPnlSnapshotV2Initialized(dateStr: String!, platform: Platform!): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
