@@ -73,6 +73,12 @@ export const GET_SERVER_TIME_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_IS_BOT_HOOK_RUNNING_DOCUMENT = graphql(`
+  query getIsBotHookRunning {
+    isBotHookRunning
+  }
+`);
+
 export function usePauseSystem() {
   const [pauseSystem, { data, error }] = useMutation(PAUSE_SYSTEM_DOCUMENT);
 
@@ -158,6 +164,10 @@ export function useGetSystemStatus() {
 
 export function useIsSafeApp() {
   return useQuery(GET_IS_SAFE_APP_DOCUMENT);
+}
+
+export function useIsBotHookRunning() {
+  return useQuery(GET_IS_BOT_HOOK_RUNNING_DOCUMENT);
 }
 
 export function useMakeSafeApp() {

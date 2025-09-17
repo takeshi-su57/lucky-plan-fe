@@ -847,6 +847,7 @@ type Query {
     platform: Platform!
     startDate: String!
   ): WholeCompressedHistoriesV2!
+  isBotHookRunning: Boolean!
   isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
   isPnlSnapshotV2Initialized(
     dateStr: String!

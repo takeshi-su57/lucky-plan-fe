@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { Button, Card, CardBody, Switch } from "@nextui-org/react";
 import {
   useGetMicroserviceStatus,
+  useIsBotHookRunning,
   useGetSystemStatus,
   useIsSafeApp,
   useKillSubService,
@@ -18,6 +19,7 @@ import { ResumeSystemButton } from "./ResumeSystemButton";
 import { SetupPasswordButton } from "./SetupPasswordButton";
 import { ChangePasswordButton } from "./ChangePasswordButton";
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
+import { twMerge } from "tailwind-merge";
 
 const columns: TableColumnProps[] = [
   {
@@ -37,6 +39,7 @@ const columns: TableColumnProps[] = [
 export function ControlPanel() {
   const { data: systemStatus } = useGetSystemStatus();
   const { data: isSafeApp } = useIsSafeApp();
+  const { data: isBotHookRunning } = useIsBotHookRunning();
   const microserviceStatus = useGetMicroserviceStatus();
 
   const { appSettings, changeAppSettings } = useAppSettings();
@@ -145,6 +148,28 @@ export function ControlPanel() {
             >
               Toggle Dev Mode
             </Switch>
+
+            <div className="flex items-center gap-4">
+              <span className="text-sm">Bot Hook Status: </span>
+              <div className="relative flex items-center justify-center">
+                <div
+                  className={twMerge(
+                    "z-10 h-2 w-2 rounded-full bg-red-500",
+                    isBotHookRunning?.isBotHookRunning === true
+                      ? "bg-red-500"
+                      : "bg-green-400",
+                  )}
+                />
+                <div
+                  className={twMerge(
+                    "absolute h-2 w-2 animate-ping rounded-full bg-red-500",
+                    isBotHookRunning?.isBotHookRunning === true
+                      ? "bg-red-500"
+                      : "bg-green-400",
+                  )}
+                />
+              </div>
+            </div>
           </div>
         </CardBody>
       </Card>
