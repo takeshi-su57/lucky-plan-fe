@@ -518,6 +518,7 @@ type Mutation {
   stopTask(id: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
   updateSl(input: UpdateSlInput!): ContractExecutionResult!
+  updateStrategy(id: Int!, input: UpdateStrategyInput!): Strategy!
   updateTp(input: UpdateTpInput!): ContractExecutionResult!
   upsertCategory(input: TagCategoryInput!): TagCategory!
   upsertTag(input: TagInput!): Tag!
@@ -999,6 +1000,14 @@ input UpdateSlInput {
   contractId: Int!
   index: Int!
   newSl: String!
+}
+
+input UpdateStrategyInput {
+  maxCollateral: Int!
+  maxLeverage: Int!
+  minCollateral: Int!
+  minLeverage: Int!
+  ratio: Float!
 }
 
 input UpdateTpInput {
