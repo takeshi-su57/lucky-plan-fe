@@ -120,7 +120,7 @@ export function getSortedPartialHistories(
   > = {};
 
   sortedHistories
-    .slice(sortedHistories.length - 128, sortedHistories.length)
+    .slice(Math.max(0, sortedHistories.length - 128), sortedHistories.length)
     .forEach((history) => {
       if (!history) {
         return;
@@ -216,17 +216,17 @@ export function getHistoriesChartData(
     date: Date;
   }[] = [];
 
+  const pnlAccChartData: {
+    value: number;
+    date: Date;
+  }[] = [];
+
   const inOutChartData: {
     value: number;
     date: Date;
   }[] = [];
 
-  const inChartData: {
-    value: number;
-    date: Date;
-  }[] = [];
-
-  const outChartData: {
+  const inOutAccChartData: {
     value: number;
     date: Date;
   }[] = [];
@@ -310,6 +310,13 @@ export function getHistoriesChartData(
         });
       }
 
+      if (pnlAccChartData.length === 0) {
+        pnlAccChartData.push({
+          value: 0,
+          date: new Date(history.date),
+        });
+      }
+
       if (inOutChartData.length === 0) {
         inOutChartData.push({
           value: 0,
@@ -317,15 +324,8 @@ export function getHistoriesChartData(
         });
       }
 
-      if (outChartData.length === 0) {
-        outChartData.push({
-          value: 0,
-          date: new Date(history.date),
-        });
-      }
-
-      if (inChartData.length === 0) {
-        inChartData.push({
+      if (inOutAccChartData.length === 0) {
+        inOutAccChartData.push({
           value: 0,
           date: new Date(history.date),
         });
@@ -337,7 +337,7 @@ export function getHistoriesChartData(
         case PerpTradeHistoryOperation.Open: {
           inOutSum -= history.collateralInUsd;
 
-          inChartData.push({
+          inOutChartData.push({
             value: -history.collateralInUsd,
             date: new Date(history.date),
           });
@@ -352,7 +352,7 @@ export function getHistoriesChartData(
         case PerpTradeHistoryOperation.Close: {
           inOutSum += history.usdPnl + history.collateralDeltaUsd;
 
-          outChartData.push({
+          inOutChartData.push({
             value: history.usdPnl + history.collateralDeltaUsd,
             date: new Date(history.date),
           });
@@ -362,7 +362,7 @@ export function getHistoriesChartData(
         case PerpTradeHistoryOperation.IncreaseLeverage: {
           inOutSum += history.collateralDeltaUsd;
 
-          outChartData.push({
+          inOutChartData.push({
             value: history.collateralDeltaUsd,
             date: new Date(history.date),
           });
@@ -372,7 +372,7 @@ export function getHistoriesChartData(
         case PerpTradeHistoryOperation.DecreaseLeverage: {
           inOutSum -= history.collateralDeltaUsd;
 
-          inChartData.push({
+          inOutChartData.push({
             value: -history.collateralDeltaUsd,
             date: new Date(history.date),
           });
@@ -381,7 +381,7 @@ export function getHistoriesChartData(
         case PerpTradeHistoryOperation.IncreaseSize: {
           inOutSum -= history.collateralDeltaUsd;
 
-          inChartData.push({
+          inOutChartData.push({
             value: -history.collateralDeltaUsd,
             date: new Date(history.date),
           });
@@ -393,7 +393,7 @@ export function getHistoriesChartData(
 
           inOutSum += delta;
 
-          outChartData.push({
+          inOutChartData.push({
             value: delta,
             date: new Date(history.date),
           });
@@ -403,38 +403,43 @@ export function getHistoriesChartData(
       }
 
       pnlChartData.push({
+        value: history.usdPnl,
+        date: new Date(history.date),
+      });
+
+      pnlAccChartData.push({
         value: pnlSum,
         date: new Date(history.date),
       });
 
-      inOutChartData.push({
+      inOutAccChartData.push({
         value: inOutSum,
         date: new Date(history.date),
       });
     });
   }
 
-  const xs = pnlChartData.map((_, index) => index);
-  const pnlArrs = pnlChartData.map((item) => item.value);
+  const xs = pnlAccChartData.map((_, index) => index);
+  const pnlArrs = pnlAccChartData.map((item) => item.value);
 
   const regression = new SimpleLinearRegression(xs, pnlArrs);
   const score = regression.score(xs, pnlArrs);
 
   const latestRegression = new SimpleLinearRegression(
-    xs.slice(xs.length - 128, xs.length),
-    pnlArrs.slice(xs.length - 128, xs.length),
+    xs.slice(Math.max(0, xs.length - 128), xs.length),
+    pnlArrs.slice(Math.max(0, xs.length - 128), xs.length),
   );
   const latestScore = latestRegression.score(
-    xs.slice(xs.length - 128, xs.length),
-    pnlArrs.slice(xs.length - 128, xs.length),
+    xs.slice(Math.max(0, xs.length - 128), xs.length),
+    pnlArrs.slice(Math.max(0, xs.length - 128), xs.length),
   );
 
   return {
     missionHistories,
     pnlChartData,
+    pnlAccChartData,
     inOutChartData,
-    inChartData,
-    outChartData,
+    inOutAccChartData,
     tradePairs: Array.from(tradePairsMap.entries()),
     minIn,
     maxIn,

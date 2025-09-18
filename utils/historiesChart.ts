@@ -254,22 +254,22 @@ export function getHistoriesChartData(
     range?: { from?: Date; to?: Date };
   },
 ) {
+  const pnlAccChartData: {
+    value: number;
+    date: Date;
+  }[] = [];
+
   const pnlChartData: {
     value: number;
     date: Date;
   }[] = [];
 
+  const inOutAccChartData: {
+    value: number;
+    date: Date;
+  }[] = [];
+
   const inOutChartData: {
-    value: number;
-    date: Date;
-  }[] = [];
-
-  const inChartData: {
-    value: number;
-    date: Date;
-  }[] = [];
-
-  const outChartData: {
     value: number;
     date: Date;
   }[] = [];
@@ -329,22 +329,22 @@ export function getHistoriesChartData(
         });
       }
 
+      if (pnlAccChartData.length === 0) {
+        pnlAccChartData.push({
+          value: 0,
+          date: new Date(history.date),
+        });
+      }
+
+      if (inOutAccChartData.length === 0) {
+        inOutAccChartData.push({
+          value: 0,
+          date: new Date(history.date),
+        });
+      }
+
       if (inOutChartData.length === 0) {
         inOutChartData.push({
-          value: 0,
-          date: new Date(history.date),
-        });
-      }
-
-      if (outChartData.length === 0) {
-        outChartData.push({
-          value: 0,
-          date: new Date(history.date),
-        });
-      }
-
-      if (inChartData.length === 0) {
-        inChartData.push({
           value: 0,
           date: new Date(history.date),
         });
@@ -356,7 +356,7 @@ export function getHistoriesChartData(
         case TradeActionType.TradeOpenedMarket: {
           inOutSum -= history.size * history.collateralPriceUsd;
 
-          inChartData.push({
+          inOutChartData.push({
             value: -history.size * history.collateralPriceUsd,
             date: new Date(history.date),
           });
@@ -371,7 +371,7 @@ export function getHistoriesChartData(
         case TradeActionType.TradeOpenedLimit: {
           inOutSum -= history.size * history.collateralPriceUsd;
 
-          inChartData.push({
+          inOutChartData.push({
             value: -history.size * history.collateralPriceUsd,
             date: new Date(history.date),
           });
@@ -386,7 +386,7 @@ export function getHistoriesChartData(
         case TradeActionType.TradeClosedMarket: {
           inOutSum += (history.size + history.pnl) * history.collateralPriceUsd;
 
-          outChartData.push({
+          inOutChartData.push({
             value: (history.size + history.pnl) * history.collateralPriceUsd,
             date: new Date(history.date),
           });
@@ -396,7 +396,7 @@ export function getHistoriesChartData(
         case TradeActionType.TradeClosedLIQ: {
           inOutSum += (history.size + history.pnl) * history.collateralPriceUsd;
 
-          outChartData.push({
+          inOutChartData.push({
             value: (history.size + history.pnl) * history.collateralPriceUsd,
             date: new Date(history.date),
           });
@@ -406,7 +406,7 @@ export function getHistoriesChartData(
         case TradeActionType.TradeClosedSL: {
           inOutSum += (history.size + history.pnl) * history.collateralPriceUsd;
 
-          outChartData.push({
+          inOutChartData.push({
             value: (history.size + history.pnl) * history.collateralPriceUsd,
             date: new Date(history.date),
           });
@@ -416,7 +416,7 @@ export function getHistoriesChartData(
         case TradeActionType.TradeClosedTP: {
           inOutSum += (history.size + history.pnl) * history.collateralPriceUsd;
 
-          outChartData.push({
+          inOutChartData.push({
             value: (history.size + history.pnl) * history.collateralPriceUsd,
             date: new Date(history.date),
           });
@@ -431,14 +431,14 @@ export function getHistoriesChartData(
           inOutSum += delta;
 
           if (delta < 0) {
-            inChartData.push({
+            inOutChartData.push({
               value: delta,
               date: new Date(history.date),
             });
           }
 
           if (delta > 0) {
-            outChartData.push({
+            inOutChartData.push({
               value: delta,
               date: new Date(history.date),
             });
@@ -454,14 +454,14 @@ export function getHistoriesChartData(
           inOutSum += delta;
 
           if (delta < 0) {
-            inChartData.push({
+            inOutChartData.push({
               value: delta,
               date: new Date(history.date),
             });
           }
 
           if (delta > 0) {
-            outChartData.push({
+            inOutChartData.push({
               value: delta,
               date: new Date(history.date),
             });
@@ -477,14 +477,14 @@ export function getHistoriesChartData(
           inOutSum += delta;
 
           if (delta < 0) {
-            inChartData.push({
+            inOutChartData.push({
               value: delta,
               date: new Date(history.date),
             });
           }
 
           if (delta > 0) {
-            outChartData.push({
+            inOutChartData.push({
               value: delta,
               date: new Date(history.date),
             });
@@ -495,19 +495,24 @@ export function getHistoriesChartData(
       }
 
       pnlChartData.push({
+        value: history.pnl * history.collateralPriceUsd,
+        date: new Date(history.date),
+      });
+
+      pnlAccChartData.push({
         value: pnlSum,
         date: new Date(history.date),
       });
 
-      inOutChartData.push({
+      inOutAccChartData.push({
         value: inOutSum,
         date: new Date(history.date),
       });
     });
   }
 
-  const xs = pnlChartData.map((_, index) => index);
-  const pnlArrs = pnlChartData.map((item) => item.value);
+  const xs = pnlAccChartData.map((_, index) => index);
+  const pnlArrs = pnlAccChartData.map((item) => item.value);
 
   const regression = new SimpleLinearRegression(xs, pnlArrs);
   const score = regression.score(xs, pnlArrs);
@@ -515,9 +520,9 @@ export function getHistoriesChartData(
   return {
     historiesGroupedByTradeIndex,
     pnlChartData,
+    pnlAccChartData,
     inOutChartData,
-    inChartData,
-    outChartData,
+    inOutAccChartData,
     tradePairs: Array.from(tradePairIndexsMap.entries()),
     actionCounts,
     minIn,
