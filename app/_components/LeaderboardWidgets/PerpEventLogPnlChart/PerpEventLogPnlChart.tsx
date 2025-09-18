@@ -40,9 +40,9 @@ export function PerpEventLogPnlChart({
   const {
     missionHistories,
     pnlChartData,
+    pnlAccChartData,
     inOutChartData,
-    inChartData,
-    outChartData,
+    inOutAccChartData,
     maxIn,
     sumIn,
     countIn,
@@ -99,7 +99,7 @@ export function PerpEventLogPnlChart({
               firstActivity={firstActivity}
               lastActivity={lastActivity}
               hideTags={hideTags}
-              pnlChartData={pnlChartData}
+              pnlChartData={pnlAccChartData}
               inOutChartData={inOutChartData}
               openedPositions={openedPositions}
               avgDuration={showLatestStats ? latestAvgDuration : avgDuration}
@@ -118,9 +118,9 @@ export function PerpEventLogPnlChart({
             {selected === "chart" && (
               <HistoryCharts
                 pnlChartData={pnlChartData}
+                pnlAccChartData={pnlAccChartData}
                 inOutChartData={inOutChartData}
-                inChartData={inChartData}
-                outChartData={outChartData}
+                inOutAccChartData={inOutAccChartData}
               />
             )}
 

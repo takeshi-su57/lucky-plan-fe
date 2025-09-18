@@ -48,9 +48,9 @@ export function HistoriesWidget({
     historiesGroupedByTradeIndex,
     actionCounts,
     pnlChartData,
+    pnlAccChartData,
     inOutChartData,
-    inChartData,
-    outChartData,
+    inOutAccChartData,
     maxIn,
     sumIn,
     countIn,
@@ -120,7 +120,7 @@ export function HistoriesWidget({
               isSelected={isSelected}
               onChangeSelection={onChangeSelection}
               label={label}
-              pnlChartData={pnlChartData}
+              pnlChartData={pnlAccChartData}
               inOutChartData={inOutChartData}
               openedPositions={openedHistoriesArr.length}
               avgDuration={avgDuration}
@@ -140,8 +140,8 @@ export function HistoriesWidget({
               <HistoryCharts
                 pnlChartData={pnlChartData}
                 inOutChartData={inOutChartData}
-                inChartData={inChartData}
-                outChartData={outChartData}
+                inOutAccChartData={inOutAccChartData}
+                pnlAccChartData={pnlAccChartData}
               />
             )}
 
