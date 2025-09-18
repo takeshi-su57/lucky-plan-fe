@@ -26,10 +26,11 @@ export function AutomationGridChart({
   mode,
   range,
 }: AutomationChartProps) {
-  const { pnlChartData, inOutChartData, inChartData, outChartData } = useMemo(
-    () => getHistoriesChartData(histories || [], { mode, range }),
-    [histories, mode, range],
-  );
+  const { pnlChartData, pnlAccChartData, inOutChartData, inOutAccChartData } =
+    useMemo(
+      () => getHistoriesChartData(histories || [], { mode, range }),
+      [histories, mode, range],
+    );
 
   const score = useMemo(
     () =>
@@ -66,9 +67,9 @@ export function AutomationGridChart({
 
       <HistoryCharts
         pnlChartData={pnlChartData}
+        pnlAccChartData={pnlAccChartData}
         inOutChartData={inOutChartData}
-        inChartData={inChartData}
-        outChartData={outChartData}
+        inOutAccChartData={inOutAccChartData}
       />
     </div>
   );

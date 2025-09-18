@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Tab, Tabs, Switch, Spinner } from "@nextui-org/react";
+import { Tab, Tabs, Switch, Spinner, Input } from "@nextui-org/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Virtuoso } from "react-virtuoso";
+import { useDebounce } from "use-debounce";
 
 import { BotStatus } from "@/graphql/gql/graphql";
 
@@ -25,6 +26,8 @@ export function Automations() {
   );
   const [isChatFirst, setIsChatFirst] = useState(true);
   const [isHiddedPlanedBots, setIsHiddedPlanedBots] = useState(false);
+  const [searchAddress, setSearchAddress] = useState<string>("");
+  const [debouncedSearchAddress] = useDebounce(searchAddress, 1000);
 
   const {
     bots: botHistories,
@@ -40,10 +43,19 @@ export function Automations() {
   } = useLiveBots();
 
   const bots = useMemo(() => {
-    return (selected === "live" ? liveBots : botHistories).sort(
-      (a, b) => b.id - a.id,
-    );
-  }, [botHistories, liveBots, selected]);
+    return (selected === "live" ? liveBots : botHistories)
+      .sort((a, b) => b.id - a.id)
+      .filter(
+        (bot) =>
+          debouncedSearchAddress.trim() === "" ||
+          bot.leaderAddress
+            .toLowerCase()
+            .includes(debouncedSearchAddress.toLowerCase()) ||
+          bot.followerAddress
+            .toLowerCase()
+            .includes(debouncedSearchAddress.toLowerCase()),
+      );
+  }, [botHistories, debouncedSearchAddress, liveBots, selected]);
 
   const hasMore = selected === "live" ? hasMoreLives : hasMoreHistories;
   const loading = selected === "live" ? loadingLives : loadingHistories;
@@ -66,6 +78,12 @@ export function Automations() {
             <Tab key="live" title="Live" />
             <Tab key="history" title="Histories" />
           </Tabs>
+
+          <Input
+            placeholder="Search by address"
+            value={searchAddress}
+            onChange={(e) => setSearchAddress(e.target.value)}
+          />
         </div>
 
         <div className="flex items-center gap-4">

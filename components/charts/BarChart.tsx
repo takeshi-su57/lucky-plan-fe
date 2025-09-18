@@ -72,8 +72,12 @@ export default function BarChart({
                 ? "oklch(0.448 0.119 151.328)"
                 : "oklch(0.505 0.213 27.518)",
             ),
-            borderWidth: 1,
-            borderColor: data.map(() => "#fff"),
+            borderWidth: 0,
+            borderColor: data.map((item) =>
+              item.value > 0
+                ? "oklch(0.448 0.119 151.328)"
+                : "oklch(0.505 0.213 27.518)",
+            ),
           },
         ],
       },
