@@ -38,11 +38,18 @@ export function getSortedPartialHistories(
 
   let openedPositions = 0;
   let totalDuration = 0;
+  let maxDuration = 0;
   let totalPositions = 0;
-  let sumOfPnl = 0;
+  let sumOfLeverages = 0;
+  const sumOfPnl = {
+    total: 0,
+    positive: 0,
+    negative: 0,
+    positiveCount: 0,
+    negativeCount: 0,
+  };
   let sumOfSize = 0;
   let sumOfCollaterals = 0;
-  let sumOfLeverages = 0;
 
   const missionHistories: (PerpTradeHistory & { date: Date })[][] = [];
 
@@ -78,13 +85,15 @@ export function getSortedPartialHistories(
       let maxSizeIn = 0;
       let maxCollaterals = 0;
       let maxLeverages = 0;
+      let tempPnl = 0;
 
       const tempHistories: (PerpTradeHistory & { date: Date })[] = [];
 
       for (let j = i; j < histories.length; j++) {
         const nextHistory = histories[j];
 
-        sumOfPnl += +nextHistory.usdPnl;
+        tempPnl += +nextHistory.usdPnl;
+
         maxSizeIn = Math.max(maxSizeIn, +nextHistory.sizeInUsd);
         maxCollaterals = Math.max(maxCollaterals, +nextHistory.collateralInUsd);
         maxLeverages = Math.max(maxLeverages, +nextHistory.leverage);
@@ -95,21 +104,41 @@ export function getSortedPartialHistories(
           totalDuration +=
             histories[j].date.getTime() - histories[i].date.getTime();
           openedPositions--;
+          maxDuration = Math.max(
+            maxDuration,
+            histories[j].date.getTime() - histories[i].date.getTime(),
+          );
           break;
         }
       }
 
       sumOfSize += maxSizeIn;
       sumOfCollaterals += maxCollaterals;
+      sumOfPnl.total += tempPnl;
       sumOfLeverages += maxLeverages;
+
+      if (tempPnl > 0) {
+        sumOfPnl.positive += tempPnl;
+        sumOfPnl.positiveCount++;
+      } else {
+        sumOfPnl.negative += tempPnl;
+        sumOfPnl.negativeCount++;
+      }
 
       missionHistories.push(tempHistories);
     }
   }
 
   let latestTotalDuration = 0;
+  let latestMaxDuration = 0;
   let latestTotalPositions = 0;
-  let latestSumOfPnl = 0;
+  const latestSumOfPnl = {
+    total: 0,
+    positive: 0,
+    negative: 0,
+    positiveCount: 0,
+    negativeCount: 0,
+  };
   let latestSumOfSize = 0;
   let latestSumOfCollaterals = 0;
   let latestSumOfLeverages = 0;
@@ -143,6 +172,7 @@ export function getSortedPartialHistories(
 
       latestTotalPositions++;
 
+      let tempPnl = 0;
       let maxSizeIn = 0;
       let maxCollaterals = 0;
       let maxLeverages = 0;
@@ -150,7 +180,7 @@ export function getSortedPartialHistories(
       for (let j = i; j < histories.length; j++) {
         const nextHistory = histories[j];
 
-        latestSumOfPnl += +nextHistory.usdPnl;
+        tempPnl += +nextHistory.usdPnl;
         maxSizeIn = Math.max(maxSizeIn, +nextHistory.sizeInUsd);
         maxCollaterals = Math.max(maxCollaterals, +nextHistory.collateralInUsd);
         maxLeverages = Math.max(maxLeverages, +nextHistory.leverage);
@@ -158,17 +188,30 @@ export function getSortedPartialHistories(
         if (nextHistory.operation === PerpTradeHistoryOperation.Close) {
           latestTotalDuration +=
             histories[j].date.getTime() - histories[i].date.getTime();
+          latestMaxDuration = Math.max(
+            latestMaxDuration,
+            histories[j].date.getTime() - histories[i].date.getTime(),
+          );
           break;
         }
       }
 
+      latestSumOfLeverages += maxLeverages;
+
       latestSumOfSize += maxSizeIn;
       latestSumOfCollaterals += maxCollaterals;
-      latestSumOfLeverages += maxLeverages;
+      latestSumOfPnl.total += tempPnl;
+      sumOfLeverages += maxLeverages;
+
+      if (tempPnl > 0) {
+        latestSumOfPnl.positive += tempPnl;
+        latestSumOfPnl.positiveCount++;
+      } else {
+        latestSumOfPnl.negative += tempPnl;
+        latestSumOfPnl.negativeCount++;
+      }
     }
   }
-
-  const avgDuration = totalPositions > 0 ? totalDuration / totalPositions : 0;
 
   return {
     missionHistories: missionHistories.sort((a, b) => {
@@ -180,27 +223,97 @@ export function getSortedPartialHistories(
     }),
     sortedHistories,
     openedPositions,
-    avgDuration,
-    avgPnlP: sumOfSize > 0 ? (sumOfPnl / sumOfSize) * 100 : 1000_000_000,
-    avgSize: totalPositions > 0 ? sumOfSize / totalPositions : 0,
-    avgCollateral: totalPositions > 0 ? sumOfCollaterals / totalPositions : 0,
-    avgLeverage: totalPositions > 0 ? sumOfLeverages / totalPositions : 0,
-    latestAvgDuration:
-      latestTotalPositions > 0 ? latestTotalDuration / latestTotalPositions : 0,
-    latestAvgPnlP:
-      latestSumOfSize > 0
-        ? (latestSumOfPnl / latestSumOfSize) * 100
-        : 1000_000_000,
-    latestAvgSize:
-      latestSumOfSize > 0 ? latestSumOfSize / latestTotalPositions : 0,
-    latestAvgCollateral:
-      latestSumOfCollaterals > 0
-        ? latestSumOfCollaterals / latestTotalPositions
-        : 0,
-    latestAvgLeverage:
-      latestSumOfLeverages > 0
-        ? latestSumOfLeverages / latestTotalPositions
-        : 0,
+    duration: {
+      latest: {
+        max: latestMaxDuration,
+        avg:
+          latestTotalPositions > 0
+            ? latestTotalDuration / latestTotalPositions
+            : 0,
+      },
+      total: {
+        max: maxDuration,
+        avg: totalPositions > 0 ? totalDuration / totalPositions : 0,
+      },
+    },
+    pnl: {
+      latest: {
+        pAvg:
+          latestSumOfPnl.positiveCount > 0
+            ? latestSumOfPnl.positive / latestSumOfPnl.positiveCount
+            : 0,
+        avg:
+          latestTotalPositions > 0
+            ? latestSumOfPnl.total / latestTotalPositions
+            : 0,
+        nAvg:
+          latestSumOfPnl.negativeCount > 0
+            ? latestSumOfPnl.negative / latestSumOfPnl.negativeCount
+            : 0,
+      },
+      total: {
+        pAvg:
+          sumOfPnl.positiveCount > 0
+            ? sumOfPnl.positive / sumOfPnl.positiveCount
+            : 0,
+        avg: totalPositions > 0 ? sumOfPnl.total / totalPositions : 0,
+        nAvg:
+          sumOfPnl.negativeCount > 0
+            ? sumOfPnl.negative / sumOfPnl.negativeCount
+            : 0,
+      },
+    },
+    size: {
+      latest: {
+        avg:
+          latestTotalPositions > 0 ? latestSumOfSize / latestTotalPositions : 0,
+      },
+      total: {
+        avg: totalPositions > 0 ? sumOfSize / totalPositions : 0,
+      },
+    },
+    collateral: {
+      latest: {
+        avg:
+          latestTotalPositions > 0
+            ? latestSumOfCollaterals / latestTotalPositions
+            : 0,
+      },
+      total: {
+        avg: totalPositions > 0 ? sumOfCollaterals / totalPositions : 0,
+      },
+    },
+    pnlP: {
+      latest: {
+        avgBySize:
+          latestSumOfSize > 0
+            ? (latestSumOfPnl.total / latestSumOfSize) * 100
+            : 1000_000_000,
+        avgByCollateral:
+          latestSumOfCollaterals > 0
+            ? (latestSumOfPnl.total / latestSumOfCollaterals) * 100
+            : 1000_000_000,
+      },
+      total: {
+        avgBySize:
+          sumOfSize > 0 ? (sumOfPnl.total / sumOfSize) * 100 : 1000_000_000,
+        avgByCollateral:
+          sumOfCollaterals > 0
+            ? (sumOfPnl.total / sumOfCollaterals) * 100
+            : 1000_000_000,
+      },
+    },
+    leverage: {
+      latest: {
+        avg:
+          latestSumOfLeverages > 0
+            ? latestSumOfLeverages / latestTotalPositions
+            : 0,
+      },
+      total: {
+        avg: sumOfLeverages > 0 ? sumOfLeverages / totalPositions : 0,
+      },
+    },
   };
 }
 
@@ -209,6 +322,7 @@ export function getHistoriesChartData(
   contractsMap: Record<number, Contract>,
   filters: {
     range?: { from?: Date; to?: Date };
+    pair?: string | null;
   },
 ) {
   const pnlChartData: {
@@ -246,12 +360,21 @@ export function getHistoriesChartData(
         contract.version,
       ).eventToPerpTradeHistory(contract.chainId, JSON.parse(log.jsonLog));
 
-      return history
-        ? {
-            ...history,
-            date: new Date(log.date),
-          }
-        : null;
+      if (!history) {
+        return null;
+      }
+
+      if (
+        filters.pair &&
+        history.pair.toLowerCase() !== filters.pair.toLowerCase()
+      ) {
+        return null;
+      }
+
+      return {
+        ...history,
+        date: new Date(log.date),
+      };
     })
     .filter((history) => history !== null);
 
@@ -266,16 +389,12 @@ export function getHistoriesChartData(
     missionHistories,
     sortedHistories,
     openedPositions,
-    avgDuration,
-    avgPnlP,
-    avgSize,
-    avgCollateral,
-    avgLeverage,
-    latestAvgDuration,
-    latestAvgPnlP,
-    latestAvgSize,
-    latestAvgCollateral,
-    latestAvgLeverage,
+    duration,
+    pnl,
+    size,
+    collateral,
+    pnlP,
+    leverage,
   } = getSortedPartialHistories(perpHistories, filters);
 
   if (sortedHistories.length > 0) {
@@ -446,11 +565,12 @@ export function getHistoriesChartData(
     sumIn,
     countIn,
     openedPositions,
-    avgDuration,
-    avgPnlP,
-    avgSize,
-    avgCollateral,
-    avgLeverage,
+    duration,
+    pnl,
+    pnlP,
+    size,
+    collateral,
+    leverage,
     firstActivity:
       sortedHistories.length > 0 ? new Date(sortedHistories[0].date) : null,
     lastActivity:
@@ -459,11 +579,6 @@ export function getHistoriesChartData(
         : null,
     slope: regression.slope,
     r2: score.r2,
-    latestAvgDuration,
-    latestAvgPnlP,
-    latestAvgSize,
-    latestAvgCollateral,
-    latestAvgLeverage,
     latestSlope: latestRegression.slope,
     latestR2: latestScore.r2,
   };

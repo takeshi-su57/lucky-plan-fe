@@ -64,15 +64,10 @@ export function HistoryCharts({
         <div className="flex-1">
           <BarChart
             title="In/Out"
-            data={inOutChartData
-              .slice(
-                Math.max(0, inOutChartData.length - 128),
-                inOutChartData.length,
-              )
-              .map((item) => ({
-                ...item,
-                label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
-              }))}
+            data={inOutChartData.map((item) => ({
+              ...item,
+              label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+            }))}
             initialSelected={["y"]}
             className="h-[250px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
           />

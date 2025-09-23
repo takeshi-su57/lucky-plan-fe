@@ -2,7 +2,14 @@
 
 import { useState, useMemo } from "react";
 import { Address } from "viem";
-import { Card, CardBody, Tab, Tabs } from "@nextui-org/react";
+import {
+  Autocomplete,
+  AutocompleteItem,
+  Card,
+  CardBody,
+  Tab,
+  Tabs,
+} from "@nextui-org/react";
 import { twMerge } from "tailwind-merge";
 import { Contract, PerpTradingEventLog } from "@/graphql/gql/graphql";
 
@@ -34,6 +41,7 @@ export function PerpEventLogPnlChart({
   showLatestStats,
 }: PerpEventLogPnlChartProps) {
   const [selected, setSelected] = useState<TabType>("chart");
+  const [selectedPair, setSelectedPair] = useState<string>("all");
 
   const allContracts = useGetAllContracts();
 
@@ -46,21 +54,18 @@ export function PerpEventLogPnlChart({
     maxIn,
     sumIn,
     countIn,
+    tradePairs,
     firstActivity,
     lastActivity,
     openedPositions,
-    avgDuration,
-    avgPnlP,
-    avgSize,
-    avgCollateral,
-    avgLeverage,
+    duration,
+    pnl,
+    pnlP,
+    size,
+    collateral,
+    leverage,
     slope,
     r2,
-    latestAvgDuration,
-    latestAvgPnlP,
-    latestAvgSize,
-    latestAvgCollateral,
-    latestAvgLeverage,
     latestSlope,
     latestR2,
   } = useMemo(() => {
@@ -72,14 +77,30 @@ export function PerpEventLogPnlChart({
 
     return getHistoriesChartData(perpTradingEventLogs, contractsMapa, {
       range,
+      pair: selectedPair === "all" ? null : selectedPair,
     });
-  }, [perpTradingEventLogs, allContracts, range]);
+  }, [perpTradingEventLogs, allContracts, range, selectedPair]);
 
   return (
     <Card className={twMerge("mb-4 w-full shrink-0")} isBlurred>
       <CardBody>
         <div className="flex min-h-[500px] gap-8 p-3">
           <div className="flex flex-col gap-4">
+            <Autocomplete
+              label="Select Pairs"
+              variant="underlined"
+              defaultItems={[["all", 0], ...tradePairs]}
+              placeholder="Select Pair"
+              selectedKey={selectedPair}
+              onSelectionChange={(key) => setSelectedPair(key as string)}
+            >
+              {(item) => (
+                <AutocompleteItem key={item[0]} className="font-mono">
+                  {item[0] === "all" ? "All Pairs" : `${item[0]} - ${item[1]}`}
+                </AutocompleteItem>
+              )}
+            </Autocomplete>
+
             <Tabs
               selectedKey={selected}
               onSelectionChange={(value) =>
@@ -102,13 +123,13 @@ export function PerpEventLogPnlChart({
               pnlChartData={pnlAccChartData}
               inOutChartData={inOutChartData}
               openedPositions={openedPositions}
-              avgDuration={showLatestStats ? latestAvgDuration : avgDuration}
-              avgPnlP={showLatestStats ? latestAvgPnlP : avgPnlP}
-              avgSize={showLatestStats ? latestAvgSize : avgSize}
-              avgCollateral={
-                showLatestStats ? latestAvgCollateral : avgCollateral
-              }
-              avgLeverage={showLatestStats ? latestAvgLeverage : avgLeverage}
+              showLatest={showLatestStats}
+              duration={duration}
+              pnl={pnl}
+              size={size}
+              collateral={collateral}
+              leverage={leverage}
+              pnlP={pnlP}
               slope={showLatestStats ? latestSlope : slope}
               r2={showLatestStats ? latestR2 : r2}
             />
