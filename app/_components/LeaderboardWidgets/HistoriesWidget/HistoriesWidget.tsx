@@ -57,11 +57,12 @@ export function HistoriesWidget({
     firstActivity,
     lastActivity,
     openedHistoriesArr,
-    avgDuration,
-    avgPnlP,
-    avgSize,
-    avgCollateral,
-    avgLeverage,
+    duration,
+    pnl,
+    pnlP,
+    size,
+    collateral,
+    leverage,
     slope,
     r2,
   } = useMemo(() => {
@@ -123,11 +124,12 @@ export function HistoriesWidget({
               pnlChartData={pnlAccChartData}
               inOutChartData={inOutChartData}
               openedPositions={openedHistoriesArr.length}
-              avgDuration={avgDuration}
-              avgPnlP={avgPnlP}
-              avgSize={avgSize}
-              avgCollateral={avgCollateral}
-              avgLeverage={avgLeverage}
+              duration={duration}
+              pnl={pnl}
+              pnlP={pnlP}
+              size={size}
+              collateral={collateral}
+              leverage={leverage}
               slope={slope}
               r2={r2}
             />

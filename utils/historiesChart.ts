@@ -238,11 +238,62 @@ export function getSortedPartialHistories(
       .flat()
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
     openedHistoriesArr,
-    avgDuration,
-    avgPnlP,
-    avgSize,
-    avgCollateral,
-    avgLeverage,
+    duration: {
+      latest: {
+        max: 0,
+        avg: avgDuration,
+      },
+      total: {
+        max: 0,
+        avg: avgDuration,
+      },
+    },
+    pnl: {
+      latest: {
+        pAvg: 0,
+        avg: 0,
+        nAvg: 0,
+      },
+      total: {
+        pAvg: 0,
+        avg: 0,
+        nAvg: 0,
+      },
+    },
+    size: {
+      latest: {
+        avg: avgSize,
+      },
+      total: {
+        avg: avgSize,
+      },
+    },
+    collateral: {
+      latest: {
+        avg: avgCollateral,
+      },
+      total: {
+        avg: avgCollateral,
+      },
+    },
+    leverage: {
+      latest: {
+        avg: avgLeverage,
+      },
+      total: {
+        avg: avgLeverage,
+      },
+    },
+    pnlP: {
+      latest: {
+        avgBySize: avgPnlP,
+        avgByCollateral: 0,
+      },
+      total: {
+        avgBySize: avgPnlP,
+        avgByCollateral: 0,
+      },
+    },
   };
 }
 
@@ -288,11 +339,12 @@ export function getHistoriesChartData(
     sortedHistories,
     historiesGroupedByTradeIndex,
     openedHistoriesArr,
-    avgDuration,
-    avgPnlP,
-    avgSize,
-    avgCollateral,
-    avgLeverage,
+    duration,
+    pnl,
+    pnlP,
+    size,
+    collateral,
+    leverage,
   } = getSortedPartialHistories(histories, filters);
 
   if (sortedHistories.length > 0) {
@@ -530,11 +582,12 @@ export function getHistoriesChartData(
     sumIn,
     countIn,
     openedHistoriesArr,
-    avgDuration,
-    avgPnlP,
-    avgSize,
-    avgCollateral,
-    avgLeverage,
+    duration,
+    pnl,
+    pnlP,
+    size,
+    collateral,
+    leverage,
     firstActivity:
       sortedHistories.length > 0 ? new Date(sortedHistories[0].date) : null,
     lastActivity:

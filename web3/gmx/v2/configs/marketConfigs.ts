@@ -5203,6 +5203,98 @@ export const gmxMarketConfigs: Record<string, Record<string, MarketConfig>> = {
         coingeckoUrl: "https://www.coingecko.com/en/coins/moonwell",
       },
     },
+    "0x970b730b5dD18de53A230eE8F4af088dBC3a6F8d": {
+      marketTokenAddress: "0x970b730b5dD18de53A230eE8F4af088dBC3a6F8d",
+      indexTokenAddress: "0x96Ee343E36E8642627FAEa235D57a9FEC8a6e34f",
+      longTokenAddress: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+      shortTokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+      longToken: {
+        name: "Wrapped Ethereum",
+        symbol: "WETH",
+        decimals: 18,
+        address: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+        isWrapped: true,
+        baseSymbol: "ETH",
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/2518/thumb/weth.png?1628852295",
+        coingeckoUrl: "https://www.coingecko.com/en/coins/ethereum",
+        isV1Available: true,
+        isPermitSupported: true,
+        contractVersion: "1",
+      },
+      shortToken: {
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 6,
+        address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        isStable: true,
+        isV1Available: true,
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389",
+        coingeckoUrl: "https://www.coingecko.com/en/coins/usd-coin",
+        explorerUrl:
+          "https://arbiscan.io/address/0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        isPermitSupported: true,
+      },
+      indexToken: {
+        name: "KTA",
+        symbol: "KTA",
+        decimals: 18,
+        address: "0x96Ee343E36E8642627FAEa235D57a9FEC8a6e34f",
+        isSynthetic: true,
+        priceDecimals: 5,
+        categories: ["layer1"],
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/54693/standard/zora.jpg?1741094751",
+        coingeckoUrl: "https://www.coingecko.com/en/coins/zora",
+      },
+    },
+    "0xac484106d935f0f20F1485b631fA6F65AeEff550": {
+      marketTokenAddress: "0xac484106d935f0f20F1485b631fA6F65AeEff550",
+      indexTokenAddress: "0xc5ff0eB026dB972F95DF3dfF04e697d8b660092a",
+      longTokenAddress: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+      shortTokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+      longToken: {
+        name: "Wrapped Ethereum",
+        symbol: "WETH",
+        decimals: 18,
+        address: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+        isWrapped: true,
+        baseSymbol: "ETH",
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/2518/thumb/weth.png?1628852295",
+        coingeckoUrl: "https://www.coingecko.com/en/coins/ethereum",
+        isV1Available: true,
+        isPermitSupported: true,
+        contractVersion: "1",
+      },
+      shortToken: {
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 6,
+        address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        isStable: true,
+        isV1Available: true,
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389",
+        coingeckoUrl: "https://www.coingecko.com/en/coins/usd-coin",
+        explorerUrl:
+          "https://arbiscan.io/address/0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        isPermitSupported: true,
+      },
+      indexToken: {
+        name: "Zora",
+        symbol: "ZORA",
+        decimals: 18,
+        address: "0xc5ff0eB026dB972F95DF3dfF04e697d8b660092a",
+        isSynthetic: true,
+        priceDecimals: 6,
+        categories: ["layer2"],
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/54723/standard/2025-03-05_22.53.06.jpg?1741234207",
+        coingeckoUrl: "https://www.coingecko.com/en/coins/keeta",
+      },
+    },
   },
   "43113": {
     "0xD996ff47A1F763E1e55415BC4437c59292D1F415": {
