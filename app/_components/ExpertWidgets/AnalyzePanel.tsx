@@ -98,33 +98,38 @@ export function AnalyzePanel() {
 
         if (sortBy === Filters.sort_by_duration) {
           return checkByLatest128Trades
-            ? b.calculated.latestAvgDuration - a.calculated.latestAvgDuration
-            : b.calculated.avgDuration - a.calculated.avgDuration;
+            ? b.calculated.duration.latest.avg -
+                a.calculated.duration.latest.avg
+            : b.calculated.duration.total.avg - a.calculated.duration.total.avg;
         }
 
         if (sortBy === Filters.sort_by_size) {
           return checkByLatest128Trades
-            ? b.calculated.latestAvgSize - a.calculated.latestAvgSize
-            : b.calculated.avgSize - a.calculated.avgSize;
+            ? b.calculated.size.latest.avg - a.calculated.size.latest.avg
+            : b.calculated.size.total.avg - a.calculated.size.total.avg;
         }
 
         if (sortBy === Filters.sort_by_collateral) {
           return checkByLatest128Trades
-            ? b.calculated.latestAvgCollateral -
-                a.calculated.latestAvgCollateral
-            : b.calculated.avgCollateral - a.calculated.avgCollateral;
+            ? b.calculated.collateral.latest.avg -
+                a.calculated.collateral.latest.avg
+            : b.calculated.collateral.total.avg -
+                a.calculated.collateral.total.avg;
         }
 
         if (sortBy === Filters.sort_by_leverage) {
           return checkByLatest128Trades
-            ? b.calculated.latestAvgLeverage - a.calculated.latestAvgLeverage
-            : b.calculated.avgLeverage - a.calculated.avgLeverage;
+            ? b.calculated.leverage.latest.avg -
+                a.calculated.leverage.latest.avg
+            : b.calculated.leverage.total.avg - a.calculated.leverage.total.avg;
         }
 
         if (sortBy === Filters.sort_by_pnl_p) {
           return checkByLatest128Trades
-            ? b.calculated.latestAvgPnlP - a.calculated.latestAvgPnlP
-            : b.calculated.avgPnlP - a.calculated.avgPnlP;
+            ? b.calculated.pnlP.latest.avgBySize -
+                a.calculated.pnlP.latest.avgBySize
+            : b.calculated.pnlP.total.avgBySize -
+                a.calculated.pnlP.total.avgBySize;
         }
 
         return checkByLatest128Trades

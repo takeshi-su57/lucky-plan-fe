@@ -24,13 +24,65 @@ export type HistoriesSummaryProps = {
   pnlChartData: HistoryChartData[];
   inOutChartData: HistoryChartData[];
   openedPositions: number;
-  avgDuration: number;
-  avgPnlP: number;
-  avgSize: number;
-  avgCollateral: number;
-  avgLeverage: number;
+  duration: {
+    latest: {
+      max: number;
+      avg: number;
+    };
+    total: {
+      max: number;
+      avg: number;
+    };
+  };
+  pnl: {
+    latest: {
+      pAvg: number;
+      avg: number;
+      nAvg: number;
+    };
+    total: {
+      pAvg: number;
+      avg: number;
+      nAvg: number;
+    };
+  };
+  size: {
+    latest: {
+      avg: number;
+    };
+    total: {
+      avg: number;
+    };
+  };
+  collateral: {
+    latest: {
+      avg: number;
+    };
+    total: {
+      avg: number;
+    };
+  };
+  pnlP: {
+    latest: {
+      avgBySize: number;
+      avgByCollateral: number;
+    };
+    total: {
+      avgBySize: number;
+      avgByCollateral: number;
+    };
+  };
+  leverage: {
+    latest: {
+      avg: number;
+    };
+    total: {
+      avg: number;
+    };
+  };
   slope: number | null;
   r2: number | null;
+  showLatest?: boolean;
 };
 
 export function HistoriesSummary({
@@ -47,13 +99,15 @@ export function HistoriesSummary({
   pnlChartData,
   inOutChartData,
   openedPositions,
-  avgDuration,
-  avgPnlP,
-  avgSize,
-  avgCollateral,
-  avgLeverage,
+  duration,
+  pnl,
+  size,
+  collateral,
+  leverage,
+  pnlP,
   slope,
   r2,
+  showLatest,
 }: HistoriesSummaryProps) {
   const [showMore, setShowMore] = useState(false);
 
@@ -105,30 +159,67 @@ export function HistoriesSummary({
       label: "Opened Histories",
       value: openedPositions,
     },
+    ...(showMore
+      ? [
+          {
+            id: "maxDuration",
+            label: "Max Duration",
+            value: `${((showLatest ? duration.latest.max : duration.total.max) / 1000 / 60).toFixed(2)}mins`,
+          },
+        ]
+      : []),
     {
       id: "avgDuration",
       label: "Avg Duration",
-      value: `${(avgDuration / 1000 / 60).toFixed(2)}mins`,
+      value: `${((showLatest ? duration.latest.avg : duration.total.avg) / 1000 / 60).toFixed(2)}mins`,
     },
+    ...(showMore
+      ? [
+          {
+            id: "pAvg",
+            label: "Avg Of Positive PnL",
+            value: `$${(showLatest ? pnl.latest.pAvg : pnl.total.pAvg).toFixed(2)}`,
+          },
+          {
+            id: "nAvg",
+            label: "Avg Negative PnL",
+            value: `$${(showLatest ? pnl.latest.nAvg : pnl.total.nAvg).toFixed(2)}`,
+          },
+        ]
+      : []),
     {
-      id: "avgPnlP",
-      label: "Avg PnL %",
-      value: `${avgPnlP.toFixed(2)}%`,
+      id: "avgPnl",
+      label: "Avg PnL",
+      value: `$${(showLatest ? pnl.latest.avg : pnl.total.avg).toFixed(2)}`,
+    },
+    ...(showMore
+      ? [
+          {
+            id: "pnlPByCollateral",
+            label: "Avg PnL % By Collateral",
+            value: `${(showLatest ? pnlP.latest.avgByCollateral : pnlP.total.avgByCollateral).toFixed(2)}%`,
+          },
+        ]
+      : []),
+    {
+      id: "avgPnlPBySize",
+      label: "Avg PnL % By Size",
+      value: `${(showLatest ? pnlP.latest.avgBySize : pnlP.total.avgBySize).toFixed(2)}%`,
     },
     {
       id: "avgSize",
       label: "Avg Size",
-      value: `${getPriceStr(avgSize)}`,
+      value: `$${getPriceStr(showLatest ? size.latest.avg : size.total.avg)}`,
     },
     {
       id: "avgCollateral",
       label: "Avg Collateral",
-      value: `$${getPriceStr(avgCollateral)}`,
+      value: `$${getPriceStr(showLatest ? collateral.latest.avg : collateral.total.avg)}`,
     },
     {
       id: "avgLeverage",
       label: "Avg Leverage",
-      value: `${avgLeverage.toFixed(2)}x`,
+      value: `${(showLatest ? leverage.latest.avg : leverage.total.avg).toFixed(2)}x`,
     },
     {
       id: "slope",
