@@ -12,7 +12,6 @@ import { Address } from "viem";
 import dayjs from "dayjs";
 import { PersonalTradeHistory } from "@/types";
 
-import { AutomationGridChart } from "../PlansWidget/AutomationChart";
 import { FutureChart } from "./FutureChart";
 import { LeaderItem, LeaderParams } from "./LeaderItem";
 import { getSortedPartialHistories } from "@/utils/historiesChart";
@@ -43,6 +42,11 @@ export function BacktestResult({
       allHistories: PersonalTradeHistory[];
     })[]
   >([]);
+
+  // const { eventLogs } = useGetPerpEventLogs({
+  //   addresses: leaders.map((leader) => leader.address as Address),
+  //   platform: Platform.Gmx,
+  // });
 
   useEffect(() => {
     const fromDate = dayjs(startDate).add(1, "day").toDate();
@@ -85,14 +89,13 @@ export function BacktestResult({
         <Tab key="details" title="Details" />
       </Tabs>
 
-      {selected === "overview" ? (
+      {/* {selected === "overview" ? (
         <AutomationGridChart
-          mode="show_only_valid_activity"
           histories={totalLeaderHistories}
           title={`Total Result`}
           range={{ from: fromDate, to: toDate }}
         />
-      ) : null}
+      ) : null} */}
 
       {selected === "details" ? (
         <Card>

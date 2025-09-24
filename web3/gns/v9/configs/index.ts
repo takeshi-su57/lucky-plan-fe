@@ -54,6 +54,14 @@ export function getPair(chainId: number, pairIndex: number): Pair | null {
   return pairConfigsMap[chainId][pairIndex] || null;
 }
 
+export function getPairs(chainId: number): Pair[] {
+  if (!pairConfigsMap[chainId]) {
+    throw new Error(`Pair configs not found for chainId: ${chainId}`);
+  }
+
+  return pairConfigsMap[chainId] || [];
+}
+
 export function getPairByName(chainId: number, pairName: string): Pair | null {
   if (!pairConfigsMap[chainId]) {
     throw new Error(`Pair configs not found for chainId: ${chainId}`);

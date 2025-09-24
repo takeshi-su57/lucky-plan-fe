@@ -4,13 +4,13 @@ import { Button, useDisclosure } from "@nextui-org/react";
 import { JSONTree } from "react-json-tree";
 
 import { useCloseTradeMarket } from "@/app-hooks/useFollower";
-import { MissionForwardDetails } from "@/graphql/gql/graphql";
+import { MissionForwardDetails, Platform } from "@/graphql/gql/graphql";
 import { RightDrawer } from "@/components/modals/RightDrawer";
 import { MissionDetails } from "../MissionWidgets/MissionDetails";
-import { AnalyzeButton } from "../ExpertWidgets/AnalyzeButton";
 import { SlUpdateButton } from "./SlUpdateButton";
 import { TpUpdateButton } from "./TpUpdateButton";
 import { WithdrawPositivePnlButton } from "./WithdrawPositivePnlButton";
+import { EventLogsModalButton } from "../LeaderboardWidgets/EventLogsModalButton";
 
 export type PositionDetailsProps = {
   address: string;
@@ -90,7 +90,16 @@ export function PositionDetails({
 
         {mission ? (
           <div className="flex flex-row items-center gap-4">
-            <AnalyzeButton address={mission.tasks[0]?.action?.address} />
+            <EventLogsModalButton
+              address={mission.tasks[0]?.action?.address}
+              platform={Platform.Gmx}
+              label="GMX Event Logs"
+            />
+            <EventLogsModalButton
+              address={mission.tasks[0]?.action?.address}
+              platform={Platform.Gns}
+              label="GNS Event Logs"
+            />
 
             <Button onClick={onOpen} color="primary" size="sm">
               Mission Details

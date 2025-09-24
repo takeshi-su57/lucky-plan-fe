@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, ChangeEventHandler } from "react";
+import { useState, useRef, ChangeEventHandler } from "react";
 import {
   Autocomplete,
   AutocompleteItem,
@@ -12,7 +12,7 @@ import {
 } from "@nextui-org/react";
 import { Address, isAddress } from "viem";
 
-import { StandardModal } from "@/components/modals/StandardModal";
+import { RightDrawer } from "@/components/modals/RightDrawer";
 
 import { useGetAllContracts } from "@/app-hooks/useContract";
 import { useBatchCreateBots } from "@/app-hooks/useAutomation";
@@ -20,9 +20,12 @@ import { useBatchCreateBots } from "@/app-hooks/useAutomation";
 import { shrinkAddress } from "@/utils";
 import { NumericInput } from "@/components/inputs/NumericInput";
 
-import { useGetAllTradeHistory } from "@/app/_hooks/useHistory";
-import { HistoriesWidget } from "../LeaderboardWidgets/HistoriesWidget/HistoriesWidget";
+import { useGetPerpEventLogs } from "@/app/_hooks/useHistory";
 import { ContractStatus, Platform } from "@/graphql/gql/graphql";
+import {
+  PerpEventLogPnlChart,
+  PerpEventLogPnlChartHandle,
+} from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
 
 export type CreateAutomationModalProps = {
   planId: number;
@@ -41,7 +44,8 @@ export function CreateAutomationModal({
 
   const allContracts = useGetAllContracts();
 
-  const [showAllActivity, setShowAllActivity] = useState(false);
+  const [showLatestStats, setShowLatestStats] = useState(false);
+  const chartRef = useRef<PerpEventLogPnlChartHandle>(null);
 
   const [leaderAddress, setLeaderAddress] = useState<string>("");
   const [platform, setPlatform] = useState<Platform>(Platform.Gns);
@@ -55,10 +59,12 @@ export function CreateAutomationModal({
   const [ratio, setRatio] = useState("");
   const [maxLeverage, setMaxLeverage] = useState("200");
   const [minLeverage, setMinLeverage] = useState("1.1");
+  const [tpPercentage, setTpPercentage] = useState("10");
+  const [slPercentage, setSlPercentage] = useState("10");
 
-  const { histories: originalHistories } = useGetAllTradeHistory(
-    isAddress(leaderAddress) ? leaderAddress : null,
-    "0",
+  const { eventLogs: originalEventLogs } = useGetPerpEventLogs(
+    isAddress(leaderAddress) ? [leaderAddress] : [],
+    platform,
   );
 
   const handleChangePlatform: ChangeEventHandler<HTMLSelectElement> = (
@@ -154,7 +160,8 @@ export function CreateAutomationModal({
 
     const availableContracts = allContracts
       .filter((contract) => contract.status === ContractStatus.Live)
-      .filter((contract) => contract.platform === platform);
+      .filter((contract) => contract.platform === platform)
+      .filter((contract) => !contract.isTestnet);
 
     batchCreateBots({
       variables: {
@@ -173,7 +180,11 @@ export function CreateAutomationModal({
             collateralBaseline: 0,
             maxLeverage: Math.floor(+maxLeverage * 1000),
             minLeverage: Math.floor(+minLeverage * 1000),
-            params: "{}",
+            params: JSON.stringify({
+              tpPercentage: +tpPercentage,
+              slPercentage: +slPercentage,
+              selectedPairs: chartRef.current?.getSelectedPairs() || [],
+            }),
           },
         })),
       },
@@ -185,11 +196,10 @@ export function CreateAutomationModal({
   };
 
   return (
-    <StandardModal
+    <RightDrawer
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      backdrop="blur"
-      classNames={{ base: "max-w-[1400px]" }}
+      classNames={{ base: "max-w-[80%]" }}
     >
       <div className="flex w-full flex-col gap-8">
         <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
@@ -224,6 +234,7 @@ export function CreateAutomationModal({
                 // hide ape contract as a follower contract
                 defaultItems={allContracts
                   .filter((contract) => contract.status === ContractStatus.Live)
+                  .filter((contract) => contract.platform === Platform.Gns)
                   .filter((item) => item.chainId !== 33139)}
                 placeholder="Search contract"
                 selectedKey={followerContractId}
@@ -298,6 +309,18 @@ export function CreateAutomationModal({
                 errorMessage={minLeverageHelper}
                 isInvalid={minLeverageHelper.trim() !== ""}
               />
+
+              <NumericInput
+                amount={tpPercentage}
+                onChange={setTpPercentage}
+                label="TP Percentage"
+              />
+
+              <NumericInput
+                amount={slPercentage}
+                onChange={setSlPercentage}
+                label="SL Percentage"
+              />
             </div>
 
             <Button
@@ -313,29 +336,25 @@ export function CreateAutomationModal({
           <div className="flex flex-1 flex-col gap-6">
             <div className="flex items-center justify-between">
               <Switch
-                isSelected={showAllActivity}
-                onValueChange={setShowAllActivity}
+                isSelected={showLatestStats}
+                onValueChange={setShowLatestStats}
                 size="sm"
               >
-                {showAllActivity
-                  ? "Show All Activities"
-                  : "Show Valid Activities"}
+                {showLatestStats ? "Show All Activities" : "Show Latest Stats"}
               </Switch>
             </div>
 
-            <HistoriesWidget
+            <PerpEventLogPnlChart
+              ref={chartRef}
               address={leaderAddress as Address}
-              histories={originalHistories || []}
-              hideTags
-              mode={
-                showAllActivity
-                  ? "show_all_activity"
-                  : "show_only_valid_activity"
-              }
+              perpTradingEventLogs={originalEventLogs[0] || []}
+              hideTags={false}
+              showLatestStats={showLatestStats}
+              cols={1}
             />
           </div>
         </div>
       </div>
-    </StandardModal>
+    </RightDrawer>
   );
 }

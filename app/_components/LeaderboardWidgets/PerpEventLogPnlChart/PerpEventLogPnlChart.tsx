@@ -1,15 +1,22 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import {
+  useState,
+  useMemo,
+  PropsWithRef,
+  useImperativeHandle,
+  RefObject,
+} from "react";
 import { Address } from "viem";
 import {
-  Autocomplete,
-  AutocompleteItem,
   Card,
   CardBody,
+  Select,
+  SelectItem,
   Tab,
   Tabs,
 } from "@nextui-org/react";
+import type { Selection } from "@nextui-org/react";
 import { twMerge } from "tailwind-merge";
 import { Contract, PerpTradingEventLog } from "@/graphql/gql/graphql";
 
@@ -17,10 +24,17 @@ import { HistoryCharts } from "../HistoryCharts";
 import { HistoriesSummary } from "../HistoriesWidget/HistoriesSummary";
 
 import { useGetAllContracts } from "@/app/_hooks/useContract";
-import { getHistoriesChartData } from "@/utils/historiesV2Chart";
+import {
+  convertPerpTradingEventLogToHistory,
+  getHistoriesChartData,
+} from "@/utils/historiesV2Chart";
 import { HistoriesPositionList } from "./HistoriesPositionList";
 
 type TabType = "chart" | "positions";
+
+export type PerpEventLogPnlChartHandle = {
+  getSelectedPairs: () => string[];
+};
 
 export type PerpEventLogPnlChartProps = {
   address: Address;
@@ -31,6 +45,7 @@ export type PerpEventLogPnlChartProps = {
   };
   hideTags: boolean;
   showLatestStats?: boolean;
+  cols?: 1 | 2 | 4;
 };
 
 export function PerpEventLogPnlChart({
@@ -39,11 +54,25 @@ export function PerpEventLogPnlChart({
   range,
   hideTags,
   showLatestStats,
-}: PerpEventLogPnlChartProps) {
+  ref,
+  cols = 2,
+}: PropsWithRef<PerpEventLogPnlChartProps> & {
+  ref?: RefObject<PerpEventLogPnlChartHandle>;
+}) {
   const [selected, setSelected] = useState<TabType>("chart");
-  const [selectedPair, setSelectedPair] = useState<string>("all");
+  const [selectedPair, setSelectedPair] = useState<Selection>(
+    new Set<string>([]),
+  );
 
   const allContracts = useGetAllContracts();
+
+  useImperativeHandle(
+    ref ?? null,
+    () => ({
+      getSelectedPairs: () => Array.from(selectedPair) as string[],
+    }),
+    [selectedPair],
+  );
 
   const {
     missionHistories,
@@ -75,31 +104,69 @@ export function PerpEventLogPnlChart({
       contractsMapa[contract.id] = contract;
     });
 
-    return getHistoriesChartData(perpTradingEventLogs, contractsMapa, {
-      range,
-      pair: selectedPair === "all" ? null : selectedPair,
+    const pairs = (Array.from(selectedPair) as string[]).map((item) =>
+      item.toLowerCase(),
+    );
+
+    const tradePairsMap = new Map<string, number>();
+
+    const perpTradeHistories = convertPerpTradingEventLogToHistory(
+      contractsMapa,
+      perpTradingEventLogs,
+    );
+
+    perpTradeHistories.forEach((item) => {
+      tradePairsMap.set(
+        item.pair,
+        (tradePairsMap.get(item.pair.toLowerCase()) || 0) + 1,
+      );
     });
-  }, [perpTradingEventLogs, allContracts, range, selectedPair]);
+
+    const filtered = perpTradeHistories.filter((item) =>
+      pairs.length > 0 ? pairs.includes(item.pair.toLowerCase()) : true,
+    );
+
+    return {
+      ...getHistoriesChartData(
+        showLatestStats
+          ? filtered.slice(filtered.length - 256, filtered.length)
+          : filtered,
+        {
+          range,
+        },
+      ),
+      tradePairs: Array.from(tradePairsMap.entries()),
+    };
+  }, [
+    allContracts,
+    selectedPair,
+    perpTradingEventLogs,
+    showLatestStats,
+    range,
+  ]);
 
   return (
     <Card className={twMerge("mb-4 w-full shrink-0")} isBlurred>
       <CardBody>
         <div className="flex min-h-[500px] gap-8 p-3">
           <div className="flex flex-col gap-4">
-            <Autocomplete
-              label="Select Pairs"
+            <Select
               variant="underlined"
-              defaultItems={[["all", 0], ...tradePairs]}
-              placeholder="Select Pair"
-              selectedKey={selectedPair}
-              onSelectionChange={(key) => setSelectedPair(key as string)}
+              label="Pairs"
+              placeholder="Select pairs"
+              // selectedKeys={values}
+              // onSelectionChange={setValues}
+              selectedKeys={selectedPair}
+              onSelectionChange={setSelectedPair}
+              selectionMode="multiple"
+              className="w-[200px] font-mono"
             >
-              {(item) => (
-                <AutocompleteItem key={item[0]} className="font-mono">
-                  {item[0] === "all" ? "All Pairs" : `${item[0]} - ${item[1]}`}
-                </AutocompleteItem>
-              )}
-            </Autocomplete>
+              {tradePairs.map((item) => (
+                <SelectItem key={item[0]}>
+                  {`${item[0]} - ${item[1]}`}
+                </SelectItem>
+              ))}
+            </Select>
 
             <Tabs
               selectedKey={selected}
@@ -142,6 +209,7 @@ export function PerpEventLogPnlChart({
                 pnlAccChartData={pnlAccChartData}
                 inOutChartData={inOutChartData}
                 inOutAccChartData={inOutAccChartData}
+                cols={cols}
               />
             )}
 

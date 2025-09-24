@@ -6,7 +6,10 @@ import { useState, useMemo, ChangeEventHandler } from "react";
 import { useGetPerpEventLogs } from "@/app/_hooks/useHistory";
 import { useGetAllContracts } from "@/app/_hooks/useContract";
 import { Contract, Platform } from "@/graphql/gql/graphql";
-import { getHistoriesChartData } from "@/utils/historiesV2Chart";
+import {
+  getHistoriesChartData,
+  convertPerpTradingEventLogToHistory,
+} from "@/utils/historiesV2Chart";
 import { PaginatedViews } from "@/components/views/PaginatedViews";
 import { PerpEventLogPnlChart } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
 
@@ -33,7 +36,7 @@ export function AnalyzePanel() {
   const allContracts = useGetAllContracts();
 
   const { eventLogs, loading } = useGetPerpEventLogs(
-    filteredAddresses.join(","),
+    filteredAddresses,
     platform,
   );
 
@@ -78,9 +81,12 @@ export function AnalyzePanel() {
           return null;
         }
 
-        const calculated = getHistoriesChartData(logs, contractsMapa, {
-          range: undefined,
-        });
+        const calculated = getHistoriesChartData(
+          convertPerpTradingEventLogToHistory(contractsMapa, logs),
+          {
+            range: undefined,
+          },
+        );
 
         return {
           address: logs[0].address,

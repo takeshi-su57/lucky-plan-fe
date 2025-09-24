@@ -1,19 +1,20 @@
 "use client";
 
 import { useMemo } from "react";
-import dayjs from "dayjs";
+import { Contract, PerpTradingEventLog } from "@/graphql/gql/graphql";
 
-import { PersonalTradeHistory } from "@/types";
-import { getHistoriesChartData } from "@/utils/historiesChart";
+import {
+  getHistoriesChartData,
+  convertPerpTradingEventLogToHistory,
+} from "@/utils/historiesV2Chart";
 
 import { HistoryCharts } from "../LeaderboardWidgets/HistoryCharts";
 import { getPriceStr } from "@/utils/price";
-import { getScore } from "@/utils";
+import { useGetAllContracts } from "@/app/_hooks/useContract";
 
 export type AutomationChartProps = {
   title: string;
-  histories: PersonalTradeHistory[];
-  mode: "show_all_activity" | "show_only_valid_activity";
+  eventLogs: PerpTradingEventLog[];
   range?: {
     from: Date;
     to: Date;
@@ -21,27 +22,29 @@ export type AutomationChartProps = {
 };
 
 export function AutomationGridChart({
-  histories,
+  eventLogs,
   title,
-  mode,
   range,
 }: AutomationChartProps) {
-  const { pnlChartData, pnlAccChartData, inOutChartData, inOutAccChartData } =
-    useMemo(
-      () => getHistoriesChartData(histories || [], { mode, range }),
-      [histories, mode, range],
-    );
+  const allContracts = useGetAllContracts();
 
-  const score = useMemo(
-    () =>
-      getScore(
-        range?.to
-          ? dayjs(range.to).format("YYYY-MM-DD")
-          : dayjs().format("YYYY-MM-DD"),
-        histories,
-      ),
-    [histories, range?.to],
-  );
+  const { pnlChartData, pnlAccChartData, inOutChartData, inOutAccChartData } =
+    useMemo(() => {
+      const contractsMapa: Record<number, Contract> = {};
+
+      allContracts.forEach((contract) => {
+        contractsMapa[contract.id] = contract;
+      });
+
+      const perpTradeHistories = convertPerpTradingEventLogToHistory(
+        contractsMapa,
+        eventLogs,
+      );
+
+      return getHistoriesChartData(perpTradeHistories, {
+        range,
+      });
+    }, [eventLogs, allContracts, range]);
 
   const totalInvested = inOutChartData.reduce(
     (acc, curr) => (acc > curr.value ? curr.value : acc),
@@ -62,8 +65,6 @@ export function AutomationGridChart({
           <span>Remain balance: {getPriceStr(remainBalance)} USDC</span>
         </div>
       </div>
-
-      <div className="text-red-500">{score}</div>
 
       <HistoryCharts
         pnlChartData={pnlChartData}
