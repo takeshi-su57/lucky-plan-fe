@@ -9,6 +9,7 @@ import {
   Input,
   Select,
   SelectItem,
+  Checkbox,
 } from "@nextui-org/react";
 import { Address, isAddress } from "viem";
 
@@ -26,6 +27,11 @@ import {
   PerpEventLogPnlChart,
   PerpEventLogPnlChartHandle,
 } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
+
+export enum BotMode {
+  General = "general",
+  BotCap = "botCap",
+}
 
 export type CreateAutomationModalProps = {
   planId: number;
@@ -47,12 +53,16 @@ export function CreateAutomationModal({
   const [showLatestStats, setShowLatestStats] = useState(false);
   const chartRef = useRef<PerpEventLogPnlChartHandle>(null);
 
-  const [leaderAddress, setLeaderAddress] = useState<string>("");
+  const [botMode, setBotMode] = useState(BotMode.General);
   const [platform, setPlatform] = useState<Platform>(Platform.Gns);
+
+  const [leaderAddress, setLeaderAddress] = useState<string>("");
+  const [followerAddress, setFollowerAddress] = useState<string>("");
 
   const [followerContractId, setFollowerContractId] = useState<string | null>(
     null,
   );
+  const [leaderContractId, setLeaderContractId] = useState<string | null>(null);
 
   const [maxCollateral, setMaxCollateral] = useState("");
   const [minCollateral, setMinCollateral] = useState("");
@@ -137,10 +147,16 @@ export function CreateAutomationModal({
     maxLeverageHelper.trim() !== "" ||
     minLeverageHelper.trim() !== "";
 
+  const isDisabledByBotCapture =
+    botMode === BotMode.BotCap
+      ? !isAddress(followerAddress) || !leaderContractId
+      : false;
+
   const isDisabled =
     !isAddress(leaderAddress) ||
     !followerContractId ||
     isDisabledStrategy ||
+    isDisabledByBotCapture ||
     createBotsLoading;
 
   const handleConfirm = () => {
@@ -161,6 +177,9 @@ export function CreateAutomationModal({
     const availableContracts = allContracts
       .filter((contract) => contract.status === ContractStatus.Live)
       .filter((contract) => contract.platform === platform)
+      .filter((contract) =>
+        leaderContractId !== null ? contract.id === +leaderContractId : true,
+      )
       .filter((contract) => !contract.isTestnet);
 
     batchCreateBots({
@@ -170,6 +189,9 @@ export function CreateAutomationModal({
           planId,
           leaderContractId: contract.id,
           followerContractId: +followerContractId,
+          followerAddress: isAddress(followerAddress)
+            ? followerAddress.toLowerCase()
+            : undefined,
           leaderCollateralBaseline: 0,
           strategy: {
             strategyKey: "ratioCopy",
@@ -209,11 +231,14 @@ export function CreateAutomationModal({
         <div className="flex w-full gap-8">
           <div className="flex w-[200px] flex-shrink-0 flex-col gap-8">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <Input
-                placeholder="Enter Leader Address"
-                value={leaderAddress || ""}
-                onChange={(e) => setLeaderAddress(e.target.value)}
-              />
+              <Checkbox
+                isSelected={botMode === BotMode.General}
+                onValueChange={(value) =>
+                  setBotMode(value ? BotMode.General : BotMode.BotCap)
+                }
+              >
+                General Bot Mode
+              </Checkbox>
 
               <Select
                 variant="underlined"
@@ -228,14 +253,68 @@ export function CreateAutomationModal({
                 ))}
               </Select>
 
+              <Input
+                placeholder="Enter Leader Address"
+                value={leaderAddress || ""}
+                onChange={(e) => setLeaderAddress(e.target.value)}
+              />
+
+              {botMode === BotMode.BotCap ? (
+                <Autocomplete
+                  label="Leader Contract"
+                  variant="underlined"
+                  defaultItems={allContracts
+                    .filter(
+                      (contract) => contract.status === ContractStatus.Live,
+                    )
+                    .filter((contract) => contract.platform === platform)}
+                  placeholder="Search contract"
+                  selectedKey={leaderContractId}
+                  onSelectionChange={(key) =>
+                    setLeaderContractId(key as string | null)
+                  }
+                >
+                  {(item) => (
+                    <AutocompleteItem
+                      key={item.id}
+                      className="font-mono"
+                      textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
+                    >
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                          <span className="text-small">
+                            Chain: {item.chainId}
+                          </span>
+                          <span className="text-small">
+                            {item.isTestnet ? "(Testnet)" : ""}
+                          </span>
+                        </div>
+                        <span className="text-small">
+                          Contract: {shrinkAddress(item.address as Address)}
+                        </span>
+                        <span className="text-tiny text-default-400">
+                          {item.description}
+                        </span>
+                      </div>
+                    </AutocompleteItem>
+                  )}
+                </Autocomplete>
+              ) : null}
+
+              {botMode === BotMode.BotCap ? (
+                <Input
+                  placeholder="Enter Follower Address"
+                  value={followerAddress || ""}
+                  onChange={(e) => setFollowerAddress(e.target.value)}
+                />
+              ) : null}
+
               <Autocomplete
                 label="Follower Contract"
                 variant="underlined"
-                // hide ape contract as a follower contract
                 defaultItems={allContracts
                   .filter((contract) => contract.status === ContractStatus.Live)
-                  .filter((contract) => contract.platform === Platform.Gns)
-                  .filter((item) => item.chainId !== 33139)}
+                  .filter((contract) => contract.platform === Platform.Gns)}
                 placeholder="Search contract"
                 selectedKey={followerContractId}
                 onSelectionChange={(key) =>

@@ -187,6 +187,7 @@ enum ContractStatus {
 }
 
 input CreateBotAndStrategyInput {
+  followerAddress: String
   followerContractId: Int!
   leaderAddress: String!
   leaderCollateralBaseline: Int!
