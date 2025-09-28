@@ -166,64 +166,64 @@ export function PlanCreationPanel() {
         />
       ),
     },
+    // {
+    //   step: 2,
+    //   label: "Select Leaders",
+    //   description:
+    //     "Select the leaders that will be used to backtest the system.",
+    //   content: (
+    //     <SelectLeaders
+    //       leaders={virtualBotParams.map((item) => ({
+    //         virtualId: item.virtualId,
+    //         address: item.leaderAddress,
+    //         contract: item.leaderContract,
+    //         leaderCollateral: item.leaderCollateralBaseline,
+    //         isConfirmed: false,
+    //       }))}
+    //       hideTags={false}
+    //       onChangeLeaders={handleChangeLeaders}
+    //       endDate={new Date()}
+    //       onNextStep={() => setCurrentStep(3)}
+    //       onPrevStep={() => setCurrentStep(1)}
+    //     />
+    //   ),
+    // },
+    // {
+    //   step: 3,
+    //   label: "Setup Strategies",
+    //   description:
+    //     "Setup the strategies that will be used to backtest the system.",
+    //   content: (
+    //     <PlanSetupStep
+    //       virtualBotParams={virtualBotParams}
+    //       onChangeVirtualBotParam={handleChangeVirtualBotParam}
+    //       onRemoveVirtualBotParam={handleRemoveVirtualBotParam}
+    //       onChangeLeaderHistories={handleChangeLeaderHistories}
+    //       onNextStep={() => setCurrentStep(4)}
+    //       onPrevStep={() => setCurrentStep(2)}
+    //     />
+    //   ),
+    // },
+    // {
+    //   step: 4,
+    //   label: "Overview",
+    //   description: `Overview of the plan.`,
+    //   content: (
+    //     <PlanCreationOverview
+    //       leaderHistories={totalLeaderHistories}
+    //       onNextStep={() => setCurrentStep(5)}
+    //       onPrevStep={() => setCurrentStep(3)}
+    //     />
+    //   ),
+    // },
     {
       step: 2,
-      label: "Select Leaders",
-      description:
-        "Select the leaders that will be used to backtest the system.",
-      content: (
-        <SelectLeaders
-          leaders={virtualBotParams.map((item) => ({
-            virtualId: item.virtualId,
-            address: item.leaderAddress,
-            contract: item.leaderContract,
-            leaderCollateral: item.leaderCollateralBaseline,
-            isConfirmed: false,
-          }))}
-          hideTags={false}
-          onChangeLeaders={handleChangeLeaders}
-          endDate={new Date()}
-          onNextStep={() => setCurrentStep(3)}
-          onPrevStep={() => setCurrentStep(1)}
-        />
-      ),
-    },
-    {
-      step: 3,
-      label: "Setup Strategies",
-      description:
-        "Setup the strategies that will be used to backtest the system.",
-      content: (
-        <PlanSetupStep
-          virtualBotParams={virtualBotParams}
-          onChangeVirtualBotParam={handleChangeVirtualBotParam}
-          onRemoveVirtualBotParam={handleRemoveVirtualBotParam}
-          onChangeLeaderHistories={handleChangeLeaderHistories}
-          onNextStep={() => setCurrentStep(4)}
-          onPrevStep={() => setCurrentStep(2)}
-        />
-      ),
-    },
-    {
-      step: 4,
-      label: "Overview",
-      description: `Overview of the plan.`,
-      content: (
-        <PlanCreationOverview
-          leaderHistories={totalLeaderHistories}
-          onNextStep={() => setCurrentStep(5)}
-          onPrevStep={() => setCurrentStep(3)}
-        />
-      ),
-    },
-    {
-      step: 5,
       label: "Create Plan",
       description: `Create the plan.`,
       content: (
         <SaveStep
           loading={createBotsLoading || createPlanLoading}
-          onPrevStep={() => setCurrentStep(4)}
+          onPrevStep={() => setCurrentStep(1)}
           onReset={handleInitialize}
           onSave={handleSaveVirtualBots}
         />

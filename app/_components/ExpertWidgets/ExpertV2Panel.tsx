@@ -137,6 +137,7 @@ export function ExpertV2Panel() {
                 <EventLogsWidget
                   address={item.address as Address}
                   platform={platform}
+                  cols={2}
                 />
               </div>
             ))}

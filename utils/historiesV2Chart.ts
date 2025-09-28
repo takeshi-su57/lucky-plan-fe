@@ -149,7 +149,7 @@ export function getSortedPartialHistories(
   > = {};
 
   sortedHistories
-    .slice(Math.max(0, sortedHistories.length - 128), sortedHistories.length)
+    .slice(Math.max(0, sortedHistories.length - 256), sortedHistories.length)
     .forEach((history) => {
       if (!history) {
         return;
@@ -317,12 +317,39 @@ export function getSortedPartialHistories(
   };
 }
 
-export function getHistoriesChartData(
-  perpEventLogs: PerpTradingEventLog[],
+export function convertPerpTradingEventLogToHistory(
   contractsMap: Record<number, Contract>,
+  perpEventLogs: PerpTradingEventLog[],
+) {
+  return perpEventLogs
+    .map((log) => {
+      const contract = contractsMap[log.contractId];
+
+      if (!contract) {
+        return null;
+      }
+
+      const history = getWeb3Info(
+        contract.platform,
+        contract.version,
+      ).eventToPerpTradeHistory(contract.chainId, JSON.parse(log.jsonLog));
+
+      if (!history) {
+        return null;
+      }
+
+      return {
+        ...history,
+        date: new Date(log.date),
+      };
+    })
+    .filter((history) => history !== null);
+}
+
+export function getHistoriesChartData(
+  perpTradeHistories: (PerpTradeHistory & { date: Date })[],
   filters: {
     range?: { from?: Date; to?: Date };
-    pair?: string | null;
   },
 ) {
   const pnlChartData: {
@@ -345,39 +372,6 @@ export function getHistoriesChartData(
     date: Date;
   }[] = [];
 
-  const tradePairsMap = new Map<string, number>();
-
-  const perpHistories = perpEventLogs
-    .map((log) => {
-      const contract = contractsMap[log.contractId];
-
-      if (!contract) {
-        return null;
-      }
-
-      const history = getWeb3Info(
-        contract.platform,
-        contract.version,
-      ).eventToPerpTradeHistory(contract.chainId, JSON.parse(log.jsonLog));
-
-      if (!history) {
-        return null;
-      }
-
-      if (
-        filters.pair &&
-        history.pair.toLowerCase() !== filters.pair.toLowerCase()
-      ) {
-        return null;
-      }
-
-      return {
-        ...history,
-        date: new Date(log.date),
-      };
-    })
-    .filter((history) => history !== null);
-
   let pnlSum = 0;
   let inOutSum = 0;
   let minIn = 10000000;
@@ -395,7 +389,7 @@ export function getHistoriesChartData(
     collateral,
     pnlP,
     leverage,
-  } = getSortedPartialHistories(perpHistories, filters);
+  } = getSortedPartialHistories(perpTradeHistories, filters);
 
   if (sortedHistories.length > 0) {
     [
@@ -417,11 +411,6 @@ export function getHistoriesChartData(
         collateralDelta: 0,
       },
     ].forEach((history) => {
-      tradePairsMap.set(
-        history.pair,
-        (tradePairsMap.get(history.pair) || 0) + 1,
-      );
-
       if (pnlChartData.length === 0) {
         pnlChartData.push({
           value: 0,
@@ -545,12 +534,12 @@ export function getHistoriesChartData(
   const score = regression.score(xs, pnlArrs);
 
   const latestRegression = new SimpleLinearRegression(
-    xs.slice(Math.max(0, xs.length - 128), xs.length),
-    pnlArrs.slice(Math.max(0, xs.length - 128), xs.length),
+    xs.slice(Math.max(0, xs.length - 256), xs.length),
+    pnlArrs.slice(Math.max(0, xs.length - 256), xs.length),
   );
   const latestScore = latestRegression.score(
-    xs.slice(Math.max(0, xs.length - 128), xs.length),
-    pnlArrs.slice(Math.max(0, xs.length - 128), xs.length),
+    xs.slice(Math.max(0, xs.length - 256), xs.length),
+    pnlArrs.slice(Math.max(0, xs.length - 256), xs.length),
   );
 
   return {
@@ -559,7 +548,6 @@ export function getHistoriesChartData(
     pnlAccChartData,
     inOutChartData,
     inOutAccChartData,
-    tradePairs: Array.from(tradePairsMap.entries()),
     minIn,
     maxIn,
     sumIn,

@@ -9,7 +9,6 @@ import {
   CardBody,
   Checkbox,
   Divider,
-  Spinner,
   Tab,
   Tabs,
 } from "@nextui-org/react";
@@ -32,13 +31,12 @@ import { MissionDetails } from "../MissionWidgets/MissionDetails";
 import { FaCopy } from "react-icons/fa";
 import { useCloseMission } from "@/app/_hooks/useMission";
 import { AutomationGridChart } from "../PlansWidget/AutomationChart";
-import { useGetPersonalTradeHistories } from "@/app/_hooks/useGetPersonalTradeHistories";
 
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import { ContractPnl } from "../MissionWidgets/ContractPnl";
-import { useGetAllTradeHistory } from "@/app/_hooks/useHistory";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { EditStrategyModal } from "./EditAutomationModal";
+import { useGetPerpEventLogs } from "@/app/_hooks/useHistory";
 
 type TabType = "chart" | "missions";
 
@@ -62,22 +60,19 @@ export function AutomationDetails({
   const [showOnlyAutomationHistory, setShowOnlyAutomationHistory] =
     useState(true);
 
-  const { data: leaderHistories } = useGetPersonalTradeHistories(
-    bot?.leaderContractId || 0,
-    bot?.leaderContract?.backendUrl || null,
-    bot?.leaderAddress || null,
+  const { eventLogs: leaderEventLogs } = useGetPerpEventLogs(
+    [bot.leaderAddress],
+    bot.leaderContract.platform,
   );
 
-  const { histories, loading } = useGetAllTradeHistory(
-    bot?.leaderAddress || null,
-    bot?.leaderContractId?.toString() || null,
+  const { eventLogs: followerEventLogs } = useGetPerpEventLogs(
+    [bot.followerAddress],
+    bot.followerContract.platform,
   );
 
-  const { data: followerHistories } = useGetPersonalTradeHistories(
-    bot?.followerContractId || 0,
-    bot?.followerContract?.backendUrl || null,
-    bot?.followerAddress || null,
-  );
+  useEffect(() => {
+    console.log("re-rendered by bot id", bot, isChatFirst);
+  }, [bot, isChatFirst]);
 
   useEffect(() => {
     if (isChatFirst) {
@@ -294,7 +289,10 @@ export function AutomationDetails({
           />
 
           {bot.status !== BotStatus.Dead ? (
-            <EditStrategyModal strategy={bot.strategy} />
+            <EditStrategyModal
+              strategy={bot.strategy}
+              chainId={bot.followerContract.chainId}
+            />
           ) : null}
 
           {bot.status === BotStatus.Created ? (
@@ -331,7 +329,7 @@ export function AutomationDetails({
         <Card>
           <CardBody>
             <AutomationGridChart
-              histories={leaderHistories || []}
+              eventLogs={leaderEventLogs.length > 0 ? leaderEventLogs[0] : []}
               title="Leader Chart"
               range={
                 showOnlyAutomationHistory
@@ -343,35 +341,14 @@ export function AutomationDetails({
                     }
                   : undefined
               }
-              mode="show_all_activity"
             />
 
             <Divider />
 
-            {loading ? (
-              <Spinner color="warning" size="lg" />
-            ) : (
-              <AutomationGridChart
-                histories={histories || []}
-                title="Leader Platform Chart"
-                range={
-                  showOnlyAutomationHistory
-                    ? {
-                        from: bot.startedAt
-                          ? new Date(bot.startedAt)
-                          : new Date(),
-                        to: bot.endedAt ? new Date(bot.endedAt) : new Date(),
-                      }
-                    : undefined
-                }
-                mode="show_all_activity"
-              />
-            )}
-
-            <Divider />
-
             <AutomationGridChart
-              histories={followerHistories || []}
+              eventLogs={
+                followerEventLogs.length > 0 ? followerEventLogs[0] : []
+              }
               title="Follower Chart"
               range={
                 showOnlyAutomationHistory
@@ -383,7 +360,6 @@ export function AutomationDetails({
                     }
                   : undefined
               }
-              mode="show_all_activity"
             />
           </CardBody>
         </Card>

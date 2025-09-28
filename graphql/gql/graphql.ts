@@ -214,6 +214,7 @@ export enum ContractStatus {
 }
 
 export type CreateBotAndStrategyInput = {
+  followerAddress?: InputMaybe<Scalars['String']['input']>;
   followerContractId: Scalars['Int']['input'];
   leaderAddress: Scalars['String']['input'];
   leaderCollateralBaseline: Scalars['Int']['input'];

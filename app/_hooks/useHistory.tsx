@@ -1019,19 +1019,13 @@ export function useGetStatisticData() {
   };
 }
 
-export function useGetPerpEventLogs(addresses: string, platform: Platform) {
-  const [query, { data, loading }] = useLazyQuery(GET_PERP_EVENT_LOGS_DOCUMENT);
-
-  useEffect(() => {
-    if (addresses.length > 0 && platform) {
-      query({
-        variables: {
-          addresses: addresses.split(","),
-          platform,
-        },
-      });
-    }
-  }, [addresses, platform, query]);
+export function useGetPerpEventLogs(addresses: string[], platform: Platform) {
+  const { data, loading } = useQuery(GET_PERP_EVENT_LOGS_DOCUMENT, {
+    variables: {
+      addresses,
+      platform,
+    },
+  });
 
   const eventLogs = useMemo(() => {
     if (!data) {

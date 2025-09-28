@@ -1,20 +1,49 @@
 "use client";
 
-import { useState } from "react";
-import { Button, useDisclosure } from "@nextui-org/react";
-
+import { useEffect, useState } from "react";
+import { Button, Select, SelectItem, useDisclosure } from "@nextui-org/react";
+import type { Selection } from "@nextui-org/react";
 import { StandardModal } from "@/components/modals/StandardModal";
 
 import { NumericInput } from "@/components/inputs/NumericInput";
 
 import { Strategy } from "@/graphql/gql/graphql";
 import { useUpdateStrategy } from "@/app/_hooks/useStrategy";
+import { getPairs } from "@/web3/gns/v10/configs";
+
+export function getAdditionalParams(strParams: string): {
+  tpPercentage: number;
+  slPercentage: number;
+  selectedPairs: string[];
+} {
+  try {
+    const params = JSON.parse(strParams);
+
+    return {
+      tpPercentage: params.tpPercentage || 0,
+      slPercentage: params.slPercentage || 0,
+      selectedPairs: (params.selectedPairs || []).map((item: string) =>
+        item.toLowerCase(),
+      ),
+    };
+  } catch {
+    return {
+      tpPercentage: 0,
+      slPercentage: 0,
+      selectedPairs: [],
+    };
+  }
+}
 
 export type EditStrategyModalProps = {
   strategy: Strategy;
+  chainId: number;
 };
 
-export function EditStrategyModal({ strategy }: EditStrategyModalProps) {
+export function EditStrategyModal({
+  strategy,
+  chainId,
+}: EditStrategyModalProps) {
   const { isOpen, onOpenChange, onClose, onOpen } = useDisclosure();
 
   const { updateStrategy, loading } = useUpdateStrategy();
@@ -32,6 +61,19 @@ export function EditStrategyModal({ strategy }: EditStrategyModalProps) {
   const [minLeverage, setMinLeverage] = useState(
     (strategy.minLeverage / 1e3).toString(),
   );
+  const [tpPercentage, setTpPercentage] = useState("10");
+  const [slPercentage, setSlPercentage] = useState("10");
+
+  const [selectedPair, setSelectedPair] = useState<Selection>(
+    new Set<string>([]),
+  );
+
+  useEffect(() => {
+    const additionalParams = getAdditionalParams(strategy.params);
+    setTpPercentage(additionalParams.tpPercentage.toString());
+    setSlPercentage(additionalParams.slPercentage.toString());
+    setSelectedPair(new Set<string>(additionalParams.selectedPairs));
+  }, [strategy.params]);
 
   let maxCollateralHelper = "";
   let minCollateralHelper = "";
@@ -184,6 +226,36 @@ export function EditStrategyModal({ strategy }: EditStrategyModalProps) {
             errorMessage={minLeverageHelper}
             isInvalid={minLeverageHelper.trim() !== ""}
           />
+
+          <NumericInput
+            amount={tpPercentage}
+            onChange={setTpPercentage}
+            label="TP Percentage"
+          />
+
+          <NumericInput
+            amount={slPercentage}
+            onChange={setSlPercentage}
+            label="SL Percentage"
+          />
+
+          <Select
+            variant="underlined"
+            label="Pairs"
+            placeholder="Select pairs"
+            // selectedKeys={values}
+            // onSelectionChange={setValues}
+            selectedKeys={selectedPair}
+            onSelectionChange={setSelectedPair}
+            selectionMode="multiple"
+            className="w-[200px] font-mono"
+          >
+            {getPairs(chainId).map((pair) => (
+              <SelectItem key={`${pair.from}/${pair.to}`.toLowerCase()}>
+                {`${pair.from}/${pair.to}`}
+              </SelectItem>
+            ))}
+          </Select>
 
           <Button
             onClick={handleConfirm}

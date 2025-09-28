@@ -46,6 +46,14 @@ for (const [chainId, collaterals] of Object.entries(collateralConfigs)) {
   }));
 }
 
+export function getPairs(chainId: number): Pair[] {
+  if (!pairConfigsMap[chainId]) {
+    throw new Error(`Pair configs not found for chainId: ${chainId}`);
+  }
+
+  return pairConfigsMap[chainId] || [];
+}
+
 export function getPair(chainId: number, pairIndex: number): Pair | null {
   if (!pairConfigsMap[chainId]) {
     throw new Error(`Pair configs not found for chainId: ${chainId}`);

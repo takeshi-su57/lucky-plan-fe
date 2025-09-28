@@ -8,10 +8,15 @@ import { PerpEventLogPnlChart } from "./PerpEventLogPnlChart/PerpEventLogPnlChar
 export type EventLogsWidgetProps = {
   address: string;
   platform: Platform;
+  cols: 1 | 2 | 4;
 };
 
-export function EventLogsWidget({ address, platform }: EventLogsWidgetProps) {
-  const { eventLogs, loading } = useGetPerpEventLogs(address, platform);
+export function EventLogsWidget({
+  address,
+  platform,
+  cols,
+}: EventLogsWidgetProps) {
+  const { eventLogs, loading } = useGetPerpEventLogs([address], platform);
 
   return (
     <div className="flex flex-col gap-4">
@@ -22,6 +27,7 @@ export function EventLogsWidget({ address, platform }: EventLogsWidgetProps) {
           address={address as Address}
           perpTradingEventLogs={eventLogs[0] || []}
           hideTags={false}
+          cols={cols}
         />
       )}
     </div>

@@ -90,14 +90,14 @@ export function MergedLeaderboard({
                 : "Show Valid Activities"}
             </Switch>
           </div>
-          <AutomationGridChart
+          {/* <AutomationGridChart
             mode={
               showAllActivity ? "show_all_activity" : "show_only_valid_activity"
             }
             histories={totalLeaderHistories}
             title={`Total Result`}
             range={{ from: startDate, to: endDate }}
-          />
+          /> */}
         </>
       ) : null}
 

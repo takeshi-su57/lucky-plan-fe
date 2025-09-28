@@ -1,6 +1,15 @@
 "use client";
 
-import { Badge, Chip, Divider } from "@nextui-org/react";
+import {
+  Badge,
+  Button,
+  Chip,
+  Divider,
+  DropdownMenu,
+  DropdownTrigger,
+  Dropdown,
+  DropdownItem,
+} from "@nextui-org/react";
 import { Address } from "viem";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
@@ -15,6 +24,7 @@ import { useGetAlertTasks } from "@/app/_hooks/useTask";
 import { LabeledChip } from "@/components/chips/LabeledChip";
 
 import { ContractPnl } from "../MissionWidgets/ContractPnl";
+import { getAdditionalParams } from "./EditAutomationModal";
 
 const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
   {
@@ -61,6 +71,8 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
     (mission) => mission.achievePositionKey,
   );
 
+  const additionalParams = getAdditionalParams(strategy.params);
+
   return (
     <div className="flex items-center justify-between gap-6 text-neutral-400">
       <div className="flex items-center gap-6">
@@ -102,6 +114,38 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
             {`${strategy.ratio} x`}
           </span>
         </div>
+
+        <div className="flex flex-col font-mono">
+          <span className="text-xs">
+            Tp:
+            {`${Number(additionalParams.tpPercentage)} %`}
+          </span>
+          <span className="text-xs">
+            Sl:
+            {`${Number(additionalParams.slPercentage)} %`}
+          </span>
+        </div>
+
+        {additionalParams.selectedPairs.length > 0 ? (
+          <Dropdown>
+            <DropdownTrigger>
+              <Button
+                color="default"
+                variant="bordered"
+                className="mb-2 shrink-0"
+              >
+                Show Allowed Pairs
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu
+              classNames={{ list: "max-h-[250px] overflow-y-auto" }}
+            >
+              {additionalParams.selectedPairs.map((pair) => (
+                <DropdownItem key={pair}>{pair}</DropdownItem>
+              ))}
+            </DropdownMenu>
+          </Dropdown>
+        ) : null}
 
         {bot.status === BotStatus.Dead ? (
           <div className="flex flex-col font-mono">
