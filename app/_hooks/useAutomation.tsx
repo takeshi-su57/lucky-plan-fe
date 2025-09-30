@@ -607,7 +607,7 @@ export function useSubscribeBot() {
 }
 
 export function useCreateBot() {
-  const [createBot, { data: newData, error }] =
+  const [createBot, { data: newData, error, loading }] =
     useMutation(CREATE_BOT_DOCUMENT);
   const client = useApolloClient();
   const { enqueueSnackbar } = useSnackbar();
@@ -626,7 +626,7 @@ export function useCreateBot() {
     }
   }, [client.cache, newData, error, enqueueSnackbar]);
 
-  return createBot;
+  return { createBot, loading };
 }
 
 export function useBatchCreateBots() {

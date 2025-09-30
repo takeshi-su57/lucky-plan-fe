@@ -9,9 +9,11 @@ import { EventLogsWidget } from "./EventLogsWidget";
 export function EventLogsModalButton({
   address,
   platform,
+  label,
 }: {
   address?: string;
   platform?: Platform;
+  label?: string;
 }) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
@@ -23,7 +25,7 @@ export function EventLogsModalButton({
         size="sm"
         onClick={onOpen}
       >
-        Open
+        {label || "Open"}
       </Button>
 
       {address && platform && (
@@ -33,7 +35,11 @@ export function EventLogsModalButton({
           classNames={{ base: twMerge("max-w-[80%]") }}
         >
           <div className="flex w-full flex-col gap-6">
-            <EventLogsWidget address={address as Address} platform={platform} />
+            <EventLogsWidget
+              address={address as Address}
+              platform={platform}
+              cols={1}
+            />
           </div>
         </RightDrawer>
       )}

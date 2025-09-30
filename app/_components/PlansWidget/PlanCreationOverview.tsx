@@ -55,7 +55,7 @@ export function PlanCreationOverview({
         </Switch>
       </div>
 
-      <AutomationGridChart
+      {/* <AutomationGridChart
         histories={leaderHistories}
         title={`Total Result`}
         range={{
@@ -65,7 +65,7 @@ export function PlanCreationOverview({
         mode={
           showAllActivity ? "show_all_activity" : "show_only_valid_activity"
         }
-      />
+      /> */}
 
       <div className="flex flex-row items-center gap-2">
         <Button variant="solid" onClick={onNextStep} color="primary" size="sm">
