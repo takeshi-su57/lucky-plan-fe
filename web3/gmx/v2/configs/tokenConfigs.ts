@@ -139,7 +139,7 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       name: "Arbitrum",
       symbol: "ARB",
       decimals: 18,
-      priceDecimals: 4,
+      priceDecimals: 5,
       address: "0x912CE59144191C1204E64559FE8253a0e49E6548",
       categories: ["layer2", "defi"],
       imageUrl:
@@ -1382,6 +1382,20 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       imageUrl:
         "https://assets.coingecko.com/coins/images/54723/standard/2025-03-05_22.53.06.jpg?1741234207",
       coingeckoUrl: "https://www.coingecko.com/en/coins/keeta",
+    },
+    "0x2e73bdbee83d91623736d514b0bb41f2afd9c7fd": {
+      name: "Plasma",
+      symbol: "XPL",
+      address: "0x2e73bDBee83D91623736D514b0BB41f2afd9C7Fd",
+      decimals: 18,
+      priceDecimals: 4,
+      categories: ["layer1", "defi"],
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/66489/standard/Plasma-symbol-green-1.png?1755142558",
+      coingeckoUrl: "https://www.coingecko.com/en/coins/plasma",
+      explorerUrl:
+        "https://arbiscan.io/token/0x2e73bDBee83D91623736D514b0BB41f2afd9C7Fd",
+      isSynthetic: true,
     },
   },
   "43113": {
