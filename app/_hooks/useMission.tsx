@@ -2,7 +2,12 @@
 
 import { useEffect } from "react";
 import { useSnackbar } from "notistack";
-import { useApolloClient, useMutation, useSubscription } from "@apollo/client";
+import {
+  useApolloClient,
+  useMutation,
+  useQuery,
+  useSubscription,
+} from "@apollo/client";
 import { getFragmentData, graphql } from "@/gql/index";
 import {
   MissionBackwardDetailsInfoFragment,
@@ -69,6 +74,18 @@ export const MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     tasks {
       ...TaskForwardDetailsInfo
     }
+  }
+`);
+
+export const GET_MAX_OPEN_MISSIONS_DOCUMENT = graphql(`
+  query getMaxOpenMissions {
+    getMaxOpenMissions
+  }
+`);
+
+export const UPDATE_MAX_OPEN_MISSIONS_DOCUMENT = graphql(`
+  mutation updateMaxOpenMissions($maxCount: Int!) {
+    updateMaxOpenMissions(maxCount: $maxCount)
   }
 `);
 
@@ -347,4 +364,16 @@ export function useIgnoreMission() {
   }, [newData, error, enqueueSnackbar]);
 
   return ignoreMission;
+}
+
+export function useGetMaxOpenMissions() {
+  const { data, loading, error } = useQuery(GET_MAX_OPEN_MISSIONS_DOCUMENT);
+  return { data, loading, error };
+}
+
+export function useUpdateMaxOpenMissions() {
+  const [updateMaxOpenMissions, { data, loading, error }] = useMutation(
+    UPDATE_MAX_OPEN_MISSIONS_DOCUMENT,
+  );
+  return { updateMaxOpenMissions, data, loading, error };
 }

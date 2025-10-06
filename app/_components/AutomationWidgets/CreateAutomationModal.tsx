@@ -148,9 +148,7 @@ export function CreateAutomationModal({
     minLeverageHelper.trim() !== "";
 
   const isDisabledByBotCapture =
-    botMode === BotMode.BotCap
-      ? !isAddress(followerAddress) || !leaderContractId
-      : false;
+    botMode === BotMode.BotCap ? !isAddress(followerAddress) : false;
 
   const isDisabled =
     !isAddress(leaderAddress) ||

@@ -162,6 +162,11 @@ export function EditStrategyModal({
           minCollateral: +minCollateral,
           maxLeverage: Math.floor(+maxLeverage * 1000),
           minLeverage: Math.floor(+minLeverage * 1000),
+          params: JSON.stringify({
+            tpPercentage: +tpPercentage,
+            slPercentage: +slPercentage,
+            selectedPairs: Array.from(selectedPair),
+          }),
         },
       },
     });
