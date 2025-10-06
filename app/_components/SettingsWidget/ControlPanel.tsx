@@ -20,6 +20,7 @@ import { SetupPasswordButton } from "./SetupPasswordButton";
 import { ChangePasswordButton } from "./ChangePasswordButton";
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 import { twMerge } from "tailwind-merge";
+import { MaxMissionPanel } from "./MaxMisssionPanel";
 
 const columns: TableColumnProps[] = [
   {
@@ -170,6 +171,8 @@ export function ControlPanel() {
                 />
               </div>
             </div>
+
+            <MaxMissionPanel />
           </div>
         </CardBody>
       </Card>
