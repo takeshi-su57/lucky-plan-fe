@@ -25,6 +25,7 @@ import { LabeledChip } from "@/components/chips/LabeledChip";
 
 import { ContractPnl } from "../MissionWidgets/ContractPnl";
 import { getAdditionalParams } from "./EditAutomationModal";
+import { getPairKey } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
 
 const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
   {
@@ -124,6 +125,10 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
             Sl:
             {`${Number(additionalParams.slPercentage)} %`}
           </span>
+          <span className="text-xs">
+            Max Open Missions:
+            {`${Number(additionalParams.maxOpenMissions) || 0}`}
+          </span>
         </div>
 
         {additionalParams.selectedPairs.length > 0 ? (
@@ -141,7 +146,9 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
               classNames={{ list: "max-h-[250px] overflow-y-auto" }}
             >
               {additionalParams.selectedPairs.map((pair) => (
-                <DropdownItem key={pair}>{pair}</DropdownItem>
+                <DropdownItem key={getPairKey(pair.pair, pair.isLong)}>
+                  {pair.pair} - {pair.isLong ? "Long" : "Short"}
+                </DropdownItem>
               ))}
             </DropdownMenu>
           </Dropdown>

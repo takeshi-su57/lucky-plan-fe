@@ -32,8 +32,19 @@ import { HistoriesPositionList } from "./HistoriesPositionList";
 
 type TabType = "chart" | "positions";
 
+export function getPairKey(pair: string, isLong: boolean) {
+  return JSON.stringify({
+    pair: pair.toLowerCase(),
+    isLong,
+  });
+}
+
+export function parsePairKey(key: string) {
+  return JSON.parse(key) as { pair: string; isLong: boolean };
+}
+
 export type PerpEventLogPnlChartHandle = {
-  getSelectedPairs: () => string[];
+  getSelectedPairs: () => { pair: string; isLong: boolean }[];
 };
 
 export type PerpEventLogPnlChartProps = {
@@ -69,7 +80,8 @@ export function PerpEventLogPnlChart({
   useImperativeHandle(
     ref ?? null,
     () => ({
-      getSelectedPairs: () => Array.from(selectedPair) as string[],
+      getSelectedPairs: () =>
+        (Array.from(selectedPair) as string[]).map(parsePairKey),
     }),
     [selectedPair],
   );
@@ -104,9 +116,7 @@ export function PerpEventLogPnlChart({
       contractsMapa[contract.id] = contract;
     });
 
-    const pairs = (Array.from(selectedPair) as string[]).map((item) =>
-      item.toLowerCase(),
-    );
+    const pairs = Array.from(selectedPair) as string[];
 
     const tradePairsMap = new Map<string, number>();
 
@@ -116,14 +126,14 @@ export function PerpEventLogPnlChart({
     );
 
     perpTradeHistories.forEach((item) => {
-      tradePairsMap.set(
-        item.pair,
-        (tradePairsMap.get(item.pair.toLowerCase()) || 0) + 1,
-      );
+      const key = getPairKey(item.pair, item.isLong);
+      tradePairsMap.set(key, (tradePairsMap.get(key) || 0) + 1);
     });
 
     const filtered = perpTradeHistories.filter((item) =>
-      pairs.length > 0 ? pairs.includes(item.pair.toLowerCase()) : true,
+      pairs.length > 0
+        ? pairs.includes(getPairKey(item.pair, item.isLong))
+        : true,
     );
 
     return {
@@ -163,7 +173,7 @@ export function PerpEventLogPnlChart({
             >
               {tradePairs.map((item) => (
                 <SelectItem key={item[0]}>
-                  {`${item[0]} - ${item[1]}`}
+                  {`${parsePairKey(item[0]).pair} - (${item[1]} ${parsePairKey(item[0]).isLong ? "Long" : "Short"})`}
                 </SelectItem>
               ))}
             </Select>
