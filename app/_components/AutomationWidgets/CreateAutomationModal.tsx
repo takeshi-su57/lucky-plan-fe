@@ -71,6 +71,7 @@ export function CreateAutomationModal({
   const [minLeverage, setMinLeverage] = useState("1.1");
   const [tpPercentage, setTpPercentage] = useState("10");
   const [slPercentage, setSlPercentage] = useState("10");
+  const [maxOpenMissions, setMaxOpenMissions] = useState("1");
 
   const { eventLogs: originalEventLogs } = useGetPerpEventLogs(
     isAddress(leaderAddress) ? [leaderAddress] : [],
@@ -148,9 +149,7 @@ export function CreateAutomationModal({
     minLeverageHelper.trim() !== "";
 
   const isDisabledByBotCapture =
-    botMode === BotMode.BotCap
-      ? !isAddress(followerAddress) || !leaderContractId
-      : false;
+    botMode === BotMode.BotCap ? !isAddress(followerAddress) : false;
 
   const isDisabled =
     !isAddress(leaderAddress) ||
@@ -206,6 +205,7 @@ export function CreateAutomationModal({
               tpPercentage: +tpPercentage,
               slPercentage: +slPercentage,
               selectedPairs: chartRef.current?.getSelectedPairs() || [],
+              maxOpenMissions: Math.floor(+maxOpenMissions),
             }),
           },
         })),
@@ -399,6 +399,12 @@ export function CreateAutomationModal({
                 amount={slPercentage}
                 onChange={setSlPercentage}
                 label="SL Percentage"
+              />
+
+              <NumericInput
+                amount={maxOpenMissions}
+                onChange={setMaxOpenMissions}
+                label="Max Open Missions"
               />
             </div>
 

@@ -10,24 +10,49 @@ import { NumericInput } from "@/components/inputs/NumericInput";
 import { Strategy } from "@/graphql/gql/graphql";
 import { useUpdateStrategy } from "@/app/_hooks/useStrategy";
 import { getPairs } from "@/web3/gns/v10/configs";
+import {
+  getPairKey,
+  parsePairKey,
+} from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
 
 export function getAdditionalParams(strParams: string): {
+  maxOpenMissions: number;
   tpPercentage: number;
   slPercentage: number;
-  selectedPairs: string[];
+  selectedPairs: { pair: string; isLong: boolean }[];
 } {
   try {
     const params = JSON.parse(strParams);
 
     return {
+      maxOpenMissions: params.maxOpenMissions || 0,
       tpPercentage: params.tpPercentage || 0,
       slPercentage: params.slPercentage || 0,
-      selectedPairs: (params.selectedPairs || []).map((item: string) =>
-        item.toLowerCase(),
-      ),
+      selectedPairs: (params.selectedPairs || [])
+        .map((item: { pair: string; isLong: boolean } | string) =>
+          typeof item === "string"
+            ? [
+                {
+                  pair: item.toLowerCase(),
+                  isLong: true,
+                },
+                {
+                  pair: item.toLowerCase(),
+                  isLong: false,
+                },
+              ]
+            : [
+                {
+                  pair: item.pair.toLowerCase(),
+                  isLong: item.isLong,
+                },
+              ],
+        )
+        .flat(),
     };
   } catch {
     return {
+      maxOpenMissions: 0,
       tpPercentage: 0,
       slPercentage: 0,
       selectedPairs: [],
@@ -63,6 +88,7 @@ export function EditStrategyModal({
   );
   const [tpPercentage, setTpPercentage] = useState("10");
   const [slPercentage, setSlPercentage] = useState("10");
+  const [maxOpenMissions, setMaxOpenMissions] = useState("1");
 
   const [selectedPair, setSelectedPair] = useState<Selection>(
     new Set<string>([]),
@@ -72,7 +98,14 @@ export function EditStrategyModal({
     const additionalParams = getAdditionalParams(strategy.params);
     setTpPercentage(additionalParams.tpPercentage.toString());
     setSlPercentage(additionalParams.slPercentage.toString());
-    setSelectedPair(new Set<string>(additionalParams.selectedPairs));
+    setMaxOpenMissions(additionalParams.maxOpenMissions.toString());
+    setSelectedPair(
+      new Set<string>(
+        additionalParams.selectedPairs.map((item) =>
+          getPairKey(item.pair, item.isLong),
+        ),
+      ),
+    );
   }, [strategy.params]);
 
   let maxCollateralHelper = "";
@@ -162,6 +195,14 @@ export function EditStrategyModal({
           minCollateral: +minCollateral,
           maxLeverage: Math.floor(+maxLeverage * 1000),
           minLeverage: Math.floor(+minLeverage * 1000),
+          params: JSON.stringify({
+            maxOpenMissions: +maxOpenMissions,
+            tpPercentage: +tpPercentage,
+            slPercentage: +slPercentage,
+            selectedPairs: Array.from(selectedPair).map((item) =>
+              parsePairKey(item as string),
+            ),
+          }),
         },
       },
     });
@@ -239,6 +280,12 @@ export function EditStrategyModal({
             label="SL Percentage"
           />
 
+          <NumericInput
+            amount={maxOpenMissions}
+            onChange={setMaxOpenMissions}
+            label="Max Open Missions"
+          />
+
           <Select
             variant="underlined"
             label="Pairs"
@@ -250,11 +297,17 @@ export function EditStrategyModal({
             selectionMode="multiple"
             className="w-[200px] font-mono"
           >
-            {getPairs(chainId).map((pair) => (
-              <SelectItem key={`${pair.from}/${pair.to}`.toLowerCase()}>
-                {`${pair.from}/${pair.to}`}
-              </SelectItem>
-            ))}
+            {getPairs(chainId)
+              .map((pair) => [
+                getPairKey(`${pair.from}/${pair.to}`, true),
+                getPairKey(`${pair.from}/${pair.to}`, false),
+              ])
+              .flat()
+              .map((pairKey) => (
+                <SelectItem key={pairKey}>
+                  {`${parsePairKey(pairKey).pair} - (${parsePairKey(pairKey).isLong ? "Long" : "Short"})`}
+                </SelectItem>
+              ))}
           </Select>
 
           <Button

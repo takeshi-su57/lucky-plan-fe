@@ -517,6 +517,7 @@ type Mutation {
   startSubService(service: String!): Boolean!
   stopBot(id: Int!): Boolean!
   stopTask(id: Int!): Boolean!
+  updateMaxOpenMissions(maxCount: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
   updateSl(input: UpdateSlInput!): ContractExecutionResult!
   updateStrategy(id: Int!, input: UpdateStrategyInput!): Strategy!
@@ -745,6 +746,7 @@ type Query {
   getExpertPnlSnapshots: [ExpertPnlSnapshot!]!
   getExpertPnlSnapshotsV2(after: Int, platform: Platform!): ExpertPnlSnapshotV2Connection!
   getLogsSeverityCounts: [SeverityCount!]!
+  getMaxOpenMissions: Int!
   getMicroserviceStatus: [MicroserviceStatus!]!
   getPerpEventLogs(addresses: [String!]!, platform: Platform!): [[PerpTradingEventLog!]!]!
   getPlanById(id: Int!): PlanForwardDetails
@@ -1008,6 +1010,7 @@ input UpdateStrategyInput {
   maxLeverage: Int!
   minCollateral: Int!
   minLeverage: Int!
+  params: String!
   ratio: Float!
 }
 
