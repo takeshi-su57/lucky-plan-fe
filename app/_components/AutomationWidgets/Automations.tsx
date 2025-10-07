@@ -112,7 +112,7 @@ export function Automations() {
           <ModaledItems
             mode="rightDrawer"
             trigger={<AutomationSummary bot={bot} />}
-            content={<AutomationDetails bot={bot} isChatFirst={isChatFirst} />}
+            content={<AutomationDetails bot={bot} isChartFirst={isChatFirst} />}
             contentTitle={`Automation ${bot.id}`}
             classNames={{
               trigger: "border border-neutral-700 rounded-lg p-2 mb-2",

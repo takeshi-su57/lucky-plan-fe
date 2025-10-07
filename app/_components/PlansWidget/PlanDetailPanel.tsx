@@ -131,7 +131,7 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
         </div>
       </div>
 
-      <PlanAutomations bots={plan?.bots || []} />
+      <PlanAutomations bots={(plan?.bots || []).sort((a, b) => a.id - b.id)} />
 
       <CreateAutomationModal
         planId={+planId}

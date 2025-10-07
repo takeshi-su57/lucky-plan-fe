@@ -97,11 +97,19 @@ export function PlanRow({ plan }: PlanRowProps) {
         <CardBody>
           <div className="flex items-start justify-between">
             <div className="flex h-full items-start gap-2">
-              <div className="flex w-[100px] flex-col gap-2 border-r border-neutral-800">
-                <Chip variant="flat">Plan {plan.id}</Chip>
-                <Chip variant="flat" size="sm" color="primary">
-                  Bot {plan.bots.length}
-                </Chip>
+              <div className="flex w-[300px] flex-col gap-2 border-r border-neutral-800">
+                <div className="flex gap-4">
+                  <span className="text-sm text-gray-400">{plan.title}</span>
+                  <Chip variant="flat">Plan {plan.id}</Chip>
+                </div>
+                <div className="flex gap-4">
+                  <span className="text-sm text-gray-400">
+                    {plan.description}
+                  </span>
+                  <Chip variant="flat" size="sm" color="primary">
+                    Bot {plan.bots.length}
+                  </Chip>
+                </div>
               </div>
 
               <div className="flex h-full w-[170px] flex-col gap-2 border-r border-neutral-800">

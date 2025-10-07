@@ -196,6 +196,7 @@ export function EditStrategyModal({
           maxLeverage: Math.floor(+maxLeverage * 1000),
           minLeverage: Math.floor(+minLeverage * 1000),
           params: JSON.stringify({
+            maxOpenMissions: +maxOpenMissions,
             tpPercentage: +tpPercentage,
             slPercentage: +slPercentage,
             selectedPairs: Array.from(selectedPair).map((item) =>
