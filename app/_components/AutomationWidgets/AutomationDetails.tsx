@@ -42,12 +42,12 @@ type TabType = "chart" | "missions";
 
 export type AutomationDetailsProps = {
   bot: BotForwardDetails;
-  isChatFirst: boolean;
+  isChartFirst: boolean;
 };
 
 export function AutomationDetails({
   bot,
-  isChatFirst,
+  isChartFirst,
 }: AutomationDetailsProps) {
   const liveBot = useLiveBot();
   const stopBot = useStopBot();
@@ -71,16 +71,12 @@ export function AutomationDetails({
   );
 
   useEffect(() => {
-    console.log("re-rendered by bot id", bot, isChatFirst);
-  }, [bot, isChatFirst]);
-
-  useEffect(() => {
-    if (isChatFirst) {
+    if (isChartFirst) {
       setSelected("chart");
     } else {
       setSelected("missions");
     }
-  }, [isChatFirst]);
+  }, [isChartFirst]);
 
   const handleDelete = useCallback(() => {
     deleteBot({

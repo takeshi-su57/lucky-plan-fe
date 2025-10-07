@@ -37,9 +37,10 @@ const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
 
 export type AutomationSummaryProps = {
   bot: BotForwardDetails;
+  simple?: boolean;
 };
 
-export function AutomationSummary({ bot }: AutomationSummaryProps) {
+export function AutomationSummary({ bot, simple }: AutomationSummaryProps) {
   const alertTasks = useGetAlertTasks();
 
   const {
@@ -79,31 +80,33 @@ export function AutomationSummary({ bot }: AutomationSummaryProps) {
       <div className="flex items-center gap-6">
         <Chip>{bot.id}</Chip>
 
-        <div className="flex h-10 items-center gap-4">
-          <div className="flex w-[140px] flex-col items-center">
-            <AddressWidget
-              address={leaderAddress as Address}
-              className="text-sm"
-            />
+        {!simple ? (
+          <div className="flex h-10 items-center gap-4">
+            <div className="flex w-[140px] flex-col items-center">
+              <AddressWidget
+                address={leaderAddress as Address}
+                className="text-sm"
+              />
 
-            <span className="text-xs text-neutral-400/60">
-              {`Leader on ${leaderContract.chainId} Chain`}
-            </span>
+              <span className="text-xs text-neutral-400/60">
+                {`Leader on ${leaderContract.chainId} Chain ${leaderContract.platform}`}
+              </span>
+            </div>
+
+            <Divider orientation="vertical" />
+
+            <div className="flex w-[150px] flex-col items-center">
+              <AddressWidget
+                address={followerAddress as Address}
+                className="text-sm"
+              />
+
+              <span className="text-xs text-neutral-400/60">
+                {`Follower on ${followerContract.chainId} Chain ${followerContract.platform}`}
+              </span>
+            </div>
           </div>
-
-          <Divider orientation="vertical" />
-
-          <div className="flex w-[150px] flex-col items-center">
-            <AddressWidget
-              address={followerAddress as Address}
-              className="text-sm"
-            />
-
-            <span className="text-xs text-neutral-400/60">
-              {`Follower on ${followerContract.chainId} Chain`}
-            </span>
-          </div>
-        </div>
+        ) : null}
 
         <div className="flex flex-col font-mono">
           <span className="text-xs">
