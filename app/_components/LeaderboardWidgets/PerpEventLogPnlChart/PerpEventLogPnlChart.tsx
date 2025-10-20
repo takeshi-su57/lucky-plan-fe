@@ -200,6 +200,7 @@ export function PerpEventLogPnlChart({
               pnlChartData={pnlAccChartData}
               inOutChartData={inOutChartData}
               openedPositions={openedPositions}
+              positions={missionHistories.length}
               showLatest={showLatestStats}
               duration={duration}
               pnl={pnl}

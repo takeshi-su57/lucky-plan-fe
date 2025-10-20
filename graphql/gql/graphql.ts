@@ -970,6 +970,7 @@ export enum PlanStatus {
 }
 
 export enum Platform {
+  Avnt = 'AVNT',
   Gmx = 'GMX',
   Gns = 'GNS'
 }
@@ -1627,6 +1628,7 @@ export enum UserPermission {
 }
 
 export enum Version {
+  V1 = 'V1',
   V2 = 'V2',
   V9 = 'V9',
   V10 = 'V10'
