@@ -60,6 +60,7 @@ const columns: TableColumnProps[] = [
 const availableVersions = {
   [Platform.Gns]: [Version.V9, Version.V10],
   [Platform.Gmx]: [Version.V2],
+  [Platform.Avnt]: [Version.V1],
 };
 
 export function ContractPanel() {

@@ -647,6 +647,7 @@ enum PlanStatus {
 }
 
 enum Platform {
+  AVNT
   GMX
   GNS
 }
@@ -1124,6 +1125,7 @@ enum UserPermission {
 }
 
 enum Version {
+  V1
   V2
   V9
   V10
