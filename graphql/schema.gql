@@ -228,6 +228,15 @@ Date custom scalar type
 """
 scalar Date
 
+input DecreasePositionSizeInput {
+  address: String!
+  collateralDelta: String!
+  contractId: Int!
+  index: Int!
+  leverageDelta: Int!
+  pairIndex: Int!
+}
+
 type ExpertPnlSnapshot {
   accUSDPnl: Float!
   address: String!
@@ -352,6 +361,15 @@ input GetUserTransactionCountsInput {
   contractId: Int!
   endedAt: Date
   startedAt: Date
+}
+
+input IncreasePositionSizeInput {
+  address: String!
+  collateralDelta: String!
+  contractId: Int!
+  index: Int!
+  leverageDelta: Int!
+  pairIndex: Int!
 }
 
 type Log {
@@ -501,6 +519,9 @@ type Mutation {
   createAutoPlan: Boolean!
   createBot(input: CreateBotInput!): BotBackwardDetails!
   createPlan(createPlanInput: CreatePlanInput!): Plan!
+  decreasePositionSize(
+    input: DecreasePositionSizeInput!
+  ): ContractExecutionResult!
   deleteBot(id: Int!): BotBackwardDetails!
   deleteCategory(id: Int!): TagCategory!
   deletePlan(id: Int!): Int!
@@ -516,6 +537,9 @@ type Mutation {
     walletAddress: String!
   ): AccessToken!
   ignoreMission(id: Int!): Boolean!
+  increasePositionSize(
+    input: IncreasePositionSizeInput!
+  ): ContractExecutionResult!
   initializePnlSnapshot(beginingDate: Date!, isForceBuild: Boolean!): Boolean!
   initializePnlSnapshotV2(
     beginingDate: Date!
@@ -526,6 +550,7 @@ type Mutation {
   liveBot(id: Int!): Boolean!
   liveContract(contractId: Int!, fromBlock: Int): Contract!
   makeSafeApp(password: String!): Boolean!
+  openTradeMarket(input: OpenTradeInput!): ContractExecutionResult!
   pauseSystem: Boolean!
   performTask(id: Int!): Boolean!
   removeFromBlacklist(address: String!): Boolean!
@@ -537,6 +562,7 @@ type Mutation {
   startSubService(service: String!): Boolean!
   stopBot(id: Int!): Boolean!
   stopTask(id: Int!): Boolean!
+  updateLeverage(input: UpdateLeverageInput!): ContractExecutionResult!
   updateMaxOpenMissions(maxCount: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
   updateSl(input: UpdateSlInput!): ContractExecutionResult!
@@ -559,6 +585,17 @@ type Mutation {
     contractId: Int!
     password: String!
   ): Boolean!
+}
+
+input OpenTradeInput {
+  address: String!
+  collateralAmount: String!
+  contractId: Int!
+  leverage: Int!
+  long: Boolean!
+  pairIndex: Int!
+  sl: String!
+  tp: String!
 }
 
 enum PerpTradeHistoryOperation {
@@ -647,6 +684,7 @@ enum PlanStatus {
 }
 
 enum Platform {
+  AVNT
   GMX
   GNS
 }
@@ -1074,6 +1112,13 @@ type TradeTransactionCount {
   weekly: Int!
 }
 
+input UpdateLeverageInput {
+  address: String!
+  contractId: Int!
+  index: Int!
+  newLeverage: Int!
+}
+
 input UpdatePlanInput {
   description: String
   endedAt: Date
@@ -1124,6 +1169,7 @@ enum UserPermission {
 }
 
 enum Version {
+  V1
   V2
   V9
   V10

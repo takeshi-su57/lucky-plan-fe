@@ -138,6 +138,7 @@ export function ExpertV2Panel() {
                   address={item.address as Address}
                   platform={platform}
                   cols={2}
+                  fullHistory={false}
                 />
               </div>
             ))}

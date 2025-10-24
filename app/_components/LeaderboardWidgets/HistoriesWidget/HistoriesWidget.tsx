@@ -112,6 +112,7 @@ export function HistoriesWidget({
             <HistoriesSummary
               address={address}
               actionCounts={actionCounts}
+              positions={openedHistoriesArr.length}
               maxIn={maxIn}
               sumIn={sumIn}
               countIn={countIn}

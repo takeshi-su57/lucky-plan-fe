@@ -3,7 +3,12 @@
 import { useMemo, useState } from "react";
 import { Spinner, Switch } from "@nextui-org/react";
 
-import { BotForwardDetails, Contract, Platform } from "@/graphql/gql/graphql";
+import {
+  BotForwardDetails,
+  BotStatus,
+  Contract,
+  Platform,
+} from "@/graphql/gql/graphql";
 
 import { AutomationSummary } from "@/app-components/AutomationWidgets/AutomationSummary";
 import { AutomationDetails } from "@/app-components/AutomationWidgets/AutomationDetails";
@@ -25,6 +30,7 @@ export type PlanAutomationsProps = {
 
 export function PlanAutomations({ bots }: PlanAutomationsProps) {
   const [isChartFirst, setIsChartFirst] = useState(false);
+  const [showDeadBots, setShowDeadBots] = useState(false);
   const [page, setPage] = useState(1);
 
   const groupedBots = useMemo(() => {
@@ -33,21 +39,23 @@ export function PlanAutomations({ bots }: PlanAutomationsProps) {
       { leaderAddress: string; platform: Platform; bots: BotForwardDetails[] }
     > = {};
 
-    bots.forEach((bot) => {
-      const key = `${bot.leaderAddress.toLowerCase()}-${bot.leaderContract.platform}`;
+    bots
+      .filter((bot) => (showDeadBots ? true : bot.status !== BotStatus.Dead))
+      .forEach((bot) => {
+        const key = `${bot.leaderAddress.toLowerCase()}-${bot.leaderContract.platform}`;
 
-      const obj = botMap[key] || {
-        leaderAddress: bot.leaderAddress,
-        platform: bot.leaderContract.platform,
-        bots: [],
-      };
-      obj.bots.push(bot);
+        const obj = botMap[key] || {
+          leaderAddress: bot.leaderAddress,
+          platform: bot.leaderContract.platform,
+          bots: [],
+        };
+        obj.bots.push(bot);
 
-      botMap[key] = obj;
-    });
+        botMap[key] = obj;
+      });
 
     return Object.values(botMap);
-  }, [bots]);
+  }, [bots, showDeadBots]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -58,6 +66,14 @@ export function PlanAutomations({ bots }: PlanAutomationsProps) {
           size="sm"
         >
           Chart First
+        </Switch>
+
+        <Switch
+          isSelected={showDeadBots}
+          onValueChange={setShowDeadBots}
+          size="sm"
+        >
+          Show Dead Automations
         </Switch>
       </div>
 

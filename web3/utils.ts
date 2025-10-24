@@ -3,6 +3,8 @@ import { Platform, Version } from "@/graphql/gql/graphql";
 import { gnsMultiCollatDiamondAbi as gnsV10Abi } from "./gns/v10/abi/GNSMultiCollatDiamond";
 import { gnsMultiCollatDiamondAbi as gnsV9Abi } from "./gns/v9/abi/GNSMultiCollatDiamond";
 import { EventEmitterAbi as gmxV2Abi } from "./gmx/v2/abi/EventEmitter";
+import { avntGeneralAbi } from "./avnt/v1/abi/AvntGeneral";
+
 import {
   eventParsers as eventParsersV10,
   eventToPerpTradeHistory as eventToPerpTradeHistoryV10,
@@ -15,6 +17,10 @@ import {
   eventParsers as eventParsersForGMX,
   eventToPerpTradeHistory as eventToPerpTradeHistoryForGMX,
 } from "./gmx/v2/eventParsers";
+import {
+  eventParsers as eventParsersForAVNT,
+  eventToPerpTradeHistory as eventToPerpTradeHistoryForAVNT,
+} from "./avnt/v1/eventParsers";
 
 const gnsV10EventSignatures: Record<string, string> = Object.fromEntries(
   gnsV10Abi
@@ -57,6 +63,14 @@ const info = {
       eventToPerpTradeHistory: eventToPerpTradeHistoryForGMX,
     },
   },
+  [Platform.Avnt]: {
+    [Version.V1]: {
+      tradeEventNames: eventParsersForAVNT.map((item) => item.eventName),
+      eventSignatures: null,
+      abi: avntGeneralAbi,
+      eventToPerpTradeHistory: eventToPerpTradeHistoryForAVNT,
+    },
+  },
 };
 
 export function getWeb3Info(platform: Platform, version: Version) {
@@ -71,6 +85,14 @@ export function getWeb3Info(platform: Platform, version: Version) {
   if (platform === Platform.Gmx) {
     if (version === Version.V2) {
       return info[Platform.Gmx][version];
+    } else {
+      throw new Error("Invalid version");
+    }
+  }
+
+  if (platform === Platform.Avnt) {
+    if (version === Version.V1) {
+      return info[Platform.Avnt][version];
     } else {
       throw new Error("Invalid version");
     }

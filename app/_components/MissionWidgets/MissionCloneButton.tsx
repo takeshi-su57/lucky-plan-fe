@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button, Switch, useDisclosure, Checkbox } from "@nextui-org/react";
+import { Button, Switch, useDisclosure } from "@nextui-org/react";
 import { MissionForwardDetails } from "@/graphql/gql/graphql";
 
 import { StandardModal } from "@/components/modals/StandardModal";
@@ -27,7 +27,6 @@ export function MissionCloneButton({
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
-  const [isCustomParams, setIsCustomParams] = useState(false);
   const [collateralUsdAmount, setCollateralUsdAmount] = useState("0");
   const [leverage, setLeverage] = useState("0");
   const [isLong, setIsLong] = useState(true);
@@ -86,33 +85,23 @@ export function MissionCloneButton({
   const isInvalidLeverage = Number.isNaN(+leverage) || +leverage < 1.1;
 
   const handleCloneMission = () => {
-    if (isCustomParams) {
-      if (isInvalidCollateralAmount || isInvalidLeverage) {
-        return;
-      }
-
-      cloneMission({
-        variables: {
-          id: mission.id,
-          manualParams: {
-            collateralAmount: (+collateralUsdAmount * 1e6).toString(),
-            leverage: Math.floor(+leverage * 1e3),
-            long: isLong,
-          },
-        },
-      });
-    } else {
-      cloneMission({
-        variables: {
-          id: mission.id,
-        },
-      });
+    if (isInvalidCollateralAmount || isInvalidLeverage) {
+      return;
     }
+
+    cloneMission({
+      variables: {
+        id: mission.id,
+        manualParams: {
+          collateralAmount: (+collateralUsdAmount * 1e6).toString(),
+          leverage: Math.floor(+leverage * 1e3),
+          long: isLong,
+        },
+      },
+    });
   };
 
-  const isDisabled = isCustomParams
-    ? isInvalidCollateralAmount || isInvalidLeverage
-    : false;
+  const isDisabled = isInvalidCollateralAmount || isInvalidLeverage;
 
   return (
     <>
@@ -130,36 +119,25 @@ export function MissionCloneButton({
             Clone Mission
           </h1>
 
-          <Checkbox
-            isSelected={isCustomParams}
-            onValueChange={setIsCustomParams}
+          <NumericInput
+            amount={collateralUsdAmount}
+            onChange={setCollateralUsdAmount}
+            label="Collateral USDC Amount"
+          />
+
+          <NumericInput
+            amount={leverage}
+            onChange={setLeverage}
+            label="Leverage"
+          />
+
+          <Switch
+            isSelected={isLong}
+            color={isLong ? "success" : "danger"}
+            onValueChange={setIsLong}
           >
-            Use Custom Params
-          </Checkbox>
-
-          {isCustomParams ? (
-            <>
-              <NumericInput
-                amount={collateralUsdAmount}
-                onChange={setCollateralUsdAmount}
-                label="Collateral USDC Amount"
-              />
-
-              <NumericInput
-                amount={leverage}
-                onChange={setLeverage}
-                label="Leverage"
-              />
-
-              <Switch
-                isSelected={isLong}
-                color={isLong ? "success" : "danger"}
-                onValueChange={setIsLong}
-              >
-                {isLong ? "Long" : "Short"}
-              </Switch>
-            </>
-          ) : null}
+            {isLong ? "Long" : "Short"}
+          </Switch>
 
           <Button
             onClick={handleCloneMission}

@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import {
-  Button,
   Card,
   CardBody,
   Chip,
@@ -18,6 +17,7 @@ import dayjs from "dayjs";
 import { getServerTimezone } from "@/utils";
 
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
+import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import {
   useGetPnlSnapshotInitializedFlag,
   useBuildPnlSnapshots,
@@ -282,7 +282,7 @@ export function PnlSnapshotPanel() {
             />
 
             {selected === "v1" ? (
-              <Button
+              <ButtonWithConfirm
                 onClick={handleForceBuildPnlSnapshotsV1}
                 isLoading={v1BuildPnlSnapshotsLoading}
                 color="primary"
@@ -291,11 +291,11 @@ export function PnlSnapshotPanel() {
                 }
               >
                 {v1Exists ? "Re-Run" : "Build"}
-              </Button>
+              </ButtonWithConfirm>
             ) : null}
 
             {selected === "v2" ? (
-              <Button
+              <ButtonWithConfirm
                 onClick={handleBuildPnlSnapshotsV2}
                 isLoading={v2BuildPnlSnapshotsLoading}
                 color="primary"
@@ -304,11 +304,11 @@ export function PnlSnapshotPanel() {
                 }
               >
                 {v2Exists ? "Re-Build" : "Build"}
-              </Button>
+              </ButtonWithConfirm>
             ) : null}
 
             {selected === "v2" ? (
-              <Button
+              <ButtonWithConfirm
                 onClick={handleDynamicBuildPnlSnapshotsV2}
                 isLoading={v2DynamicBuildPnlSnapshotsLoading}
                 color="primary"
@@ -318,10 +318,10 @@ export function PnlSnapshotPanel() {
                 }
               >
                 {v2Exists ? "Re-Build Dynamic" : "Build Dynamic"}
-              </Button>
+              </ButtonWithConfirm>
             ) : null}
 
-            <Button
+            <ButtonWithConfirm
               onClick={handleInitializePnlSnapshot}
               isLoading={
                 selected === "v1"
@@ -336,9 +336,9 @@ export function PnlSnapshotPanel() {
               }
             >
               Sequence Initialization
-            </Button>
+            </ButtonWithConfirm>
 
-            <Button
+            <ButtonWithConfirm
               onClick={handleForceInitializePnlSnapshot}
               isLoading={
                 selected === "v1"
@@ -353,7 +353,7 @@ export function PnlSnapshotPanel() {
               }
             >
               Force Initialization
-            </Button>
+            </ButtonWithConfirm>
           </div>
 
           <DataTable
