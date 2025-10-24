@@ -25,6 +25,7 @@ import { PendingOrderDetails } from "./PendingOrderDetails";
 import { FollowerDetail } from "@/graphql/gql/graphql";
 
 import { PaginatedViews } from "@/components/views/PaginatedViews";
+import { OpenPositionButton } from "./OpenPositionButton";
 
 type TabType = "chart" | "positions";
 
@@ -114,6 +115,11 @@ export function FollowerDetails({
           >
             Withdraw All USDC
           </Button>
+
+          <OpenPositionButton
+            address={follower.address}
+            contractId={follower.contractId}
+          />
         </div>
       </div>
 

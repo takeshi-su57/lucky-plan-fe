@@ -51,7 +51,7 @@ export function TpUpdateButton({
 
   return (
     <>
-      <Button color="warning" size="sm" onClick={onOpen} isLoading={loading}>
+      <Button color="default" size="sm" onClick={onOpen} isLoading={loading}>
         Update TP
       </Button>
 
