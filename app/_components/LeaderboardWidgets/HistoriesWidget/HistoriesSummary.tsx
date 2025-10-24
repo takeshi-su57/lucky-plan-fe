@@ -24,6 +24,7 @@ export type HistoriesSummaryProps = {
   pnlChartData: HistoryChartData[];
   inOutChartData: HistoryChartData[];
   openedPositions: number;
+  positions: number;
   duration: {
     latest: {
       max: number;
@@ -99,6 +100,7 @@ export function HistoriesSummary({
   pnlChartData,
   inOutChartData,
   openedPositions,
+  positions,
   duration,
   pnl,
   size,
@@ -137,8 +139,8 @@ export function HistoriesSummary({
     },
     {
       id: "tradeCount",
-      label: "Trades",
-      value: pnlChartData.length,
+      label: "positions",
+      value: positions,
     },
     {
       id: "firstActivity",

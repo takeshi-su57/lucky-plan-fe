@@ -1393,8 +1393,54 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       imageUrl:
         "https://assets.coingecko.com/coins/images/66489/standard/Plasma-symbol-green-1.png?1755142558",
       coingeckoUrl: "https://www.coingecko.com/en/coins/plasma",
-      explorerUrl:
-        "https://arbiscan.io/token/0x2e73bDBee83D91623736D514b0BB41f2afd9C7Fd",
+      isSynthetic: true,
+    },
+    "0x2aab60e62f05d17e58dec982870bfadc7f4e7adf": {
+      name: "Aster",
+      symbol: "ASTER",
+      address: "0x2aAB60E62f05d17e58dEc982870bfAdc7F4e7ADF",
+      decimals: 18,
+      priceDecimals: 4,
+      categories: ["defi"],
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/69040/standard/_ASTER.png?1757326782",
+      coingeckoUrl: "https://www.coingecko.com/en/coins/aster-2",
+      isSynthetic: true,
+    },
+    "0x95c317066cf214b2e6588b2685d949384504f51e": {
+      name: "0G",
+      symbol: "0G",
+      address: "0x95c317066CF214b2E6588B2685D949384504F51e",
+      decimals: 18,
+      priceDecimals: 4,
+      categories: ["layer1"],
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/69096/standard/0G_1024x1024_Circular_Outlined.png?1758637574",
+      coingeckoUrl: "https://www.coingecko.com/en/coins/0g",
+      isSynthetic: true,
+    },
+    "0xdb58eb7f408eba2176ecb44a4696292605cceb39": {
+      name: "Avantis",
+      symbol: "AVNT",
+      address: "0xdB58EB7f408EbA2176eCb44A4696292605cCEB39",
+      decimals: 18,
+      priceDecimals: 5,
+      categories: ["defi"],
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/68972/standard/avnt-token.png?1757134448",
+      coingeckoUrl: "https://www.coingecko.com/en/coins/avantis",
+      isSynthetic: true,
+    },
+    "0xc4017cfe7d7eabde63d3252cabf26a286fe2b1e0": {
+      name: "Linea",
+      symbol: "LINEA",
+      address: "0xc4017CFe7D7eaBDE63d3252caBF26A286fE2B1E0",
+      decimals: 18,
+      priceDecimals: 6,
+      categories: ["layer2"],
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/68507/standard/linea-logo.jpeg?1756025484",
+      coingeckoUrl: "https://www.coingecko.com/en/coins/linea",
       isSynthetic: true,
     },
   },

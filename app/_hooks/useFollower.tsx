@@ -105,6 +105,54 @@ export const CLOSE_TRADE_MARKET_DOCUMENT = graphql(`
   }
 `);
 
+export const OPEN_TRADE_MARKET_DOCUMENT = graphql(`
+  mutation openTradeMarket($input: OpenTradeInput!) {
+    openTradeMarket(input: $input) {
+      message
+      success
+      address
+      contractId
+      index
+    }
+  }
+`);
+
+export const INCREASE_POSITION_SIZE_DOCUMENT = graphql(`
+  mutation increasePositionSize($input: IncreasePositionSizeInput!) {
+    increasePositionSize(input: $input) {
+      message
+      success
+      address
+      contractId
+      index
+    }
+  }
+`);
+
+export const DECREASE_POSITION_SIZE_DOCUMENT = graphql(`
+  mutation decreasePositionSize($input: DecreasePositionSizeInput!) {
+    decreasePositionSize(input: $input) {
+      message
+      success
+      address
+      contractId
+      index
+    }
+  }
+`);
+
+export const UPDATE_LEVERAGE_DOCUMENT = graphql(`
+  mutation updateLeverage($input: UpdateLeverageInput!) {
+    updateLeverage(input: $input) {
+      message
+      success
+      address
+      contractId
+      index
+    }
+  }
+`);
+
 export const CANCEL_ORDER_AFTER_TIMEOUT_DOCUMENT = graphql(`
   mutation cancelOrderAfterTimeout($input: CancelOrderAfterTimeoutInput!) {
     cancelOrderAfterTimeout(input: $input) {
@@ -339,10 +387,7 @@ export function useGenerateFollower() {
         (data) => {
           if (data && data.getAllFollowers.length > 0) {
             const alreadyExists = data.getAllFollowers.filter(
-              (follower) =>
-                followerInfo.address ===
-                getFragmentData(FOLLOWER_INFO_FRAGMENT_DOCUMENT, follower)
-                  .address,
+              (follower) => followerInfo.address === follower.address,
             );
 
             if (alreadyExists.length > 0) {
@@ -396,6 +441,134 @@ export function useCloseTradeMarket() {
   }, [client.cache, error, enqueueSnackbar, data]);
 
   return { closeTradeMarket, loading };
+}
+
+export function useOpenTradeMarket() {
+  const [openTradeMarket, { data, error, loading }] = useMutation(
+    OPEN_TRADE_MARKET_DOCUMENT,
+  );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      if (data.openTradeMarket.success) {
+        enqueueSnackbar("Success at open trade market!", {
+          variant: "success",
+        });
+
+        client.cache.modify({
+          fields: {
+            getAllFollowerDetails: (_, { INVALIDATE }) => {
+              return INVALIDATE;
+            },
+          },
+        });
+      } else {
+        enqueueSnackbar(data.openTradeMarket.message, {
+          variant: "error",
+        });
+      }
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return { openTradeMarket, loading };
+}
+
+export function useIncreasePositionSize() {
+  const [increasePositionSize, { data, error, loading }] = useMutation(
+    INCREASE_POSITION_SIZE_DOCUMENT,
+  );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      if (data.increasePositionSize.success) {
+        enqueueSnackbar("Success at increase position size!", {
+          variant: "success",
+        });
+
+        client.cache.modify({
+          fields: {
+            getAllFollowerDetails: (_, { INVALIDATE }) => {
+              return INVALIDATE;
+            },
+          },
+        });
+      } else {
+        enqueueSnackbar(data.increasePositionSize.message, {
+          variant: "error",
+        });
+      }
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return { increasePositionSize, loading };
+}
+
+export function useDecreasePositionSize() {
+  const [decreasePositionSize, { data, error, loading }] = useMutation(
+    DECREASE_POSITION_SIZE_DOCUMENT,
+  );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      if (data.decreasePositionSize.success) {
+        enqueueSnackbar("Success at decrease position size!", {
+          variant: "success",
+        });
+
+        client.cache.modify({
+          fields: {
+            getAllFollowerDetails: (_, { INVALIDATE }) => {
+              return INVALIDATE;
+            },
+          },
+        });
+      } else {
+        enqueueSnackbar(data.decreasePositionSize.message, {
+          variant: "error",
+        });
+      }
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return { decreasePositionSize, loading };
+}
+
+export function useUpdateLeverage() {
+  const [updateLeverage, { data, error, loading }] = useMutation(
+    UPDATE_LEVERAGE_DOCUMENT,
+  );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      if (data.updateLeverage.success) {
+        enqueueSnackbar("Success at update leverage!", {
+          variant: "success",
+        });
+
+        client.cache.modify({
+          fields: {
+            getAllFollowerDetails: (_, { INVALIDATE }) => {
+              return INVALIDATE;
+            },
+          },
+        });
+      } else {
+        enqueueSnackbar(data.updateLeverage.message, {
+          variant: "error",
+        });
+      }
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return { updateLeverage, loading };
 }
 
 export function useCancelOrderAfterTimeout() {

@@ -9,14 +9,19 @@ export type EventLogsWidgetProps = {
   address: string;
   platform: Platform;
   cols: 1 | 2 | 4;
+  fullHistory?: boolean;
 };
 
 export function EventLogsWidget({
   address,
   platform,
   cols,
+  fullHistory = true,
 }: EventLogsWidgetProps) {
   const { eventLogs, loading } = useGetPerpEventLogs([address], platform);
+
+  const fullLogs = eventLogs[0] || [];
+  const limitedLogs = fullLogs.slice(Math.max(0, fullLogs.length - 10000), fullLogs.length);
 
   return (
     <div className="flex flex-col gap-4">
@@ -25,7 +30,7 @@ export function EventLogsWidget({
       ) : (
         <PerpEventLogPnlChart
           address={address as Address}
-          perpTradingEventLogs={eventLogs[0] || []}
+          perpTradingEventLogs={fullHistory ? fullLogs : limitedLogs}
           hideTags={false}
           cols={cols}
         />
