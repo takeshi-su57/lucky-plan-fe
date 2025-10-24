@@ -11,6 +11,10 @@ import { SlUpdateButton } from "./SlUpdateButton";
 import { TpUpdateButton } from "./TpUpdateButton";
 import { WithdrawPositivePnlButton } from "./WithdrawPositivePnlButton";
 import { EventLogsModalButton } from "../LeaderboardWidgets/EventLogsModalButton";
+import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
+import { UpdateLeverageButton } from "./UpdateLeverageButton";
+import { IncreasePositionButton } from "./IncreasePositionButton";
+import { DecreasePositionButton } from "./DecreasePositionButton";
 
 export type PositionDetailsProps = {
   address: string;
@@ -59,34 +63,56 @@ export function PositionDetails({
   return (
     <div className="flex flex-col gap-2 border-t border-t-neutral-400/20 py-6">
       <div className="flex flex-row items-center justify-between gap-4">
-        <Button
-          onClick={handleClosePosition}
-          color="danger"
-          className="w-fit"
-          size="sm"
-          isDisabled={loading}
-          isLoading={loading}
-        >
-          Close Position
-        </Button>
+        <div className="flex flex-row items-center gap-4">
+          <ButtonWithConfirm
+            onClick={handleClosePosition}
+            color="danger"
+            className="w-fit"
+            size="sm"
+            isDisabled={loading}
+            isLoading={loading}
+          >
+            Close Position
+          </ButtonWithConfirm>
 
-        <SlUpdateButton
-          address={address}
-          contractId={contractId}
-          index={index}
-        />
+          <IncreasePositionButton
+            address={address}
+            contractId={contractId}
+            index={index}
+            pairIndex={+trade.pairIndex}
+          />
 
-        <TpUpdateButton
-          address={address}
-          contractId={contractId}
-          index={index}
-        />
+          <DecreasePositionButton
+            address={address}
+            contractId={contractId}
+            index={index}
+            pairIndex={+trade.pairIndex}
+          />
 
-        <WithdrawPositivePnlButton
-          address={address}
-          contractId={contractId}
-          index={index}
-        />
+          <UpdateLeverageButton
+            address={address}
+            contractId={contractId}
+            index={index}
+          />
+
+          <SlUpdateButton
+            address={address}
+            contractId={contractId}
+            index={index}
+          />
+
+          <TpUpdateButton
+            address={address}
+            contractId={contractId}
+            index={index}
+          />
+
+          <WithdrawPositivePnlButton
+            address={address}
+            contractId={contractId}
+            index={index}
+          />
+        </div>
 
         {mission ? (
           <div className="flex flex-row items-center gap-4">

@@ -5,54 +5,57 @@ import { Button, useDisclosure } from "@nextui-org/react";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 
-import { useUpdateSl } from "@/app/_hooks/useFollower";
+import { useIncreasePositionSize } from "@/app/_hooks/useFollower";
 
 import { NumericInput } from "@/components/inputs/NumericInput";
 
-export type SlUpdateButtonProps = {
+export type IncreasePositionButtonProps = {
   address: string;
   contractId: number;
   index: number;
+  pairIndex: number;
 };
 
-export function SlUpdateButton({
+export function IncreasePositionButton({
   address,
   contractId,
   index,
-}: SlUpdateButtonProps) {
+  pairIndex,
+}: IncreasePositionButtonProps) {
   const { isOpen, onOpenChange, onOpen, onClose } = useDisclosure();
 
-  const { updateSl, loading } = useUpdateSl();
+  const { increasePositionSize, loading } = useIncreasePositionSize();
 
-  const [slPrice, setSlPrice] = useState("0");
+  const [leverageDelta, setLeverageDelta] = useState("0");
+  const [collateralDelta, setCollateralDelta] = useState("0");
 
   const handleUpdate = () => {
-    if (slPrice.trim() === "") {
-      return;
-    }
-
-    updateSl({
+    increasePositionSize({
       variables: {
         input: {
           address,
           contractId,
           index,
-          newSl: slPrice,
+          pairIndex,
+          leverageDelta: Number(leverageDelta) * 1000,
+          collateralDelta: Math.floor(Number(collateralDelta) * 1e6).toString(),
         },
       },
       onCompleted: () => {
-        setSlPrice("0");
+        setLeverageDelta("0");
+        setCollateralDelta("0");
         onClose();
       },
     });
   };
 
-  const isDisabledUpdate = slPrice.trim() === "";
+  const isDisabledUpdate =
+    leverageDelta.trim() === "" || collateralDelta.trim() === "";
 
   return (
     <>
-      <Button color="default" size="sm" onClick={onOpen} isLoading={loading}>
-        Update SL
+      <Button color="secondary" size="sm" onClick={onOpen} isLoading={loading}>
+        Increase Position
       </Button>
 
       <StandardModal
@@ -62,14 +65,20 @@ export function SlUpdateButton({
       >
         <div className="flex flex-col gap-3.5">
           <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
-            Update SL
+            Increase Position
           </h1>
 
-          <div className="flex flex-row items-center gap-4">
+          <div className="flex flex-col gap-4">
             <NumericInput
-              amount={slPrice}
-              onChange={setSlPrice}
-              label="SL Price (BigInt)"
+              amount={leverageDelta}
+              onChange={setLeverageDelta}
+              label="Leverage Delta"
+            />
+
+            <NumericInput
+              amount={collateralDelta}
+              onChange={setCollateralDelta}
+              label="Collateral Delta"
             />
 
             <Button
@@ -78,7 +87,7 @@ export function SlUpdateButton({
               isLoading={loading}
               className="w-[180px]"
             >
-              Update SL
+              Increase Position
             </Button>
           </div>
         </div>
