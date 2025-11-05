@@ -193,7 +193,11 @@ export function AutomationSummary({ bot, simple }: AutomationSummaryProps) {
                 .filter((mission) => mission.status === MissionStatus.Closed)
                 .map((mission) => mission.tasks.map((task) => task.action))}
               openedMissionActions={validBotMisions
-                .filter((mission) => mission.status !== MissionStatus.Closed)
+                .filter(
+                  (mission) =>
+                    mission.status !== MissionStatus.Closed &&
+                    mission.status !== MissionStatus.Ignored,
+                )
                 .map((mission) => mission.tasks.map((task) => task.action))}
             />
           ) : null}
@@ -223,7 +227,11 @@ export function AutomationSummary({ bot, simple }: AutomationSummaryProps) {
                   .filter((action) => action !== null),
               )}
             openedMissionActions={validBotMisions
-              .filter((mission) => mission.status !== MissionStatus.Closed)
+              .filter(
+                (mission) =>
+                  mission.status !== MissionStatus.Closed &&
+                  mission.status !== MissionStatus.Ignored,
+              )
               .map((mission) =>
                 mission.tasks
                   .map((task) => {

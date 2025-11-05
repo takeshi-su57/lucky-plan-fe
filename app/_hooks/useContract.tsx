@@ -104,7 +104,10 @@ export function useGetAllContracts() {
 export function useGetAllGnsContracts() {
   const allContracts = useGetAllContracts();
 
-  return useMemo(() => allContracts.filter((contract) => contract.platform === Platform.Gns), [allContracts]);
+  return useMemo(
+    () => allContracts.filter((contract) => contract.platform === Platform.Gns),
+    [allContracts],
+  );
 }
 
 export function useDisableContract() {

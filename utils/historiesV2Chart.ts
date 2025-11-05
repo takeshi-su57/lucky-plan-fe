@@ -9,7 +9,7 @@ import { getWeb3Info } from "@/web3/utils";
 import { SimpleLinearRegression } from "ml-regression-simple-linear";
 
 export function getSortedPartialHistories(
-  histories: (PerpTradeHistory & { date: Date })[],
+  histories: (PerpTradeHistory & { date: Date; id: number })[],
   filters: {
     range?: { from?: Date; to?: Date };
   },
@@ -51,11 +51,12 @@ export function getSortedPartialHistories(
   let sumOfSize = 0;
   let sumOfCollaterals = 0;
 
-  const missionHistories: (PerpTradeHistory & { date: Date })[][] = [];
+  const missionHistories: (PerpTradeHistory & { date: Date; id: number })[][] =
+    [];
 
   const groupedByPositionKey: Record<
     string,
-    (PerpTradeHistory & { date: Date })[]
+    (PerpTradeHistory & { date: Date; id: number })[]
   > = {};
 
   sortedHistories.forEach((history) => {
@@ -87,7 +88,8 @@ export function getSortedPartialHistories(
       let maxLeverages = 0;
       let tempPnl = 0;
 
-      const tempHistories: (PerpTradeHistory & { date: Date })[] = [];
+      const tempHistories: (PerpTradeHistory & { date: Date; id: number })[] =
+        [];
 
       for (let j = i; j < histories.length; j++) {
         const nextHistory = histories[j];
@@ -340,6 +342,7 @@ export function convertPerpTradingEventLogToHistory(
 
       return {
         ...history,
+        id: log.id,
         date: new Date(log.date),
       };
     })
@@ -347,7 +350,7 @@ export function convertPerpTradingEventLogToHistory(
 }
 
 export function getHistoriesChartData(
-  perpTradeHistories: (PerpTradeHistory & { date: Date })[],
+  perpTradeHistories: (PerpTradeHistory & { date: Date; id: number })[],
   filters: {
     range?: { from?: Date; to?: Date };
   },

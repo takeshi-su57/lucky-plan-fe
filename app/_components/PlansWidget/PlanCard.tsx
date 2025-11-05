@@ -224,6 +224,7 @@ export function PlanCard({ plan }: PlanCardProps) {
                         .filter(
                           (mission) =>
                             mission.status !== MissionStatus.Closed &&
+                            mission.status !== MissionStatus.Ignored &&
                             !!mission.achievePositionKey,
                         )
                         .map((mission) =>

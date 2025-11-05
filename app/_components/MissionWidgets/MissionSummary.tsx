@@ -80,7 +80,8 @@ export function MissionSummary({
                 : []
             }
             openedMissionActions={
-              mission.status !== MissionStatus.Closed
+              mission.status !== MissionStatus.Closed &&
+              mission.status !== MissionStatus.Ignored
                 ? [mission.tasks.map((task) => task.action)]
                 : []
             }
@@ -114,7 +115,8 @@ export function MissionSummary({
               : []
           }
           openedMissionActions={
-            mission.status !== MissionStatus.Closed
+            mission.status !== MissionStatus.Closed &&
+            mission.status !== MissionStatus.Ignored
               ? [
                   mission.tasks
                     .map((task) => {

@@ -253,22 +253,6 @@ type ExpertPnlSnapshot {
   score: Float!
 }
 
-type ExpertPnlSnapshotV2 {
-  accUSDPnl: Float!
-  address: String!
-  avgDuration: Float!
-  avgPnlRatio: Float!
-  dateStr: String!
-  histories: [PerpTradingEventLog!]!
-  id: Int!
-  kind: PnlSnapshotKind!
-  maxSize: Float!
-  openedPositions: Int!
-  platform: Platform!
-  ratio: Float!
-  score: Float!
-}
-
 type ExpertPnlSnapshotV2Connection {
   edges: [ExpertPnlSnapshotV2Edge!]!
   pageInfo: ExpertPnlSnapshotV2PageInfo!
@@ -276,7 +260,22 @@ type ExpertPnlSnapshotV2Connection {
 
 type ExpertPnlSnapshotV2Edge {
   cursor: Int!
-  node: ExpertPnlSnapshotV2!
+  node: ExpertPnlSnapshotV2Node!
+}
+
+type ExpertPnlSnapshotV2Node {
+  accUSDPnl: Float!
+  address: String!
+  avgDuration: Float!
+  avgPnlRatio: Float!
+  dateStr: String!
+  id: Int!
+  kind: PnlSnapshotKind!
+  maxSize: Float!
+  openedPositions: Int!
+  platform: Platform!
+  ratio: Float!
+  score: Float!
 }
 
 type ExpertPnlSnapshotV2PageInfo {
@@ -529,6 +528,8 @@ type Mutation {
   openTradeMarket(input: OpenTradeInput!): ContractExecutionResult!
   pauseSystem: Boolean!
   performTask(id: Int!): Boolean!
+  registerTradingSignalLog(address: String!, platform: Platform!): TradingSignalLog!
+  removeEventLogsFromTradingSignalLog(eventLogIds: [Int!]!, signalId: Int!): TradingSignalLog!
   removeFromBlacklist(address: String!): Boolean!
   removeFromWhitelist(address: String!): Boolean!
   removeTagFromWalletAccount(input: ChangeUserTagInput!): WalletAccount!
@@ -538,6 +539,7 @@ type Mutation {
   startSubService(service: String!): Boolean!
   stopBot(id: Int!): Boolean!
   stopTask(id: Int!): Boolean!
+  unregisterTradingSignalLog(signalId: Int!): TradingSignalLog!
   updateLeverage(input: UpdateLeverageInput!): ContractExecutionResult!
   updateMaxOpenMissions(maxCount: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
@@ -782,7 +784,7 @@ type Query {
   getLogsSeverityCounts: [SeverityCount!]!
   getMaxOpenMissions: Int!
   getMicroserviceStatus: [MicroserviceStatus!]!
-  getPerpEventLogs(addresses: [String!]!, platform: Platform!): [[PerpTradingEventLog!]!]!
+  getPerpEventLogs(addresses: [String!]!, limit: Int, platform: Platform!): [[PerpTradingEventLog!]!]!
   getPlanById(id: Int!): PlanForwardDetails
   getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
   getPnlSnapshotInitializedFlag: [PnlSnapshotInitializedFlag!]!
@@ -796,6 +798,7 @@ type Query {
   getTestingReport(after: Int, first: Int!): TestingReportConnection!
   getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
   getTradeTransactionCounts(addresses: [String!]!, contractIds: [Int!]!): TradeTransactionCount!
+  getTradingSignalLogs: [TradingSignalLog!]!
   getUserTransactionCounts(inputs: [GetUserTransactionCountsInput!]!): [TradeTransactionCount!]!
   getWalletAccountByAddress(input: GetUserByAddressInput!): WalletAccount!
   getWhitelist: [String!]
@@ -855,6 +858,7 @@ type Subscription {
   planUpdated(userId: String!): Plan!
   taskCreated(userId: String!): [TaskBackwardDetails!]!
   taskUpdated(userId: String!): [TaskBackwardDetails!]!
+  tradingSignalLogUpdated: [TradingSignalLog!]!
 }
 
 type Tag {
@@ -1019,6 +1023,13 @@ type TradeTransactionCount {
   daily: Int!
   monthly: Int!
   weekly: Int!
+}
+
+type TradingSignalLog {
+  address: String!
+  eventLogs: [PerpTradingEventLog!]!
+  id: Int!
+  platform: String!
 }
 
 input UpdateLeverageInput {

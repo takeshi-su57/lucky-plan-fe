@@ -283,7 +283,7 @@ export function PnlSnapshotPanel() {
 
             {selected === "v1" ? (
               <ButtonWithConfirm
-                onClick={handleForceBuildPnlSnapshotsV1}
+                onPress={handleForceBuildPnlSnapshotsV1}
                 isLoading={v1BuildPnlSnapshotsLoading}
                 color="primary"
                 isDisabled={
@@ -296,7 +296,7 @@ export function PnlSnapshotPanel() {
 
             {selected === "v2" ? (
               <ButtonWithConfirm
-                onClick={handleBuildPnlSnapshotsV2}
+                onPress={handleBuildPnlSnapshotsV2}
                 isLoading={v2BuildPnlSnapshotsLoading}
                 color="primary"
                 isDisabled={
@@ -309,7 +309,7 @@ export function PnlSnapshotPanel() {
 
             {selected === "v2" ? (
               <ButtonWithConfirm
-                onClick={handleDynamicBuildPnlSnapshotsV2}
+                onPress={handleDynamicBuildPnlSnapshotsV2}
                 isLoading={v2DynamicBuildPnlSnapshotsLoading}
                 color="primary"
                 isDisabled={
@@ -322,7 +322,7 @@ export function PnlSnapshotPanel() {
             ) : null}
 
             <ButtonWithConfirm
-              onClick={handleInitializePnlSnapshot}
+              onPress={handleInitializePnlSnapshot}
               isLoading={
                 selected === "v1"
                   ? v1InitializePnlSnapshotLoading
@@ -339,7 +339,7 @@ export function PnlSnapshotPanel() {
             </ButtonWithConfirm>
 
             <ButtonWithConfirm
-              onClick={handleForceInitializePnlSnapshot}
+              onPress={handleForceInitializePnlSnapshot}
               isLoading={
                 selected === "v1"
                   ? v1InitializePnlSnapshotLoading

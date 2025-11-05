@@ -71,7 +71,7 @@ export const PNL_SNAPSHOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   }
 `);
 
-export const GET_PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT = graphql(`
+export const PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment PerpTradingEventLogInfo on PerpTradingEventLog {
     address
     block
@@ -355,8 +355,16 @@ export const GET_TESTING_REPORT_DOCUMENT = graphql(`
 `);
 
 export const GET_PERP_EVENT_LOGS_DOCUMENT = graphql(`
-  query getPerpEventLogs($addresses: [String!]!, $platform: Platform!) {
-    getPerpEventLogs(addresses: $addresses, platform: $platform) {
+  query getPerpEventLogs(
+    $addresses: [String!]!
+    $platform: Platform!
+    $limit: Int
+  ) {
+    getPerpEventLogs(
+      addresses: $addresses
+      platform: $platform
+      limit: $limit
+    ) {
       ...PerpTradingEventLogInfo
     }
   }
@@ -544,7 +552,7 @@ function getPnlSnapshotV2Info(
   return {
     ...snapshotInfo,
     perpTradingEventLogs: snapshotInfo.perpTradingEventLogs.map((eventLog) =>
-      getFragmentData(GET_PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT, eventLog),
+      getFragmentData(PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT, eventLog),
     ),
   };
 }
@@ -1019,11 +1027,16 @@ export function useGetStatisticData() {
   };
 }
 
-export function useGetPerpEventLogs(addresses: string[], platform: Platform) {
+export function useGetPerpEventLogs(
+  addresses: string[],
+  platform: Platform,
+  limit: number | null,
+) {
   const { data, loading } = useQuery(GET_PERP_EVENT_LOGS_DOCUMENT, {
     variables: {
       addresses,
       platform,
+      limit,
     },
   });
 
@@ -1033,7 +1046,7 @@ export function useGetPerpEventLogs(addresses: string[], platform: Platform) {
     }
     return data.getPerpEventLogs.map((eventLogs) =>
       eventLogs.map((eventLog) =>
-        getFragmentData(GET_PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT, eventLog),
+        getFragmentData(PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT, eventLog),
       ),
     );
   }, [data]);
