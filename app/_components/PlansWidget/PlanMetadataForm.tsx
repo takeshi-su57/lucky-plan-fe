@@ -102,8 +102,8 @@ export function PlanMetadataForm({
         <DateRangePicker
           label="Plan Duration"
           visibleMonths={2}
-          value={scheduleRange}
-          onChange={setScheduleRange}
+          value={scheduleRange as any}
+          onChange={setScheduleRange as any}
           minValue={now(getServerTimezone()).subtract({ days: 1 })}
           timeInputProps={{}}
           errorMessage={scheduledEndHelper}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   AccordionItem,
   Accordion,
@@ -14,9 +14,6 @@ import { Address } from "viem";
 import { parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
 
-import { PersonalTradeHistory } from "@/types";
-
-import { AutomationGridChart } from "../PlansWidget/AutomationChart";
 import { FutureChart } from "./FutureChart";
 import { LeaderItem, LeaderParams } from "./LeaderItem";
 import { getServerTimezone } from "@/utils";
@@ -43,15 +40,6 @@ export function MergedLeaderboard({
     dayjs(endDate).subtract(15, "days").toDate(),
   );
 
-  const [totalLeaderHistories, setTotalLeaderHistories] = useState<
-    PersonalTradeHistory[]
-  >([]);
-
-  useEffect(() => {
-    const histories = leaders.map((leader) => leader.histories);
-    setTotalLeaderHistories(histories.flat());
-  }, [leaders]);
-
   return (
     <div className="flex flex-col gap-2">
       <Tabs
@@ -70,8 +58,10 @@ export function MergedLeaderboard({
       <DatePicker
         className="max-w-[284px]"
         label="Pick a past date"
-        value={parseDate(dayjs(startDate).format("YYYY-MM-DD"))}
-        onChange={(date) => setStartDate(date.toDate(getServerTimezone()))}
+        value={parseDate(dayjs(startDate).format("YYYY-MM-DD")) as any}
+        onChange={(date) =>
+          date && (setStartDate(date.toDate(getServerTimezone())) as any)
+        }
         maxValue={parseDate(
           dayjs(endDate).subtract(1, "day").format("YYYY-MM-DD"),
         )}

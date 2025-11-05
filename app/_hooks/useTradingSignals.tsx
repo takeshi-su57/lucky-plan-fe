@@ -67,7 +67,10 @@ export const REMOVE_EVENT_LOGS_FROM_TRADING_SIGNAL_LOG_MUTATION_DOCUMENT =
 export const TRADING_SIGNAL_LOG_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
   subscription tradingSignalLogUpdated {
     tradingSignalLogUpdated {
-      ...TradingSignalLogInfo
+      id
+      eventLogs {
+        ...PerpTradingEventLogInfo
+      }
     }
   }
 `);
@@ -156,15 +159,21 @@ export function useSubscribeTradingSignalLogs() {
 
   useEffect(() => {
     if (newData && !error) {
-      const tradingSignalLogs =
-        newData.tradingSignalLogUpdated.map(getTradingSignalLogs);
+      const tradingSignalLogUpdated = newData.tradingSignalLogUpdated.map(
+        (log) => ({
+          id: log.id,
+          eventLogs: log.eventLogs.map((eventLog) =>
+            getFragmentData(PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT, eventLog),
+          ),
+        }),
+      );
 
-      enqueueSnackbar(<SignalMessage signals={tradingSignalLogs} />, {
+      enqueueSnackbar(<SignalMessage signals={tradingSignalLogUpdated} />, {
         variant: "default",
         autoHideDuration: 30000,
       });
 
-      tradingSignalLogs.forEach((tradingSignalLog) => {
+      tradingSignalLogUpdated.forEach((tradingSignalLog) => {
         const old = client.cache.readFragment({
           id: client.cache.identify({
             __typename: "TradingSignalLog",

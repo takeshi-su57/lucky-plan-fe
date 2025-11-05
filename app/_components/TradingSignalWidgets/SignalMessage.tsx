@@ -1,4 +1,4 @@
-import { Contract, TradingSignalLog } from "@/graphql/gql/graphql";
+import { Contract, TradingSignalLogUpdated } from "@/graphql/gql/graphql";
 
 import { useMemo } from "react";
 import { convertPerpTradingEventLogToHistory } from "@/utils/historiesV2Chart";
@@ -17,7 +17,11 @@ function parseKey(key: string) {
   };
 }
 
-export function SignalMessage({ signals }: { signals: TradingSignalLog[] }) {
+export function SignalMessage({
+  signals,
+}: {
+  signals: TradingSignalLogUpdated[];
+}) {
   const allContracts = useGetAllContracts();
 
   const items = useMemo(() => {
@@ -50,7 +54,7 @@ export function SignalMessage({ signals }: { signals: TradingSignalLog[] }) {
       }
     });
 
-    return Object.entries(operationMaps).map(([key, operations]) => {
+    const items = Object.entries(operationMaps).map(([key, operations]) => {
       const { pair, isLong } = parseKey(key);
 
       return {
@@ -62,6 +66,30 @@ export function SignalMessage({ signals }: { signals: TradingSignalLog[] }) {
         })),
       };
     });
+
+    if (
+      document.visibilityState !== "visible" &&
+      Notification.permission === "granted"
+    ) {
+      const notification = new Notification("New Trading Signal", {
+        body: items
+          .map(
+            (item) =>
+              `${item.pair} (${item.isLong ? "Long" : "Short"}): ` +
+              item.operations
+                .map((op) => `${op.operation} (${op.count})`)
+                .join(", "),
+          )
+          .join("\n"),
+        icon: "/icon.png", // optional
+      });
+
+      notification.onclick = () => {
+        window.focus();
+      };
+    }
+
+    return items;
   }, [allContracts, signals]);
 
   return (

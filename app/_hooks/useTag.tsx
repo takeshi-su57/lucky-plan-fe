@@ -125,7 +125,7 @@ export function useUpsertTag() {
             const alreadyExists = data.getAllTags.filter(
               (tag) =>
                 tagInfo.tag ===
-                getFragmentData(TAG_INFO_FRAGMENT_DOCUMENT, tag).tag,
+                getFragmentData(TAG_INFO_FRAGMENT_DOCUMENT, tag as any).tag,
             );
 
             if (alreadyExists.length > 0) {
@@ -178,7 +178,7 @@ export function useDeleteTag() {
               getAllTags: data.getAllTags.filter(
                 (tag) =>
                   tagInfo.tag !==
-                  getFragmentData(TAG_INFO_FRAGMENT_DOCUMENT, tag).tag,
+                  getFragmentData(TAG_INFO_FRAGMENT_DOCUMENT, tag as any).tag,
               ),
             };
           } else {
@@ -247,8 +247,10 @@ export function useUpsertCategory() {
             const alreadyExists = data.getAllCategories.filter(
               (category) =>
                 categoryInfo.id ===
-                getFragmentData(TAG_CATEGORY_INFO_FRAGMENT_DOCUMENT, category)
-                  .id,
+                getFragmentData(
+                  TAG_CATEGORY_INFO_FRAGMENT_DOCUMENT,
+                  category as any,
+                ).id,
             );
 
             if (alreadyExists.length > 0) {
@@ -303,8 +305,10 @@ export function useDeleteCategory() {
               getAllCategories: data.getAllCategories.filter(
                 (category) =>
                   categoryInfo.id !==
-                  getFragmentData(TAG_CATEGORY_INFO_FRAGMENT_DOCUMENT, category)
-                    .id,
+                  getFragmentData(
+                    TAG_CATEGORY_INFO_FRAGMENT_DOCUMENT,
+                    category as any,
+                  ).id,
               ),
             };
           } else {

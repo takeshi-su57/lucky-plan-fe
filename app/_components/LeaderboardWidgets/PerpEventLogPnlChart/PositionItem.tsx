@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import { getPercentageStr, getPriceStr } from "@/utils/price";
 import { useGetPrices } from "@/app/_hooks/useGetPrices";
 import { getPairIndex } from "@/web3/gns/v10/configs";
-import { getPNLPercentage } from "@/utils";
+import { convertMillisToReadableTime, getPNLPercentage } from "@/utils";
 import PairIcon from "../PairIcon";
 
 export type PositionItemProps = {
@@ -108,6 +108,10 @@ export function PositionItem({
 
         <span className="text-xs text-neutral-400">
           <b>{`$${getPriceStr(collateral, 0)}`}</b> x <b>{`${leverage}x`}</b>
+        </span>
+
+        <span className="text-xs italic text-neutral-400/60">
+          {convertMillisToReadableTime(dayjs().diff(dayjs(date)))} ago
         </span>
 
         <span className="text-xs italic text-neutral-400/60">

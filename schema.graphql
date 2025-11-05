@@ -858,7 +858,7 @@ type Subscription {
   planUpdated(userId: String!): Plan!
   taskCreated(userId: String!): [TaskBackwardDetails!]!
   taskUpdated(userId: String!): [TaskBackwardDetails!]!
-  tradingSignalLogUpdated: [TradingSignalLog!]!
+  tradingSignalLogUpdated: [TradingSignalLogUpdated!]!
 }
 
 type Tag {
@@ -1030,6 +1030,11 @@ type TradingSignalLog {
   eventLogs: [PerpTradingEventLog!]!
   id: Int!
   platform: String!
+}
+
+type TradingSignalLogUpdated {
+  eventLogs: [PerpTradingEventLog!]!
+  id: Int!
 }
 
 input UpdateLeverageInput {
