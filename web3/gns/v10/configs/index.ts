@@ -13,10 +13,6 @@ for (const [chainId, pairs] of Object.entries(pairConfigs)) {
       ...pair.feed,
       maxDeviationP: BigInt(pair.feed.maxDeviationP),
     },
-    depth: {
-      onePercentDepthAboveUsd: BigInt(pair.depth.onePercentDepthAboveUsd),
-      onePercentDepthBelowUsd: BigInt(pair.depth.onePercentDepthBelowUsd),
-    },
     spreadP: BigInt(pair.spreadP),
     groupIndex: BigInt(pair.groupIndex),
     feeIndex: BigInt(pair.feeIndex),
