@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { NextUIProvider } from "@nextui-org/react";
 import {
   getDefaultConfig,
@@ -306,6 +306,26 @@ export function Providers({ children }: { children: ReactNode }) {
   );
 }
 
+export async function requestNotificationPermission() {
+  if (!("Notification" in window)) {
+    alert("This browser does not support desktop notification");
+    return;
+  }
+
+  if (
+    Notification.permission === "granted" ||
+    Notification.permission === "denied"
+  ) {
+    // Permission already granted or denied, don't request again
+    return;
+  }
+
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") {
+    console.log("Notification permission denied.");
+  }
+}
+
 export function SubscriptionWrapper({ children }: { children: ReactNode }) {
   useGetTradingSignalLogs();
 
@@ -313,6 +333,10 @@ export function SubscriptionWrapper({ children }: { children: ReactNode }) {
   useSubscribeMission();
   useSubscribeBot();
   useSubscribeTradingSignalLogs();
+
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
 
   return children;
 }

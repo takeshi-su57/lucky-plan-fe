@@ -475,13 +475,13 @@ export function useSubscribeBot() {
                   first: 20,
                 },
               },
-              (oldData) => {
+              (oldData: any) => {
                 if (oldData) {
                   return {
                     ...oldData,
                     getBotsByStatus: {
                       ...oldData.getBotsByStatus,
-                      edges: oldData.getBotsByStatus.edges.map((edge) =>
+                      edges: oldData.getBotsByStatus.edges.map((edge: any) =>
                         edge.cursor === updatedForwardDetails.id
                           ? { ...edge, node: updatedForwardDetails }
                           : edge,
@@ -558,13 +558,13 @@ export function useSubscribeBot() {
                 first: 20,
               },
             },
-            (oldData) => {
+            (oldData: any) => {
               if (oldData) {
                 return {
                   ...oldData,
                   getBotsByStatus: {
                     ...oldData.getBotsByStatus,
-                    edges: oldData.getBotsByStatus.edges.map((edge) =>
+                    edges: oldData.getBotsByStatus.edges.map((edge: any) =>
                       edge.cursor === botInfo.id
                         ? { ...edge, node: botForwardDetails }
                         : edge,

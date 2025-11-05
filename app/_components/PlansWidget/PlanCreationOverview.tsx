@@ -8,7 +8,7 @@ import { getServerTimezone } from "@/utils";
 
 import { PersonalTradeHistory } from "@/types";
 
-import { AutomationGridChart } from "./AutomationChart";
+// import { AutomationGridChart } from "./AutomationChart";
 
 export type PlanCreationOverviewProps = {
   leaderHistories: PersonalTradeHistory[];
@@ -17,7 +17,7 @@ export type PlanCreationOverviewProps = {
 };
 
 export function PlanCreationOverview({
-  leaderHistories,
+  // leaderHistories,
   onNextStep,
   onPrevStep,
 }: PlanCreationOverviewProps) {
@@ -39,8 +39,8 @@ export function PlanCreationOverview({
         <DateRangePicker
           label="Back Test Duration"
           visibleMonths={2}
-          value={range}
-          onChange={setRange}
+          value={range as any}
+          onChange={setRange as any}
           maxValue={now(getServerTimezone())}
           errorMessage={rangeHelper}
           className="w-fit"

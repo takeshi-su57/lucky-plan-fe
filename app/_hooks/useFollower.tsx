@@ -389,8 +389,10 @@ export function useGenerateFollower() {
             const alreadyExists = data.getAllFollowers.filter(
               (follower) =>
                 followerInfo.address ===
-                getFragmentData(FOLLOWER_INFO_FRAGMENT_DOCUMENT, follower)
-                  .address,
+                getFragmentData(
+                  FOLLOWER_INFO_FRAGMENT_DOCUMENT,
+                  follower as any,
+                ).address,
             );
 
             if (alreadyExists.length > 0) {

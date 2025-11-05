@@ -107,8 +107,10 @@ export function LeaderboadWrapper() {
           <DatePicker
             className="max-w-[284px]"
             label="Pick a past date"
-            value={parseDate(dayjs(date).format("YYYY-MM-DD"))}
-            onChange={(date) => setDate(date.toDate(getServerTimezone()))}
+            value={parseDate(dayjs(date).format("YYYY-MM-DD")) as any}
+            onChange={(date) =>
+              date && (setDate(date.toDate(getServerTimezone())) as any)
+            }
             minValue={parseDate("2024-11-01")}
             maxValue={parseDate(dayjs().format("YYYY-MM-DD"))}
           />

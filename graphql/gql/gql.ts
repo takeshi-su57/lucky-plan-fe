@@ -154,7 +154,7 @@ type Documents = {
     "\n  mutation registerTradingSignalLog($address: String!, $platform: Platform!) {\n    registerTradingSignalLog(address: $address, platform: $platform) {\n      ...TradingSignalLogInfo\n    }\n  }\n": typeof types.RegisterTradingSignalLogDocument,
     "\n  mutation unregisterTradingSignalLog($signalId: Int!) {\n    unregisterTradingSignalLog(signalId: $signalId) {\n      ...TradingSignalLogInfo\n    }\n  }\n": typeof types.UnregisterTradingSignalLogDocument,
     "\n    mutation removeEventLogsFromTradingSignalLog(\n      $eventLogIds: [Int!]!\n      $signalId: Int!\n    ) {\n      removeEventLogsFromTradingSignalLog(\n        eventLogIds: $eventLogIds\n        signalId: $signalId\n      ) {\n        ...TradingSignalLogInfo\n      }\n    }\n  ": typeof types.RemoveEventLogsFromTradingSignalLogDocument,
-    "\n  subscription tradingSignalLogUpdated {\n    tradingSignalLogUpdated {\n      ...TradingSignalLogInfo\n    }\n  }\n": typeof types.TradingSignalLogUpdatedDocument,
+    "\n  subscription tradingSignalLogUpdated {\n    tradingSignalLogUpdated {\n      id\n      eventLogs {\n        ...PerpTradingEventLogInfo\n      }\n    }\n  }\n": typeof types.TradingSignalLogUpdatedDocument,
     "\n  query getAllUsers {\n    getAllUsers {\n      address\n      permission\n      allowAuto\n      budget\n      ratio\n      followerContractId\n    }\n  }\n": typeof types.GetAllUsersDocument,
     "\n  mutation getToken(\n    $singature: String!\n    $timestamp: String!\n    $walletAddress: String!\n  ) {\n    getToken(\n      signature: $singature\n      timestamp: $timestamp\n      walletAddress: $walletAddress\n    ) {\n      accessToken\n    }\n  }\n": typeof types.GetTokenDocument,
     "\n  mutation changeUserPermission($address: String!, $permission: String!) {\n    changeUserPermission(address: $address, permission: $permission) {\n      address\n      permission\n      allowAuto\n      budget\n      ratio\n      followerContractId\n    }\n  }\n": typeof types.ChangeUserPermissionDocument,
@@ -306,7 +306,7 @@ const documents: Documents = {
     "\n  mutation registerTradingSignalLog($address: String!, $platform: Platform!) {\n    registerTradingSignalLog(address: $address, platform: $platform) {\n      ...TradingSignalLogInfo\n    }\n  }\n": types.RegisterTradingSignalLogDocument,
     "\n  mutation unregisterTradingSignalLog($signalId: Int!) {\n    unregisterTradingSignalLog(signalId: $signalId) {\n      ...TradingSignalLogInfo\n    }\n  }\n": types.UnregisterTradingSignalLogDocument,
     "\n    mutation removeEventLogsFromTradingSignalLog(\n      $eventLogIds: [Int!]!\n      $signalId: Int!\n    ) {\n      removeEventLogsFromTradingSignalLog(\n        eventLogIds: $eventLogIds\n        signalId: $signalId\n      ) {\n        ...TradingSignalLogInfo\n      }\n    }\n  ": types.RemoveEventLogsFromTradingSignalLogDocument,
-    "\n  subscription tradingSignalLogUpdated {\n    tradingSignalLogUpdated {\n      ...TradingSignalLogInfo\n    }\n  }\n": types.TradingSignalLogUpdatedDocument,
+    "\n  subscription tradingSignalLogUpdated {\n    tradingSignalLogUpdated {\n      id\n      eventLogs {\n        ...PerpTradingEventLogInfo\n      }\n    }\n  }\n": types.TradingSignalLogUpdatedDocument,
     "\n  query getAllUsers {\n    getAllUsers {\n      address\n      permission\n      allowAuto\n      budget\n      ratio\n      followerContractId\n    }\n  }\n": types.GetAllUsersDocument,
     "\n  mutation getToken(\n    $singature: String!\n    $timestamp: String!\n    $walletAddress: String!\n  ) {\n    getToken(\n      signature: $singature\n      timestamp: $timestamp\n      walletAddress: $walletAddress\n    ) {\n      accessToken\n    }\n  }\n": types.GetTokenDocument,
     "\n  mutation changeUserPermission($address: String!, $permission: String!) {\n    changeUserPermission(address: $address, permission: $permission) {\n      address\n      permission\n      allowAuto\n      budget\n      ratio\n      followerContractId\n    }\n  }\n": types.ChangeUserPermissionDocument,
@@ -895,7 +895,7 @@ export function graphql(source: "\n    mutation removeEventLogsFromTradingSignal
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  subscription tradingSignalLogUpdated {\n    tradingSignalLogUpdated {\n      ...TradingSignalLogInfo\n    }\n  }\n"): (typeof documents)["\n  subscription tradingSignalLogUpdated {\n    tradingSignalLogUpdated {\n      ...TradingSignalLogInfo\n    }\n  }\n"];
+export function graphql(source: "\n  subscription tradingSignalLogUpdated {\n    tradingSignalLogUpdated {\n      id\n      eventLogs {\n        ...PerpTradingEventLogInfo\n      }\n    }\n  }\n"): (typeof documents)["\n  subscription tradingSignalLogUpdated {\n    tradingSignalLogUpdated {\n      id\n      eventLogs {\n        ...PerpTradingEventLogInfo\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

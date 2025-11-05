@@ -406,13 +406,13 @@ export function useSubscribePlan() {
                 first: 20,
               },
             },
-            (oldData) => {
+            (oldData: any) => {
               if (oldData) {
                 return {
                   ...oldData,
                   getPlansByStatus: {
                     ...oldData.getPlansByStatus,
-                    edges: oldData.getPlansByStatus.edges.map((edge) =>
+                    edges: oldData.getPlansByStatus.edges.map((edge: any) =>
                       edge.cursor === updatedPlanForwardDetails.id
                         ? { ...edge, node: updatedPlanForwardDetails }
                         : edge,
@@ -480,13 +480,13 @@ export function useSubscribePlan() {
               first: 20,
             },
           },
-          (oldData) => {
+          (oldData: any) => {
             if (oldData) {
               return {
                 ...oldData,
                 getPlansByStatus: {
                   ...oldData.getPlansByStatus,
-                  edges: oldData.getPlansByStatus.edges.map((edge) =>
+                  edges: oldData.getPlansByStatus.edges.map((edge: any) =>
                     edge.cursor === planForwardDetails.id
                       ? { ...edge, node: planForwardDetails }
                       : edge,

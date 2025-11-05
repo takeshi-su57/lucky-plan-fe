@@ -97,7 +97,7 @@ export function useGetLogs(severity: LogSeverity | null, checked: boolean) {
 
         const newLog = getFragmentData(
           LOG_INFO_FRAGMENT_DOCUMENT,
-          subscriptionData.data.newLog,
+          subscriptionData.data.newLog as any,
         );
 
         return {
