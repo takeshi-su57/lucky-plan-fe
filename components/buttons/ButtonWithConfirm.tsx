@@ -6,9 +6,14 @@ import { StandardModal } from "../modals/StandardModal";
 export function ButtonWithConfirm(props: ButtonProps) {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
 
+  const handleConfirm = () => {
+    props.onPress?.({} as any);
+    onClose();
+  };
+
   return (
     <>
-      <Button {...props} onClick={onOpen} />
+      <Button {...props} onPress={onOpen} />
 
       <StandardModal
         isOpen={isOpen}
@@ -21,7 +26,7 @@ export function ButtonWithConfirm(props: ButtonProps) {
           <Button color="danger" size="sm" onPress={onClose}>
             Cancel
           </Button>
-          <Button color="primary" size="sm" onClick={props.onClick}>
+          <Button color="primary" size="sm" onPress={handleConfirm}>
             Confirm
           </Button>
         </div>

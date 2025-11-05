@@ -7414,6 +7414,107 @@ export const gmxMarketConfigs: Record<string, Record<string, MarketConfig>> = {
           "https://www.coingecko.com/en/coins/world-liberty-financial",
       },
     },
+    "0x1635eF7FBdce68eC80A3672aB710A5a99044f5c9": {
+      marketTokenAddress: "0x1635eF7FBdce68eC80A3672aB710A5a99044f5c9",
+      indexTokenAddress: "0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+      longTokenAddress: "0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+      shortTokenAddress: "0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+      longToken: {
+        name: "Tether Gold",
+        symbol: "XAUt0",
+        address: "0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+        decimals: 6,
+        priceDecimals: 2,
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/10481/standard/Tether_Gold.png?1696510471",
+        coingeckoUrl: "https://www.coingecko.com/nl/coins/tether-gold",
+        explorerUrl:
+          "https://snowtrace.io/address/0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+        isPermitSupported: true,
+        isPermitDisabled: true,
+        contractVersion: "1",
+      },
+      shortToken: {
+        name: "Tether Gold",
+        symbol: "XAUt0",
+        address: "0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+        decimals: 6,
+        priceDecimals: 2,
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/10481/standard/Tether_Gold.png?1696510471",
+        coingeckoUrl: "https://www.coingecko.com/nl/coins/tether-gold",
+        explorerUrl:
+          "https://snowtrace.io/address/0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+        isPermitSupported: true,
+        isPermitDisabled: true,
+        contractVersion: "1",
+      },
+      indexToken: {
+        name: "Tether Gold",
+        symbol: "XAUt0",
+        address: "0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+        decimals: 6,
+        priceDecimals: 2,
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/10481/standard/Tether_Gold.png?1696510471",
+        coingeckoUrl: "https://www.coingecko.com/nl/coins/tether-gold",
+        explorerUrl:
+          "https://snowtrace.io/address/0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+        isPermitSupported: true,
+        isPermitDisabled: true,
+        contractVersion: "1",
+      },
+    },
+    "0x92d3DA41E166A12e3Ede9e2Dd9A272C5c6FC55E1": {
+      marketTokenAddress: "0x92d3DA41E166A12e3Ede9e2Dd9A272C5c6FC55E1",
+      indexTokenAddress: "0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+      longTokenAddress: "0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+      shortTokenAddress: "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
+      longToken: {
+        name: "Tether Gold",
+        symbol: "XAUt0",
+        address: "0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+        decimals: 6,
+        priceDecimals: 2,
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/10481/standard/Tether_Gold.png?1696510471",
+        coingeckoUrl: "https://www.coingecko.com/nl/coins/tether-gold",
+        explorerUrl:
+          "https://snowtrace.io/address/0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+        isPermitSupported: true,
+        isPermitDisabled: true,
+        contractVersion: "1",
+      },
+      shortToken: {
+        name: "Tether",
+        symbol: "USDT",
+        decimals: 6,
+        address: "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
+        isStable: true,
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/325/small/Tether-logo.png",
+        coingeckoUrl: "https://www.coingecko.com/en/coins/tether",
+        explorerUrl:
+          "https://snowtrace.io/address/0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
+        isPermitSupported: true,
+        contractVersion: "1",
+      },
+      indexToken: {
+        name: "Tether Gold",
+        symbol: "XAUt0",
+        address: "0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+        decimals: 6,
+        priceDecimals: 2,
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/10481/standard/Tether_Gold.png?1696510471",
+        coingeckoUrl: "https://www.coingecko.com/nl/coins/tether-gold",
+        explorerUrl:
+          "https://snowtrace.io/address/0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+        isPermitSupported: true,
+        isPermitDisabled: true,
+        contractVersion: "1",
+      },
+    },
   },
   "421614": {
     "0x482Df3D320C964808579b585a8AC7Dd5D144eFaF": {

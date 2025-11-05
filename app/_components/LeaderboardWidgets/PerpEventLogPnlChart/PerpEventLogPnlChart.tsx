@@ -18,7 +18,7 @@ import {
 } from "@nextui-org/react";
 import type { Selection } from "@nextui-org/react";
 import { twMerge } from "tailwind-merge";
-import { Contract, PerpTradingEventLog } from "@/graphql/gql/graphql";
+import { Contract, PerpTradingEventLog, Platform } from "@/graphql/gql/graphql";
 
 import { HistoryCharts } from "../HistoryCharts";
 import { HistoriesSummary } from "../HistoriesWidget/HistoriesSummary";
@@ -49,6 +49,7 @@ export type PerpEventLogPnlChartHandle = {
 
 export type PerpEventLogPnlChartProps = {
   address: Address;
+  platform: Platform;
   perpTradingEventLogs: PerpTradingEventLog[];
   range?: {
     from?: Date;
@@ -61,6 +62,7 @@ export type PerpEventLogPnlChartProps = {
 
 export function PerpEventLogPnlChart({
   address,
+  platform,
   perpTradingEventLogs,
   range,
   hideTags,
@@ -225,7 +227,10 @@ export function PerpEventLogPnlChart({
             )}
 
             {selected === "positions" && (
-              <HistoriesPositionList perpTradeHistories={missionHistories} />
+              <HistoriesPositionList
+                platform={platform}
+                perpTradeHistories={missionHistories}
+              />
             )}
           </div>
         </div>

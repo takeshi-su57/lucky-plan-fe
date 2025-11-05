@@ -90,6 +90,7 @@ export function LeaderboardV2({
               <PerpEventLogPnlChart
                 key={item.id}
                 address={item.address as Address}
+                platform={platform}
                 perpTradingEventLogs={item.perpTradingEventLogs}
                 hideTags={hideTags}
                 range={{

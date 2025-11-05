@@ -60,10 +60,6 @@ export type Pair = {
     feedCalculation: number;
     maxDeviationP: bigint;
   };
-  depth: {
-    onePercentDepthAboveUsd: bigint;
-    onePercentDepthBelowUsd: bigint;
-  };
   spreadP: bigint;
   groupIndex: bigint;
   feeIndex: bigint;

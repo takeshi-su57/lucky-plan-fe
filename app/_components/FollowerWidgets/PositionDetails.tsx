@@ -65,7 +65,7 @@ export function PositionDetails({
       <div className="flex flex-row items-center justify-between gap-4">
         <div className="flex flex-row items-center gap-4">
           <ButtonWithConfirm
-            onClick={handleClosePosition}
+            onPress={handleClosePosition}
             color="danger"
             className="w-fit"
             size="sm"

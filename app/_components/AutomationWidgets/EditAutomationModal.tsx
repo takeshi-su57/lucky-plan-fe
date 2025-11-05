@@ -212,7 +212,7 @@ export function EditStrategyModal({
 
   return (
     <>
-      <Button onClick={onOpen} color="default">
+      <Button onPress={onOpen} color="default">
         Edit Strategy
       </Button>
       <StandardModal
@@ -311,7 +311,7 @@ export function EditStrategyModal({
           </Select>
 
           <Button
-            onClick={handleConfirm}
+            onPress={handleConfirm}
             color="primary"
             isDisabled={isDisabled}
             isLoading={loading}

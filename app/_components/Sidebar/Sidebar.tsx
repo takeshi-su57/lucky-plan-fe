@@ -47,6 +47,12 @@ export const links = [
     limited: UserPermission.Trader,
   },
   {
+    id: "trading-signals",
+    label: "Trading Signals",
+    title: "",
+    limited: UserPermission.Trader,
+  },
+  {
     id: "settings",
     label: "Setting",
     title: "",
