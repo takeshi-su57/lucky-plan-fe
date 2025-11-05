@@ -720,6 +720,16 @@ export function useGetExpertPnlSnapshotsV2(platform: Platform) {
     }
   }, [data, error, fetchMore, platform]);
 
+  useEffect(() => {
+    if (
+      data &&
+      !error &&
+      data?.getExpertPnlSnapshotsV2?.pageInfo?.hasNextPage
+    ) {
+      handleFetchMore();
+    }
+  }, [data, error, handleFetchMore]);
+
   return {
     pnlSnapshots,
     fetchMore: handleFetchMore,

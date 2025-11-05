@@ -47,6 +47,10 @@ import {
 } from "@/components/snackbars";
 import { useSubscribeBot } from "@/app-hooks/useAutomation";
 import { LOCAL_USER_JWT_KEY } from "@/app-hooks/useUserJWT";
+import {
+  useGetTradingSignalLogs,
+  useSubscribeTradingSignalLogs,
+} from "./_hooks/useTradingSignals";
 
 const httpLink = new HttpLink({
   uri: `${process.env.NEXT_PUBLIC_LUCKY_PLAN_GRAPHQL_API}`,
@@ -243,6 +247,12 @@ const cache = new InMemoryCache({
     ExpertPnlSnapshotV2: {
       keyFields: ["id"],
     },
+    ExpertPnlSnapshotV2Node: {
+      keyFields: ["id"],
+    },
+    TradingSignalLog: {
+      keyFields: ["id"],
+    },
   },
 });
 
@@ -297,9 +307,12 @@ export function Providers({ children }: { children: ReactNode }) {
 }
 
 export function SubscriptionWrapper({ children }: { children: ReactNode }) {
+  useGetTradingSignalLogs();
+
   useSubscribeTask();
   useSubscribeMission();
   useSubscribeBot();
+  useSubscribeTradingSignalLogs();
 
   return children;
 }

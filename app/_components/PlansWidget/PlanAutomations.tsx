@@ -114,7 +114,11 @@ export function GroupedAutomations({
   platform,
   isChartFirst,
 }: GroupedAutomationsProps) {
-  const { eventLogs, loading } = useGetPerpEventLogs([leaderAddress], platform);
+  const { eventLogs, loading } = useGetPerpEventLogs(
+    [leaderAddress],
+    platform,
+    null,
+  );
 
   const allContracts = useGetAllContracts();
 

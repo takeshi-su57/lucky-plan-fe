@@ -76,6 +76,7 @@ export function CreateAutomationModal({
   const { eventLogs: originalEventLogs } = useGetPerpEventLogs(
     isAddress(leaderAddress) ? [leaderAddress] : [],
     platform,
+    null,
   );
 
   const handleChangePlatform: ChangeEventHandler<HTMLSelectElement> = (
@@ -409,7 +410,7 @@ export function CreateAutomationModal({
             </div>
 
             <Button
-              onClick={handleConfirm}
+              onPress={handleConfirm}
               color="primary"
               isDisabled={isDisabled}
               isLoading={createBotsLoading}
@@ -432,6 +433,7 @@ export function CreateAutomationModal({
             <PerpEventLogPnlChart
               ref={chartRef}
               address={leaderAddress as Address}
+              platform={platform}
               perpTradingEventLogs={originalEventLogs[0] || []}
               hideTags={false}
               showLatestStats={showLatestStats}
