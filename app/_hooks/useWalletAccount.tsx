@@ -151,10 +151,10 @@ export function useAddNewUser() {
           query: GET_ALL_WALLET_ACCOUNTS_DOCUMENT,
           variables: {},
         },
-        (data) => {
+        (data: any) => {
           if (data && data.getAllWalletAccounts.length > 0) {
             const alreadyExists = data.getAllWalletAccounts.filter(
-              (walletAccount) =>
+              (walletAccount: any) =>
                 walletAccountInfo.address ===
                 getFragmentData(
                   WALLET_ACCOUNT_INFO_FRAGMENT_DOCUMENT,
@@ -209,10 +209,10 @@ export function useAddTagToWalletAccount() {
           query: GET_ALL_WALLET_ACCOUNTS_DOCUMENT,
           variables: {},
         },
-        (data) => {
+        (data: any) => {
           if (data && data.getAllWalletAccounts.length > 0) {
             const exists = data.getAllWalletAccounts.find(
-              (walletAccount) =>
+              (walletAccount: any) =>
                 walletAccountInfo.address ===
                 getFragmentData(
                   WALLET_ACCOUNT_INFO_FRAGMENT_DOCUMENT,
@@ -224,7 +224,7 @@ export function useAddTagToWalletAccount() {
               return {
                 ...data,
                 getAllWalletAccounts: data.getAllWalletAccounts.map(
-                  (walletAccount) =>
+                  (walletAccount: any) =>
                     walletAccountInfo.address ===
                     getFragmentData(
                       WALLET_ACCOUNT_INFO_FRAGMENT_DOCUMENT,
@@ -278,12 +278,12 @@ export function useRemoveTagFromWalletAccount() {
           query: GET_ALL_WALLET_ACCOUNTS_DOCUMENT,
           variables: {},
         },
-        (data) => {
+        (data: any) => {
           if (data && data.getAllWalletAccounts.length > 0) {
             return {
               ...data,
               getAllWalletAccounts: data.getAllWalletAccounts.map(
-                (walletAccount) =>
+                (walletAccount: any) =>
                   walletAccountInfo.address ===
                   getFragmentData(
                     WALLET_ACCOUNT_INFO_FRAGMENT_DOCUMENT,

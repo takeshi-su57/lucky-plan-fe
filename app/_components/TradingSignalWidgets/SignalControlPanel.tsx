@@ -13,6 +13,7 @@ import {
   useUnregisterTradingSignal,
 } from "@/app/_hooks/useTradingSignals";
 import { SignalView } from "./SignalView";
+import { EventLogsModalButton } from "../LeaderboardWidgets/EventLogsModalButton";
 
 export function SignalControlPanel() {
   const { tradingSignalLogs, loading } = useGetTradingSignalLogs();
@@ -51,6 +52,12 @@ export function SignalControlPanel() {
             >
               Unsubscribe
             </ButtonWithConfirm>
+
+            <EventLogsModalButton
+              address={tradingSignalLog.address as Address}
+              platform={tradingSignalLog.platform as Platform}
+              label="Check"
+            />
           </div>
 
           {tradingSignalLog.eventLogs.length > 0 ? (

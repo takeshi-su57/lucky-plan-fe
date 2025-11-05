@@ -76,8 +76,10 @@ export function TestParamsView({
           <DatePicker
             className="max-w-[284px]"
             label="Pick a past date"
-            value={parseDate(dayjs(pastDate).format("YYYY-MM-DD"))}
-            onChange={(date) => setPastDate(date.toDate(getServerTimezone()))}
+            value={parseDate(dayjs(pastDate).format("YYYY-MM-DD")) as any}
+            onChange={(date) =>
+              date && (setPastDate(date.toDate(getServerTimezone())) as any)
+            }
             minValue={parseDate("2024-11-01")}
             maxValue={parseDate(dayjs().format("YYYY-MM-DD"))}
           />

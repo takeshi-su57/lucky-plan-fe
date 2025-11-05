@@ -35,8 +35,8 @@ export function FastTotalNewPanel({
       <DateRangePicker
         label="Pick a date range"
         visibleMonths={2}
-        value={range}
-        onChange={setRange}
+        value={range as any} // Type mismatch workaround due to differing DateValue types
+        onChange={setRange as any} // Type mismatch workaround for event handler
         maxValue={now(getServerTimezone())}
         minValue={parseDate(startDate)}
         errorMessage={rangeHelper}
