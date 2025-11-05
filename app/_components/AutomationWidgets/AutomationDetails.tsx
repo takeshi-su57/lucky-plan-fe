@@ -63,11 +63,13 @@ export function AutomationDetails({
   const { eventLogs: leaderEventLogs } = useGetPerpEventLogs(
     [bot.leaderAddress],
     bot.leaderContract.platform,
+    null,
   );
 
   const { eventLogs: followerEventLogs } = useGetPerpEventLogs(
     [bot.followerAddress],
     bot.followerContract.platform,
+    null,
   );
 
   useEffect(() => {
@@ -223,7 +225,8 @@ export function AutomationDetails({
               openedMissionActions={bot.missions
                 .filter(
                   (mission) =>
-                    mission.status !== MissionStatus.Opened &&
+                    mission.status !== MissionStatus.Closed &&
+                    mission.status !== MissionStatus.Ignored &&
                     !mission.achievePositionKey,
                 )
                 .map((mission) => mission.tasks.map((task) => task.action))}
@@ -262,6 +265,7 @@ export function AutomationDetails({
               .filter(
                 (mission) =>
                   mission.status !== MissionStatus.Closed &&
+                  mission.status !== MissionStatus.Ignored &&
                   !mission.achievePositionKey,
               )
               .map((mission) =>
@@ -293,23 +297,23 @@ export function AutomationDetails({
 
           {bot.status === BotStatus.Created ? (
             <div className="flex items-center gap-2">
-              <ButtonWithConfirm onClick={handleDelete} color="default">
+              <ButtonWithConfirm onPress={handleDelete} color="default">
                 Delete
               </ButtonWithConfirm>
-              <ButtonWithConfirm onClick={handleLive} color="danger">
+              <ButtonWithConfirm onPress={handleLive} color="danger">
                 Live
               </ButtonWithConfirm>
             </div>
           ) : null}
           {bot.status === BotStatus.Live ? (
             <div className="flex items-center gap-2">
-              <ButtonWithConfirm onClick={handleStop} color="primary">
+              <ButtonWithConfirm onPress={handleStop} color="primary">
                 Stop
               </ButtonWithConfirm>
             </div>
           ) : null}
           {bot.status === BotStatus.Stop ? (
-            <ButtonWithConfirm color="danger" onClick={handleCloseAllMissions}>
+            <ButtonWithConfirm color="danger" onPress={handleCloseAllMissions}>
               Close All Missions
             </ButtonWithConfirm>
           ) : null}

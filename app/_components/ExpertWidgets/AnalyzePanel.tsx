@@ -38,6 +38,7 @@ export function AnalyzePanel() {
   const { eventLogs, loading } = useGetPerpEventLogs(
     filteredAddresses,
     platform,
+    null,
   );
 
   const handleParseFilters = () => {
@@ -209,6 +210,7 @@ export function AnalyzePanel() {
             <PerpEventLogPnlChart
               key={item.address}
               address={item.address as Address}
+              platform={platform}
               perpTradingEventLogs={item.logs}
               hideTags={false}
               showLatestStats={checkByLatest128Trades}

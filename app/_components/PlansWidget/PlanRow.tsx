@@ -160,6 +160,7 @@ export function PlanRow({ plan }: PlanRowProps) {
                             .filter(
                               (mission) =>
                                 !!mission.achievePositionKey &&
+                                mission.status !== MissionStatus.Ignored &&
                                 mission.status !== MissionStatus.Closed,
                             )
                             .map((mission) =>
@@ -220,6 +221,7 @@ export function PlanRow({ plan }: PlanRowProps) {
                             .filter(
                               (mission) =>
                                 mission.status !== MissionStatus.Closed &&
+                                mission.status !== MissionStatus.Ignored &&
                                 !!mission.achievePositionKey,
                             )
                             .map((mission) =>

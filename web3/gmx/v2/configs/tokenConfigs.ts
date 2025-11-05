@@ -1896,6 +1896,21 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       coingeckoUrl: "https://www.coingecko.com/en/coins/xrp",
       isSynthetic: true,
     },
+    "0x2775d5105276781b4b85ba6ea6a6653beed1dd32": {
+      name: "Tether Gold",
+      symbol: "XAUt0",
+      address: "0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+      decimals: 6,
+      priceDecimals: 2,
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/10481/standard/Tether_Gold.png?1696510471",
+      coingeckoUrl: "https://www.coingecko.com/nl/coins/tether-gold",
+      explorerUrl:
+        "https://snowtrace.io/address/0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
+      isPermitSupported: true,
+      isPermitDisabled: true,
+      contractVersion: "1",
+    },
     "0x62edc0692bd897d2295872a9ffcac5425011c661": {
       name: "GMX",
       symbol: "GMX",
@@ -2052,6 +2067,16 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
         "https://assets.coingecko.com/coins/images/12134/small/curve.png?1596358786",
       isSynthetic: true,
       coingeckoUrl: "https://www.coingecko.com/en/coins/curve-dao-token",
+    },
+    "0x095f40616fa98ff75d1a7d0c68685c5ef806f110": {
+      name: "USDT",
+      symbol: "USDT",
+      address: "0x095f40616FA98Ff75D1a7D0c68685c5ef806f110",
+      decimals: 6,
+      isStable: true,
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/325/small/Tether-logo.png",
+      coingeckoUrl: "https://www.coingecko.com/en/coins/tether",
     },
     "<gmx-address>": {
       name: "GMX",
