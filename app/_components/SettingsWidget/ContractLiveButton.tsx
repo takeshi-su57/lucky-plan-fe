@@ -52,6 +52,7 @@ export function ContractLiveButton({ contract }: { contract: Contract }) {
 
       <StandardModal
         isOpen={isOpen}
+        isDismissable={false}
         onOpenChange={onOpenChange}
         backdrop="blur"
       >

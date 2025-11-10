@@ -221,6 +221,7 @@ export function CreateAutomationModal({
   return (
     <RightDrawer
       isOpen={isOpen}
+      isDismissable={false}
       onOpenChange={onOpenChange}
       classNames={{ base: "max-w-[80%]" }}
     >

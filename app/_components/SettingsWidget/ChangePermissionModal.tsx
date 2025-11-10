@@ -148,7 +148,12 @@ export function ChangePermissionModal({
     followerContractId.trim() === "";
 
   return (
-    <StandardModal isOpen={isOpen} onOpenChange={onOpenChange} backdrop="blur">
+    <StandardModal
+      isOpen={isOpen}
+      isDismissable={false}
+      onOpenChange={onOpenChange}
+      backdrop="blur"
+    >
       <div className="flex flex-col gap-3.5">
         <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
           Settings

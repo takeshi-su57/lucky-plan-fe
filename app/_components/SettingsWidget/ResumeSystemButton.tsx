@@ -53,6 +53,7 @@ export function ResumeSystemButton() {
 
       <StandardModal
         isOpen={isOpen}
+        isDismissable={false}
         onOpenChange={onOpenChange}
         backdrop="blur"
       >

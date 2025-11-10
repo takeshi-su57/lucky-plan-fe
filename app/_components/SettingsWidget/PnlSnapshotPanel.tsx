@@ -6,8 +6,6 @@ import {
   CardBody,
   Chip,
   DatePicker,
-  Tab,
-  Tabs,
   Select,
   SelectItem,
 } from "@nextui-org/react";
@@ -19,9 +17,6 @@ import { getServerTimezone } from "@/utils";
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import {
-  useGetPnlSnapshotInitializedFlag,
-  useBuildPnlSnapshots,
-  useInitializePnlSnapshot,
   useGetPnlSnapshotV2InitializedFlag,
   useBuildPnlSnapshotsV2,
   useInitializePnlSnapshotV2,
@@ -40,19 +35,7 @@ const columns: TableColumnProps[] = [
   },
 ];
 
-type TabType = "v1" | "v2";
-
 export function PnlSnapshotPanel() {
-  const { data: v1Data } = useGetPnlSnapshotInitializedFlag();
-  const {
-    buildPnlSnapshots: v1BuildPnlSnapshots,
-    loading: v1BuildPnlSnapshotsLoading,
-  } = useBuildPnlSnapshots();
-  const {
-    initializePnlSnapshot: v1InitializePnlSnapshot,
-    loading: v1InitializePnlSnapshotLoading,
-  } = useInitializePnlSnapshot();
-
   const {
     buildPnlSnapshotsV2: v2BuildPnlSnapshots,
     loading: v2BuildPnlSnapshotsLoading,
@@ -66,7 +49,6 @@ export function PnlSnapshotPanel() {
     loading: v2InitializePnlSnapshotLoading,
   } = useInitializePnlSnapshotV2();
 
-  const [selected, setSelected] = useState<TabType>("v1");
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>(
     Platform.Gns,
   );
@@ -76,20 +58,6 @@ export function PnlSnapshotPanel() {
   const [selectedDate, setSelectedDate] = useState<DateValue | null>(
     parseDate(dayjs(new Date()).format("YYYY-MM-DD")),
   );
-
-  const handleForceBuildPnlSnapshotsV1 = () => {
-    if (!selectedDate) {
-      return;
-    }
-
-    v1BuildPnlSnapshots({
-      variables: {
-        dateStr: dayjs(selectedDate.toDate(getServerTimezone())).format(
-          "YYYY-MM-DD",
-        ),
-      },
-    });
-  };
 
   const handleBuildPnlSnapshotsV2 = () => {
     if (!selectedDate) {
@@ -127,22 +95,13 @@ export function PnlSnapshotPanel() {
       return;
     }
 
-    if (selected === "v1") {
-      v1InitializePnlSnapshot({
-        variables: {
-          beginingDate: selectedDate.toDate(getServerTimezone()),
-          isForceBuild: false,
-        },
-      });
-    } else {
-      v2InitializePnlSnapshot({
-        variables: {
-          beginingDate: selectedDate.toDate(getServerTimezone()),
-          isForceBuild: false,
-          platform: selectedPlatform,
-        },
-      });
-    }
+    v2InitializePnlSnapshot({
+      variables: {
+        beginingDate: selectedDate.toDate(getServerTimezone()),
+        isForceBuild: false,
+        platform: selectedPlatform,
+      },
+    });
   };
 
   const handleForceInitializePnlSnapshot = () => {
@@ -150,60 +109,14 @@ export function PnlSnapshotPanel() {
       return;
     }
 
-    if (selected === "v1") {
-      v1InitializePnlSnapshot({
-        variables: {
-          beginingDate: selectedDate.toDate(getServerTimezone()),
-          isForceBuild: true,
-        },
-      });
-    } else {
-      v2InitializePnlSnapshot({
-        variables: {
-          beginingDate: selectedDate.toDate(getServerTimezone()),
-          isForceBuild: true,
-          platform: selectedPlatform,
-        },
-      });
-    }
-  };
-
-  const v1Exists = useMemo(() => {
-    if (!v1Data || !selectedDate) {
-      return false;
-    }
-    return v1Data.getPnlSnapshotInitializedFlag.some(
-      (flag) =>
-        flag.dateStr ===
-        dayjs(selectedDate.toDate(getServerTimezone())).format("YYYY-MM-DD"),
-    );
-  }, [v1Data, selectedDate]);
-
-  const v1Rows = useMemo(() => {
-    if (!v1Data) {
-      return [];
-    }
-    return v1Data.getPnlSnapshotInitializedFlag.map((flag) => ({
-      id: `${flag.dateStr}`,
-      className: "group",
-      data: {
-        dateStr: {
-          component: flag.dateStr,
-        },
-        isInit: {
-          component: flag.isInit ? (
-            <Chip color="primary" className="text-xs">
-              Initialized
-            </Chip>
-          ) : (
-            <Chip color="danger" className="text-xs">
-              Not Initialized
-            </Chip>
-          ),
-        },
+    v2InitializePnlSnapshot({
+      variables: {
+        beginingDate: selectedDate.toDate(getServerTimezone()),
+        isForceBuild: true,
+        platform: selectedPlatform,
       },
-    }));
-  }, [v1Data]);
+    });
+  };
 
   const v2Exists = useMemo(() => {
     if (!v2Data || !selectedDate) {
@@ -244,35 +157,22 @@ export function PnlSnapshotPanel() {
 
   return (
     <>
-      <Tabs
-        aria-label="users-table-tabs"
-        selectedKey={selected}
-        onSelectionChange={(value) => value && setSelected(value as TabType)}
-      >
-        <Tab key="v1" title="V1" />
-        <Tab key="v2" title="V2" />
-      </Tabs>
-
       <Card>
         <CardBody>
           <div className="flex flex-row items-center gap-4">
-            {selected === "v2" ? (
-              <Select
-                isRequired
-                className="max-w-xs"
-                label="Platform"
-                placeholder="Select a platform"
-                selectedKeys={[selectedPlatform]}
-                onChange={(e) =>
-                  setSelectedPlatform(e.target.value as Platform)
-                }
-                selectionMode="single"
-              >
-                {Object.values(Platform).map((platform) => (
-                  <SelectItem key={platform}>{platform}</SelectItem>
-                ))}
-              </Select>
-            ) : null}
+            <Select
+              isRequired
+              className="max-w-xs"
+              label="Platform"
+              placeholder="Select a platform"
+              selectedKeys={[selectedPlatform]}
+              onChange={(e) => setSelectedPlatform(e.target.value as Platform)}
+              selectionMode="single"
+            >
+              {Object.values(Platform).map((platform) => (
+                <SelectItem key={platform}>{platform}</SelectItem>
+              ))}
+            </Select>
 
             <DatePicker
               className="max-w-[284px]"
@@ -281,58 +181,35 @@ export function PnlSnapshotPanel() {
               onChange={(date) => date && (setSelectedDate(date as any) as any)}
             />
 
-            {selected === "v1" ? (
-              <ButtonWithConfirm
-                onPress={handleForceBuildPnlSnapshotsV1}
-                isLoading={v1BuildPnlSnapshotsLoading}
-                color="primary"
-                isDisabled={
-                  v1BuildPnlSnapshotsLoading || v1InitializePnlSnapshotLoading
-                }
-              >
-                {v1Exists ? "Re-Run" : "Build"}
-              </ButtonWithConfirm>
-            ) : null}
+            <ButtonWithConfirm
+              onPress={handleBuildPnlSnapshotsV2}
+              isLoading={v2BuildPnlSnapshotsLoading}
+              color="primary"
+              isDisabled={
+                v2BuildPnlSnapshotsLoading || v2InitializePnlSnapshotLoading
+              }
+            >
+              {v2Exists ? "Re-Build" : "Build"}
+            </ButtonWithConfirm>
 
-            {selected === "v2" ? (
-              <ButtonWithConfirm
-                onPress={handleBuildPnlSnapshotsV2}
-                isLoading={v2BuildPnlSnapshotsLoading}
-                color="primary"
-                isDisabled={
-                  v2BuildPnlSnapshotsLoading || v2InitializePnlSnapshotLoading
-                }
-              >
-                {v2Exists ? "Re-Build" : "Build"}
-              </ButtonWithConfirm>
-            ) : null}
-
-            {selected === "v2" ? (
-              <ButtonWithConfirm
-                onPress={handleDynamicBuildPnlSnapshotsV2}
-                isLoading={v2DynamicBuildPnlSnapshotsLoading}
-                color="primary"
-                isDisabled={
-                  v2DynamicBuildPnlSnapshotsLoading ||
-                  v2InitializePnlSnapshotLoading
-                }
-              >
-                {v2Exists ? "Re-Build Dynamic" : "Build Dynamic"}
-              </ButtonWithConfirm>
-            ) : null}
+            <ButtonWithConfirm
+              onPress={handleDynamicBuildPnlSnapshotsV2}
+              isLoading={v2DynamicBuildPnlSnapshotsLoading}
+              color="primary"
+              isDisabled={
+                v2DynamicBuildPnlSnapshotsLoading ||
+                v2InitializePnlSnapshotLoading
+              }
+            >
+              {v2Exists ? "Re-Build Dynamic" : "Build Dynamic"}
+            </ButtonWithConfirm>
 
             <ButtonWithConfirm
               onPress={handleInitializePnlSnapshot}
-              isLoading={
-                selected === "v1"
-                  ? v1InitializePnlSnapshotLoading
-                  : v2InitializePnlSnapshotLoading
-              }
+              isLoading={v2InitializePnlSnapshotLoading}
               color="primary"
               isDisabled={
-                selected === "v1"
-                  ? v1BuildPnlSnapshotsLoading || v1InitializePnlSnapshotLoading
-                  : v2BuildPnlSnapshotsLoading || v2InitializePnlSnapshotLoading
+                v2BuildPnlSnapshotsLoading || v2InitializePnlSnapshotLoading
               }
             >
               Sequence Initialization
@@ -340,16 +217,10 @@ export function PnlSnapshotPanel() {
 
             <ButtonWithConfirm
               onPress={handleForceInitializePnlSnapshot}
-              isLoading={
-                selected === "v1"
-                  ? v1InitializePnlSnapshotLoading
-                  : v2InitializePnlSnapshotLoading
-              }
+              isLoading={v2InitializePnlSnapshotLoading}
               color="primary"
               isDisabled={
-                selected === "v1"
-                  ? v1BuildPnlSnapshotsLoading || v1InitializePnlSnapshotLoading
-                  : v2BuildPnlSnapshotsLoading || v2InitializePnlSnapshotLoading
+                v2BuildPnlSnapshotsLoading || v2InitializePnlSnapshotLoading
               }
             >
               Force Initialization
@@ -358,7 +229,7 @@ export function PnlSnapshotPanel() {
 
           <DataTable
             columns={columns}
-            rows={selected === "v1" ? v1Rows : v2Rows}
+            rows={v2Rows}
             classNames={{
               tr: "font-mono cursor-pointer",
               td: "py-3 ",

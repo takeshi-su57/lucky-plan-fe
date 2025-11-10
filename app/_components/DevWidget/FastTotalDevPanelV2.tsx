@@ -18,16 +18,18 @@ type TabType = "overview" | "details" | "monthly";
 export type FastTotalDevPanelV2Props = {
   startDate: string;
   filterParams: ExportFilter[];
+  platform: Platform;
 };
 
 export function FastTotalDevPanelV2({
   startDate,
   filterParams,
+  platform,
 }: FastTotalDevPanelV2Props) {
   const [selected, setSelected] = useState<TabType>("overview");
 
   const { accPnls, botCounts, maxInvested, loading } =
-    useGetWholeCompressedHistoriesV2(Platform.Gns, startDate, filterParams);
+    useGetWholeCompressedHistoriesV2(platform, startDate, filterParams);
 
   const {
     dailyPnlChartData,

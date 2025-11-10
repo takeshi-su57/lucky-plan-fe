@@ -33,6 +33,7 @@ export function ContractAdaptionButton({ contractId }: { contractId: number }) {
 
       <StandardModal
         isOpen={isOpen}
+        isDismissable={false}
         onOpenChange={onOpenChange}
         backdrop="blur"
       >

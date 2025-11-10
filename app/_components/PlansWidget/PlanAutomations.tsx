@@ -117,7 +117,7 @@ export function GroupedAutomations({
   const { eventLogs, loading } = useGetPerpEventLogs(
     [leaderAddress],
     platform,
-    null,
+    1000,
   );
 
   const allContracts = useGetAllContracts();
