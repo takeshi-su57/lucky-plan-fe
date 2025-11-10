@@ -231,6 +231,7 @@ export default function BarChart({
 
       <StandardModal
         isOpen={isOpen}
+        isDismissable={false}
         onOpenChange={onOpenChange}
         backdrop="blur"
         classNames={{

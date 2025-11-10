@@ -2,17 +2,6 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type AccPnl {
-  date: Date!
-  in: Float!
-  inOut: Float!
-  out: Float!
-  pnl: Float!
-  positionCount: Int!
-  taskCount: Int!
-  traderCount: Int!
-}
-
 type AccPnlV2 {
   date: Date!
   in: Float!
@@ -237,22 +226,6 @@ input DecreasePositionSizeInput {
   pairIndex: Int!
 }
 
-type ExpertPnlSnapshot {
-  accUSDPnl: Float!
-  address: String!
-  avgDuration: Float!
-  avgPnlRatio: Float!
-  contractId: Int!
-  dateStr: String!
-  histories: [TradeHistory!]!
-  id: Int!
-  kind: PnlSnapshotKind!
-  maxSize: Float!
-  openedPositions: Int!
-  ratio: Float!
-  score: Float!
-}
-
 type ExpertPnlSnapshotV2Connection {
   edges: [ExpertPnlSnapshotV2Edge!]!
   pageInfo: ExpertPnlSnapshotV2PageInfo!
@@ -321,7 +294,7 @@ type FollowerDetail {
   contractId: Int!
   ethBalance: String
   pendingOrders: [FollowerPendingOrder!]!
-  pnlSnapshots: [PnlSnapshot!]!
+  pnlSnapshots: [PnlSnapshotV2!]!
   publicKey: String!
   trades: [FollowerTrade!]!
   usdcBalance: String
@@ -353,13 +326,6 @@ type FollowerTrade {
 
 input GetUserByAddressInput {
   address: String!
-}
-
-input GetUserTransactionCountsInput {
-  address: String!
-  contractId: Int!
-  endedAt: Date
-  startedAt: Date
 }
 
 input IncreasePositionSizeInput {
@@ -498,9 +464,7 @@ type Mutation {
     followerContractId: Int!
     ratio: Float!
   ): User!
-  autoTesting: Boolean!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
-  buildPnlSnapshots(dateStr: String!, isForceBuild: Boolean!): Boolean!
   buildPnlSnapshotsV2(
     dateStr: String!
     isForceBuild: Boolean!
@@ -526,7 +490,6 @@ type Mutation {
   deletePlan(id: Int!): Int!
   deleteTag(tag: String!): Tag!
   disableContract(contractId: Int!): Contract!
-  dynamicSnapshotBuild(dateStr: String!): Boolean!
   dynamicSnapshotBuildV2(dateStr: String!, platform: Platform!): Boolean!
   endPlan(id: Int!): Boolean!
   generateNewFollower: Follower!
@@ -539,7 +502,6 @@ type Mutation {
   increasePositionSize(
     input: IncreasePositionSizeInput!
   ): ContractExecutionResult!
-  initializePnlSnapshot(beginingDate: Date!, isForceBuild: Boolean!): Boolean!
   initializePnlSnapshotV2(
     beginingDate: Date!
     isForceBuild: Boolean!
@@ -697,63 +659,21 @@ enum Platform {
   GNS
 }
 
-type PnlSnapshot {
-  accUSDPnl: Float!
-  address: String!
-  contractId: Int!
-  dateStr: String!
-  id: Int!
-  kind: PnlSnapshotKind!
-}
-
-type PnlSnapshotDetails {
-  accUSDPnl: Float!
-  address: String!
-  contractId: Int!
-  dateStr: String!
-  histories: [TradeHistory!]!
-  id: Int!
-  kind: PnlSnapshotKind!
-}
-
-type PnlSnapshotDetailsConnection {
-  edges: [PnlSnapshotDetailsEdge!]!
-  pageInfo: PnlSnapshotDetailsPageInfo!
-}
-
-type PnlSnapshotDetailsEdge {
-  cursor: Int!
-  node: PnlSnapshotDetails!
-}
-
-type PnlSnapshotDetailsPageInfo {
-  endCursor: Int
-  hasNextPage: Boolean!
-}
-
-type PnlSnapshotDevDetails {
-  accUSDPnl: Float!
-  address: String!
-  contractId: Int!
-  dateStr: String!
-  histories: [TradeHistory!]!
-  id: Int!
-  kind: PnlSnapshotKind!
-  score: Float!
-}
-
-type PnlSnapshotInitializedFlag {
-  dateStr: String!
-  id: Int!
-  isInit: Boolean!
-}
-
 enum PnlSnapshotKind {
   ALL_TIME
   DAY
   MONTH
   THREE_MONTH
   WEEK
+}
+
+type PnlSnapshotV2 {
+  accUSDPnl: Float!
+  address: String!
+  dateStr: String!
+  id: Int!
+  kind: PnlSnapshotKind!
+  platform: Platform!
 }
 
 type PnlSnapshotV2Details {
@@ -827,11 +747,6 @@ type Query {
   getAllWalletAccounts: [WalletAccount!]!
   getBlacklist: [String!]
   getBotsByStatus(after: Int, first: Int!, status: BotStatus!): BotConnection!
-  getDevPnlSnapshots(
-    dateStr: String!
-    filterParams: [ExportFilter!]!
-  ): [PnlSnapshotDevDetails!]!
-  getExpertPnlSnapshots: [ExpertPnlSnapshot!]!
   getExpertPnlSnapshotsV2(
     after: Int
     platform: Platform!
@@ -850,17 +765,9 @@ type Query {
     first: Int!
     status: PlanStatus!
   ): PlanConnection!
-  getPnlSnapshotInitializedFlag: [PnlSnapshotInitializedFlag!]!
   getPnlSnapshotV2InitializedFlag(
     platform: Platform!
   ): [PnlSnapshotV2InitializedFlag!]!
-  getPnlSnapshots(
-    after: Int
-    dateStr: String!
-    first: Int!
-    kind: PnlSnapshotKind!
-  ): PnlSnapshotDetailsConnection!
-  getPnlSnapshotsByAddress(address: String!, dateStr: String!): [PnlSnapshot!]!
   getPnlSnapshotsV2(
     after: Int
     dateStr: String!
@@ -876,31 +783,15 @@ type Query {
     platform: Platform!
   ): PnlSnapshotV2DetailsForPagination!
   getServerTime: ServerTime!
-  getStatisticData: [StatisticData!]!
-  getTestingReport(after: Int, first: Int!): TestingReportConnection!
-  getTradeHistories(address: String!, contractId: Int!): [TradeHistory!]!
-  getTradeTransactionCounts(
-    addresses: [String!]!
-    contractIds: [Int!]!
-  ): TradeTransactionCount!
   getTradingSignalLogs: [TradingSignalLog!]!
-  getUserTransactionCounts(
-    inputs: [GetUserTransactionCountsInput!]!
-  ): [TradeTransactionCount!]!
   getWalletAccountByAddress(input: GetUserByAddressInput!): WalletAccount!
   getWhitelist: [String!]
-  getWholeCompressedHistories(
-    filterParams: [ExportFilter!]!
-    isTestnet: Boolean!
-    startDate: String!
-  ): WholeCompressedHistories!
   getWholeCompressedHistoriesV2(
     filterParams: [ExportFilter!]!
     platform: Platform!
     startDate: String!
   ): WholeCompressedHistoriesV2!
   isBotHookRunning: Boolean!
-  isPnlSnapshotInitialized(dateStr: String!): PnlSnapshotInitializedFlag
   isPnlSnapshotV2Initialized(
     dateStr: String!
     platform: Platform!
@@ -917,14 +808,6 @@ type ServerTime {
 type SeverityCount {
   counts: Int!
   severity: LogSeverity!
-}
-
-type StatisticData {
-  countOfLost: Float!
-  countOfWin: Int!
-  size: Float!
-  sumOfLost: Float!
-  sumOfWin: Float!
 }
 
 type Strategy {
@@ -1053,11 +936,6 @@ type TestingReport {
   window: Int!
 }
 
-type TestingReportConnection {
-  edges: [TestingReportEdge!]!
-  pageInfo: TestingReportPageInfo!
-}
-
 type TestingReportEdge {
   cursor: Int!
   node: TestingReport!
@@ -1068,59 +946,10 @@ type TestingReportPageInfo {
   hasNextPage: Boolean!
 }
 
-type TotalBot {
-  address: String!
-  contractId: Int!
-  dateStr: String!
-}
-
 type TotalBotV2 {
   address: String!
   dateStr: String!
   platform: Platform!
-}
-
-enum TradeActionType {
-  TradeClosedLIQ
-  TradeClosedMarket
-  TradeClosedSL
-  TradeClosedTP
-  TradeLeverageUpdate
-  TradeOpenedLimit
-  TradeOpenedMarket
-  TradePosPnlRealized
-  TradePosSizeDecrease
-  TradePosSizeIncrease
-}
-
-type TradeHistory {
-  action: TradeActionType!
-  address: String!
-  block: Int!
-  collateralDelta: String
-  collateralIndex: Int!
-  collateralPriceUsd: String!
-  contractId: Int!
-  date: Date!
-  id: Int!
-  isCounterTrade: Boolean
-  leverage: Int!
-  leverageDelta: Int
-  long: Int!
-  marketPrice: String
-  meta: String
-  pair: String!
-  pnl: String!
-  price: String!
-  size: String!
-  tradeId: String
-  tradeIndex: Int!
-}
-
-type TradeTransactionCount {
-  daily: Int!
-  monthly: Int!
-  weekly: Int!
 }
 
 type TradingSignalLog {
@@ -1203,15 +1032,6 @@ type WalletAccount {
   id: Int!
   tags: [Tag!]!
   userId: String!
-}
-
-type WholeCompressedHistories {
-  accPnls: [AccPnl!]!
-  actionTypeCount: String
-  botCounts: [BotCount!]!
-  maxInvested: Float!
-  totalBots: [TotalBot!]!
-  uniqueTraders: [String!]
 }
 
 type WholeCompressedHistoriesV2 {

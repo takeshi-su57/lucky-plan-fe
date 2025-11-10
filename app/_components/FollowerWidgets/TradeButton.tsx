@@ -1,27 +1,23 @@
 import { Button, useDisclosure } from "@nextui-org/react";
-import { isAddress, Address } from "viem";
 import { twMerge } from "tailwind-merge";
 
 import { RightDrawer } from "@/components/modals/RightDrawer";
-import { AnalyzeWidget } from "./AnalyzeWidget";
+import { Followers } from "./Followers";
 
-export function AnalyzeButton({ address }: { address: string }) {
+export function TradeButton() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   return (
     <>
-      <Button isDisabled={!isAddress(address)} size="sm" onClick={onOpen}>
-        Analyze
-      </Button>
+      <Button onPress={onOpen}>Open Trade</Button>
 
       <RightDrawer
         isOpen={isOpen}
+        isDismissable={false}
         onOpenChange={onOpenChange}
         classNames={{ base: twMerge("max-w-[80%]") }}
       >
-        <div className="flex w-full flex-col gap-6">
-          <AnalyzeWidget address={address as Address} />
-        </div>
+        <Followers />
       </RightDrawer>
     </>
   );

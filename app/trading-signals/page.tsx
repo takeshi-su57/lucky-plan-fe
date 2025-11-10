@@ -32,11 +32,11 @@ export default function Page() {
               value && setSelected(value as TabType)
             }
           >
+            <Tab key="management" title="Management" />
             <Tab key="insightFromSignal" title="Insight from Signal" />
             <Tab key="insightFromGnsExpert" title="Insight from GNS Expert" />
             <Tab key="insightFromGmxExpert" title="Insight from GMX Expert" />
             <Tab key="insightFromAvntExpert" title="Insight from AVNT Expert" />
-            <Tab key="management" title="Management" />
           </Tabs>
           <AddTradingSignalButton />
         </div>

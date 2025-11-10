@@ -50,6 +50,7 @@ export function MaxMissionPanel() {
 
       <StandardModal
         isOpen={isOpen}
+        isDismissable={false}
         onOpenChange={onOpenChange}
         backdrop="blur"
         classNames={{ base: "max-w-[350px]" }}

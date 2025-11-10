@@ -59,6 +59,7 @@ export function HistoriesView({ platform, histories }: HistoriesViewProps) {
 
       <StandardModal
         isOpen={isOpen}
+        isDismissable={false}
         onOpenChange={onOpenChange}
         backdrop="blur"
         classNames={{ base: "max-w-[1024px]" }}

@@ -2,35 +2,24 @@
 
 import { ChangeEventHandler, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Tabs,
-  DatePicker,
-  Select,
-  SelectItem,
-  Tab,
-  Input,
-} from "@nextui-org/react";
+import { DatePicker, Select, SelectItem, Input } from "@nextui-org/react";
 import { parseDate, now } from "@internationalized/date";
 import dayjs from "dayjs";
 import { getServerTimezone } from "@/utils";
 
 import { Platform, PnlSnapshotKind } from "@/graphql/gql/graphql";
 
-import { LeaderboardV1 } from "./LeaderboardV1";
 import { LeaderboardV2 } from "./LeaderboardV2";
 
 import { EventLogsModalButton } from "./EventLogsModalButton";
-import { AnalyzeButton } from "../ExpertWidgets/AnalyzeButton";
 
-type TabType = "v1" | "v2";
 const availableKind = [PnlSnapshotKind.Month, PnlSnapshotKind.AllTime];
 
 export function LeaderboadWrapper() {
   const router = useRouter();
 
-  const [selected, setSelected] = useState<TabType>("v2");
   const [kind, setKind] = useState<PnlSnapshotKind>(PnlSnapshotKind.Month);
-  const [platform, setPlatform] = useState<Platform>(Platform.Gmx);
+  const [platform, setPlatform] = useState<Platform>(Platform.Gns);
   const [date, setDate] = useState<Date>(now(getServerTimezone()).toDate());
   const [searchAddress, setSearchAddress] = useState<string>("");
 
@@ -67,15 +56,6 @@ export function LeaderboadWrapper() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Tabs
-        aria-label="users-table-tabs"
-        selectedKey={selected}
-        onSelectionChange={(value) => value && setSelected(value as TabType)}
-      >
-        <Tab key="v1" title="V1" />
-        <Tab key="v2" title="V2" />
-      </Tabs>
-
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Select
@@ -123,24 +103,16 @@ export function LeaderboadWrapper() {
             onChange={(e) => setSearchAddress(e.target.value)}
           />
 
-          {selected === "v2" ? (
-            <EventLogsModalButton address={searchAddress} platform={platform} />
-          ) : null}
-          {selected === "v1" ? <AnalyzeButton address={searchAddress} /> : null}
+          <EventLogsModalButton address={searchAddress} platform={platform} />
         </div>
       </div>
 
-      {selected === "v1" ? (
-        <LeaderboardV1 date={date} kind={kind} hideTags={false} />
-      ) : null}
-      {selected === "v2" ? (
-        <LeaderboardV2
-          date={date}
-          kind={kind}
-          platform={platform}
-          hideTags={false}
-        />
-      ) : null}
+      <LeaderboardV2
+        date={date}
+        kind={kind}
+        platform={platform}
+        hideTags={false}
+      />
     </div>
   );
 }

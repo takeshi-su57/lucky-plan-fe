@@ -33,7 +33,7 @@ export function eventToPerpTradeHistory(
 
   const usdPnl = 0;
 
-  const collateralUsdPrice = 0;
+  const collateralUsdPrice = 1;
 
   const collateralInUsd =
     Number(

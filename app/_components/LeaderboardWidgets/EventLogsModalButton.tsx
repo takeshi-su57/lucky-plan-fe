@@ -31,6 +31,7 @@ export function EventLogsModalButton({
       {address && platform && (
         <RightDrawer
           isOpen={isOpen}
+          isDismissable={false}
           onOpenChange={onOpenChange}
           classNames={{ base: twMerge("max-w-[80%]") }}
         >

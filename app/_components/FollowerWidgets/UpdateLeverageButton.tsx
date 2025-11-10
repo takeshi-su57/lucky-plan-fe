@@ -57,6 +57,7 @@ export function UpdateLeverageButton({
 
       <StandardModal
         isOpen={isOpen}
+        isDismissable={false}
         onOpenChange={onOpenChange}
         backdrop="blur"
       >

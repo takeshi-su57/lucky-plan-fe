@@ -100,9 +100,46 @@ export function getTradingSignalLogs(
 }
 
 export function useRegisterTradingSignal() {
-  const [registerTradingSignalLog, { error, loading }] = useMutation(
+  const [registerTradingSignalLog, { data, error, loading }] = useMutation(
     REGISTER_TRADING_SIGNAL_MUTATION_DOCUMENT,
   );
+
+  const apolloClient = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      enqueueSnackbar("Success at unregistering trading signal log!", {
+        variant: "success",
+      });
+
+      const registeredLog = getFragmentData(
+        TRADING_SIGNAL_LOG_INFO_FRAGMENT_DOCUMENT,
+        data.registerTradingSignalLog,
+      );
+      apolloClient.cache.updateQuery(
+        {
+          query: GET_TRADING_SIGNAL_LOGS_QUERY,
+          variables: {},
+        },
+        (oldData: any) => {
+          if (oldData) {
+            return {
+              ...oldData,
+              getTradingSignalLogs: [
+                ...oldData.getTradingSignalLogs.filter(
+                  (log: any) => log.id !== registeredLog.id,
+                ),
+                registeredLog,
+              ],
+            };
+          } else {
+            return oldData;
+          }
+        },
+      );
+    }
+  }, [apolloClient.cache, data, enqueueSnackbar, error]);
 
   return {
     registerTradingSignalLog,
@@ -112,9 +149,43 @@ export function useRegisterTradingSignal() {
 }
 
 export function useUnregisterTradingSignal() {
-  const [unregisterTradingSignalLog, { error, loading }] = useMutation(
+  const [unregisterTradingSignalLog, { data, error, loading }] = useMutation(
     UNREGISTER_TRADING_SIGNAL_MUTATION_DOCUMENT,
   );
+
+  const apolloClient = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      enqueueSnackbar("Success at unregistering trading signal log!", {
+        variant: "success",
+      });
+
+      const unregisteredTradingSignalLog = getFragmentData(
+        TRADING_SIGNAL_LOG_INFO_FRAGMENT_DOCUMENT,
+        data.unregisterTradingSignalLog,
+      );
+      apolloClient.cache.updateQuery(
+        {
+          query: GET_TRADING_SIGNAL_LOGS_QUERY,
+          variables: {},
+        },
+        (oldData) => {
+          if (oldData) {
+            return {
+              ...oldData,
+              getTradingSignalLogs: oldData.getTradingSignalLogs.filter(
+                (log) => log.id !== unregisteredTradingSignalLog.id,
+              ),
+            };
+          } else {
+            return oldData;
+          }
+        },
+      );
+    }
+  }, [apolloClient.cache, data, enqueueSnackbar, error]);
 
   return {
     unregisterTradingSignalLog,

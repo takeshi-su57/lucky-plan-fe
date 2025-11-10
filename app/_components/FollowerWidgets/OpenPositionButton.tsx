@@ -82,6 +82,7 @@ export function OpenPositionButton({
 
       <StandardModal
         isOpen={isOpen}
+        isDismissable={false}
         onOpenChange={onOpenChange}
         backdrop="blur"
       >
@@ -139,7 +140,7 @@ export function OpenPositionButton({
             />
 
             <Button
-              onClick={handleOpen}
+              onPress={handleOpen}
               isDisabled={isDisabledOpen}
               isLoading={loading}
               className="w-[180px]"

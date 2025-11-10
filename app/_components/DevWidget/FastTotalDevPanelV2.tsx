@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Spinner, Tabs, Tab } from "@nextui-org/react";
 import dayjs from "dayjs";
 
-import { ExportFilter, Platform, AccPnl } from "@/graphql/gql/graphql";
+import { ExportFilter, Platform } from "@/graphql/gql/graphql";
 
 import { useGetWholeCompressedHistoriesV2 } from "@/app/_hooks/useHistory";
 
@@ -18,16 +18,18 @@ type TabType = "overview" | "details" | "monthly";
 export type FastTotalDevPanelV2Props = {
   startDate: string;
   filterParams: ExportFilter[];
+  platform: Platform;
 };
 
 export function FastTotalDevPanelV2({
   startDate,
   filterParams,
+  platform,
 }: FastTotalDevPanelV2Props) {
   const [selected, setSelected] = useState<TabType>("overview");
 
   const { accPnls, botCounts, maxInvested, loading } =
-    useGetWholeCompressedHistoriesV2(Platform.Gmx, startDate, filterParams);
+    useGetWholeCompressedHistoriesV2(platform, startDate, filterParams);
 
   const {
     dailyPnlChartData,
@@ -412,7 +414,7 @@ export function FastTotalDevPanelV2({
       {selected === "monthly" && (
         <FastTotalNewPanel
           startDate={startDate}
-          accPnls={accPnls as AccPnl[]}
+          accPnls={accPnls}
           botCounts={botCounts}
         />
       )}

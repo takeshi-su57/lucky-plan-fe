@@ -4,6 +4,7 @@ import { TaskBackwardDetails, TaskStatus } from "@/graphql/gql/graphql";
 
 import { ContractPnl } from "../MissionWidgets/ContractPnl";
 import { useGetAllGnsContracts } from "@/app/_hooks/useContract";
+import { useEffect } from "react";
 
 const statusColors: Record<
   TaskStatus,
@@ -25,6 +26,22 @@ export function TaskMessage({
   contractId: number;
 }) {
   const gnsContracts = useGetAllGnsContracts();
+
+  useEffect(() => {
+    if (
+      document.visibilityState !== "visible" &&
+      Notification.permission === "granted"
+    ) {
+      const notification = new Notification("New Task", {
+        body: `Task ${task.id} has been completed`,
+        icon: "/icon.png", // optional
+      });
+
+      notification.onclick = () => {
+        window.focus();
+      };
+    }
+  }, [task]);
 
   return (
     <div className="flex w-full flex-col gap-2">

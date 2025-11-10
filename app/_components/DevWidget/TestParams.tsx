@@ -63,6 +63,7 @@ export function TestParamsView({
       <Button onClick={onOpen}>Set Test Params</Button>
       <StandardModal
         isOpen={isOpen}
+        isDismissable={false}
         onOpenChange={onOpenChange}
         backdrop="blur"
       >

@@ -17,6 +17,7 @@ export function ButtonWithConfirm(props: ButtonProps) {
 
       <StandardModal
         isOpen={isOpen}
+        isDismissable={false}
         onOpenChange={onOpenChange}
         classNames={{ base: "max-w-[300px]" }}
       >

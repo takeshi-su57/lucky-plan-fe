@@ -227,12 +227,12 @@ export const bestCase = [
 
 export const primaryBestCase = [
   {
-    minR2: 0.9,
-    window: 16,
+    minR2: 0.93,
+    window: 6,
     minScore: 10,
     n: 2,
     m: 1,
-    maxAvgSize: 50000,
+    maxAvgSize: 1000_000_000,
     maxCount: 1000_000_000,
     minAvgSize: 500,
     minCount: 10,
