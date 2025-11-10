@@ -52,6 +52,7 @@ export function AddTradingSignalButton() {
 
       <RightDrawer
         isOpen={isOpen}
+        isDismissable={false}
         onOpenChange={onOpenChange}
         classNames={{ base: twMerge("max-w-[80%]") }}
       >
