@@ -45,6 +45,7 @@ export function ModaledItems({
       {mode === "modal" ? (
         <StandardModal
           isOpen={isOpen}
+          isDismissable={false}
           onOpenChange={onOpenChange}
           backdrop="blur"
           classNames={{ base: twMerge("max-w-[1100px]", classNames?.content) }}
@@ -59,6 +60,7 @@ export function ModaledItems({
         </StandardModal>
       ) : (
         <RightDrawer
+          isDismissable={false}
           isOpen={isOpen}
           onOpenChange={onOpenChange}
           classNames={{ base: twMerge("max-w-[1100px]", classNames?.content) }}

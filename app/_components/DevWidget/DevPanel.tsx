@@ -1,107 +1,39 @@
 "use client";
 
-import { useState } from "react";
-import { Tab, Tabs } from "@nextui-org/react";
+import { useState, ChangeEventHandler } from "react";
+import { SelectItem, Select, Tab, Tabs, Checkbox } from "@nextui-org/react";
 import { parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
 
-import { FastTotalDevPanel } from "./FastTotalDevPanel";
 import { TestParamsView } from "./TestParams";
 
-import { TestingReportPanel } from "./TestingReportPanel";
-import { PastDatePicker } from "./PastDatePicker";
-import { SelectLeaders } from "./SelectLeaders";
-import { MergedLeaderboard } from "./MergedLeaderboard";
-import { BacktestResult } from "./BacktestResult";
-import { Stepper } from "@/components/Stepper/Stepper";
-
-import { bestCase, primaryBestCase } from "./subcase";
-import { LeaderParams } from "./LeaderItem";
+import { bestCase } from "./subcase";
 import { getServerTimezone } from "@/utils";
-import { TempPanel } from "./TempPanel";
 import { FastTotalDevPanelV2 } from "./FastTotalDevPanelV2";
+import { Platform } from "@/graphql/gql/graphql";
 
-type TabType =
-  | "one_day"
-  | "applied_filter"
-  | "wide_filter"
-  | "wide_filter_v2"
-  | "reports"
-  | "temp";
+type TabType = "wide_filter";
 
 export function DevPanel() {
-  const [selected, setSelected] = useState<TabType>("one_day");
-  const [currentStep, setCurrentStep] = useState(1);
+  const [selected, setSelected] = useState<TabType>("wide_filter");
+  const [platform, setPlatform] = useState<Platform>(Platform.Gns);
+  const [showPanel, setShowPanel] = useState(false);
 
   const [ratio, setRatio] = useState(1);
 
-  const [pastDate, setPastDate] = useState<Date>(
-    parseDate("2024-12-01").toDate(getServerTimezone()),
-  );
-  const [leaders, setLeaders] = useState<LeaderParams[]>([]);
   const [startDate, setStartDate] = useState<Date>(
     parseDate("2025-01-01").toDate(getServerTimezone()),
   );
 
-  const steps = [
-    {
-      step: 1,
-      label: "Select Date For Backtest",
-      description: `Select a time period to analyze how your trading strategy would have performed historically. This helps validate your system's effectiveness across different market conditions and scenarios.`,
-      content: (
-        <PastDatePicker
-          pastDate={pastDate}
-          setPastDate={setPastDate}
-          onNextStep={() => setCurrentStep(2)}
-        />
-      ),
-    },
-    {
-      step: 2,
-      label: "Select Leaders",
-      description:
-        "Select the leaders that will be used to backtest the system.",
-      content: (
-        <SelectLeaders
-          leaders={leaders}
-          onChangeLeaders={setLeaders}
-          endDate={pastDate}
-          hideTags={true}
-          onNextStep={() => setCurrentStep(3)}
-          onPrevStep={() => setCurrentStep(1)}
-          testParams={bestCase}
-          ratio={ratio}
-        />
-      ),
-    },
-    {
-      step: 3,
-      label: "Analyze Combined Performance",
-      description:
-        "Visualize and analyze the aggregated performance metrics of selected leaders to evaluate overall strategy effectiveness.",
-      content: (
-        <MergedLeaderboard
-          endDate={dayjs(pastDate).add(1, "day").toDate()}
-          leaders={leaders}
-          onNextStep={() => setCurrentStep(4)}
-          onPrevStep={() => setCurrentStep(2)}
-        />
-      ),
-    },
-    {
-      step: 4,
-      label: "Run",
-      description: `Run the backtest to see the results of the system.`,
-      content: (
-        <BacktestResult
-          startDate={pastDate}
-          leaders={leaders}
-          onNextStep={() => setCurrentStep(1)}
-          onPrevStep={() => setCurrentStep(3)}
-        />
-      ),
-    },
-  ];
+  const handleChangePlatform: ChangeEventHandler<HTMLSelectElement> = (
+    event,
+  ) => {
+    const value = event.target.value;
+
+    if (value.trim() !== "") {
+      setPlatform(value as Platform);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -114,6 +46,19 @@ export function DevPanel() {
         }}
       />
 
+      <Select
+        variant="underlined"
+        label="Platform"
+        selectedKeys={platform ? [platform] : undefined}
+        onChange={handleChangePlatform}
+        selectionMode="single"
+        className="w-[200px] font-mono"
+      >
+        {Object.values(Platform).map((item) => (
+          <SelectItem key={item}>{item}</SelectItem>
+        ))}
+      </Select>
+
       <Tabs
         aria-label="dev-tabs"
         selectedKey={selected}
@@ -123,44 +68,20 @@ export function DevPanel() {
           }
         }}
       >
-        <Tab key="one_day" title="One Day" />
-        <Tab key="applied_filter" title="Applied Filter" />
         <Tab key="wide_filter" title="Wide Filter" />
-        <Tab key="wide_filter_v2" title="Wide Filter V2" />
-        <Tab key="reports" title="Reports" />
-        <Tab key="temp" title="Temp" />
       </Tabs>
 
-      {selected === "one_day" && (
-        <Stepper steps={steps} currentStep={currentStep} />
-      )}
+      <Checkbox isSelected={showPanel} onValueChange={setShowPanel}>
+        Show Panel
+      </Checkbox>
 
-      {selected === "applied_filter" && (
-        <FastTotalDevPanel
-          startDate={dayjs(startDate).format("YYYY-MM-DD")}
-          isTestnet={false}
-          filterParams={bestCase}
-        />
-      )}
-
-      {selected === "wide_filter" && (
-        <FastTotalDevPanel
-          startDate={dayjs(startDate).format("YYYY-MM-DD")}
-          filterParams={primaryBestCase}
-          isTestnet={false}
-        />
-      )}
-
-      {selected === "wide_filter_v2" && (
+      {selected === "wide_filter" && showPanel && (
         <FastTotalDevPanelV2
           startDate={dayjs(startDate).format("YYYY-MM-DD")}
-          filterParams={primaryBestCase}
+          filterParams={bestCase}
+          platform={platform}
         />
       )}
-
-      {selected === "reports" && <TestingReportPanel />}
-
-      {selected === "temp" && <TempPanel />}
     </div>
   );
 }

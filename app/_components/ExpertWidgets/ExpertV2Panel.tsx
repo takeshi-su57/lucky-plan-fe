@@ -18,7 +18,7 @@ import { PaginatedViews } from "@/components/views/PaginatedViews";
 import { EventLogsWidget } from "../LeaderboardWidgets/EventLogsWidget";
 import { useGetTradingSignalLogs } from "@/app/_hooks/useTradingSignals";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 
 function getKey(address: string, platform: Platform) {
   return `${address.toLowerCase()}-${platform}`;

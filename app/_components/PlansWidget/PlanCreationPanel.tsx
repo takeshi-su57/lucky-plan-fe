@@ -1,27 +1,21 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 import { getFragmentData } from "@/graphql/gql/fragment-masking";
 
 import { getServerTimezone } from "@/utils";
 
 import { Stepper } from "@/components/Stepper/Stepper";
 import { PlanMetadata, PlanMetadataForm } from "./PlanMetadataForm";
-import { SelectLeaders } from "./SelectLeaders";
-import { LeaderParams } from "@/types";
-
-import { PlanSetupStep } from "./PlanSetupStep";
 import { SaveStep } from "./SaveStep";
 
-import { PersonalTradeHistory, VirtualBotParams } from "@/types";
-import { PlanCreationOverview } from "./PlanCreationOverview";
-
+import { VirtualBotParams } from "@/types";
 import { PLAN_INFO_FRAGMENT_DOCUMENT } from "@/app-hooks/usePlan";
 import { useGetAllContracts } from "@/app-hooks/useContract";
 
 import { useBatchCreateBots } from "@/app-hooks/useAutomation";
 import { useCreatePlan } from "@/app-hooks/usePlan";
-import { ContractStatus, Platform } from "@/graphql/gql/graphql";
+import { ContractStatus } from "@/graphql/gql/graphql";
 
 export function PlanCreationPanel() {
   const { createPlan, loading: createPlanLoading } = useCreatePlan();
@@ -35,10 +29,6 @@ export function PlanCreationPanel() {
   );
 
   const [planMetadata, setPlanMetadata] = useState<PlanMetadata | null>(null);
-
-  const [leaderHistories, setLeaderHistories] = useState<
-    Record<string, PersonalTradeHistory[]>
-  >({});
 
   const handleInitialize = () => {
     setCurrentStep(1);
@@ -105,54 +95,6 @@ export function PlanCreationPanel() {
     }
   };
 
-  const handleChangeLeaders = (leaders: LeaderParams[]) => {
-    setVirtualBotParams((prev) => {
-      const leaderIds = leaders.map((item) => item.virtualId);
-      const prevIds = prev.map((item) => item.virtualId);
-
-      return [
-        ...prev.filter((item) => leaderIds.includes(item.virtualId)),
-        ...leaders
-          .filter((item) => !prevIds.includes(item.virtualId))
-          .map((item) => ({
-            virtualId: item.virtualId,
-            platform: Platform.Gns,
-            leaderAddress: item.address,
-          })),
-      ];
-    });
-  };
-
-  const handleChangeLeaderHistories = useCallback(
-    (virtualId: string, histories: PersonalTradeHistory[]) => {
-      setLeaderHistories((prev) => ({ ...prev, [virtualId]: histories }));
-    },
-    [],
-  );
-
-  const handleChangeVirtualBotParam = (virtualBotParams: VirtualBotParams) => {
-    setVirtualBotParams((prev) => {
-      return prev.map((item) =>
-        item.virtualId === virtualBotParams.virtualId ? virtualBotParams : item,
-      );
-    });
-  };
-
-  const handleRemoveVirtualBotParam = (virtualId: string) => {
-    setVirtualBotParams((prev) =>
-      prev.filter((item) => item.virtualId !== virtualId),
-    );
-  };
-
-  const { totalLeaderHistories } = useMemo(() => {
-    const totalLeaderHistories = virtualBotParams
-      .map((item) => leaderHistories[item.virtualId])
-      .filter((item) => item && item.length > 0)
-      .reduce((acc, curr) => [...acc, ...curr], []);
-
-    return { totalLeaderHistories };
-  }, [leaderHistories, virtualBotParams]);
-
   const steps = [
     {
       step: 1,
@@ -166,56 +108,6 @@ export function PlanCreationPanel() {
         />
       ),
     },
-    // {
-    //   step: 2,
-    //   label: "Select Leaders",
-    //   description:
-    //     "Select the leaders that will be used to backtest the system.",
-    //   content: (
-    //     <SelectLeaders
-    //       leaders={virtualBotParams.map((item) => ({
-    //         virtualId: item.virtualId,
-    //         address: item.leaderAddress,
-    //         contract: item.leaderContract,
-    //         leaderCollateral: item.leaderCollateralBaseline,
-    //         isConfirmed: false,
-    //       }))}
-    //       hideTags={false}
-    //       onChangeLeaders={handleChangeLeaders}
-    //       endDate={new Date()}
-    //       onNextStep={() => setCurrentStep(3)}
-    //       onPrevStep={() => setCurrentStep(1)}
-    //     />
-    //   ),
-    // },
-    // {
-    //   step: 3,
-    //   label: "Setup Strategies",
-    //   description:
-    //     "Setup the strategies that will be used to backtest the system.",
-    //   content: (
-    //     <PlanSetupStep
-    //       virtualBotParams={virtualBotParams}
-    //       onChangeVirtualBotParam={handleChangeVirtualBotParam}
-    //       onRemoveVirtualBotParam={handleRemoveVirtualBotParam}
-    //       onChangeLeaderHistories={handleChangeLeaderHistories}
-    //       onNextStep={() => setCurrentStep(4)}
-    //       onPrevStep={() => setCurrentStep(2)}
-    //     />
-    //   ),
-    // },
-    // {
-    //   step: 4,
-    //   label: "Overview",
-    //   description: `Overview of the plan.`,
-    //   content: (
-    //     <PlanCreationOverview
-    //       leaderHistories={totalLeaderHistories}
-    //       onNextStep={() => setCurrentStep(5)}
-    //       onPrevStep={() => setCurrentStep(3)}
-    //     />
-    //   ),
-    // },
     {
       step: 2,
       label: "Create Plan",

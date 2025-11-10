@@ -9,7 +9,6 @@ import {
   AccordionItem,
   Spinner,
 } from "@nextui-org/react";
-import { useRouter, useSearchParams } from "next/navigation";
 
 import { ContractStatus } from "@/graphql/gql/graphql";
 import { useGetAllFollowerDetails } from "@/app-hooks/useFollower";
@@ -21,14 +20,9 @@ import { FollowerDetails } from "@/app-components/FollowerWidgets/FollowerDetail
 import { FollowerSummary } from "./FollowerSummary";
 
 export function Followers() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
   const allContracts = useGetAllGnsContracts();
 
-  const [contractId, setContractId] = useState<string | null>(
-    searchParams.get("contractId") || null,
-  );
+  const [contractId, setContractId] = useState<string | null>(null);
 
   const { details: followerDetails, loading: followerLoading } =
     useGetAllFollowerDetails(contractId);
@@ -48,10 +42,6 @@ export function Followers() {
             className="w-[400px]"
             onSelectionChange={(key) => {
               setContractId(key as string | null);
-
-              const contractQuery = key ? `contractId=${key}` : null;
-
-              router.push(`/followers?${contractQuery || ""}`);
             }}
           >
             {(item) => (

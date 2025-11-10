@@ -60,6 +60,7 @@ export function IncreasePositionButton({
 
       <StandardModal
         isOpen={isOpen}
+        isDismissable={false}
         onOpenChange={onOpenChange}
         backdrop="blur"
       >

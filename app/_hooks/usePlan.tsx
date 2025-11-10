@@ -151,25 +151,6 @@ export const REMOVE_FROM_BLACKLIST_DOCUMENT = graphql(`
   }
 `);
 
-export const GET_EXPERT_PNLSNAPSHOT_DOCUMENT = graphql(`
-  query getExpertPnlSnapshots {
-    getExpertPnlSnapshots {
-      accUSDPnl
-      address
-      contractId
-      dateStr
-      id
-      kind
-      maxSize
-      ratio
-      score
-      openedPositions
-      avgPnlRatio
-      avgDuration
-    }
-  }
-`);
-
 export const GET_EXPERT_PNLSNAPSHOT_V2_DOCUMENT = graphql(`
   query getExpertPnlSnapshotsV2($platform: Platform!, $after: Int) {
     getExpertPnlSnapshotsV2(platform: $platform, after: $after) {
@@ -660,27 +641,6 @@ export function useCreateAutoPlan() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return { createAutoPlan, loading };
-}
-
-export function useGetExpertPnlSnapshots() {
-  const { data, loading } = useQuery(GET_EXPERT_PNLSNAPSHOT_DOCUMENT);
-
-  const pnlSnapshots = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-
-    return data.getExpertPnlSnapshots.map((snapshot) => {
-      return {
-        ...snapshot,
-      };
-    });
-  }, [data]);
-
-  return {
-    pnlSnapshots,
-    loading,
-  };
 }
 
 export function useGetExpertPnlSnapshotsV2(platform: Platform) {

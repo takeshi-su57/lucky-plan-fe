@@ -1,18 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import {
-  Accordion,
-  AccordionItem,
-  Button,
-  Card,
-  CardBody,
-  Tab,
-  Tabs,
-} from "@nextui-org/react";
-import { Address } from "viem";
-
-import { WalletAccountTradeHistory } from "@/app/_components/WalletAccountWidgets/WalletAccountTradeHistory";
+import { useCallback, useState } from "react";
+import { Accordion, AccordionItem, Button } from "@nextui-org/react";
 
 import {
   useWithdrawAllETH,
@@ -27,8 +16,6 @@ import { FollowerDetail } from "@/graphql/gql/graphql";
 import { PaginatedViews } from "@/components/views/PaginatedViews";
 import { OpenPositionButton } from "./OpenPositionButton";
 
-type TabType = "chart" | "positions";
-
 const PAGE_SIZE = 10;
 
 export type FollowerDetailsProps = {
@@ -36,23 +23,11 @@ export type FollowerDetailsProps = {
   isChatFirst: boolean;
 };
 
-export function FollowerDetails({
-  follower,
-  isChatFirst,
-}: FollowerDetailsProps) {
-  const [selected, setSelected] = useState<TabType>("positions");
+export function FollowerDetails({ follower }: FollowerDetailsProps) {
   const [page, setPage] = useState(1);
 
   const withdrawAllETH = useWithdrawAllETH();
   const withdrawAllUSDC = useWithdrawAllUSDC();
-
-  useEffect(() => {
-    if (isChatFirst) {
-      setSelected("chart");
-    } else {
-      setSelected("positions");
-    }
-  }, [isChatFirst]);
 
   const handleWithdrawAllETH = useCallback(
     (address: string, contractId: string) => {
@@ -85,18 +60,6 @@ export function FollowerDetails({
   return (
     <div className="flex flex-col gap-6 border-t border-t-neutral-400/20 py-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Tabs
-            selectedKey={selected}
-            onSelectionChange={(value) =>
-              value && setSelected(value as TabType)
-            }
-          >
-            <Tab key="positions" title="Positions" />
-            <Tab key="chart" title="Chart" />
-          </Tabs>
-        </div>
-
         <div className="flex items-center gap-2">
           <Button
             onClick={() =>
@@ -123,66 +86,52 @@ export function FollowerDetails({
         </div>
       </div>
 
-      {selected === "chart" ? (
-        <Card>
-          <CardBody>
-            <WalletAccountTradeHistory
-              address={follower.address as Address}
-              contractId={follower.contractId.toString()}
-              mode="show_all_activity"
-            />
-          </CardBody>
-        </Card>
-      ) : (
-        <>
-          <PaginatedViews
-            currentPage={page}
-            totalPages={Math.ceil(follower.trades.length / PAGE_SIZE)}
-            onChangePage={setPage}
-            loading={false}
-          >
-            <Accordion isCompact variant="splitted">
-              {follower.trades
-                .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-                .map((trade) => (
-                  <AccordionItem
-                    key={`${trade.address}-${trade.index}`}
-                    title={
-                      <PositionSummary
-                        index={trade.index}
-                        mission={trade.mission || null}
-                        params={trade.params}
-                      />
-                    }
-                  >
-                    <PositionDetails
-                      address={trade.address}
-                      index={trade.index}
-                      contractId={follower.contractId}
-                      params={trade.params}
-                      mission={trade.mission || null}
-                    />
-                  </AccordionItem>
-                ))}
-            </Accordion>
-          </PaginatedViews>
-
-          <Accordion isCompact variant="splitted">
-            {follower.pendingOrders.map((pendingOrder) => (
+      <PaginatedViews
+        currentPage={page}
+        totalPages={Math.ceil(follower.trades.length / PAGE_SIZE)}
+        onChangePage={setPage}
+        loading={false}
+      >
+        <Accordion isCompact variant="splitted">
+          {follower.trades
+            .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+            .map((trade) => (
               <AccordionItem
-                key={pendingOrder.params}
-                title={<PendingOrderSummary params={pendingOrder.params} />}
+                key={`${trade.address}-${trade.index}`}
+                title={
+                  <PositionSummary
+                    index={trade.index}
+                    mission={trade.mission || null}
+                    params={trade.params}
+                  />
+                }
               >
-                <PendingOrderDetails
-                  address={follower.address}
+                <PositionDetails
+                  address={trade.address}
+                  index={trade.index}
                   contractId={follower.contractId}
-                  params={pendingOrder.params}
+                  params={trade.params}
+                  mission={trade.mission || null}
                 />
               </AccordionItem>
             ))}
-          </Accordion>
-        </>
-      )}
+        </Accordion>
+      </PaginatedViews>
+
+      <Accordion isCompact variant="splitted">
+        {follower.pendingOrders.map((pendingOrder) => (
+          <AccordionItem
+            key={pendingOrder.params}
+            title={<PendingOrderSummary params={pendingOrder.params} />}
+          >
+            <PendingOrderDetails
+              address={follower.address}
+              contractId={follower.contractId}
+              params={pendingOrder.params}
+            />
+          </AccordionItem>
+        ))}
+      </Accordion>
     </div>
   );
 }
