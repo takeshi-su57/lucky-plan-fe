@@ -5,12 +5,12 @@ import type { DateValue } from "@react-types/datepicker";
 import { now, parseDate } from "@internationalized/date";
 
 import { getServerTimezone } from "@/utils";
-import { AccPnl, BotCount } from "@/graphql/gql/graphql";
+import { AccPnlV2, BotCount } from "@/graphql/gql/graphql";
 import { FastTotal } from "./FastTotal";
 
 export type FastTotalNewPanelProps = {
   startDate: string;
-  accPnls: AccPnl[];
+  accPnls: AccPnlV2[];
   botCounts: BotCount[];
 };
 

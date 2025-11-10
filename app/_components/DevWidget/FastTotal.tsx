@@ -5,12 +5,12 @@ import BarChart from "@/components/charts/BarChart";
 import LineChart from "@/components/charts/LineChart";
 
 import { getDevData } from "@/utils";
-import { AccPnl, BotCount } from "@/graphql/gql/graphql";
+import { AccPnlV2, BotCount } from "@/graphql/gql/graphql";
 
 export type FastTotalProps = {
   startDate: Date;
   endDate: Date;
-  accPnls: AccPnl[];
+  accPnls: AccPnlV2[];
   botCounts: BotCount[];
 };
 
