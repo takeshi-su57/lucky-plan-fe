@@ -57,6 +57,7 @@ export function TpUpdateButton({
 
       <StandardModal
         isOpen={isOpen}
+        isDismissable={false}
         onOpenChange={onOpenChange}
         backdrop="blur"
       >
