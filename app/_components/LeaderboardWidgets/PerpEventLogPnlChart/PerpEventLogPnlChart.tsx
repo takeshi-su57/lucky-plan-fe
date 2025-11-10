@@ -21,7 +21,7 @@ import { twMerge } from "tailwind-merge";
 import { Contract, PerpTradingEventLog, Platform } from "@/graphql/gql/graphql";
 
 import { HistoryCharts } from "../HistoryCharts";
-import { HistoriesSummary } from "../HistoriesWidget/HistoriesSummary";
+import { HistoriesSummary } from "./HistoriesSummary";
 
 import { useGetAllContracts } from "@/app/_hooks/useContract";
 import {
