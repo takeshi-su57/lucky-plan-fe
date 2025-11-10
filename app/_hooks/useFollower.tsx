@@ -13,7 +13,7 @@ import { useSnackbar } from "notistack";
 
 import { useGetAllGnsContracts } from "./useContract";
 import { getMissionForwardDetails } from "./useMission";
-import { PNL_SNAPSHOT_INFO_FRAGMENT_DOCUMENT } from "./useHistory";
+import { PNL_SNAPSHOT_V2_INFO_FRAGMENT_DOCUMENT } from "./useHistory";
 
 export const FOLLOWER_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment FollowerInfo on Follower {
@@ -53,7 +53,7 @@ export const FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     usdcBalance
     contractId
     pnlSnapshots {
-      ...PnlSnapshotInfo
+      ...PnlSnapshotV2Info
     }
     trades {
       ...FollowerTradeInfo
@@ -266,8 +266,11 @@ export function useGetAllFollowers() {
 }
 
 export function useGetAllFollowerDetails(contractId: string | null) {
-  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
+  const [query, { data, loading }] = useLazyQuery(
     GET_ALL_FOLLOWER_DETAILS_DOCUMENT,
+    {
+      pollInterval: 30_000,
+    },
   );
 
   useEffect(() => {
@@ -284,25 +287,25 @@ export function useGetAllFollowerDetails(contractId: string | null) {
     });
   }, [query, contractId]);
 
-  useEffect(() => {
-    if (
-      data &&
-      !loading &&
-      !error &&
-      contractId &&
-      data.getAllFollowerDetails.pageInfo.hasNextPage
-    ) {
-      setTimeout(() => {
-        fetchMore({
-          variables: {
-            contractId: +contractId,
-            first: 20,
-            after: data.getAllFollowerDetails.pageInfo.endCursor,
-          },
-        });
-      }, 5000);
-    }
-  }, [data, error, fetchMore, contractId, loading]);
+  // useEffect(() => {
+  //   if (
+  //     data &&
+  //     !loading &&
+  //     !error &&
+  //     contractId &&
+  //     data.getAllFollowerDetails.pageInfo.hasNextPage
+  //   ) {
+  //     setTimeout(() => {
+  //       fetchMore({
+  //         variables: {
+  //           contractId: +contractId,
+  //           first: 20,
+  //           after: data.getAllFollowerDetails.pageInfo.endCursor,
+  //         },
+  //       });
+  //     }, 5000);
+  //   }
+  // }, [data, error, fetchMore, contractId, loading]);
 
   const details = useMemo(() => {
     if (!data) {
@@ -318,7 +321,7 @@ export function useGetAllFollowerDetails(contractId: string | null) {
         );
 
         const pnlSnapshots = followerData.pnlSnapshots.map((snapshot) =>
-          getFragmentData(PNL_SNAPSHOT_INFO_FRAGMENT_DOCUMENT, snapshot),
+          getFragmentData(PNL_SNAPSHOT_V2_INFO_FRAGMENT_DOCUMENT, snapshot),
         );
 
         const trades = followerData.trades.map((trade) => {
