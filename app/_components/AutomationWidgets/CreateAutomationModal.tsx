@@ -72,6 +72,7 @@ export function CreateAutomationModal({
   const [tpPercentage, setTpPercentage] = useState("10");
   const [slPercentage, setSlPercentage] = useState("10");
   const [maxOpenMissions, setMaxOpenMissions] = useState("1");
+  const [isSignalMode, setIsSignalMode] = useState(false);
 
   const { eventLogs: originalEventLogs } = useGetPerpEventLogs(
     isAddress(leaderAddress) ? [leaderAddress] : [],
@@ -207,6 +208,7 @@ export function CreateAutomationModal({
               slPercentage: +slPercentage,
               selectedPairs: chartRef.current?.getSelectedPairs() || [],
               maxOpenMissions: Math.floor(+maxOpenMissions),
+              mode: isSignalMode ? "signal" : undefined,
             }),
           },
         })),
@@ -240,6 +242,13 @@ export function CreateAutomationModal({
                 }
               >
                 General Bot Mode
+              </Checkbox>
+
+              <Checkbox
+                isSelected={isSignalMode}
+                onValueChange={(value) => setIsSignalMode(value)}
+              >
+                Signal Only Bot
               </Checkbox>
 
               <Select

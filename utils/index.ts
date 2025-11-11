@@ -420,17 +420,14 @@ export function getPNLPercentage(params: {
   openPrice: number;
   leverage: number;
 }) {
-  const p =
-    params.openPrice > 0
-      ? ((params.long
-          ? params.closePrice - params.openPrice
-          : params.openPrice - params.closePrice) *
-          100 *
-          params.leverage) /
+  return params.openPrice > 0
+    ? ((params.long
+        ? params.closePrice - params.openPrice
+        : params.openPrice - params.closePrice) *
+        100 *
+        params.leverage) /
         params.openPrice
-      : 0;
-
-  return p > 900 ? 900 : p;
+    : 0;
 }
 
 export function getWeekDateStr(date: Date) {
