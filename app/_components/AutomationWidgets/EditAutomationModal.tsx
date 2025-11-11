@@ -20,6 +20,7 @@ export function getAdditionalParams(strParams: string): {
   tpPercentage: number;
   slPercentage: number;
   selectedPairs: { pair: string; isLong: boolean }[];
+  mode: "signal" | undefined;
 } {
   try {
     const params = JSON.parse(strParams);
@@ -49,6 +50,7 @@ export function getAdditionalParams(strParams: string): {
               ],
         )
         .flat(),
+      mode: params.mode || undefined,
     };
   } catch {
     return {
@@ -56,6 +58,7 @@ export function getAdditionalParams(strParams: string): {
       tpPercentage: 0,
       slPercentage: 0,
       selectedPairs: [],
+      mode: undefined,
     };
   }
 }
