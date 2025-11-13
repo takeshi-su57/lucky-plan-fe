@@ -1,16 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo } from "react";
 import {
   Accordion,
   AccordionItem,
   Button,
-  Card,
   CardBody,
-  Checkbox,
-  Divider,
-  Tab,
-  Tabs,
+  Card,
 } from "@nextui-org/react";
 import { Address } from "viem";
 
@@ -30,55 +26,24 @@ import { MissionSummary } from "../MissionWidgets/MissionSummary";
 import { MissionDetails } from "../MissionWidgets/MissionDetails";
 import { FaCopy } from "react-icons/fa";
 import { useCloseMission } from "@/app/_hooks/useMission";
-import { AutomationGridChart } from "../PlansWidget/AutomationChart";
 
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import { ContractPnl } from "../MissionWidgets/ContractPnl";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { EditStrategyModal } from "./EditAutomationModal";
-import { useGetPerpEventLogs } from "@/app/_hooks/useHistory";
-
-type TabType = "chart" | "missions";
+import { EventLogsWidget } from "../LeaderboardWidgets/EventLogsWidget";
+import { twMerge } from "tailwind-merge";
 
 export type AutomationDetailsProps = {
   bot: BotForwardDetails;
-  isChartFirst: boolean;
 };
 
-export function AutomationDetails({
-  bot,
-  isChartFirst,
-}: AutomationDetailsProps) {
+export function AutomationDetails({ bot }: AutomationDetailsProps) {
   const liveBot = useLiveBot();
   const stopBot = useStopBot();
   const deleteBot = useDeleteBot();
 
   const closeMission = useCloseMission();
-
-  const [selected, setSelected] = useState<TabType>("chart");
-  const [hideClosedMissions, setHideClosedMissions] = useState(true);
-  const [showOnlyAutomationHistory, setShowOnlyAutomationHistory] =
-    useState(true);
-
-  const { eventLogs: leaderEventLogs } = useGetPerpEventLogs(
-    [bot.leaderAddress],
-    bot.leaderContract.platform,
-    null,
-  );
-
-  const { eventLogs: followerEventLogs } = useGetPerpEventLogs(
-    [bot.followerAddress],
-    bot.followerContract.platform,
-    null,
-  );
-
-  useEffect(() => {
-    if (isChartFirst) {
-      setSelected("chart");
-    } else {
-      setSelected("missions");
-    }
-  }, [isChartFirst]);
 
   const handleDelete = useCallback(() => {
     deleteBot({
@@ -120,6 +85,21 @@ export function AutomationDetails({
 
     await Promise.all(promise);
   }, [bot.missions, closeMission]);
+
+  const { openedMissions, closedMissions } = useMemo(() => {
+    const sortedMissions = bot.missions.sort((a, b) => b.id - a.id);
+    const openedMissions = sortedMissions.filter(
+      (mission) =>
+        mission.status !== MissionStatus.Closed &&
+        mission.status !== MissionStatus.Ignored,
+    );
+    const closedMissions = sortedMissions.filter(
+      (mission) =>
+        mission.status === MissionStatus.Closed ||
+        mission.status === MissionStatus.Ignored,
+    );
+    return { openedMissions, closedMissions };
+  }, [bot.missions]);
 
   return (
     <div className="flex flex-col gap-6 border-t border-t-neutral-400/20 py-6">
@@ -179,36 +159,6 @@ export function AutomationDetails({
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Tabs
-            selectedKey={selected}
-            onSelectionChange={(value) =>
-              value && setSelected(value as TabType)
-            }
-          >
-            <Tab key="chart" title="Chart" />
-            <Tab key="missions" title="Missions" />
-          </Tabs>
-
-          {selected === "missions" ? (
-            <Checkbox
-              isSelected={hideClosedMissions}
-              onValueChange={setHideClosedMissions}
-            >
-              Hide Closed Missions
-            </Checkbox>
-          ) : null}
-
-          {selected === "chart" ? (
-            <Checkbox
-              isSelected={showOnlyAutomationHistory}
-              onValueChange={setShowOnlyAutomationHistory}
-            >
-              Show Only Automation History
-            </Checkbox>
-          ) : null}
-        </div>
-
         <div className="flex items-center gap-3">
           {bot.leaderContract.platform === Platform.Gns ? (
             <ContractPnl
@@ -325,61 +275,26 @@ export function AutomationDetails({
         </div>
       </div>
 
-      {selected === "chart" ? (
-        <Card>
-          <CardBody>
-            <AutomationGridChart
-              eventLogs={leaderEventLogs.length > 0 ? leaderEventLogs[0] : []}
-              title="Leader Chart"
-              range={
-                showOnlyAutomationHistory
-                  ? {
-                      from: bot.startedAt
-                        ? new Date(bot.startedAt)
-                        : new Date(),
-                      to: bot.endedAt ? new Date(bot.endedAt) : new Date(),
-                    }
-                  : undefined
-              }
-            />
+      <Card className={twMerge("mb-4 w-full shrink-0")} isBlurred>
+        <CardBody>
+          <span className="text-lg font-bold leading-loose text-neutral-400">
+            Opened Missions
+          </span>
 
-            <Divider />
+          {openedMissions.length === 0 ? (
+            <span className="text-sm text-neutral-400/80">
+              No opened missions
+            </span>
+          ) : null}
 
-            <AutomationGridChart
-              eventLogs={
-                followerEventLogs.length > 0 ? followerEventLogs[0] : []
-              }
-              title="Follower Chart"
-              range={
-                showOnlyAutomationHistory
-                  ? {
-                      from: bot.startedAt
-                        ? new Date(bot.startedAt)
-                        : new Date(),
-                      to: bot.endedAt ? new Date(bot.endedAt) : new Date(),
-                    }
-                  : undefined
-              }
-            />
-          </CardBody>
-        </Card>
-      ) : (
-        <Accordion isCompact variant="splitted">
-          {bot.missions
-            .sort((a, b) => b.id - a.id)
-            .filter((mission) =>
-              hideClosedMissions
-                ? mission.status !== MissionStatus.Closed &&
-                  mission.status !== MissionStatus.Ignored
-                : true,
-            )
-            .map((mission) => (
+          <Accordion isCompact variant="splitted">
+            {openedMissions.map((mission) => (
               <AccordionItem
                 key={mission.id}
                 title={
                   <MissionSummary
                     mission={mission}
-                    leaderContractId={bot.leaderContractId}
+                    leaderContract={bot.leaderContract}
                     followerContractId={bot.followerContractId}
                   />
                 }
@@ -390,8 +305,49 @@ export function AutomationDetails({
                 />
               </AccordionItem>
             ))}
-        </Accordion>
-      )}
+          </Accordion>
+        </CardBody>
+      </Card>
+
+      <Card className={twMerge("mb-4 w-full shrink-0")} isBlurred>
+        <CardBody>
+          <span className="text-lg font-bold leading-loose text-neutral-400">
+            Closed Missions
+          </span>
+
+          {closedMissions.length === 0 ? (
+            <span className="text-sm text-neutral-400/80">
+              No closed missions
+            </span>
+          ) : null}
+
+          <Accordion isCompact variant="splitted">
+            {closedMissions.map((mission) => (
+              <AccordionItem
+                key={mission.id}
+                title={
+                  <MissionSummary
+                    mission={mission}
+                    leaderContract={bot.leaderContract}
+                    followerContractId={bot.followerContractId}
+                  />
+                }
+              >
+                <MissionDetails
+                  mission={mission}
+                  followerContractId={bot.followerContractId}
+                />
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </CardBody>
+      </Card>
+
+      <EventLogsWidget
+        address={bot.leaderAddress as Address}
+        platform={bot.leaderContract.platform}
+        cols={1}
+      />
     </div>
   );
 }
