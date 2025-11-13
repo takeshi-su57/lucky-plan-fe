@@ -11,6 +11,12 @@ import { mergeClassNames } from "@/utils/mergeClassNames";
 export function RightDrawer({ children, classNames, ...props }: ModalProps) {
   return (
     <Modal
+      isDismissable={false}
+      isKeyboardDismissDisabled={true}
+      isDismissOnInteractOutside={false}
+      isDismissOnEscape={false}
+      isDismissOnClose={true}
+      isDismissOnCloseComplete={true}
       motionProps={{
         variants: {
           enter: {

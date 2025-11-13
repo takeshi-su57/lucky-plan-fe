@@ -24,7 +24,6 @@ export function Automations() {
   const [selected, setSelected] = useState<TabType>(
     (searchParams.get("status") as TabType) || "live",
   );
-  const [isChatFirst, setIsChatFirst] = useState(true);
   const [isHiddedPlanedBots, setIsHiddedPlanedBots] = useState(false);
   const [searchAddress, setSearchAddress] = useState<string>("");
   const [debouncedSearchAddress] = useDebounce(searchAddress, 1000);
@@ -88,14 +87,6 @@ export function Automations() {
 
         <div className="flex items-center gap-4">
           <Switch
-            isSelected={isChatFirst}
-            onValueChange={setIsChatFirst}
-            size="sm"
-          >
-            Chat First
-          </Switch>
-
-          <Switch
             isSelected={isHiddedPlanedBots}
             onValueChange={setIsHiddedPlanedBots}
             size="sm"
@@ -112,7 +103,7 @@ export function Automations() {
           <ModaledItems
             mode="rightDrawer"
             trigger={<AutomationSummary bot={bot} />}
-            content={<AutomationDetails bot={bot} isChartFirst={isChatFirst} />}
+            content={<AutomationDetails bot={bot} />}
             contentTitle={`Automation ${bot.id}`}
             classNames={{
               trigger: "border border-neutral-700 rounded-lg p-2 mb-2",
