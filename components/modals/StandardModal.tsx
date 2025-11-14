@@ -13,10 +13,6 @@ export function StandardModal({ children, classNames, ...props }: ModalProps) {
     <Modal
       isDismissable={false}
       isKeyboardDismissDisabled={true}
-      isDismissOnInteractOutside={false}
-      isDismissOnEscape={false}
-      isDismissOnClose={true}
-      isDismissOnCloseComplete={true}
       motionProps={{
         variants: {
           enter: {

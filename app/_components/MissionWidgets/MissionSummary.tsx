@@ -71,26 +71,28 @@ export function MissionSummary({
   let pair: string | null = null;
   let long: boolean | null = null;
 
-  if (firstAction.name === "OpenMissionAction") {
-    const args = JSON.parse(firstAction.args) as {
-      pairIndex: number;
-      long: boolean;
-    };
+  if (firstAction) {
+    if (firstAction.name === "OpenMissionAction") {
+      const args = JSON.parse(firstAction.args) as {
+        pairIndex: number;
+        long: boolean;
+      };
 
-    pair = getPairName(42161, args.pairIndex);
-    long = args.long;
-  } else if (firstAction.name !== "CloseMissionAction") {
-    const history = getWeb3Info(
-      leaderContract.platform,
-      leaderContract.version,
-    ).eventToPerpTradeHistory(leaderContract.chainId, {
-      eventName: firstAction.name,
-      args: bigIntSafeJsonParse<any>(firstAction.args),
-    } as any);
+      pair = getPairName(42161, args.pairIndex);
+      long = args.long;
+    } else if (firstAction.name !== "CloseMissionAction") {
+      const history = getWeb3Info(
+        leaderContract.platform,
+        leaderContract.version,
+      ).eventToPerpTradeHistory(leaderContract.chainId, {
+        eventName: firstAction.name,
+        args: bigIntSafeJsonParse<any>(firstAction.args),
+      } as any);
 
-    if (history) {
-      pair = history.pair;
-      long = history.isLong;
+      if (history) {
+        pair = history.pair;
+        long = history.isLong;
+      }
     }
   }
 
