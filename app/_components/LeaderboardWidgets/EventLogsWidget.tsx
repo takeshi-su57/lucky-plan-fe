@@ -1,4 +1,4 @@
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 import { Address } from "viem";
 import { Platform } from "@/graphql/gql/graphql";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useUserJWT } from "@/app-hooks/useUserJWT";
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 import WalletConnectButton from "../_components/Topbar/WalletConnectButton";
 import { UserPermission } from "@/graphql/gql/graphql";
 

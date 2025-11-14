@@ -4,7 +4,7 @@ import {
   ModalBody,
   ModalProps,
   ModalSlots,
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 import { mergeClassNames } from "@/utils/mergeClassNames";
 

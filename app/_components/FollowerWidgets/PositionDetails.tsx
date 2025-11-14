@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, useDisclosure } from "@nextui-org/react";
+import { Button, useDisclosure } from "@heroui/react";
 import { JSONTree } from "react-json-tree";
 
 import { useCloseTradeMarket } from "@/app-hooks/useFollower";

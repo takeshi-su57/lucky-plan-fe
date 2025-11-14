@@ -1,4 +1,4 @@
-import { Accordion, AccordionItem, Chip } from "@nextui-org/react";
+import { Accordion, AccordionItem, Chip } from "@heroui/react";
 import dayjs from "dayjs";
 
 export type TaskLogViewProps = {

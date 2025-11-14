@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Button, Card, CardBody, Switch } from "@nextui-org/react";
+import { Button, Card, CardBody, Switch } from "@heroui/react";
 import {
   useGetMicroserviceStatus,
   useIsBotHookRunning,

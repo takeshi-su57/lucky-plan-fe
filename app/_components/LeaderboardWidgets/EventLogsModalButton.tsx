@@ -1,4 +1,4 @@
-import { Button, useDisclosure } from "@nextui-org/react";
+import { Button, useDisclosure } from "@heroui/react";
 import { isAddress, Address } from "viem";
 import { twMerge } from "tailwind-merge";
 import { Platform } from "@/graphql/gql/graphql";

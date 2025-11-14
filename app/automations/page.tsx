@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 
 import { Automations } from "@/app-components/AutomationWidgets/Automations";
 export default function Page() {

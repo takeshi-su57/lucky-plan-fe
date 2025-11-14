@@ -1,6 +1,6 @@
-import { Button, useDisclosure } from "@nextui-org/react";
+import { Button, useDisclosure } from "@heroui/react";
 
-import type { ButtonProps } from "@nextui-org/react";
+import type { ButtonProps } from "@heroui/react";
 import { StandardModal } from "../modals/StandardModal";
 
 export function ButtonWithConfirm(props: ButtonProps) {

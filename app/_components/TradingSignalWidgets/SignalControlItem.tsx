@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Chip, Spinner } from "@nextui-org/react";
+import { Chip, Spinner } from "@heroui/react";
 
 import { Contract, Platform, TradingSignalLog } from "@/graphql/gql/graphql";
 

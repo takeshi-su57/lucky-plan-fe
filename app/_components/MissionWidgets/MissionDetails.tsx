@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { Accordion, AccordionItem, Button } from "@nextui-org/react";
+import { Accordion, AccordionItem, Button } from "@heroui/react";
 import { MissionStatus, MissionForwardDetails } from "@/graphql/gql/graphql";
 
 import { useCloseMission, useIgnoreMission } from "@/app-hooks/useMission";

@@ -7,7 +7,7 @@ import {
   Button,
   Switch,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 

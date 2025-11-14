@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, Chip } from "@nextui-org/react";
+import { Badge, Chip } from "@heroui/react";
 import dayjs from "dayjs";
 import {
   MissionStatus,

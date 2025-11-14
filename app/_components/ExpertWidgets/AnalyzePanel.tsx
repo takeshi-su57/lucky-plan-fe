@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Checkbox, Input, Select, SelectItem } from "@nextui-org/react";
+import { Button, Checkbox, Input, Select, SelectItem } from "@heroui/react";
 import { Address, isAddress } from "viem";
 import { useState, useMemo, ChangeEventHandler } from "react";
 import { useGetPerpEventLogs } from "@/app/_hooks/useHistory";

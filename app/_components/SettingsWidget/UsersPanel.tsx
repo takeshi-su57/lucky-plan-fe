@@ -7,7 +7,7 @@ import {
   CardBody,
   Spinner,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 

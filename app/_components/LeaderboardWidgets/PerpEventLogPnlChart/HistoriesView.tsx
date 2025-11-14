@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment } from "react";
-import { Chip, Card, CardBody, useDisclosure } from "@nextui-org/react";
+import { Chip, Card, CardBody, useDisclosure } from "@heroui/react";
 import { twMerge } from "tailwind-merge";
 import { FaLongArrowAltRight } from "react-icons/fa";
 import dayjs from "dayjs";

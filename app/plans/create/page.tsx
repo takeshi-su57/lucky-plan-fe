@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 
 import { PlanCreationPanel } from "@/app-components/PlansWidget/PlanCreationPanel";
 

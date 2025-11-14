@@ -1,6 +1,6 @@
 "use client";
 
-import { Chip } from "@nextui-org/react";
+import { Chip } from "@heroui/react";
 import { twMerge } from "tailwind-merge";
 
 import { MissionStatus, MissionForwardDetails } from "@/graphql/gql/graphql";

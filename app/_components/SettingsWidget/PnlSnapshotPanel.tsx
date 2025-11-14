@@ -8,7 +8,7 @@ import {
   DatePicker,
   Select,
   SelectItem,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { DateValue, parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
 

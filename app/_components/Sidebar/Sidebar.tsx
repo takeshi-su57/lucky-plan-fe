@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import logoSrc from "@/assets/icons/logo.png";
 
-import { Listbox, ListboxItem } from "@nextui-org/react";
+import { Listbox, ListboxItem } from "@heroui/react";
 import { usePathname } from "next/navigation";
 import { twMerge } from "tailwind-merge";
 import { UserPermission } from "@/graphql/gql/graphql";

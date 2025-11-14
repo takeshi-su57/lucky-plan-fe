@@ -11,7 +11,7 @@ import {
   Divider,
   Badge,
   Link,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import dayjs from "dayjs";
 import {
   MissionStatus,

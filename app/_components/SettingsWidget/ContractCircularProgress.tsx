@@ -1,4 +1,4 @@
-import { CircularProgress, Tooltip } from "@nextui-org/react";
+import { CircularProgress, Tooltip } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { publicClients } from "@/utils/web3";
 import { ServiceStatus } from "@/types";

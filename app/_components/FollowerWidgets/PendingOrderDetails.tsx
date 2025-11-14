@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 import { JSONTree } from "react-json-tree";
 
 import { useCancelOrderAfterTimeout } from "@/app-hooks/useFollower";

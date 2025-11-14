@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Chip, useDisclosure } from "@nextui-org/react";
+import { Button, Chip, useDisclosure } from "@heroui/react";
 import dayjs from "dayjs";
 import { PlanStatus } from "@/graphql/gql/graphql";
 

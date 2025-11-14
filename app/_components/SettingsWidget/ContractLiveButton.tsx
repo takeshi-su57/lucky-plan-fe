@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Checkbox, useDisclosure } from "@nextui-org/react";
+import { Button, Checkbox, useDisclosure } from "@heroui/react";
 import { Contract } from "@/graphql/gql/graphql";
 import { NumericInput } from "@/components/inputs/NumericInput";
 import { StandardModal } from "@/components/modals/StandardModal";
