@@ -9,7 +9,7 @@ import {
   DropdownItem,
   Chip,
   Spinner,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Virtuoso } from "react-virtuoso";
 import { LogSeverity } from "@/graphql/gql/graphql";
 import { FiFilter } from "react-icons/fi";

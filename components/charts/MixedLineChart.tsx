@@ -3,8 +3,8 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import Chart from "chart.js/auto";
 import { twMerge } from "tailwind-merge";
-import { Checkbox } from "@nextui-org/react";
-import { CheckboxGroup } from "@nextui-org/react";
+import { Checkbox } from "@heroui/react";
+import { CheckboxGroup } from "@heroui/react";
 
 export type MixedLineChartProps = {
   title?: string;

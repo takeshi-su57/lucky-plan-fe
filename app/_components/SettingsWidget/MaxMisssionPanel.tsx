@@ -6,7 +6,7 @@ import {
 } from "@/app/_hooks/useMission";
 import { NumericInput } from "@/components/inputs/NumericInput";
 import { StandardModal } from "@/components/modals/StandardModal";
-import { Button, useDisclosure } from "@nextui-org/react";
+import { Button, useDisclosure } from "@heroui/react";
 import { useState } from "react";
 
 export function MaxMissionPanel() {

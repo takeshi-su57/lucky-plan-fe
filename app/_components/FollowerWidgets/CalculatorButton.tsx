@@ -5,7 +5,7 @@ import {
   Button,
   Switch,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { twMerge } from "tailwind-merge";
 
 import { getPairs } from "@/web3/gns/v10/configs";

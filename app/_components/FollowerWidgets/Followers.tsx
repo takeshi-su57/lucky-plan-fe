@@ -8,7 +8,7 @@ import {
   Accordion,
   AccordionItem,
   Spinner,
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 import { ContractStatus } from "@/graphql/gql/graphql";
 import { useGetAllFollowerDetails } from "@/app-hooks/useFollower";

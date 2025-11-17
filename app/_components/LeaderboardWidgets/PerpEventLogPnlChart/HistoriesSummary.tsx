@@ -2,7 +2,7 @@
 import dayjs from "dayjs";
 import { useState } from "react";
 import { Address } from "viem";
-import { Checkbox, Switch } from "@nextui-org/react";
+import { Checkbox, Switch } from "@heroui/react";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { getPriceStr } from "@/utils/price";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Card, CardHeader, Input, Button, CardBody } from "@nextui-org/react";
+import { Card, CardHeader, Input, Button, CardBody } from "@heroui/react";
 import { useMutation, useQuery } from "@apollo/client";
 import { FaTrash } from "react-icons/fa";
 

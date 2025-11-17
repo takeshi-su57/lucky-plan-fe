@@ -3,8 +3,8 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import Chart from "chart.js/auto";
 import { twMerge } from "tailwind-merge";
-import { Button, Checkbox, useDisclosure } from "@nextui-org/react";
-import { CheckboxGroup } from "@nextui-org/react";
+import { Button, Checkbox, useDisclosure } from "@heroui/react";
+import { CheckboxGroup } from "@heroui/react";
 import { StandardModal } from "../modals/StandardModal";
 
 export type LineChartProps = {

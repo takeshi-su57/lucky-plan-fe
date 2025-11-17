@@ -1,8 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Select, SelectItem, useDisclosure } from "@nextui-org/react";
-import type { Selection } from "@nextui-org/react";
+import {
+  Button,
+  Checkbox,
+  Select,
+  SelectItem,
+  useDisclosure,
+} from "@heroui/react";
+import type { Selection } from "@heroui/react";
 import { StandardModal } from "@/components/modals/StandardModal";
 
 import { NumericInput } from "@/components/inputs/NumericInput";
@@ -92,6 +98,7 @@ export function EditStrategyModal({
   const [tpPercentage, setTpPercentage] = useState("10");
   const [slPercentage, setSlPercentage] = useState("10");
   const [maxOpenMissions, setMaxOpenMissions] = useState("1");
+  const [isSignalMode, setIsSignalMode] = useState(false);
 
   const [selectedPair, setSelectedPair] = useState<Selection>(
     new Set<string>([]),
@@ -109,6 +116,7 @@ export function EditStrategyModal({
         ),
       ),
     );
+    setIsSignalMode(additionalParams.mode === "signal");
   }, [strategy.params]);
 
   let maxCollateralHelper = "";
@@ -205,6 +213,7 @@ export function EditStrategyModal({
             selectedPairs: Array.from(selectedPair).map((item) =>
               parsePairKey(item as string),
             ),
+            mode: isSignalMode ? "signal" : undefined,
           }),
         },
       },
@@ -229,6 +238,13 @@ export function EditStrategyModal({
           <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
             Edit Strategy
           </h1>
+
+          <Checkbox
+            isSelected={isSignalMode}
+            onValueChange={(value) => setIsSignalMode(value)}
+          >
+            Signal Only Bot
+          </Checkbox>
 
           <NumericInput
             amount={ratio}

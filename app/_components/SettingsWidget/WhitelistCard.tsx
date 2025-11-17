@@ -8,7 +8,7 @@ import {
   Button,
   CardBody,
   Checkbox,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { useMutation, useQuery } from "@apollo/client";
 import { FaTrash } from "react-icons/fa";
 

@@ -1,17 +1,23 @@
 "use client";
 
-import { Badge, Chip } from "@nextui-org/react";
+import { Badge, Chip } from "@heroui/react";
 import dayjs from "dayjs";
 import {
   MissionStatus,
   MissionForwardDetails,
   TaskStatus,
+  Contract,
 } from "@/graphql/gql/graphql";
 
 import { useGetAlertTasks } from "@/app-hooks/useTask";
 
 import { ContractPnl } from "./ContractPnl";
 import { useGetAllGnsContracts } from "@/app/_hooks/useContract";
+import { getPairName } from "@/web3/gns/v10/configs";
+import { getWeb3Info } from "@/web3/utils";
+import { bigIntSafeJsonParse } from "@/utils";
+import { PairChip } from "../LeaderboardWidgets/PairChip";
+import { twMerge } from "tailwind-merge";
 
 const colorsByMissionStatus: Record<
   MissionStatus,
@@ -27,13 +33,13 @@ const colorsByMissionStatus: Record<
 
 export type MissionSummaryProps = {
   mission: MissionForwardDetails;
-  leaderContractId: number;
+  leaderContract: Contract;
   followerContractId: number;
 };
 
 export function MissionSummary({
   mission,
-  leaderContractId,
+  leaderContract,
   followerContractId,
 }: MissionSummaryProps) {
   const alertTasks = useGetAlertTasks();
@@ -60,19 +66,60 @@ export function MissionSummary({
     (task) => task.status === TaskStatus.Failed,
   ).length;
 
+  const firstAction = mission.tasks[0]?.action;
+
+  let pair: string | null = null;
+  let long: boolean | null = null;
+
+  if (firstAction) {
+    if (firstAction.name === "OpenMissionAction") {
+      const args = JSON.parse(firstAction.args) as {
+        pairIndex: number;
+        long: boolean;
+      };
+
+      pair = getPairName(42161, args.pairIndex);
+      long = args.long;
+    } else if (firstAction.name !== "CloseMissionAction") {
+      const history = getWeb3Info(
+        leaderContract.platform,
+        leaderContract.version,
+      ).eventToPerpTradeHistory(leaderContract.chainId, {
+        eventName: firstAction.name,
+        args: bigIntSafeJsonParse<any>(firstAction.args),
+      } as any);
+
+      if (history) {
+        pair = history.pair;
+        long = history.isLong;
+      }
+    }
+  }
+
   return (
     <div className="flex w-full items-center justify-between gap-6">
       <div className="flex items-center gap-6">
         <Chip>Mission {mission.id}</Chip>
 
+        {pair && long !== null ? (
+          <div
+            className={twMerge(
+              "rounded-lg p-2",
+              long ? "bg-green-900" : "bg-red-900",
+            )}
+          >
+            <PairChip pairName={pair} />
+          </div>
+        ) : null}
+
         <span className="text-xs text-neutral-600">
           {dayjs(new Date(mission.createdAt)).format("YYYY/MM/DD hh:mm:ss")}
         </span>
 
-        {gnsContracts.find((contract) => contract.id === leaderContractId) ? (
+        {gnsContracts.find((contract) => contract.id === leaderContract.id) ? (
           <ContractPnl
             label="Leader"
-            contractId={leaderContractId}
+            contractId={leaderContract.id}
             finished={false}
             finishedMissionActions={
               mission.status === MissionStatus.Closed

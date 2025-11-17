@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button, Input } from "@nextui-org/react";
+import { Button, Input } from "@heroui/react";
 import { TagCategory } from "@/graphql/gql/graphql";
 
 import { StandardModal } from "@/components/modals/StandardModal";

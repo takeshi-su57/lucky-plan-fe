@@ -9,7 +9,7 @@ import {
   DropdownTrigger,
   Dropdown,
   DropdownItem,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Address } from "viem";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
@@ -71,6 +71,20 @@ export function AutomationSummary({ bot, simple }: AutomationSummaryProps) {
 
   const validBotMisions = bot.missions.filter(
     (mission) => mission.achievePositionKey,
+  );
+
+  const createdMissions = bot.missions.filter(
+    (mission) => mission.status === MissionStatus.Created,
+  );
+
+  const openedMissions = bot.missions.filter(
+    (mission) => mission.status === MissionStatus.Opened,
+  );
+
+  const closedMissions = bot.missions.filter(
+    (mission) =>
+      mission.status === MissionStatus.Closed ||
+      mission.status === MissionStatus.Ignored,
   );
 
   const additionalParams = getAdditionalParams(strategy.params);
@@ -252,9 +266,26 @@ export function AutomationSummary({ bot, simple }: AutomationSummaryProps) {
               )}
           />
 
-          {bot.missions.length > 0 && (
-            <LabeledChip value={bot.missions.length} unit="Missions" />
-          )}
+          <div className="flex flex-col gap-1">
+            {createdMissions.length > 0 && (
+              <LabeledChip
+                value={createdMissions.length}
+                unit="Created Missions"
+              />
+            )}
+            {openedMissions.length > 0 && (
+              <LabeledChip
+                value={openedMissions.length}
+                unit="Opened Missions"
+              />
+            )}
+            {closedMissions.length > 0 && (
+              <LabeledChip
+                value={closedMissions.length}
+                unit="Closed Missions"
+              />
+            )}
+          </div>
 
           {createdCount > 0 ? (
             <Badge color="secondary" content={createdCount}>

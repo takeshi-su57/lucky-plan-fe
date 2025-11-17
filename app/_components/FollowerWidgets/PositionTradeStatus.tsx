@@ -1,6 +1,6 @@
 "use client";
 
-import { Skeleton } from "@nextui-org/react";
+import { Skeleton } from "@heroui/react";
 import { twMerge } from "tailwind-merge";
 
 import { useGetPrices } from "@/app-hooks/useGetPrices";

@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { Button, useDisclosure } from "@nextui-org/react";
+import { Button, useDisclosure } from "@heroui/react";
 import { twMerge } from "tailwind-merge";
 
 import { StandardModal } from "./StandardModal";
@@ -48,7 +48,7 @@ export function ModaledItems({
           isDismissable={false}
           onOpenChange={onOpenChange}
           backdrop="blur"
-          classNames={{ base: twMerge("max-w-[1100px]", classNames?.content) }}
+          classNames={{ base: twMerge("max-w-[1200px]", classNames?.content) }}
         >
           <div className="flex w-full flex-col gap-8">
             <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
@@ -63,7 +63,7 @@ export function ModaledItems({
           isDismissable={false}
           isOpen={isOpen}
           onOpenChange={onOpenChange}
-          classNames={{ base: twMerge("max-w-[1100px]", classNames?.content) }}
+          classNames={{ base: twMerge("max-w-[80%]", classNames?.content) }}
         >
           <div className="flex w-full flex-col gap-8">
             <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">

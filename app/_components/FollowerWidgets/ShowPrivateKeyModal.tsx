@@ -4,7 +4,7 @@
 
 // import { StandardModal } from "@/components/modals/StandardModal";
 
-// import { Spinner } from "@nextui-org/react";
+// import { Spinner } from "@heroui/react";
 
 // import { Address } from "viem";
 // // import { useGetFollowerPrivateKey } from "@/app/_hooks/useFollower";

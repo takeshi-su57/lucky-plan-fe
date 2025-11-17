@@ -1,5 +1,5 @@
 import { twMerge } from "tailwind-merge";
-import { Chip } from "@nextui-org/react";
+import { Chip } from "@heroui/react";
 import dayjs from "dayjs";
 
 import { getPercentageStr, getPriceStr } from "@/utils/price";

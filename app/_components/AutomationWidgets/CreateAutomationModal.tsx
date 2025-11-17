@@ -10,7 +10,7 @@ import {
   Select,
   SelectItem,
   Checkbox,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Address, isAddress } from "viem";
 
 import { RightDrawer } from "@/components/modals/RightDrawer";

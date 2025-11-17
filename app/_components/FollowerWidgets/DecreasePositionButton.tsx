@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, useDisclosure } from "@nextui-org/react";
+import { Button, useDisclosure } from "@heroui/react";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 

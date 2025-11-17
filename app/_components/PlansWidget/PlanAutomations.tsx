@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Spinner, Switch } from "@nextui-org/react";
+import { Spinner, Switch } from "@heroui/react";
 
 import {
   BotForwardDetails,
@@ -196,9 +196,7 @@ export function GroupedAutomations({
             key={bot.id}
             mode="rightDrawer"
             trigger={<AutomationSummary simple bot={bot} />}
-            content={
-              <AutomationDetails bot={bot} isChartFirst={isChartFirst} />
-            }
+            content={<AutomationDetails bot={bot} />}
             contentTitle={`Automation ${bot.id}`}
             classNames={{
               trigger: "border border-neutral-700 rounded-lg p-2 ",

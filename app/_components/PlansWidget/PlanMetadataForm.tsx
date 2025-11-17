@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, RangeValue, Input, DateRangePicker } from "@nextui-org/react";
+import { Button, RangeValue, Input, DateRangePicker } from "@heroui/react";
 import { now } from "@internationalized/date";
 import type { DateValue } from "@react-types/datepicker";
 

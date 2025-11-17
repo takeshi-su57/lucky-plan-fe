@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, DatePicker, useDisclosure } from "@nextui-org/react";
+import { Button, DatePicker, useDisclosure } from "@heroui/react";
 import { parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
 import { getServerTimezone } from "@/utils";

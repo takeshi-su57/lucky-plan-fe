@@ -8,7 +8,7 @@ import { useSnackbar } from "notistack";
 import { useApolloClient } from "@apollo/client";
 
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 import { FaArrowDown, FaExclamationTriangle, FaPowerOff } from "react-icons/fa";
 
 export default function WalletConnectButton() {

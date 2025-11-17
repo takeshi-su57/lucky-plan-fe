@@ -1,6 +1,6 @@
 import { BotForwardDetails } from "@/graphql/gql/graphql";
 import { shrinkAddress } from "@/utils";
-import { Button, Checkbox, Chip, Divider } from "@nextui-org/react";
+import { Button, Checkbox, Chip, Divider } from "@heroui/react";
 import { Address } from "viem";
 
 export type AutomationRowProps = {

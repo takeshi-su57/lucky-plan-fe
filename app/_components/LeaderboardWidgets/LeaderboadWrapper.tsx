@@ -2,7 +2,7 @@
 
 import { ChangeEventHandler, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DatePicker, Select, SelectItem, Input } from "@nextui-org/react";
+import { DatePicker, Select, SelectItem, Input } from "@heroui/react";
 import { parseDate, now } from "@internationalized/date";
 import dayjs from "dayjs";
 import { getServerTimezone } from "@/utils";

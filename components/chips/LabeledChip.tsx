@@ -1,4 +1,4 @@
-import { Chip, ChipProps } from "@nextui-org/react";
+import { Chip, ChipProps } from "@heroui/react";
 import { twMerge } from "tailwind-merge";
 
 export function LabeledChip({

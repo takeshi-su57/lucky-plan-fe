@@ -1,4 +1,4 @@
-// import { Button, Card, CardBody, Chip, Spinner } from "@nextui-org/react";
+// import { Button, Card, CardBody, Chip, Spinner } from "@heroui/react";
 // import { TestingReport } from "@/graphql/gql/graphql";
 // import { Virtuoso } from "react-virtuoso";
 

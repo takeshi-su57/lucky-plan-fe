@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Spinner, Tabs, Tab } from "@nextui-org/react";
+import { Spinner, Tabs, Tab } from "@heroui/react";
 import dayjs from "dayjs";
 
 import { ExportFilter, Platform } from "@/graphql/gql/graphql";

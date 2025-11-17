@@ -1,6 +1,6 @@
 "use client";
 
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 import { Platform } from "@/graphql/gql/graphql";
 
 import { useGetTradingSignalLogs } from "@/app/_hooks/useTradingSignals";

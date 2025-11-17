@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, ChangeEventHandler } from "react";
-import { SelectItem, Select, Tab, Tabs, Checkbox } from "@nextui-org/react";
+import { SelectItem, Select, Tab, Tabs, Checkbox } from "@heroui/react";
 import { parseDate } from "@internationalized/date";
 import dayjs from "dayjs";
 

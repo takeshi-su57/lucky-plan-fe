@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { Spinner, Tab, Tabs } from "@nextui-org/react";
+import { Spinner, Tab, Tabs } from "@heroui/react";
 
 import { ExpertPanel } from "../_components/ExpertWidgets/ExpertPanel";
 import { TagsPanel } from "../_components/TagWidgets/TagsPanel";

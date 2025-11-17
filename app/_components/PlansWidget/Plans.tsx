@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Tab, Tabs, Button, Spinner } from "@nextui-org/react";
+import { Tab, Tabs, Button, Spinner } from "@heroui/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaPlus } from "react-icons/fa";
 import "react-multi-carousel/lib/styles.css";

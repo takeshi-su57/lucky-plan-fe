@@ -15,8 +15,8 @@ import {
   SelectItem,
   Tab,
   Tabs,
-} from "@nextui-org/react";
-import type { Selection } from "@nextui-org/react";
+} from "@heroui/react";
+import type { Selection } from "@heroui/react";
 import { twMerge } from "tailwind-merge";
 import { Contract, PerpTradingEventLog, Platform } from "@/graphql/gql/graphql";
 

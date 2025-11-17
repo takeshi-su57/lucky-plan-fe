@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Tabs, Tab } from "@nextui-org/react";
+import { Tabs, Tab } from "@heroui/react";
 import { ControlPanel } from "../_components/SettingsWidget/ControlPanel";
 import { StrategyPanel } from "../_components/SettingsWidget/StrategyPanel";
 import { ContractPanel } from "../_components/SettingsWidget/ContractPanel";

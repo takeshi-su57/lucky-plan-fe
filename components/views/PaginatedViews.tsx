@@ -2,7 +2,7 @@
 
 import { ReactNode, useState } from "react";
 
-import { Button, Card, CardBody, Pagination, Spinner } from "@nextui-org/react";
+import { Button, Card, CardBody, Pagination, Spinner } from "@heroui/react";
 import { NumericInput } from "../inputs/NumericInput";
 
 export type PaginatedViewsProps = {

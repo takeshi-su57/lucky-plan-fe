@@ -1,6 +1,4 @@
-import { SlotsToClasses } from "@nextui-org/theme";
-import { ClassValue } from "tailwind-variants";
-
+import { SlotsToClasses } from "@heroui/theme";
 import { twMerge } from "tailwind-merge";
 
 export function mergeClassNames<T extends string>(
@@ -11,9 +9,8 @@ export function mergeClassNames<T extends string>(
 
   if (classNamesA) {
     Object.keys(classNamesA).forEach((key) => {
-      mergedClassNames[key as keyof SlotsToClasses<T>] = classNamesA[
-        key as keyof typeof classNamesA
-      ] as ClassValue;
+      mergedClassNames[key as keyof SlotsToClasses<T>] =
+        classNamesA[key as keyof typeof classNamesA];
     });
   }
 
@@ -22,7 +19,7 @@ export function mergeClassNames<T extends string>(
       mergedClassNames[key as keyof SlotsToClasses<T>] = twMerge(
         mergedClassNames[key as keyof SlotsToClasses<T>],
         classNamesB[key as keyof typeof classNamesA],
-      ) as ClassValue;
+      );
     });
   }
 
