@@ -1,7 +1,7 @@
 "use client";
 
 import { Address } from "viem";
-import { Chip } from "@nextui-org/react";
+import { Chip } from "@heroui/react";
 import { FollowerDetail, PnlSnapshotKind } from "@/graphql/gql/graphql";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { Card, Button, CardBody, useDisclosure } from "@nextui-org/react";
+import { Card, Button, CardBody, useDisclosure } from "@heroui/react";
 
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 

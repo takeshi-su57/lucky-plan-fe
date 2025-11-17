@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 import { Address } from "viem";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";

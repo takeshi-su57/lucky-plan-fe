@@ -1,6 +1,6 @@
 "use client";
 
-import { Chip, Badge } from "@nextui-org/react";
+import { Chip, Badge } from "@heroui/react";
 import { TaskStatus } from "@/graphql/gql/graphql";
 
 import { useGetAlertTasks } from "@/app-hooks/useTask";

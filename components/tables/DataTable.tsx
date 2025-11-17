@@ -12,7 +12,7 @@ import {
   TableSlots,
   SortDescriptor,
   getKeyValue,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { mergeClassNames } from "@/utils/mergeClassNames";
 
 export type TableColumnProps = {

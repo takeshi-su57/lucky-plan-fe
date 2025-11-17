@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Button, useDisclosure } from "@nextui-org/react";
+import { Button, useDisclosure } from "@heroui/react";
 import { FaPlus } from "react-icons/fa";
 
 import { useGenerateFollower } from "@/app-hooks/useFollower";

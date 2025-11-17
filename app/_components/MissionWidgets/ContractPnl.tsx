@@ -9,7 +9,7 @@ import { TradeActionType } from "@/types";
 import { LabeledChip } from "@/components/chips/LabeledChip";
 import { Action } from "@/graphql/gql/graphql";
 import { useGetPrices } from "@/app-hooks/useGetPrices";
-import { Skeleton } from "@nextui-org/react";
+import { Skeleton } from "@heroui/react";
 import { getPNLPercentage } from "@/utils";
 import { useGetAllGnsContracts } from "@/app/_hooks/useContract";
 import { getCollaterals } from "@/web3/gns/v10/configs";

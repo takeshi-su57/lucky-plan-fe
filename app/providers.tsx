@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect } from "react";
-import { NextUIProvider } from "@nextui-org/react";
+import { HeroUIProvider } from "@heroui/react";
 import {
   getDefaultConfig,
   RainbowKitProvider,
@@ -284,7 +284,7 @@ export function Providers({ children }: { children: ReactNode }) {
           })}
         >
           <ApolloProvider client={apolloClient}>
-            <NextUIProvider className="overflow-hidden">
+            <HeroUIProvider className="overflow-hidden">
               <SnackbarProvider
                 Components={{
                   success: SuccessSnackbar,
@@ -298,7 +298,7 @@ export function Providers({ children }: { children: ReactNode }) {
               >
                 <SubscriptionWrapper>{children}</SubscriptionWrapper>
               </SnackbarProvider>
-            </NextUIProvider>
+            </HeroUIProvider>
           </ApolloProvider>
         </RainbowKitProvider>
       </QueryClientProvider>

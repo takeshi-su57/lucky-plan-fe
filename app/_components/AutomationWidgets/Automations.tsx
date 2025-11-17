@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Tab, Tabs, Switch, Spinner, Input } from "@nextui-org/react";
+import { Tab, Tabs, Switch, Spinner, Input } from "@heroui/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Virtuoso } from "react-virtuoso";
 import { useDebounce } from "use-debounce";

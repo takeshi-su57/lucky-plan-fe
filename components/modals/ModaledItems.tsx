@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { Button, useDisclosure } from "@nextui-org/react";
+import { Button, useDisclosure } from "@heroui/react";
 import { twMerge } from "tailwind-merge";
 
 import { StandardModal } from "./StandardModal";

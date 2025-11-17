@@ -1,5 +1,5 @@
 import { ActionInfoFragment } from "@/graphql/gql/graphql";
-import { Accordion, AccordionItem } from "@nextui-org/react";
+import { Accordion, AccordionItem } from "@heroui/react";
 import { JSONTree } from "react-json-tree";
 import { ActionSummary } from "./ActionSummary";
 import { bigIntSafeJsonParse, bigIntSafeJsonStringify } from "@/utils";

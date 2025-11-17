@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, ChangeEventHandler } from "react";
-import { Input, Select, SelectItem } from "@nextui-org/react";
+import { Input, Select, SelectItem } from "@heroui/react";
 import { Address } from "viem";
 import { Platform } from "@/graphql/gql/graphql";
 

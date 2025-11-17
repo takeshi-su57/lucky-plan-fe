@@ -7,8 +7,8 @@ import {
   Select,
   SelectItem,
   useDisclosure,
-} from "@nextui-org/react";
-import type { Selection } from "@nextui-org/react";
+} from "@heroui/react";
+import type { Selection } from "@heroui/react";
 import { StandardModal } from "@/components/modals/StandardModal";
 
 import { NumericInput } from "@/components/inputs/NumericInput";

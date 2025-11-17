@@ -7,7 +7,7 @@ import {
   Button,
   CardBody,
   Card,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Address } from "viem";
 
 import {

@@ -13,7 +13,7 @@ import {
   Select,
   SelectItem,
   Switch,
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 import { useAllowAuto, useChangeUserPermission } from "@/app-hooks/useUser";
 import { useGetAllGnsContracts } from "@/app-hooks/useContract";

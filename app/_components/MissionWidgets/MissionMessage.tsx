@@ -1,5 +1,5 @@
 import { MissionBackwardDetails, MissionStatus } from "@/graphql/gql/graphql";
-import { Chip } from "@nextui-org/react";
+import { Chip } from "@heroui/react";
 
 const statusColors: Record<
   MissionStatus,

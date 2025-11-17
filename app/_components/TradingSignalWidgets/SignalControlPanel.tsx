@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useMemo } from "react";
 import { useQuery } from "@apollo/client";
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 
 import { PaginatedViews } from "@/components/views/PaginatedViews";
 

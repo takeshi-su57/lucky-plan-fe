@@ -8,7 +8,7 @@ import {
   Chip,
   Select,
   SelectItem,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Address } from "viem";
 
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";

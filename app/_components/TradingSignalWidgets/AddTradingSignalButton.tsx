@@ -5,7 +5,7 @@ import {
   SelectItem,
   Input,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { twMerge } from "tailwind-merge";
 import { Platform } from "@/graphql/gql/graphql";
 

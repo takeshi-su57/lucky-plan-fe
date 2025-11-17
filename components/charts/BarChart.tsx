@@ -8,7 +8,7 @@ import {
   Checkbox,
   CheckboxGroup,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { StandardModal } from "../modals/StandardModal";
 
 export type BarChartProps = {

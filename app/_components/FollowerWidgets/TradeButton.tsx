@@ -1,4 +1,4 @@
-import { Button, useDisclosure } from "@nextui-org/react";
+import { Button, useDisclosure } from "@heroui/react";
 import { twMerge } from "tailwind-merge";
 
 import { RightDrawer } from "@/components/modals/RightDrawer";

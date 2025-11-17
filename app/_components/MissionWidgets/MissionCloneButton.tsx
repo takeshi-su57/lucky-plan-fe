@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button, Switch, useDisclosure } from "@nextui-org/react";
+import { Button, Switch, useDisclosure } from "@heroui/react";
 import { MissionForwardDetails } from "@/graphql/gql/graphql";
 
 import { StandardModal } from "@/components/modals/StandardModal";

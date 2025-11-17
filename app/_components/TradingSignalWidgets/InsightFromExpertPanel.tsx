@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 import { Platform } from "@/graphql/gql/graphql";
 
 import { useGetExpertPnlSnapshotsV2 } from "@/app/_hooks/usePlan";

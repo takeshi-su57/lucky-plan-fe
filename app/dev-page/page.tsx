@@ -1,5 +1,7 @@
+'use client';
+
 import { Suspense } from "react";
-import { Spinner } from "@nextui-org/react";
+import { Spinner } from "@heroui/react";
 
 import { DevPanel } from "@/app/_components/DevWidget/DevPanel";
 

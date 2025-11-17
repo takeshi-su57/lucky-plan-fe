@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { Spinner, Tab, Tabs } from "@nextui-org/react";
+import { Spinner, Tab, Tabs } from "@heroui/react";
 
 import { SignalControlPanel } from "../_components/TradingSignalWidgets/SignalControlPanel";
 import { AddTradingSignalButton } from "../_components/TradingSignalWidgets/AddTradingSignalButton";

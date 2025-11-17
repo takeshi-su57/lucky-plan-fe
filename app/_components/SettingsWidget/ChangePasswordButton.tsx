@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Input, Button, useDisclosure, Divider } from "@nextui-org/react";
+import { Input, Button, useDisclosure, Divider } from "@heroui/react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import { StandardModal } from "@/components/modals/StandardModal";

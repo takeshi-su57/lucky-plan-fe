@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, ReactNode } from "react";
-import { Input, InputSlots, SlotsToClasses } from "@nextui-org/react";
+import { Input, InputSlots, SlotsToClasses } from "@heroui/react";
 
 import { NumericFormat } from "react-number-format";
 

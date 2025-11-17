@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Spinner, Switch } from "@nextui-org/react";
+import { Spinner, Switch } from "@heroui/react";
 
 import {
   BotForwardDetails,

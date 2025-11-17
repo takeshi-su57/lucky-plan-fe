@@ -4,7 +4,7 @@ import {
   ModalBody,
   ModalProps,
   ModalSlots,
-} from "@nextui-org/react";
+} from "@heroui/react";
 
 import { mergeClassNames } from "@/utils/mergeClassNames";
 
@@ -13,10 +13,6 @@ export function RightDrawer({ children, classNames, ...props }: ModalProps) {
     <Modal
       isDismissable={false}
       isKeyboardDismissDisabled={true}
-      isDismissOnInteractOutside={false}
-      isDismissOnEscape={false}
-      isDismissOnClose={true}
-      isDismissOnCloseComplete={true}
       motionProps={{
         variants: {
           enter: {

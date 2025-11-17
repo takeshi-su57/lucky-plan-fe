@@ -9,7 +9,7 @@ import {
   DropdownTrigger,
   Dropdown,
   DropdownItem,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Address } from "viem";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";

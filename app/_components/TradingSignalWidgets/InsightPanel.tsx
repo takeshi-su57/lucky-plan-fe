@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Autocomplete, AutocompleteItem, Checkbox } from "@nextui-org/react";
+import { Autocomplete, AutocompleteItem, Checkbox } from "@heroui/react";
 import {
   Contract,
   PerpTradeHistoryOperation,

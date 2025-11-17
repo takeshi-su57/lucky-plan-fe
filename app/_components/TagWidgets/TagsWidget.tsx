@@ -16,7 +16,7 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Fragment, useMemo } from "react";
 
 export type TagsWidgetProps = {
