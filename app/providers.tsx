@@ -2,11 +2,7 @@
 
 import { ReactNode, useEffect } from "react";
 import { HeroUIProvider } from "@heroui/react";
-import {
-  getDefaultConfig,
-  RainbowKitProvider,
-  darkTheme,
-} from "@rainbow-me/rainbowkit";
+import { getDefaultConfig, darkTheme } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
 import {
   mainnet,
@@ -51,6 +47,12 @@ import {
   useGetTradingSignalLogs,
   useSubscribeTradingSignalLogs,
 } from "./_hooks/useTradingSignals";
+import dynamic from "next/dynamic";
+
+const RainbowKitProvider = dynamic(
+  () => import("@rainbow-me/rainbowkit").then((mod) => mod.RainbowKitProvider),
+  { ssr: false },
+);
 
 const httpLink = new HttpLink({
   uri: `${process.env.NEXT_PUBLIC_LUCKY_PLAN_GRAPHQL_API}`,

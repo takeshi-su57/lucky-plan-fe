@@ -22,7 +22,7 @@ export default function Page() {
   return (
     <Suspense fallback={<Spinner color="white" size="sm" />}>
       <div className="flex flex-col gap-6">
-        <h1 className="text-2xl font-bold">Trading Signals</h1>
+        <h1 className="font-sans text-2xl font-bold">Trading Signals</h1>
 
         <div className="flex items-center justify-between">
           <Tabs
