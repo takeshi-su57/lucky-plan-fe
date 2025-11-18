@@ -2,14 +2,22 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useSignMessage, useDisconnect, useChainId } from "wagmi";
 import { useSnackbar } from "notistack";
 import { useApolloClient } from "@apollo/client";
+import dynamic from "next/dynamic";
 
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { Button } from "@heroui/react";
 import { FaArrowDown, FaExclamationTriangle, FaPowerOff } from "react-icons/fa";
+
+const ConnectButton = dynamic(
+  () =>
+    import("@rainbow-me/rainbowkit").then((mod) => mod.ConnectButton.Custom),
+  {
+    ssr: false,
+  },
+);
 
 export default function WalletConnectButton() {
   const { enqueueSnackbar } = useSnackbar();
@@ -112,7 +120,7 @@ export default function WalletConnectButton() {
   ]);
 
   return (
-    <ConnectButton.Custom>
+    <ConnectButton>
       {({
         account,
         chain,
@@ -225,6 +233,6 @@ export default function WalletConnectButton() {
           </div>
         );
       }}
-    </ConnectButton.Custom>
+    </ConnectButton>
   );
 }

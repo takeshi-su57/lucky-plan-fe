@@ -43,7 +43,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={twMerge(
-          `antialiased dark`,
+          `dark antialiased`,
           geistSans.variable,
           geistMono.variable,
         )}
