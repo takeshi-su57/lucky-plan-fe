@@ -105,7 +105,7 @@ export function Sidebar() {
       <Link href="#">
         <div className="flex items-center gap-2 border-b border-neutral-800 p-2 px-6">
           <Image src={logoSrc} alt="Logo" className="h-14 w-14" />
-          <h6 className="text-xl font-bold uppercase text-green-400/80">
+          <h6 className="text-xl font-bold text-green-400/80 uppercase">
             Lucky Plans
           </h6>
         </div>
@@ -135,11 +135,11 @@ export function Sidebar() {
             <ListboxItem
               key={link.id}
               classNames={{
-                title: "!text-base uppercase font-semibold text-neutral-400",
+                title: "text-base uppercase font-semibold text-neutral-400",
               }}
               className={twMerge(
                 pathname.includes(link.id) &&
-                  "bg-primary-400/20 !text-primary-400",
+                  "bg-primary-400/20 text-primary-400",
               )}
               showDivider={link.showDivider}
               textValue={link.label}

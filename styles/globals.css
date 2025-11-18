@@ -1,6 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin './hero.ts';
+/* Note: You may need to change the path to fit your project structure */
+@source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
 
 :root {
   --foreground-rgb: 255, 255, 255;
@@ -36,19 +43,19 @@ body {
 
 @layer base {
   h1 {
-    @apply text-[90px] font-bold leading-[72px] tracking-[2.70px];
+    @apply text-[90px] leading-[72px] font-bold tracking-[2.70px];
   }
   h2 {
-    @apply text-7xl font-bold leading-[90px];
+    @apply text-7xl leading-[90px] font-bold;
   }
   h3 {
-    @apply text-6xl font-bold leading-[70px];
+    @apply text-6xl leading-[70px] font-bold;
   }
   h4 {
-    @apply text-5xl font-bold leading-[60px];
+    @apply text-5xl leading-[60px] font-bold;
   }
   h6 {
-    @apply text-4xl font-semibold leading-10;
+    @apply text-4xl leading-10 font-semibold;
   }
 }
 
