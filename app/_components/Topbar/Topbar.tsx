@@ -1,13 +1,14 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { Chip, Badge } from "@heroui/react";
 import { TaskStatus } from "@/graphql/gql/graphql";
 
 import { useGetAlertTasks } from "@/app-hooks/useTask";
 
-import WalletConnectButton from "./WalletConnectButton";
 import { TradeButton } from "../FollowerWidgets/TradeButton";
 import { CalculatorButton } from "../FollowerWidgets/CalculatorButton";
+import WalletConnectButton from "./WalletConnectButton";
 
 export function Topbar() {
   const alertTasks = useGetAlertTasks();
