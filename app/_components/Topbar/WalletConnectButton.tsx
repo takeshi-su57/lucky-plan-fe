@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useAccount, useSignMessage, useDisconnect, useChainId } from "wagmi";
 import { useSnackbar } from "notistack";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient } from "@apollo/client/react";
 import dynamic from "next/dynamic";
 
 import { useUserJWT } from "@/app/_hooks/useUserJWT";

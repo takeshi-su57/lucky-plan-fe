@@ -297,6 +297,7 @@ type FollowerDetail {
   pnlSnapshots: [PnlSnapshotV2!]!
   publicKey: String!
   trades: [FollowerTrade!]!
+  usdcAllowance: String
   usdcBalance: String
   userId: String!
 }
@@ -391,6 +392,7 @@ type Mission {
   botId: Int!
   createdAt: Date!
   id: Int!
+  mode: MissionMode!
   status: MissionStatus!
   targetPositionBlockNumber: Int!
   targetPositionKey: String!
@@ -406,6 +408,7 @@ type MissionBackwardDetails {
   botId: Int!
   createdAt: Date!
   id: Int!
+  mode: MissionMode!
   status: MissionStatus!
   targetPositionBlockNumber: Int!
   targetPositionKey: String!
@@ -420,12 +423,18 @@ type MissionForwardDetails {
   botId: Int!
   createdAt: Date!
   id: Int!
+  mode: MissionMode!
   status: MissionStatus!
   targetPositionBlockNumber: Int!
   targetPositionKey: String!
   targetPositionLogIndex: Int!
   tasks: [TaskForwardDetails!]!
   updatedAt: Date!
+}
+
+enum MissionMode {
+  Default
+  Signal
 }
 
 type MissionShallowBackwardDetails {
@@ -436,6 +445,7 @@ type MissionShallowBackwardDetails {
   botId: Int!
   createdAt: Date!
   id: Int!
+  mode: MissionMode!
   status: MissionStatus!
   targetPositionBlockNumber: Int!
   targetPositionKey: String!
@@ -482,6 +492,11 @@ type Mutation {
   createAutoPlan: Boolean!
   createBot(input: CreateBotInput!): BotBackwardDetails!
   createPlan(createPlanInput: CreatePlanInput!): Plan!
+  decreaseAllowanceToZero(
+    contractId: Int!
+    followerAddress: String!
+    password: String!
+  ): Boolean!
   decreasePositionSize(
     input: DecreasePositionSizeInput!
   ): ContractExecutionResult!
@@ -499,6 +514,11 @@ type Mutation {
     walletAddress: String!
   ): AccessToken!
   ignoreMission(id: Int!): Boolean!
+  increaseAllowanceToMax(
+    contractId: Int!
+    followerAddress: String!
+    password: String!
+  ): Boolean!
   increasePositionSize(
     input: IncreasePositionSizeInput!
   ): ContractExecutionResult!

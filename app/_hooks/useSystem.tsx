@@ -1,6 +1,6 @@
 "use client";
 
-import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client/react";
 import { useQuery as useTanstackQuery } from "@tanstack/react-query";
 
 import { graphql } from "@/gql/index";
@@ -242,7 +242,11 @@ export function useGetMicroserviceStatus() {
         query: GET_MICROSERVICE_STATUS_DOCUMENT,
         fetchPolicy: "network-only", // always fresh
       });
-      return result.data.getMicroserviceStatus;
+      return result.data?.getMicroserviceStatus || [{
+        __typename: "MicroserviceStatus" as const,
+        pids: [],
+        service: "",
+      }];
     },
     refetchInterval: 10_000, // ⏳ auto refresh every 10s
     enabled: !!client,

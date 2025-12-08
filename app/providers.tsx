@@ -1,5 +1,4 @@
-"use client";
-
+"use client";;
 import { ReactNode, useEffect } from "react";
 import { HeroUIProvider } from "@heroui/react";
 import { getDefaultConfig, darkTheme } from "@rainbow-me/rainbowkit";
@@ -16,13 +15,15 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SnackbarProvider } from "notistack";
 import {
-  split,
   HttpLink,
   InMemoryCache,
   ApolloClient,
-  ApolloProvider,
+  ApolloLink,
 } from "@apollo/client";
-import { setContext } from "@apollo/client/link/context";
+import { Defer20220824Handler } from "@apollo/client/incremental";
+import { LocalState } from "@apollo/client/local-state";
+import { ApolloProvider } from "@apollo/client/react";
+import {   SetContextLink, } from "@apollo/client/link/context";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import {
   getMainDefinition,
@@ -78,7 +79,7 @@ const wsLink = new GraphQLWsLink(
   }),
 );
 
-const splitLink = split(
+const splitLink = ApolloLink.split(
   ({ query }) => {
     const definition = getMainDefinition(query);
     return (
@@ -90,7 +91,7 @@ const splitLink = split(
   httpLink,
 );
 
-const authLink = setContext((_, { headers }) => {
+const authLink = new SetContextLink(({ headers }, _) => {
   // get the authentication token from local storage if it exists
   const userJWTStr = localStorage.getItem(LOCAL_USER_JWT_KEY);
 
@@ -261,6 +262,20 @@ const cache = new InMemoryCache({
 export const apolloClient = new ApolloClient({
   cache,
   link: authLink.concat(splitLink),
+
+  /*
+  Inserted by Apollo Client 3->4 migration codemod.
+  If you are not using the `@client` directive in your application,
+  you can safely remove this option.
+  */
+  localState: new LocalState({}),
+
+  /*
+  Inserted by Apollo Client 3->4 migration codemod.
+  If you are not using the `@defer` directive in your application,
+  you can safely remove this option.
+  */
+  incrementalHandler: new Defer20220824Handler()
 });
 
 export const queryClient = new QueryClient();

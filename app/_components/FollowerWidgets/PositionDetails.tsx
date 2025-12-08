@@ -1,7 +1,8 @@
 "use client";
 
 import { Button, useDisclosure } from "@heroui/react";
-import { JSONTree } from "react-json-tree";
+import { JsonView, allExpanded, defaultStyles } from "react-json-view-lite";
+import "react-json-view-lite/dist/index.css";
 
 import { useCloseTradeMarket } from "@/app-hooks/useFollower";
 import { MissionForwardDetails, Platform } from "@/graphql/gql/graphql";
@@ -134,7 +135,11 @@ export function PositionDetails({
         ) : null}
       </div>
 
-      <JSONTree data={trade} />
+      <JsonView
+        data={trade}
+        shouldExpandNode={allExpanded}
+        style={defaultStyles}
+      />
 
       <RightDrawer
         isOpen={isOpen}

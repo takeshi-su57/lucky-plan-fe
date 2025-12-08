@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useSnackbar } from "notistack";
-import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client/react";
 
 import { graphql } from "@/gql/index";
 
