@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Spinner } from "@heroui/react";
 import { Address } from "viem";
 import dayjs from "dayjs";
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 
 import { Platform, PnlSnapshotKind } from "@/graphql/gql/graphql";
 

@@ -6,7 +6,7 @@ import {
   useMutation,
   useQuery,
   useSubscription,
-} from "@apollo/client";
+} from "@apollo/client/react";
 import { getFragmentData, graphql } from "@/gql/index";
 import { TradingSignalLogInfoFragment } from "@/gql/graphql";
 
@@ -176,7 +176,13 @@ export function useUnregisterTradingSignal() {
             return {
               ...oldData,
               getTradingSignalLogs: oldData.getTradingSignalLogs.filter(
-                (log) => log.id !== unregisteredTradingSignalLog.id,
+                (log) => {
+                  const logData = getFragmentData(
+                    TRADING_SIGNAL_LOG_INFO_FRAGMENT_DOCUMENT,
+                    log,
+                  );
+                  return logData.id !== unregisteredTradingSignalLog.id;
+                },
               ),
             };
           } else {

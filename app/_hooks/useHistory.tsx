@@ -6,7 +6,7 @@ import {
   useLazyQuery,
   useMutation,
   useQuery,
-} from "@apollo/client";
+} from "@apollo/client/react";
 import { useSnackbar } from "notistack";
 import { getFragmentData, graphql } from "@/gql/index";
 import {

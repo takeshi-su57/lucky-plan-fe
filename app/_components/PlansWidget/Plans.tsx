@@ -5,7 +5,6 @@ import { useMemo, useState } from "react";
 import { Tab, Tabs, Button, Spinner } from "@heroui/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FaPlus } from "react-icons/fa";
-import "react-multi-carousel/lib/styles.css";
 import { GroupedVirtuoso } from "react-virtuoso";
 
 import { PlanForwardDetails, PlanStatus } from "@/graphql/gql/graphql";

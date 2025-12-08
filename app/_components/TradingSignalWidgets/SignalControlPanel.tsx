@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState, useMemo } from "react";
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { Spinner } from "@heroui/react";
 
 import { PaginatedViews } from "@/components/views/PaginatedViews";

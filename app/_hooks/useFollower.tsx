@@ -5,7 +5,7 @@ import {
   useLazyQuery,
   useMutation,
   useQuery,
-} from "@apollo/client";
+} from "@apollo/client/react";
 
 import { getFragmentData, graphql } from "@/gql/index";
 import { useEffect, useMemo } from "react";
