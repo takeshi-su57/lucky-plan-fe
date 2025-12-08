@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Card, CardHeader, Input, Button, CardBody } from "@heroui/react";
-import { useMutation, useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { FaTrash } from "react-icons/fa";
 
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";

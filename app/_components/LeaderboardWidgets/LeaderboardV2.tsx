@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Spinner } from "@heroui/react";
 import { Address } from "viem";
 import dayjs from "dayjs";
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 
 import { Platform, PnlSnapshotKind } from "@/graphql/gql/graphql";
 
@@ -54,7 +54,7 @@ export function LeaderboardV2({
       kind,
       platform,
       Math.max(0, page - 1),
-      10,
+      5,
     );
   const {
     data: isPnlSnapshotInitialized,
@@ -119,7 +119,7 @@ export function LeaderboardV2({
 
       {!isPnlSnapshotInitialized?.isPnlSnapshotV2Initialized ? (
         <div className="flex flex-col gap-2">
-          <div className="flex flex-col gap-1 text-primary-400 hover:text-primary-300">
+          <div className="text-primary-400 hover:text-primary-300 flex flex-col gap-1">
             <p className="text-lg font-bold text-red-400">
               PNL snapshot is not initialized
             </p>

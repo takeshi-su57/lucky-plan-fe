@@ -7,7 +7,7 @@ import {
   useMutation,
   useQuery,
   useSubscription,
-} from "@apollo/client";
+} from "@apollo/client/react";
 import {
   TaskBackwardDetails,
   TaskBackwardDetailsInfoFragment,

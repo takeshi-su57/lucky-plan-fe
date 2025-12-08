@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
-import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client/react";
 
 import { getFragmentData, graphql } from "@/gql/index";
 import {

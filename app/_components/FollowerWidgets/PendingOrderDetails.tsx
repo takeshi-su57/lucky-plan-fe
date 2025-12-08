@@ -1,7 +1,8 @@
 "use client";
 
 import { Button } from "@heroui/react";
-import { JSONTree } from "react-json-tree";
+import { JsonView, allExpanded, defaultStyles } from "react-json-view-lite";
+import "react-json-view-lite/dist/index.css";
 
 import { useCancelOrderAfterTimeout } from "@/app-hooks/useFollower";
 
@@ -57,7 +58,11 @@ export function PendingOrderDetails({
         </Button>
       </div>
 
-      <JSONTree data={args} />
+      <JsonView
+        data={args}
+        shouldExpandNode={allExpanded}
+        style={defaultStyles}
+      />
     </div>
   );
 }

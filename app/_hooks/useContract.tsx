@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { useApolloClient, useMutation, useQuery } from "@apollo/client";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client/react";
 import { useSnackbar } from "notistack";
 import { useQuery as useTanstackQuery } from "@tanstack/react-query";
 
@@ -73,7 +73,7 @@ export function useGetAdaptionStatus() {
         query: GET_ADAPTION_STATUS_DOCUMENT,
         fetchPolicy: "network-only", // always fresh
       });
-      return JSON.parse(result.data.getAdaptionStatus) as Record<
+      return JSON.parse(result.data?.getAdaptionStatus || "{}") as Record<
         string,
         ServiceStatus
       >;

@@ -7,7 +7,7 @@ import {
   useLazyQuery,
   useMutation,
   useQuery,
-} from "@apollo/client";
+} from "@apollo/client/react";
 import { getFragmentData, graphql } from "@/gql/index";
 import { LogSeverity } from "@/graphql/gql/graphql";
 
@@ -92,26 +92,28 @@ export function useGetLogs(severity: LogSeverity | null, checked: boolean) {
     const unsubscribe = subscribeToMore({
       document: SUBSCRIBE_NEW_LOG_DOCUMENT,
       variables: { checked, severity },
-      updateQuery: (prev, { subscriptionData }) => {
-        if (!subscriptionData.data) return prev;
+      updateQuery: (_, { subscriptionData, complete, previousData }) => {
+        if (!subscriptionData.data || !complete) {
+          return undefined;
+        }
 
         const newLog = getFragmentData(
           LOG_INFO_FRAGMENT_DOCUMENT,
-          subscriptionData.data.newLog as any,
+          subscriptionData.data.newLog,
         );
 
+        const newEdge = {
+          __typename: "LogsEdge" as const,
+          cursor: newLog.id,
+          node: newLog,
+        };
+
         return {
-          ...prev,
+          __typename: "Query" as const,
           allLogs: {
-            ...prev.allLogs,
-            edges: [
-              {
-                __typename: "LogsEdge",
-                cursor: newLog.id,
-                node: newLog,
-              },
-              ...prev.allLogs.edges,
-            ],
+            __typename: "LogsConnection" as const,
+            edges: [newEdge, ...previousData.allLogs.edges],
+            pageInfo: previousData.allLogs.pageInfo,
           },
         };
       },

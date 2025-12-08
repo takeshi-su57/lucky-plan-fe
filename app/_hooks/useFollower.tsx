@@ -5,7 +5,7 @@ import {
   useLazyQuery,
   useMutation,
   useQuery,
-} from "@apollo/client";
+} from "@apollo/client/react";
 
 import { getFragmentData, graphql } from "@/gql/index";
 import { useEffect, useMemo } from "react";
@@ -51,6 +51,7 @@ export const FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     userId
     ethBalance
     usdcBalance
+    usdcAllowance
     contractId
     pnlSnapshots {
       ...PnlSnapshotV2Info
@@ -215,6 +216,33 @@ export const WITHDRAW_ALL_USDC_DOCUMENT = graphql(`
   }
 `);
 
+export const DECREASE_ALLOWANCE_TO_ZERO_DOCUMENT = graphql(`
+  mutation decreaseAllowanceToZero(
+    $contractId: Int!
+    $followerAddress: String!
+    $password: String!
+  ) {
+    decreaseAllowanceToZero(
+      contractId: $contractId
+      followerAddress: $followerAddress
+      password: $password
+    )
+  }
+`);
+
+export const INCREASE_ALLOWANCE_TO_MAX_DOCUMENT = graphql(`
+  mutation increaseAllowanceToMax(
+    $contractId: Int!
+    $followerAddress: String!
+    $password: String!
+  ) {
+    increaseAllowanceToMax(
+      contractId: $contractId
+      followerAddress: $followerAddress
+      password: $password
+    )
+  }
+`);
 export const WITHDRAW_ALL_ETH_DOCUMENT = graphql(`
   mutation withdrawAllETH($input: WithdrawAllInput!) {
     withdrawAllETH(input: $input)
@@ -639,6 +667,70 @@ export function useUpdateSl() {
   }, [client.cache, error, enqueueSnackbar, data]);
 
   return { updateSl, loading };
+}
+
+export function useDecreaseAllowanceToZero() {
+  const [decreaseAllowanceToZero, { data, error, loading }] = useMutation(
+    DECREASE_ALLOWANCE_TO_ZERO_DOCUMENT,
+  );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      if (data.decreaseAllowanceToZero) {
+        enqueueSnackbar("Success at decrease allowance to zero!", {
+          variant: "success",
+        });
+
+        client.cache.modify({
+          fields: {
+            getAllFollowerDetails: (_, { INVALIDATE }) => {
+              return INVALIDATE;
+            },
+          },
+        });
+      } else {
+        enqueueSnackbar("Failed to decrease allowance to zero!", {
+          variant: "error",
+        });
+      }
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return { decreaseAllowanceToZero, loading };
+}
+
+export function useIncreaseAllowanceToMax() {
+  const [increaseAllowanceToMax, { data, error, loading }] = useMutation(
+    INCREASE_ALLOWANCE_TO_MAX_DOCUMENT,
+  );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      if (data.increaseAllowanceToMax) {
+        enqueueSnackbar("Success at increase allowance to max!", {
+          variant: "success",
+        });
+
+        client.cache.modify({
+          fields: {
+            getAllFollowerDetails: (_, { INVALIDATE }) => {
+              return INVALIDATE;
+            },
+          },
+        });
+      } else {
+        enqueueSnackbar("Failed to increase allowance to max!", {
+          variant: "error",
+        });
+      }
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return { increaseAllowanceToMax, loading };
 }
 
 export function useUpdateTp() {

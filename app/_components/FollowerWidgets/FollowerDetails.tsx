@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Accordion, AccordionItem, Button } from "@heroui/react";
+import { Accordion, AccordionItem, Button, useDisclosure } from "@heroui/react";
 
 import {
   useWithdrawAllETH,
@@ -15,6 +15,7 @@ import { FollowerDetail } from "@/graphql/gql/graphql";
 
 import { PaginatedViews } from "@/components/views/PaginatedViews";
 import { OpenPositionButton } from "./OpenPositionButton";
+import { AllowanceHandleModal } from "./AllowanceHandleModal";
 
 const PAGE_SIZE = 10;
 
@@ -25,7 +26,7 @@ export type FollowerDetailsProps = {
 
 export function FollowerDetails({ follower }: FollowerDetailsProps) {
   const [page, setPage] = useState(1);
-
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const withdrawAllETH = useWithdrawAllETH();
   const withdrawAllUSDC = useWithdrawAllUSDC();
 
@@ -62,7 +63,7 @@ export function FollowerDetails({ follower }: FollowerDetailsProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button
-            onClick={() =>
+            onPress={() =>
               handleWithdrawAllETH(follower.address, `${follower.contractId}`)
             }
             size="sm"
@@ -71,12 +72,16 @@ export function FollowerDetails({ follower }: FollowerDetailsProps) {
           </Button>
 
           <Button
-            onClick={() =>
+            onPress={() =>
               handleWithdrawAllUSDC(follower.address, `${follower.contractId}`)
             }
             size="sm"
           >
             Withdraw All USDC
+          </Button>
+
+          <Button onPress={onOpen} size="sm">
+            Handle Allowance
           </Button>
 
           <OpenPositionButton
@@ -132,6 +137,12 @@ export function FollowerDetails({ follower }: FollowerDetailsProps) {
           </AccordionItem>
         ))}
       </Accordion>
+
+      <AllowanceHandleModal
+        isOpen={isOpen}
+        follower={follower}
+        onOpenChange={onOpenChange}
+      />
     </div>
   );
 }

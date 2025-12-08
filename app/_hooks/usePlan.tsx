@@ -6,7 +6,7 @@ import {
   useMutation,
   useQuery,
   useSubscription,
-} from "@apollo/client";
+} from "@apollo/client/react";
 
 import { getFragmentData, graphql } from "@/gql/index";
 import { useCallback, useEffect, useMemo } from "react";

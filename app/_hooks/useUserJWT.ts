@@ -5,7 +5,7 @@ import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import {
   useApolloClient,
   useMutation as useApolloMutation,
-} from "@apollo/client";
+} from "@apollo/client/react";
 import { useDisconnect } from "wagmi";
 import { GET_TOKEN_DOCUMENT } from "./useUser";
 import { UserPermission } from "@/graphql/gql/graphql";

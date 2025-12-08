@@ -11,7 +11,7 @@ import {
   useGetExpertPnlSnapshotsV2,
 } from "@/app/_hooks/usePlan";
 import { useGetActiveBots } from "@/app/_hooks/useAutomation";
-import { useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client/react";
 import { twMerge } from "tailwind-merge";
 import { EventLogsModalButton } from "../LeaderboardWidgets/EventLogsModalButton";
 import { PaginatedViews } from "@/components/views/PaginatedViews";

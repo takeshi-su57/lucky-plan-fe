@@ -7,7 +7,7 @@ import {
   useMutation,
   useQuery,
   useSubscription,
-} from "@apollo/client";
+} from "@apollo/client/react";
 import { getFragmentData, graphql } from "@/gql/index";
 import {
   MissionBackwardDetailsInfoFragment,
@@ -36,6 +36,7 @@ export const MISSION_INFO_FRAGMENT_DOCUMENT = graphql(`
     status
     createdAt
     updatedAt
+    mode
   }
 `);
 
@@ -52,6 +53,7 @@ export const MISSION_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     createdAt
     updatedAt
     status
+    mode
     bot {
       ...BotBackwardDetailsInfo
     }
@@ -71,6 +73,7 @@ export const MISSION_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     createdAt
     updatedAt
     status
+    mode
     tasks {
       ...TaskForwardDetailsInfo
     }
