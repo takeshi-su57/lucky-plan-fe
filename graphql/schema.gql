@@ -31,6 +31,13 @@ input AddUserInput {
   address: String!
 }
 
+input AssetInput {
+  address: String!
+  amount: String!
+  contractId: Int!
+  kind: String!
+}
+
 type BotBackwardDetails {
   endedAt: Date
   follower: Follower!
@@ -504,6 +511,7 @@ type Mutation {
   deleteCategory(id: Int!): TagCategory!
   deletePlan(id: Int!): Int!
   deleteTag(tag: String!): Tag!
+  depositAsset(input: AssetInput!): Boolean!
   disableContract(contractId: Int!): Contract!
   dynamicSnapshotBuildV2(dateStr: String!, platform: Platform!): Boolean!
   endPlan(id: Int!): Boolean!
@@ -562,6 +570,7 @@ type Mutation {
   upsertTag(input: TagInput!): Tag!
   withdrawAllETH(input: WithdrawAllInput!): Boolean!
   withdrawAllUSDC(input: WithdrawAllInput!): Boolean!
+  withdrawAsset(input: AssetInput!): Boolean!
   withdrawETHToUser(
     amount: Float!
     contractId: Int!
