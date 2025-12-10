@@ -216,6 +216,18 @@ export const WITHDRAW_ALL_USDC_DOCUMENT = graphql(`
   }
 `);
 
+export const WITHDRAW_ASSET_DOCUMENT = graphql(`
+  mutation withdrawAsset($input: AssetInput!) {
+    withdrawAsset(input: $input)
+  }
+`);
+
+export const DEPOSIT_ASSET_DOCUMENT = graphql(`
+  mutation depositAsset($input: AssetInput!) {
+    depositAsset(input: $input)
+  }
+`);
+
 export const DECREASE_ALLOWANCE_TO_ZERO_DOCUMENT = graphql(`
   mutation decreaseAllowanceToZero(
     $contractId: Int!
@@ -293,8 +305,11 @@ export function useGetAllFollowers() {
   }, [data]);
 }
 
-export function useGetAllFollowerDetails(contractId: string | null) {
-  const [query, { data, loading }] = useLazyQuery(
+export function useGetAllFollowerDetails(
+  contractId: string | null,
+  showAll: boolean,
+) {
+  const [query, { data, loading, error, fetchMore }] = useLazyQuery(
     GET_ALL_FOLLOWER_DETAILS_DOCUMENT,
     {
       pollInterval: 30_000,
@@ -315,30 +330,34 @@ export function useGetAllFollowerDetails(contractId: string | null) {
     });
   }, [query, contractId]);
 
-  // useEffect(() => {
-  //   if (
-  //     data &&
-  //     !loading &&
-  //     !error &&
-  //     contractId &&
-  //     data.getAllFollowerDetails.pageInfo.hasNextPage
-  //   ) {
-  //     setTimeout(() => {
-  //       fetchMore({
-  //         variables: {
-  //           contractId: +contractId,
-  //           first: 20,
-  //           after: data.getAllFollowerDetails.pageInfo.endCursor,
-  //         },
-  //       });
-  //     }, 5000);
-  //   }
-  // }, [data, error, fetchMore, contractId, loading]);
+  useEffect(() => {
+    if (
+      data &&
+      !loading &&
+      !error &&
+      contractId &&
+      data.getAllFollowerDetails.pageInfo.hasNextPage
+    ) {
+      if (showAll) {
+        setTimeout(() => {
+          fetchMore({
+            variables: {
+              contractId: +contractId,
+              first: 20,
+              after: data.getAllFollowerDetails.pageInfo.endCursor,
+            },
+          });
+        }, 30000);
+      }
+    }
+  }, [data, error, fetchMore, contractId, loading, showAll]);
 
   const details = useMemo(() => {
     if (!data) {
       return [];
     }
+
+    console.log("re-render");
 
     return data.getAllFollowerDetails.edges
       .map((edge) => edge.node)
@@ -865,4 +884,40 @@ export function useWithdrawUSDCToUser() {
   }, [client.cache, error, enqueueSnackbar, data]);
 
   return { withdrawUSDCToUser, loading };
+}
+
+export function useWithdrawAssets() {
+  const [withdrawAsset, { data, error, loading }] = useMutation(
+    WITHDRAW_ASSET_DOCUMENT,
+  );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      enqueueSnackbar("Success at withdraw assets!", {
+        variant: "success",
+      });
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return { withdrawAsset, loading };
+}
+
+export function useDepositAsset() {
+  const [depositAsset, { data, error, loading }] = useMutation(
+    DEPOSIT_ASSET_DOCUMENT,
+  );
+  const client = useApolloClient();
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      enqueueSnackbar("Success at deposit asset!", {
+        variant: "success",
+      });
+    }
+  }, [client.cache, error, enqueueSnackbar, data]);
+
+  return { depositAsset, loading };
 }

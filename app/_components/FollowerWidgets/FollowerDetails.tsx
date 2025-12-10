@@ -1,12 +1,8 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { Accordion, AccordionItem, Button, useDisclosure } from "@heroui/react";
 
-import {
-  useWithdrawAllETH,
-  useWithdrawAllUSDC,
-} from "@/app/_hooks/useFollower";
 import { PositionDetails } from "./PositionDetails";
 import { PositionSummary } from "./PositionSummary";
 import { PendingOrderSummary } from "./PendingOrderSummary";
@@ -16,6 +12,8 @@ import { FollowerDetail } from "@/graphql/gql/graphql";
 import { PaginatedViews } from "@/components/views/PaginatedViews";
 import { OpenPositionButton } from "./OpenPositionButton";
 import { AllowanceHandleModal } from "./AllowanceHandleModal";
+import { DepositAssetModal } from "./DepositAssetModal";
+import { WithdrawAssetModal } from "./WithdrawAssetModal";
 
 const PAGE_SIZE = 10;
 
@@ -27,57 +25,27 @@ export type FollowerDetailsProps = {
 export function FollowerDetails({ follower }: FollowerDetailsProps) {
   const [page, setPage] = useState(1);
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const withdrawAllETH = useWithdrawAllETH();
-  const withdrawAllUSDC = useWithdrawAllUSDC();
-
-  const handleWithdrawAllETH = useCallback(
-    (address: string, contractId: string) => {
-      withdrawAllETH({
-        variables: {
-          input: {
-            address,
-            contractId: +contractId,
-          },
-        },
-      });
-    },
-    [withdrawAllETH],
-  );
-
-  const handleWithdrawAllUSDC = useCallback(
-    (address: string, contractId: string) => {
-      withdrawAllUSDC({
-        variables: {
-          input: {
-            address,
-            contractId: +contractId,
-          },
-        },
-      });
-    },
-    [withdrawAllUSDC],
-  );
+  const {
+    isOpen: isOpenDeposit,
+    onOpen: onOpenDeposit,
+    onOpenChange: onOpenDepositChange,
+  } = useDisclosure();
+  const {
+    isOpen: isOpenWithdraw,
+    onOpen: onOpenWithdraw,
+    onOpenChange: onOpenWithdrawChange,
+  } = useDisclosure();
 
   return (
     <div className="flex flex-col gap-6 border-t border-t-neutral-400/20 py-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button
-            onPress={() =>
-              handleWithdrawAllETH(follower.address, `${follower.contractId}`)
-            }
-            size="sm"
-          >
-            Withdraw All ETH
+          <Button onPress={onOpenWithdraw} size="sm">
+            Handle Withdraw
           </Button>
 
-          <Button
-            onPress={() =>
-              handleWithdrawAllUSDC(follower.address, `${follower.contractId}`)
-            }
-            size="sm"
-          >
-            Withdraw All USDC
+          <Button onPress={onOpenDeposit} size="sm">
+            Handle Deposit
           </Button>
 
           <Button onPress={onOpen} size="sm">
@@ -142,6 +110,20 @@ export function FollowerDetails({ follower }: FollowerDetailsProps) {
         isOpen={isOpen}
         follower={follower}
         onOpenChange={onOpenChange}
+      />
+
+      <WithdrawAssetModal
+        isOpen={isOpenWithdraw}
+        followerAddress={follower.address}
+        contractId={follower.contractId}
+        onOpenChange={onOpenWithdrawChange}
+      />
+
+      <DepositAssetModal
+        isOpen={isOpenDeposit}
+        followerAddress={follower.address}
+        contractId={follower.contractId}
+        onOpenChange={onOpenDepositChange}
       />
     </div>
   );

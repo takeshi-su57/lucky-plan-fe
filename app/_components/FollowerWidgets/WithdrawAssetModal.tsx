@@ -1,38 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { Button, Input } from "@heroui/react";
+import { Button } from "@heroui/react";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 
-import {
-  useWithdrawETHToUser,
-  useWithdrawUSDCToUser,
-} from "@/app/_hooks/useFollower";
+import { useWithdrawAssets } from "@/app/_hooks/useFollower";
 import { NumericInput } from "@/components/inputs/NumericInput";
 
-export type WithdrawModalProps = {
+export type WithdrawAssetModalProps = {
   isOpen: boolean;
+  followerAddress: string;
   contractId: number;
   onOpenChange: (value: boolean) => void;
 };
 
-export function WithdrawModal({
+export function WithdrawAssetModal({
   isOpen,
+  followerAddress,
   contractId,
   onOpenChange,
-}: WithdrawModalProps) {
-  const { withdrawETHToUser, loading: ethLoading } = useWithdrawETHToUser();
-  const { withdrawUSDCToUser, loading: usdcLoading } = useWithdrawUSDCToUser();
+}: WithdrawAssetModalProps) {
+  const { withdrawAsset, loading } = useWithdrawAssets();
 
   const [ethAmount, setEthAmount] = useState("0");
   const [usdcAmount, setUSDCAmount] = useState("0");
-
-  const [password, setPassword] = useState("");
-  const [isVisible, setIsVisible] = useState(false);
-
-  const toggleVisibility = () => setIsVisible(!isVisible);
 
   const handleWithdrawETH = () => {
     if (ethAmount.trim() === "") {
@@ -45,14 +37,14 @@ export function WithdrawModal({
       return;
     }
 
-    withdrawETHToUser({
+    withdrawAsset({
       variables: {
-        contractId,
-        amount: ethAmountNum,
-        password: password.trim(),
-      },
-      onCompleted: () => {
-        setPassword("");
+        input: {
+          contractId,
+          amount: Math.floor(ethAmountNum * 1e18).toString(),
+          address: followerAddress.toLowerCase(),
+          kind: "eth",
+        },
       },
     });
   };
@@ -68,14 +60,14 @@ export function WithdrawModal({
       return;
     }
 
-    withdrawUSDCToUser({
+    withdrawAsset({
       variables: {
-        contractId,
-        amount: usdcAmountNum,
-        password: password.trim(),
-      },
-      onCompleted: () => {
-        setPassword("");
+        input: {
+          contractId,
+          amount: Math.floor(usdcAmountNum * 1e6).toString(),
+          address: followerAddress.toLowerCase(),
+          kind: "usdc",
+        },
       },
     });
   };
@@ -94,28 +86,8 @@ export function WithdrawModal({
     >
       <div className="flex flex-col gap-3.5">
         <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
-          Withdraw to User Wallet
+          Withdraw Assets to Master Wallet
         </h1>
-
-        <Input
-          className="max-w-xs"
-          endContent={
-            <button
-              aria-label="toggle password visibility"
-              className="focus:outline-none"
-              type="button"
-              onClick={toggleVisibility}
-            >
-              {isVisible ? <FaEyeSlash /> : <FaEye />}
-            </button>
-          }
-          value={password}
-          onValueChange={setPassword}
-          label="New Password"
-          placeholder="Enter new password"
-          type={isVisible ? "text" : "password"}
-          variant="bordered"
-        />
 
         <div className="flex flex-row items-center gap-4">
           <NumericInput
@@ -127,7 +99,7 @@ export function WithdrawModal({
           <Button
             onPress={handleWithdrawETH}
             isDisabled={isDisabledETHWithdraw}
-            isLoading={ethLoading}
+            isLoading={loading}
             className="w-[180px]"
           >
             Withdraw ETH
@@ -144,7 +116,7 @@ export function WithdrawModal({
           <Button
             onPress={handleWithdrawUSDC}
             isDisabled={isDisabledUSDCWithdraw}
-            isLoading={usdcLoading}
+            isLoading={loading}
             className="w-[180px]"
           >
             Withdraw USDC
