@@ -49,6 +49,8 @@ type Documents = {
     "\n  mutation withdrawPositivePnl($input: WithdrawPositivePnlInput!) {\n    withdrawPositivePnl(input: $input) {\n      message\n      success\n      address\n      contractId\n      index\n    }\n  }\n": typeof types.WithdrawPositivePnlDocument,
     "\n  mutation generateNewFollower {\n    generateNewFollower {\n      ...FollowerInfo\n    }\n  }\n": typeof types.GenerateNewFollowerDocument,
     "\n  mutation withdrawAllUSDC($input: WithdrawAllInput!) {\n    withdrawAllUSDC(input: $input)\n  }\n": typeof types.WithdrawAllUsdcDocument,
+    "\n  mutation withdrawAsset($input: AssetInput!) {\n    withdrawAsset(input: $input)\n  }\n": typeof types.WithdrawAssetDocument,
+    "\n  mutation depositAsset($input: AssetInput!) {\n    depositAsset(input: $input)\n  }\n": typeof types.DepositAssetDocument,
     "\n  mutation decreaseAllowanceToZero(\n    $contractId: Int!\n    $followerAddress: String!\n    $password: String!\n  ) {\n    decreaseAllowanceToZero(\n      contractId: $contractId\n      followerAddress: $followerAddress\n      password: $password\n    )\n  }\n": typeof types.DecreaseAllowanceToZeroDocument,
     "\n  mutation increaseAllowanceToMax(\n    $contractId: Int!\n    $followerAddress: String!\n    $password: String!\n  ) {\n    increaseAllowanceToMax(\n      contractId: $contractId\n      followerAddress: $followerAddress\n      password: $password\n    )\n  }\n": typeof types.IncreaseAllowanceToMaxDocument,
     "\n  mutation withdrawAllETH($input: WithdrawAllInput!) {\n    withdrawAllETH(input: $input)\n  }\n": typeof types.WithdrawAllEthDocument,
@@ -185,6 +187,8 @@ const documents: Documents = {
     "\n  mutation withdrawPositivePnl($input: WithdrawPositivePnlInput!) {\n    withdrawPositivePnl(input: $input) {\n      message\n      success\n      address\n      contractId\n      index\n    }\n  }\n": types.WithdrawPositivePnlDocument,
     "\n  mutation generateNewFollower {\n    generateNewFollower {\n      ...FollowerInfo\n    }\n  }\n": types.GenerateNewFollowerDocument,
     "\n  mutation withdrawAllUSDC($input: WithdrawAllInput!) {\n    withdrawAllUSDC(input: $input)\n  }\n": types.WithdrawAllUsdcDocument,
+    "\n  mutation withdrawAsset($input: AssetInput!) {\n    withdrawAsset(input: $input)\n  }\n": types.WithdrawAssetDocument,
+    "\n  mutation depositAsset($input: AssetInput!) {\n    depositAsset(input: $input)\n  }\n": types.DepositAssetDocument,
     "\n  mutation decreaseAllowanceToZero(\n    $contractId: Int!\n    $followerAddress: String!\n    $password: String!\n  ) {\n    decreaseAllowanceToZero(\n      contractId: $contractId\n      followerAddress: $followerAddress\n      password: $password\n    )\n  }\n": types.DecreaseAllowanceToZeroDocument,
     "\n  mutation increaseAllowanceToMax(\n    $contractId: Int!\n    $followerAddress: String!\n    $password: String!\n  ) {\n    increaseAllowanceToMax(\n      contractId: $contractId\n      followerAddress: $followerAddress\n      password: $password\n    )\n  }\n": types.IncreaseAllowanceToMaxDocument,
     "\n  mutation withdrawAllETH($input: WithdrawAllInput!) {\n    withdrawAllETH(input: $input)\n  }\n": types.WithdrawAllEthDocument,
@@ -440,6 +444,14 @@ export function graphql(source: "\n  mutation generateNewFollower {\n    generat
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation withdrawAllUSDC($input: WithdrawAllInput!) {\n    withdrawAllUSDC(input: $input)\n  }\n"): (typeof documents)["\n  mutation withdrawAllUSDC($input: WithdrawAllInput!) {\n    withdrawAllUSDC(input: $input)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation withdrawAsset($input: AssetInput!) {\n    withdrawAsset(input: $input)\n  }\n"): (typeof documents)["\n  mutation withdrawAsset($input: AssetInput!) {\n    withdrawAsset(input: $input)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation depositAsset($input: AssetInput!) {\n    depositAsset(input: $input)\n  }\n"): (typeof documents)["\n  mutation depositAsset($input: AssetInput!) {\n    depositAsset(input: $input)\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

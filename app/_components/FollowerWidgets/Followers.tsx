@@ -8,6 +8,7 @@ import {
   Accordion,
   AccordionItem,
   Spinner,
+  Switch,
 } from "@heroui/react";
 
 import { ContractStatus } from "@/graphql/gql/graphql";
@@ -23,9 +24,10 @@ export function Followers() {
   const allContracts = useGetAllGnsContracts();
 
   const [contractId, setContractId] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   const { details: followerDetails, loading: followerLoading } =
-    useGetAllFollowerDetails(contractId);
+    useGetAllFollowerDetails(contractId, showAll);
 
   return (
     <div className="flex h-[calc(100vh-150px)] flex-col gap-6">
@@ -74,6 +76,10 @@ export function Followers() {
           />
         ) : null}
       </div>
+
+      <Switch isSelected={showAll} onValueChange={setShowAll}>
+        Show All
+      </Switch>
 
       <div className="flex-1 overflow-y-auto">
         {followerLoading ? (
