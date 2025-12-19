@@ -1,4 +1,4 @@
-"use client";;
+"use client";
 import { ReactNode, useEffect } from "react";
 import { HeroUIProvider } from "@heroui/react";
 import { getDefaultConfig, darkTheme } from "@rainbow-me/rainbowkit";
@@ -20,15 +20,11 @@ import {
   ApolloClient,
   ApolloLink,
 } from "@apollo/client";
-import { Defer20220824Handler } from "@apollo/client/incremental";
 import { LocalState } from "@apollo/client/local-state";
 import { ApolloProvider } from "@apollo/client/react";
-import {   SetContextLink, } from "@apollo/client/link/context";
+import { SetContextLink } from "@apollo/client/link/context";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
-import {
-  getMainDefinition,
-  relayStylePagination,
-} from "@apollo/client/utilities";
+import { relayStylePagination } from "@apollo/client/utilities";
 import { createClient } from "graphql-ws";
 
 import "@rainbow-me/rainbowkit/styles.css";
@@ -49,6 +45,7 @@ import {
   useSubscribeTradingSignalLogs,
 } from "./_hooks/useTradingSignals";
 import dynamic from "next/dynamic";
+import { OperationTypeNode } from "graphql";
 
 const RainbowKitProvider = dynamic(
   () => import("@rainbow-me/rainbowkit").then((mod) => mod.RainbowKitProvider),
@@ -65,11 +62,6 @@ const httpLink = new HttpLink({
 const wsLink = new GraphQLWsLink(
   createClient({
     url: process.env.NEXT_PUBLIC_LUCKY_PLAN_GRAPHQL_WSS,
-    retryAttempts: Infinity,
-    onNonLazyError: (error) => {
-      console.error("WebSocket connection failed:", error);
-    },
-    shouldRetry: () => true,
     connectionParams: () => {
       const userJWTStr = localStorage.getItem(LOCAL_USER_JWT_KEY);
       return {
@@ -80,18 +72,14 @@ const wsLink = new GraphQLWsLink(
 );
 
 const splitLink = ApolloLink.split(
-  ({ query }) => {
-    const definition = getMainDefinition(query);
-    return (
-      definition.kind === "OperationDefinition" &&
-      definition.operation === "subscription"
-    );
+  ({ operationType }) => {
+    return operationType === OperationTypeNode.SUBSCRIPTION;
   },
   wsLink,
   httpLink,
 );
 
-const authLink = new SetContextLink(({ headers }, _) => {
+const authLink = new SetContextLink(({ headers }) => {
   // get the authentication token from local storage if it exists
   const userJWTStr = localStorage.getItem(LOCAL_USER_JWT_KEY);
 
@@ -269,13 +257,6 @@ export const apolloClient = new ApolloClient({
   you can safely remove this option.
   */
   localState: new LocalState({}),
-
-  /*
-  Inserted by Apollo Client 3->4 migration codemod.
-  If you are not using the `@defer` directive in your application,
-  you can safely remove this option.
-  */
-  incrementalHandler: new Defer20220824Handler()
 });
 
 export const queryClient = new QueryClient();
