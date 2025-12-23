@@ -112,7 +112,6 @@ export function GroupedAutomations({
   bots,
   leaderAddress,
   platform,
-  isChartFirst,
 }: GroupedAutomationsProps) {
   const { eventLogs, loading } = useGetPerpEventLogs(
     [leaderAddress],
@@ -195,7 +194,7 @@ export function GroupedAutomations({
           <ModaledItems
             key={bot.id}
             mode="rightDrawer"
-            trigger={<AutomationSummary simple bot={bot} />}
+            trigger={<AutomationSummary bot={bot} />}
             content={<AutomationDetails bot={bot} />}
             contentTitle={`Automation ${bot.id}`}
             classNames={{
