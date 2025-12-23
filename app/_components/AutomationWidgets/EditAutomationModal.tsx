@@ -220,7 +220,7 @@ export function EditStrategyModal({
             selectedPairs: Array.from(selectedPair).map((item) =>
               parsePairKey(item as string),
             ),
-            mode: mode === "default" ? null : mode,
+            mode: mode === "default" ? undefined : mode,
           }),
         },
       },
@@ -252,11 +252,11 @@ export function EditStrategyModal({
             placeholder="Select mode"
             selectedKeys={mode ? [mode] : undefined}
             onChange={handleChangeMode}
-            selectionMode="multiple"
+            selectionMode="single"
             className="w-[200px] font-mono"
           >
-            {modes.map((mode) => (
-              <SelectItem key={mode}>{mode}</SelectItem>
+            {modes.map((item) => (
+              <SelectItem key={item}>{item}</SelectItem>
             ))}
           </Select>
 
