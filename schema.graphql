@@ -441,6 +441,7 @@ type MissionForwardDetails {
 
 enum MissionMode {
   Default
+  Hook
   Signal
 }
 
@@ -734,7 +735,6 @@ type Query {
   getWalletAccountByAddress(input: GetUserByAddressInput!): WalletAccount!
   getWhitelist: [String!]
   getWholeCompressedHistoriesV2(filterParams: [ExportFilter!]!, platform: Platform!, startDate: String!): WholeCompressedHistoriesV2!
-  isBotHookRunning: Boolean!
   isPnlSnapshotV2Initialized(dateStr: String!, platform: Platform!): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   systemStatus: Boolean!

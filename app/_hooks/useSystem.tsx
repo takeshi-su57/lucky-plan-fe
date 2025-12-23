@@ -73,12 +73,6 @@ export const GET_SERVER_TIME_DOCUMENT = graphql(`
   }
 `);
 
-export const GET_IS_BOT_HOOK_RUNNING_DOCUMENT = graphql(`
-  query getIsBotHookRunning {
-    isBotHookRunning
-  }
-`);
-
 export function usePauseSystem() {
   const [pauseSystem, { data, error }] = useMutation(PAUSE_SYSTEM_DOCUMENT);
 
@@ -166,10 +160,6 @@ export function useIsSafeApp() {
   return useQuery(GET_IS_SAFE_APP_DOCUMENT);
 }
 
-export function useIsBotHookRunning() {
-  return useQuery(GET_IS_BOT_HOOK_RUNNING_DOCUMENT);
-}
-
 export function useMakeSafeApp() {
   const [makeSafeApp, { data, error, loading }] = useMutation(
     MAKE_SAFE_APP_DOCUMENT,
@@ -242,11 +232,15 @@ export function useGetMicroserviceStatus() {
         query: GET_MICROSERVICE_STATUS_DOCUMENT,
         fetchPolicy: "network-only", // always fresh
       });
-      return result.data?.getMicroserviceStatus || [{
-        __typename: "MicroserviceStatus" as const,
-        pids: [],
-        service: "",
-      }];
+      return (
+        result.data?.getMicroserviceStatus || [
+          {
+            __typename: "MicroserviceStatus" as const,
+            pids: [],
+            service: "",
+          },
+        ]
+      );
     },
     refetchInterval: 10_000, // ⏳ auto refresh every 10s
     enabled: !!client,

@@ -1,13 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  Button,
-  Checkbox,
-  Select,
-  SelectItem,
-  useDisclosure,
-} from "@heroui/react";
+import { ChangeEventHandler, useEffect, useState } from "react";
+import { Button, Select, SelectItem, useDisclosure } from "@heroui/react";
 import type { Selection } from "@heroui/react";
 import { StandardModal } from "@/components/modals/StandardModal";
 
@@ -26,7 +20,7 @@ export function getAdditionalParams(strParams: string): {
   tpPercentage: number;
   slPercentage: number;
   selectedPairs: { pair: string; isLong: boolean }[];
-  mode: "signal" | undefined;
+  mode: "signal" | "hook" | undefined;
 } {
   try {
     const params = JSON.parse(strParams);
@@ -69,6 +63,8 @@ export function getAdditionalParams(strParams: string): {
   }
 }
 
+const modes = ["default", "signal", "hook"];
+
 export type EditStrategyModalProps = {
   strategy: Strategy;
   chainId: number;
@@ -98,8 +94,8 @@ export function EditStrategyModal({
   const [tpPercentage, setTpPercentage] = useState("10");
   const [slPercentage, setSlPercentage] = useState("10");
   const [maxOpenMissions, setMaxOpenMissions] = useState("1");
-  const [isSignalMode, setIsSignalMode] = useState(false);
 
+  const [mode, setMode] = useState<"signal" | "hook" | "default">("default");
   const [selectedPair, setSelectedPair] = useState<Selection>(
     new Set<string>([]),
   );
@@ -116,8 +112,19 @@ export function EditStrategyModal({
         ),
       ),
     );
-    setIsSignalMode(additionalParams.mode === "signal");
+
+    setMode(
+      (additionalParams.mode ?? "default") as "signal" | "hook" | "default",
+    );
   }, [strategy.params]);
+
+  const handleChangeMode: ChangeEventHandler<HTMLSelectElement> = (event) => {
+    const value = event.target.value;
+
+    if (value.trim() !== "") {
+      setMode(value as "signal" | "hook" | "default");
+    }
+  };
 
   let maxCollateralHelper = "";
   let minCollateralHelper = "";
@@ -213,7 +220,7 @@ export function EditStrategyModal({
             selectedPairs: Array.from(selectedPair).map((item) =>
               parsePairKey(item as string),
             ),
-            mode: isSignalMode ? "signal" : undefined,
+            mode: mode === "default" ? null : mode,
           }),
         },
       },
@@ -235,16 +242,23 @@ export function EditStrategyModal({
         classNames={{ base: "max-w-[350px]" }}
       >
         <div className="flex w-full flex-col gap-8">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Edit Strategy
           </h1>
 
-          <Checkbox
-            isSelected={isSignalMode}
-            onValueChange={(value) => setIsSignalMode(value)}
+          <Select
+            variant="underlined"
+            label="Mode"
+            placeholder="Select mode"
+            selectedKeys={mode ? [mode] : undefined}
+            onChange={handleChangeMode}
+            selectionMode="multiple"
+            className="w-[200px] font-mono"
           >
-            Signal Only Bot
-          </Checkbox>
+            {modes.map((mode) => (
+              <SelectItem key={mode}>{mode}</SelectItem>
+            ))}
+          </Select>
 
           <NumericInput
             amount={ratio}
