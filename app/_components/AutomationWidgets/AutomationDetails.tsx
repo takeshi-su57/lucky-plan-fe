@@ -115,6 +115,7 @@ export function AutomationDetails({ bot }: AutomationDetailsProps) {
             address={bot.leaderAddress as Address}
             className="text-sm"
           />
+          <span>{bot.leaderContract.chainId}</span>
         </div>
 
         <div className="flex flex-col gap-2">
@@ -123,6 +124,7 @@ export function AutomationDetails({ bot }: AutomationDetailsProps) {
             address={bot.followerAddress as Address}
             className="text-sm"
           />
+          <span>{bot.leaderContract.chainId}</span>
         </div>
 
         <div className="flex flex-col gap-2 font-mono">
