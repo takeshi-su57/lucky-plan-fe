@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Accordion,
   AccordionItem,
@@ -33,6 +33,9 @@ import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { EditStrategyModal } from "./EditAutomationModal";
 import { EventLogsWidget } from "../LeaderboardWidgets/EventLogsWidget";
 import { twMerge } from "tailwind-merge";
+import { PaginatedViews } from "@/components/views/PaginatedViews";
+
+const PAGE_SIZE = 10;
 
 export type AutomationDetailsProps = {
   bot: BotForwardDetails;
@@ -42,6 +45,8 @@ export function AutomationDetails({ bot }: AutomationDetailsProps) {
   const liveBot = useLiveBot();
   const stopBot = useStopBot();
   const deleteBot = useDeleteBot();
+
+  const [page, setPage] = useState(1);
 
   const closeMission = useCloseMission();
 
@@ -277,7 +282,7 @@ export function AutomationDetails({ bot }: AutomationDetailsProps) {
 
       <Card className={twMerge("mb-4 w-full shrink-0")} isBlurred>
         <CardBody>
-          <span className="text-lg font-bold leading-loose text-neutral-400">
+          <span className="text-lg leading-loose font-bold text-neutral-400">
             Opened Missions
           </span>
 
@@ -311,7 +316,7 @@ export function AutomationDetails({ bot }: AutomationDetailsProps) {
 
       <Card className={twMerge("mb-4 w-full shrink-0")} isBlurred>
         <CardBody>
-          <span className="text-lg font-bold leading-loose text-neutral-400">
+          <span className="text-lg leading-loose font-bold text-neutral-400">
             Closed Missions
           </span>
 
@@ -321,25 +326,36 @@ export function AutomationDetails({ bot }: AutomationDetailsProps) {
             </span>
           ) : null}
 
-          <Accordion isCompact variant="splitted">
-            {closedMissions.map((mission) => (
-              <AccordionItem
-                key={mission.id}
-                title={
-                  <MissionSummary
-                    mission={mission}
-                    leaderContract={bot.leaderContract}
-                    followerContractId={bot.followerContractId}
-                  />
-                }
-              >
-                <MissionDetails
-                  mission={mission}
-                  followerContractId={bot.followerContractId}
-                />
-              </AccordionItem>
-            ))}
-          </Accordion>
+          <PaginatedViews
+            currentPage={page}
+            totalPages={Math.ceil(closedMissions.length / PAGE_SIZE)}
+            onChangePage={setPage}
+            loading={false}
+          >
+            <div className="flex h-[350px] w-full flex-col gap-6 overflow-y-auto">
+              <Accordion isCompact variant="splitted">
+                {closedMissions
+                  .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+                  .map((mission) => (
+                    <AccordionItem
+                      key={mission.id}
+                      title={
+                        <MissionSummary
+                          mission={mission}
+                          leaderContract={bot.leaderContract}
+                          followerContractId={bot.followerContractId}
+                        />
+                      }
+                    >
+                      <MissionDetails
+                        mission={mission}
+                        followerContractId={bot.followerContractId}
+                      />
+                    </AccordionItem>
+                  ))}
+              </Accordion>
+            </div>
+          </PaginatedViews>
         </CardBody>
       </Card>
 
