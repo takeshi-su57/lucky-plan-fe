@@ -117,7 +117,6 @@ type Documents = {
     "\n  query getSystemStatus {\n    systemStatus\n  }\n": typeof types.GetSystemStatusDocument,
     "\n  query isSafeApp {\n    isSafeApp\n  }\n": typeof types.IsSafeAppDocument,
     "\n  query getServerTime {\n    getServerTime {\n      timestamp\n      timezone\n    }\n  }\n": typeof types.GetServerTimeDocument,
-    "\n  query getIsBotHookRunning {\n    isBotHookRunning\n  }\n": typeof types.GetIsBotHookRunningDocument,
     "\n  fragment TagCategoryInfo on TagCategory {\n    id\n    category\n    description\n    userId\n  }\n": typeof types.TagCategoryInfoFragmentDoc,
     "\n  fragment TagInfo on Tag {\n    id\n    tag\n    description\n    color\n    categoryId\n    userId\n  }\n": typeof types.TagInfoFragmentDoc,
     "\n  query getAllTags {\n    getAllTags {\n      ...TagInfo\n    }\n  }\n": typeof types.GetAllTagsDocument,
@@ -255,7 +254,6 @@ const documents: Documents = {
     "\n  query getSystemStatus {\n    systemStatus\n  }\n": types.GetSystemStatusDocument,
     "\n  query isSafeApp {\n    isSafeApp\n  }\n": types.IsSafeAppDocument,
     "\n  query getServerTime {\n    getServerTime {\n      timestamp\n      timezone\n    }\n  }\n": types.GetServerTimeDocument,
-    "\n  query getIsBotHookRunning {\n    isBotHookRunning\n  }\n": types.GetIsBotHookRunningDocument,
     "\n  fragment TagCategoryInfo on TagCategory {\n    id\n    category\n    description\n    userId\n  }\n": types.TagCategoryInfoFragmentDoc,
     "\n  fragment TagInfo on Tag {\n    id\n    tag\n    description\n    color\n    categoryId\n    userId\n  }\n": types.TagInfoFragmentDoc,
     "\n  query getAllTags {\n    getAllTags {\n      ...TagInfo\n    }\n  }\n": types.GetAllTagsDocument,
@@ -716,10 +714,6 @@ export function graphql(source: "\n  query isSafeApp {\n    isSafeApp\n  }\n"): 
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query getServerTime {\n    getServerTime {\n      timestamp\n      timezone\n    }\n  }\n"): (typeof documents)["\n  query getServerTime {\n    getServerTime {\n      timestamp\n      timezone\n    }\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  query getIsBotHookRunning {\n    isBotHookRunning\n  }\n"): (typeof documents)["\n  query getIsBotHookRunning {\n    isBotHookRunning\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

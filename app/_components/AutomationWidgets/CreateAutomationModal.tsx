@@ -228,12 +228,12 @@ export function CreateAutomationModal({
       classNames={{ base: "max-w-[80%]" }}
     >
       <div className="flex w-full flex-col gap-8">
-        <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+        <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
           Create New Automation
         </h1>
 
         <div className="flex w-full gap-8">
-          <div className="flex w-[200px] flex-shrink-0 flex-col gap-8">
+          <div className="flex w-[200px] flex-col gap-8">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <Checkbox
                 isSelected={botMode === BotMode.General}
