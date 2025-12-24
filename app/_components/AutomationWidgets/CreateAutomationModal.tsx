@@ -28,6 +28,8 @@ import {
   PerpEventLogPnlChartHandle,
 } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
 
+const modes = ["default", "signal", "hook"];
+
 export enum BotMode {
   General = "general",
   BotCap = "botCap",
@@ -72,7 +74,7 @@ export function CreateAutomationModal({
   const [tpPercentage, setTpPercentage] = useState("10");
   const [slPercentage, setSlPercentage] = useState("10");
   const [maxOpenMissions, setMaxOpenMissions] = useState("1");
-  const [isSignalMode, setIsSignalMode] = useState(false);
+  const [mode, setMode] = useState<"signal" | "hook" | "default">("default");
 
   const { eventLogs: originalEventLogs } = useGetPerpEventLogs(
     isAddress(leaderAddress) ? [leaderAddress] : [],
@@ -87,6 +89,14 @@ export function CreateAutomationModal({
 
     if (value.trim() !== "") {
       setPlatform(value as Platform);
+    }
+  };
+
+  const handleChangeMode: ChangeEventHandler<HTMLSelectElement> = (event) => {
+    const value = event.target.value;
+
+    if (value.trim() !== "") {
+      setMode(value as "signal" | "hook" | "default");
     }
   };
 
@@ -208,7 +218,7 @@ export function CreateAutomationModal({
               slPercentage: +slPercentage,
               selectedPairs: chartRef.current?.getSelectedPairs() || [],
               maxOpenMissions: Math.floor(+maxOpenMissions),
-              mode: isSignalMode ? "signal" : undefined,
+              mode: mode === "default" ? undefined : mode,
             }),
           },
         })),
@@ -244,12 +254,19 @@ export function CreateAutomationModal({
                 General Bot Mode
               </Checkbox>
 
-              <Checkbox
-                isSelected={isSignalMode}
-                onValueChange={(value) => setIsSignalMode(value)}
+              <Select
+                variant="underlined"
+                label="Mode"
+                placeholder="Select mode"
+                selectedKeys={mode ? [mode] : undefined}
+                onChange={handleChangeMode}
+                selectionMode="single"
+                className="w-[200px] font-mono"
               >
-                Signal Only Bot
-              </Checkbox>
+                {modes.map((item) => (
+                  <SelectItem key={item}>{item}</SelectItem>
+                ))}
+              </Select>
 
               <Select
                 variant="underlined"

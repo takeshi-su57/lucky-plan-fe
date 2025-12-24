@@ -17,7 +17,7 @@ export type MarketOpenCanceledEvent = DecodeEventLogReturnType<
 export type MarketOpenCanceledEventArgs = MarketOpenCanceledEvent["args"];
 
 export function eventToPerpTradeHistory(
-  event: MarketOpenCanceledEvent,
+  _event: MarketOpenCanceledEvent,
 ): PerpTradeHistory | null {
   return null;
 }
