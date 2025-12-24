@@ -334,7 +334,7 @@ export function AutomationDetails({ bot }: AutomationDetailsProps) {
             onChangePage={setPage}
             loading={false}
           >
-            <div className="flex h-[350px] w-full flex-col gap-6 overflow-y-auto">
+            <div className="flex h-[500px] w-full flex-col gap-6 overflow-y-auto">
               <Accordion isCompact variant="splitted">
                 {closedMissions
                   .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)

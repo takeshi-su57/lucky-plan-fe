@@ -54,7 +54,7 @@ export function eventToPerpTradeHistory(
   return {
     positionKey: getAvntPositionKey(
       event.args.t.trader,
-      Number(event.args.t.index),
+      Number(event.args.orderId),
     ),
     address: event.args.t.trader.toLowerCase() as `0x${string}`,
     pair: pairName,

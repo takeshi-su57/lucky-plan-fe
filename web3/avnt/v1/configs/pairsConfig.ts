@@ -552,4 +552,28 @@ export const pairConfigs: ConfigPair[] = [
     to: "USD",
     numTiers: "2",
   },
+  {
+    pairIndex: 91,
+    from: "HOOD",
+    to: "USD",
+    numTiers: "1",
+  },
+  {
+    pairIndex: 92,
+    from: "ZEC",
+    to: "USD",
+    numTiers: "2",
+  },
+  {
+    pairIndex: 93,
+    from: "XMR",
+    to: "USD",
+    numTiers: "2",
+  },
+  {
+    pairIndex: 94,
+    from: "MON",
+    to: "USD",
+    numTiers: "2",
+  },
 ];

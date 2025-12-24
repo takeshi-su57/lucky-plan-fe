@@ -78,10 +78,19 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
         "https://github.com/gmx-io/gmx-assets/blob/main/GMX-Assets/PNG/GLP_LOGO%20ONLY.png?raw=true",
       isPlatformToken: true,
     },
-    "<market-token-address>": {
+    "<gm-address>": {
+      name: "GMX Market tokens",
+      symbol: "GM",
+      address: "<GM-ADDRESS>",
+      decimals: 18,
+      imageUrl:
+        "https://raw.githubusercontent.com/gmx-io/gmx-assets/main/GMX-Assets/PNG/GM_LOGO.png",
+      isPlatformToken: true,
+    },
+    "<glv-address>": {
       name: "GLV Market tokens",
       symbol: "GLV",
-      address: "<market-token-address>",
+      address: "<GLV-ADDRESS>",
       decimals: 18,
       imageUrl:
         "https://raw.githubusercontent.com/gmx-io/gmx-assets/main/GMX-Assets/PNG/GLV_LOGO.png",
@@ -300,7 +309,8 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       imageUrl:
         "https://assets.coingecko.com/coins/images/1/small/bitcoin.png?1547033579",
       coingeckoUrl: "https://www.coingecko.com/en/coins/bitcoin",
-      isPermitSupported: true,
+      isPermitSupported: false,
+      isPermitDisabled: true,
     },
     "0xc4da4c24fd591125c3f47b340b6f4f76111883d8": {
       name: "Dogecoin",
@@ -536,7 +546,7 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       imageUrl:
         "https://assets.coingecko.com/coins/images/11224/standard/0x18084fba666a33d37592fa2633fd49a74dd93a88.png?1696511155",
       coingeckoUrl: "https://www.coingecko.com/en/coins/tbtc",
-      isPermitSupported: true,
+      isPermitSupported: false,
       contractVersion: "1",
     },
     "0x606c3e5075e5555e79aa15f1e9facb776f96c248": {
@@ -548,7 +558,7 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       imageUrl:
         "https://assets.coingecko.com/coins/images/37441/standard/eigen.jpg?1728023974",
       coingeckoUrl: "https://www.coingecko.com/en/coins/eigenlayer",
-      isPermitSupported: true,
+      isPermitSupported: false,
       contractVersion: "1",
     },
     "0x2cd2eb61d17b78239fcd19aaff72981b5d5ef319": {
@@ -1205,10 +1215,19 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       reservesUrl: "https://portfolio.nansen.ai/dashboard/gmx?chain=ARBITRUM",
       isPlatformToken: true,
     },
-    "<market-token-address>": {
+    "<gm-address>": {
+      name: "GMX Market tokens",
+      symbol: "GM",
+      address: "<GM-ADDRESS>",
+      decimals: 18,
+      imageUrl:
+        "https://raw.githubusercontent.com/gmx-io/gmx-assets/main/GMX-Assets/PNG/GM_LOGO.png",
+      isPlatformToken: true,
+    },
+    "<glv-address>": {
       name: "GLV Market tokens",
       symbol: "GLV",
-      address: "<market-token-address>",
+      address: "<GLV-ADDRESS>",
       decimals: 18,
       imageUrl:
         "https://raw.githubusercontent.com/gmx-io/gmx-assets/main/GMX-Assets/PNG/GLV_LOGO.png",
@@ -1443,6 +1462,42 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       coingeckoUrl: "https://www.coingecko.com/en/coins/linea",
       isSynthetic: true,
     },
+    "0xb96e60ca3a7677b29f1e10dd109e952b275038be": {
+      name: "Monad",
+      symbol: "MON",
+      address: "0xB96e60CA3a7677b29f1e10dd109E952B275038Be",
+      decimals: 18,
+      priceDecimals: 6,
+      categories: ["layer1", "defi"],
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/38927/standard/mon.png?1766029057",
+      coingeckoUrl: "https://www.coingecko.com/en/coins/monad",
+      isSynthetic: true,
+    },
+    "0xeea41cea2204d1156de1bdf2cf4ab6184d17f90b": {
+      name: "Sky",
+      symbol: "SKY",
+      address: "0xeeA41ceA2204D1156De1BDF2CF4ab6184d17f90B",
+      decimals: 18,
+      priceDecimals: 6,
+      categories: ["defi"],
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/39925/standard/sky.jpg?1724827980",
+      coingeckoUrl: "https://www.coingecko.com/en/coins/sky",
+      isSynthetic: true,
+    },
+    "0x6eabbaa3278556dc5b19c034dc26c0eab60d65b5": {
+      name: "Zcash",
+      symbol: "ZEC",
+      address: "0x6eAbbaA3278556Dc5b19c034dc26c0eaB60d65B5",
+      decimals: 8,
+      priceDecimals: 3,
+      categories: ["layer1"],
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/486/standard/circle-zcash-color.png?1696501740",
+      coingeckoUrl: "https://www.coingecko.com/en/coins/zcash",
+      isSynthetic: true,
+    },
   },
   "43113": {
     "0x0000000000000000000000000000000000000000": {
@@ -1658,10 +1713,19 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
         "https://github.com/gmx-io/gmx-assets/blob/main/GMX-Assets/PNG/GLP_LOGO%20ONLY.png?raw=true",
       isPlatformToken: true,
     },
-    "<market-token-address>": {
+    "<gm-address>": {
+      name: "GMX Market tokens",
+      symbol: "GM",
+      address: "<GM-ADDRESS>",
+      decimals: 18,
+      imageUrl:
+        "https://raw.githubusercontent.com/gmx-io/gmx-assets/main/GMX-Assets/PNG/GM_LOGO.png",
+      isPlatformToken: true,
+    },
+    "<glv-address>": {
       name: "GLV Market tokens",
       symbol: "GLV",
-      address: "<market-token-address>",
+      address: "<GLV-ADDRESS>",
       decimals: 18,
       imageUrl:
         "https://raw.githubusercontent.com/gmx-io/gmx-assets/main/GMX-Assets/PNG/GLV_LOGO.png",
@@ -1992,10 +2056,19 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
         "https://snowtrace.io/address/0x9e295B5B976a184B14aD8cd72413aD846C299660",
       reservesUrl: "https://portfolio.nansen.ai/dashboard/gmx?chain=AVAX",
     },
-    "<market-token-address>": {
+    "<gm-address>": {
+      name: "GMX Market tokens",
+      symbol: "GM",
+      address: "<GM-ADDRESS>",
+      decimals: 18,
+      imageUrl:
+        "https://raw.githubusercontent.com/gmx-io/gmx-assets/main/GMX-Assets/PNG/GM_LOGO.png",
+      isPlatformToken: true,
+    },
+    "<glv-address>": {
       name: "GLV Market tokens",
       symbol: "GLV",
-      address: "<market-token-address>",
+      address: "<GLV-ADDRESS>",
       decimals: 18,
       imageUrl:
         "https://raw.githubusercontent.com/gmx-io/gmx-assets/main/GMX-Assets/PNG/GLV_LOGO.png",
@@ -2081,7 +2154,7 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
     "<gmx-address>": {
       name: "GMX",
       symbol: "GMX",
-      address: "<gmx-address>",
+      address: "<GMX-ADDRESS>",
       decimals: 18,
       imageUrl:
         "https://assets.coingecko.com/coins/images/18323/small/arbit.png?1631532468",
@@ -2090,23 +2163,32 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
     "<esgmx-address>": {
       name: "Escrowed GMX",
       symbol: "ESGMX",
-      address: "<esgmx-address>",
+      address: "<ESGMX-ADDRESS>",
       decimals: 18,
       isPlatformToken: true,
     },
     "<glp-address>": {
       name: "GMX LP",
       symbol: "GLP",
-      address: "<glp-address>",
+      address: "<GLP-ADDRESS>",
       decimals: 18,
       imageUrl:
         "https://github.com/gmx-io/gmx-assets/blob/main/GMX-Assets/PNG/GLP_LOGO%20ONLY.png?raw=true",
       isPlatformToken: true,
     },
-    "<market-token-address>": {
+    "<gm-address>": {
+      name: "GMX Market tokens",
+      symbol: "GM",
+      address: "<GM-ADDRESS>",
+      decimals: 18,
+      imageUrl:
+        "https://raw.githubusercontent.com/gmx-io/gmx-assets/main/GMX-Assets/PNG/GM_LOGO.png",
+      isPlatformToken: true,
+    },
+    "<glv-address>": {
       name: "GLV Market tokens",
       symbol: "GLV",
-      address: "<market-token-address>",
+      address: "<GLV-ADDRESS>",
       decimals: 18,
       imageUrl:
         "https://raw.githubusercontent.com/gmx-io/gmx-assets/main/GMX-Assets/PNG/GLV_LOGO.png",

@@ -188,7 +188,8 @@ export const gmxMarketConfigs: Record<string, Record<string, MarketConfig>> = {
         imageUrl:
           "https://assets.coingecko.com/coins/images/1/small/bitcoin.png?1547033579",
         coingeckoUrl: "https://www.coingecko.com/en/coins/bitcoin",
-        isPermitSupported: true,
+        isPermitSupported: false,
+        isPermitDisabled: true,
       },
     },
     "0x70d95587d40A2caf56bd97485aB3Eec10Bee6336": {
@@ -1089,7 +1090,8 @@ export const gmxMarketConfigs: Record<string, Record<string, MarketConfig>> = {
         imageUrl:
           "https://assets.coingecko.com/coins/images/1/small/bitcoin.png?1547033579",
         coingeckoUrl: "https://www.coingecko.com/en/coins/bitcoin",
-        isPermitSupported: true,
+        isPermitSupported: false,
+        isPermitDisabled: true,
       },
     },
     "0x450bb6774Dd8a756274E0ab4107953259d2ac541": {
@@ -1566,7 +1568,7 @@ export const gmxMarketConfigs: Record<string, Record<string, MarketConfig>> = {
         imageUrl:
           "https://assets.coingecko.com/coins/images/11224/standard/0x18084fba666a33d37592fa2633fd49a74dd93a88.png?1696511155",
         coingeckoUrl: "https://www.coingecko.com/en/coins/tbtc",
-        isPermitSupported: true,
+        isPermitSupported: false,
         contractVersion: "1",
       },
       shortToken: {
@@ -1577,7 +1579,7 @@ export const gmxMarketConfigs: Record<string, Record<string, MarketConfig>> = {
         imageUrl:
           "https://assets.coingecko.com/coins/images/11224/standard/0x18084fba666a33d37592fa2633fd49a74dd93a88.png?1696511155",
         coingeckoUrl: "https://www.coingecko.com/en/coins/tbtc",
-        isPermitSupported: true,
+        isPermitSupported: false,
         contractVersion: "1",
       },
       indexToken: {
@@ -1590,7 +1592,8 @@ export const gmxMarketConfigs: Record<string, Record<string, MarketConfig>> = {
         imageUrl:
           "https://assets.coingecko.com/coins/images/1/small/bitcoin.png?1547033579",
         coingeckoUrl: "https://www.coingecko.com/en/coins/bitcoin",
-        isPermitSupported: true,
+        isPermitSupported: false,
+        isPermitDisabled: true,
       },
     },
     "0xD4b737892baB8446Ea1e8Bb901db092fb1EC1791": {
@@ -1635,7 +1638,7 @@ export const gmxMarketConfigs: Record<string, Record<string, MarketConfig>> = {
         imageUrl:
           "https://assets.coingecko.com/coins/images/37441/standard/eigen.jpg?1728023974",
         coingeckoUrl: "https://www.coingecko.com/en/coins/eigenlayer",
-        isPermitSupported: true,
+        isPermitSupported: false,
         contractVersion: "1",
       },
     },
@@ -5646,6 +5649,148 @@ export const gmxMarketConfigs: Record<string, Record<string, MarketConfig>> = {
         explorerUrl:
           "https://arbiscan.io/token/0xa9004A5421372E1D83fB1f85b0fc986c912f91f3",
         explorerSymbol: "WBNB",
+      },
+    },
+    "0x66AB9D61A0124b61C8892A4ac687Ac48DbA8ff2c": {
+      marketTokenAddress: "0x66AB9D61A0124b61C8892A4ac687Ac48DbA8ff2c",
+      indexTokenAddress: "0xB96e60CA3a7677b29f1e10dd109E952B275038Be",
+      longTokenAddress: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+      shortTokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+      longToken: {
+        name: "Wrapped Ethereum",
+        symbol: "WETH",
+        decimals: 18,
+        address: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+        isWrapped: true,
+        baseSymbol: "ETH",
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/2518/thumb/weth.png?1628852295",
+        coingeckoUrl: "https://www.coingecko.com/en/coins/ethereum",
+        isV1Available: true,
+        isPermitSupported: true,
+        contractVersion: "1",
+      },
+      shortToken: {
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 6,
+        address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        isStable: true,
+        isV1Available: true,
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389",
+        coingeckoUrl: "https://www.coingecko.com/en/coins/usd-coin",
+        explorerUrl:
+          "https://arbiscan.io/address/0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        isPermitSupported: true,
+      },
+      indexToken: {
+        name: "Monad",
+        symbol: "MON",
+        address: "0xB96e60CA3a7677b29f1e10dd109E952B275038Be",
+        decimals: 18,
+        priceDecimals: 6,
+        categories: ["layer1", "defi"],
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/38927/standard/mon.png?1766029057",
+        coingeckoUrl: "https://www.coingecko.com/en/coins/monad",
+        isSynthetic: true,
+      },
+    },
+    "0x587759c237acCa739bCE3911647BacF56C876E60": {
+      marketTokenAddress: "0x587759c237acCa739bCE3911647BacF56C876E60",
+      indexTokenAddress: "0x6eAbbaA3278556Dc5b19c034dc26c0eaB60d65B5",
+      longTokenAddress: "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
+      shortTokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+      longToken: {
+        name: "Wrapped Bitcoin",
+        symbol: "BTC",
+        assetSymbol: "WBTC",
+        baseSymbol: "BTC",
+        decimals: 8,
+        address: "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
+        isShortable: true,
+        categories: ["layer1"],
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/26115/thumb/btcb.png?1655921693",
+        coingeckoUrl: "https://www.coingecko.com/en/coins/wrapped-bitcoin",
+        explorerUrl:
+          "https://arbiscan.io/address/0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f",
+        isV1Available: true,
+        isPermitSupported: true,
+        contractVersion: "1",
+      },
+      shortToken: {
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 6,
+        address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        isStable: true,
+        isV1Available: true,
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389",
+        coingeckoUrl: "https://www.coingecko.com/en/coins/usd-coin",
+        explorerUrl:
+          "https://arbiscan.io/address/0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        isPermitSupported: true,
+      },
+      indexToken: {
+        name: "Zcash",
+        symbol: "ZEC",
+        address: "0x6eAbbaA3278556Dc5b19c034dc26c0eaB60d65B5",
+        decimals: 8,
+        priceDecimals: 3,
+        categories: ["layer1"],
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/486/standard/circle-zcash-color.png?1696501740",
+        coingeckoUrl: "https://www.coingecko.com/en/coins/zcash",
+        isSynthetic: true,
+      },
+    },
+    "0x00310c6d8A9F821e3FE991f4835f2cA4d87034Cf": {
+      marketTokenAddress: "0x00310c6d8A9F821e3FE991f4835f2cA4d87034Cf",
+      indexTokenAddress: "0xeeA41ceA2204D1156De1BDF2CF4ab6184d17f90B",
+      longTokenAddress: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+      shortTokenAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+      longToken: {
+        name: "Wrapped Ethereum",
+        symbol: "WETH",
+        decimals: 18,
+        address: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+        isWrapped: true,
+        baseSymbol: "ETH",
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/2518/thumb/weth.png?1628852295",
+        coingeckoUrl: "https://www.coingecko.com/en/coins/ethereum",
+        isV1Available: true,
+        isPermitSupported: true,
+        contractVersion: "1",
+      },
+      shortToken: {
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 6,
+        address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        isStable: true,
+        isV1Available: true,
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389",
+        coingeckoUrl: "https://www.coingecko.com/en/coins/usd-coin",
+        explorerUrl:
+          "https://arbiscan.io/address/0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        isPermitSupported: true,
+      },
+      indexToken: {
+        name: "Sky",
+        symbol: "SKY",
+        address: "0xeeA41ceA2204D1156De1BDF2CF4ab6184d17f90B",
+        decimals: 18,
+        priceDecimals: 6,
+        categories: ["defi"],
+        imageUrl:
+          "https://assets.coingecko.com/coins/images/39925/standard/sky.jpg?1724827980",
+        coingeckoUrl: "https://www.coingecko.com/en/coins/sky",
+        isSynthetic: true,
       },
     },
   },
