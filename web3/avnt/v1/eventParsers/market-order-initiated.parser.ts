@@ -16,7 +16,7 @@ export type MarketOrderInitiatedEvent = DecodeEventLogReturnType<
 export type MarketOrderInitiatedEventArgs = MarketOrderInitiatedEvent["args"];
 
 export function eventToPerpTradeHistory(
-  event: MarketOrderInitiatedEvent,
+  _event: MarketOrderInitiatedEvent,
 ): PerpTradeHistory | null {
   return null;
 }
