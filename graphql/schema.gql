@@ -219,7 +219,9 @@ input CreateStrategyInput {
   strategyKey: String!
 }
 
-"""Date custom scalar type"""
+"""
+Date custom scalar type
+"""
 scalar Date
 
 input DecreasePositionSizeInput {
@@ -332,6 +334,13 @@ type FollowerTrade {
 
 input GetUserByAddressInput {
   address: String!
+}
+
+type GnsPricingRecord {
+  date: Date!
+  id: Int!
+  pair: String!
+  price: Float!
 }
 
 input IncreasePositionSizeInput {
@@ -473,10 +482,22 @@ type Mutation {
   addToBlacklist(address: String!): Boolean!
   addToWhitelist(params: String!): Boolean!
   addWalletAccount(input: AddUserInput!): WalletAccount!
-  allowAuto(address: String!, allowAuto: Boolean!, budget: Float!, followerContractId: Int!, ratio: Float!): User!
+  allowAuto(
+    address: String!
+    allowAuto: Boolean!
+    budget: Float!
+    followerContractId: Int!
+    ratio: Float!
+  ): User!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
-  buildPnlSnapshotsV2(dateStr: String!, isForceBuild: Boolean!, platform: Platform!): Boolean!
-  cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
+  buildPnlSnapshotsV2(
+    dateStr: String!
+    isForceBuild: Boolean!
+    platform: Platform!
+  ): Boolean!
+  cancelOrderAfterTimeout(
+    input: CancelOrderAfterTimeoutInput!
+  ): ContractExecutionResult!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
   checkLog(id: Int!): Log!
@@ -486,22 +507,44 @@ type Mutation {
   createAutoPlan: Boolean!
   createBot(input: CreateBotInput!): BotBackwardDetails!
   createPlan(createPlanInput: CreatePlanInput!): Plan!
-  decreaseAllowanceToZero(contractId: Int!, followerAddress: String!, password: String!): Boolean!
-  decreasePositionSize(input: DecreasePositionSizeInput!): ContractExecutionResult!
+  createSLTP(input: SLTPRequestInput!): SLTPRequest!
+  decreaseAllowanceToZero(
+    contractId: Int!
+    followerAddress: String!
+    password: String!
+  ): Boolean!
+  decreasePositionSize(
+    input: DecreasePositionSizeInput!
+  ): ContractExecutionResult!
   deleteBot(id: Int!): BotBackwardDetails!
   deleteCategory(id: Int!): TagCategory!
   deletePlan(id: Int!): Int!
+  deleteSLTP(id: Int!): SLTPRequest!
   deleteTag(tag: String!): Tag!
   depositAsset(input: AssetInput!): Boolean!
   disableContract(contractId: Int!): Contract!
   dynamicSnapshotBuildV2(dateStr: String!, platform: Platform!): Boolean!
   endPlan(id: Int!): Boolean!
   generateNewFollower: Follower!
-  getToken(signature: String!, timestamp: String!, walletAddress: String!): AccessToken!
+  getToken(
+    signature: String!
+    timestamp: String!
+    walletAddress: String!
+  ): AccessToken!
   ignoreMission(id: Int!): Boolean!
-  increaseAllowanceToMax(contractId: Int!, followerAddress: String!, password: String!): Boolean!
-  increasePositionSize(input: IncreasePositionSizeInput!): ContractExecutionResult!
-  initializePnlSnapshotV2(beginingDate: Date!, isForceBuild: Boolean!, platform: Platform!): Boolean!
+  increaseAllowanceToMax(
+    contractId: Int!
+    followerAddress: String!
+    password: String!
+  ): Boolean!
+  increasePositionSize(
+    input: IncreasePositionSizeInput!
+  ): ContractExecutionResult!
+  initializePnlSnapshotV2(
+    beginingDate: Date!
+    isForceBuild: Boolean!
+    platform: Platform!
+  ): Boolean!
   killSubService(service: String!): Boolean!
   liveBot(id: Int!): Boolean!
   liveContract(contractId: Int!, fromBlock: Int): Contract!
@@ -509,8 +552,14 @@ type Mutation {
   openTradeMarket(input: OpenTradeInput!): ContractExecutionResult!
   pauseSystem: Boolean!
   performTask(id: Int!): Boolean!
-  registerTradingSignalLog(address: String!, platform: Platform!): TradingSignalLog!
-  removeEventLogsFromTradingSignalLog(eventLogIds: [Int!]!, signalId: Int!): TradingSignalLog!
+  registerTradingSignalLog(
+    address: String!
+    platform: Platform!
+  ): TradingSignalLog!
+  removeEventLogsFromTradingSignalLog(
+    eventLogIds: [Int!]!
+    signalId: Int!
+  ): TradingSignalLog!
   removeFromBlacklist(address: String!): Boolean!
   removeFromWhitelist(address: String!): Boolean!
   removeTagFromWalletAccount(input: ChangeUserTagInput!): WalletAccount!
@@ -532,9 +581,19 @@ type Mutation {
   withdrawAllETH(input: WithdrawAllInput!): Boolean!
   withdrawAllUSDC(input: WithdrawAllInput!): Boolean!
   withdrawAsset(input: AssetInput!): Boolean!
-  withdrawETHToUser(amount: Float!, contractId: Int!, password: String!): Boolean!
-  withdrawPositivePnl(input: WithdrawPositivePnlInput!): ContractExecutionResult!
-  withdrawUSDCToUser(amount: Float!, contractId: Int!, password: String!): Boolean!
+  withdrawETHToUser(
+    amount: Float!
+    contractId: Int!
+    password: String!
+  ): Boolean!
+  withdrawPositivePnl(
+    input: WithdrawPositivePnlInput!
+  ): ContractExecutionResult!
+  withdrawUSDCToUser(
+    amount: Float!
+    contractId: Int!
+    password: String!
+  ): Boolean!
 }
 
 input OpenTradeInput {
@@ -700,16 +759,26 @@ type PnlSnapshotV2InitializedFlag {
 }
 
 type Query {
-  allLogs(after: Int, checked: Boolean!, first: Int!, severity: LogSeverity): LogsConnection!
+  allLogs(
+    after: Int
+    checked: Boolean!
+    first: Int!
+    severity: LogSeverity
+  ): LogsConnection!
   findContract(id: Int!): Contract!
   findStrategy(id: Int!): Strategy
   findStrategyMetadata(key: String!): StrategyMetadata!
+  getALLSLTPs: [SLTPRequest!]!
   getActiveBots: [BotForwardDetails!]!
   getAdaptionStatus: String!
   getAlertTasks: [TaskBackwardDetails!]!
   getAllCategories: [TagCategory!]!
   getAllContracts: [Contract!]!
-  getAllFollowerDetails(after: Int, contractId: Int!, first: Int!): FollowerConnection!
+  getAllFollowerDetails(
+    after: Int
+    contractId: Int!
+    first: Int!
+  ): FollowerConnection!
   getAllFollowers: [Follower!]!
   getAllStrategy: [Strategy!]!
   getAllStrategyMetadata: [StrategyMetadata!]!
@@ -718,24 +787,77 @@ type Query {
   getAllWalletAccounts: [WalletAccount!]!
   getBlacklist: [String!]
   getBotsByStatus(after: Int, first: Int!, status: BotStatus!): BotConnection!
-  getExpertPnlSnapshotsV2(after: Int, platform: Platform!): ExpertPnlSnapshotV2Connection!
+  getExpertPnlSnapshotsV2(
+    after: Int
+    platform: Platform!
+  ): ExpertPnlSnapshotV2Connection!
+  getGnsPrices(
+    fromDate: Date!
+    pairName: String!
+    toDate: Date!
+  ): [GnsPricingRecord!]!
   getLogsSeverityCounts: [SeverityCount!]!
   getMaxOpenMissions: Int!
   getMicroserviceStatus: [MicroserviceStatus!]!
-  getPerpEventLogs(addresses: [String!]!, limit: Int, platform: Platform!): [[PerpTradingEventLog!]!]!
+  getPerpEventLogs(
+    addresses: [String!]!
+    limit: Int
+    platform: Platform!
+  ): [[PerpTradingEventLog!]!]!
   getPlanById(id: Int!): PlanForwardDetails
-  getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
-  getPnlSnapshotV2InitializedFlag(platform: Platform!): [PnlSnapshotV2InitializedFlag!]!
-  getPnlSnapshotsV2(after: Int, dateStr: String!, first: Int!, kind: PnlSnapshotKind!, platform: Platform!): PnlSnapshotV2DetailsConnection!
-  getPnlsnpashotsV2ByPagination(dateStr: String!, kind: PnlSnapshotKind!, limit: Int!, page: Int!, platform: Platform!): PnlSnapshotV2DetailsForPagination!
+  getPlansByStatus(
+    after: Int
+    first: Int!
+    status: PlanStatus!
+  ): PlanConnection!
+  getPnlSnapshotV2InitializedFlag(
+    platform: Platform!
+  ): [PnlSnapshotV2InitializedFlag!]!
+  getPnlSnapshotsV2(
+    after: Int
+    dateStr: String!
+    first: Int!
+    kind: PnlSnapshotKind!
+    platform: Platform!
+  ): PnlSnapshotV2DetailsConnection!
+  getPnlsnpashotsV2ByPagination(
+    dateStr: String!
+    kind: PnlSnapshotKind!
+    limit: Int!
+    page: Int!
+    platform: Platform!
+  ): PnlSnapshotV2DetailsForPagination!
   getServerTime: ServerTime!
   getTradingSignalLogs: [TradingSignalLog!]!
   getWalletAccountByAddress(input: GetUserByAddressInput!): WalletAccount!
   getWhitelist: [String!]
-  getWholeCompressedHistoriesV2(filterParams: [ExportFilter!]!, platform: Platform!, startDate: String!): WholeCompressedHistoriesV2!
-  isPnlSnapshotV2Initialized(dateStr: String!, platform: Platform!): PnlSnapshotV2InitializedFlag
+  getWholeCompressedHistoriesV2(
+    filterParams: [ExportFilter!]!
+    platform: Platform!
+    startDate: String!
+  ): WholeCompressedHistoriesV2!
+  isPnlSnapshotV2Initialized(
+    dateStr: String!
+    platform: Platform!
+  ): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   systemStatus: Boolean!
+}
+
+type SLTPRequest {
+  address: String!
+  condition: String!
+  contractId: Int!
+  createdAt: Date!
+  id: Int!
+  positionKey: String!
+}
+
+input SLTPRequestInput {
+  address: String!
+  condition: String!
+  contractId: Int!
+  positionKey: String!
 }
 
 type ServerTime {

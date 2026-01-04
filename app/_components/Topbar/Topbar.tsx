@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { Chip, Badge } from "@heroui/react";
 import { TaskStatus } from "@/graphql/gql/graphql";
 
@@ -8,6 +7,7 @@ import { useGetAlertTasks } from "@/app-hooks/useTask";
 
 import { TradeButton } from "../FollowerWidgets/TradeButton";
 import { CalculatorButton } from "../FollowerWidgets/CalculatorButton";
+import { ChartButton } from "../FollowerWidgets/ChartButton";
 import WalletConnectButton from "./WalletConnectButton";
 
 export function Topbar() {
@@ -35,6 +35,8 @@ export function Topbar() {
         <TradeButton />
 
         <CalculatorButton />
+
+        <ChartButton />
 
         {createdCount > 0 ? (
           <Badge color="secondary" content={createdCount}>
