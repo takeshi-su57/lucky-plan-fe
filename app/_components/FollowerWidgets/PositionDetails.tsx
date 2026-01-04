@@ -1,10 +1,10 @@
 "use client";
 
-import { Button, useDisclosure } from "@heroui/react";
+import { Button, Divider, useDisclosure } from "@heroui/react";
 import { JsonView, allExpanded, defaultStyles } from "react-json-view-lite";
 import "react-json-view-lite/dist/index.css";
 
-import { useCloseTradeMarket } from "@/app-hooks/useFollower";
+import { useCloseTradeMarket, useGetAllSLTPS } from "@/app-hooks/useFollower";
 import { MissionForwardDetails, Platform } from "@/graphql/gql/graphql";
 import { RightDrawer } from "@/components/modals/RightDrawer";
 import { MissionDetails } from "../MissionWidgets/MissionDetails";
@@ -16,6 +16,9 @@ import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import { UpdateLeverageButton } from "./UpdateLeverageButton";
 import { IncreasePositionButton } from "./IncreasePositionButton";
 import { DecreasePositionButton } from "./DecreasePositionButton";
+import { SLTPEditorButton } from "./SLTPEditorButton";
+import { SLTPCard } from "./SLTPCard";
+import { getGnsPositionKey } from "@/web3/gns/utils";
 
 export type PositionDetailsProps = {
   address: string;
@@ -34,9 +37,16 @@ export function PositionDetails({
 }: PositionDetailsProps) {
   const { isOpen, onOpenChange, onOpen } = useDisclosure();
 
+  const sltps = useGetAllSLTPS(address, index);
+
   const { closeTradeMarket, loading } = useCloseTradeMarket();
 
   const trade = JSON.parse(params);
+
+  const openPrice = trade?.openPrice ? Number(trade.openPrice) / 1e10 : 0;
+  const collateralAmount = trade?.collateralAmount
+    ? Number(trade.collateralAmount) / 1e6
+    : 0;
 
   const handleClosePosition = () => {
     if (trade.pairIndex === undefined) {
@@ -63,83 +73,108 @@ export function PositionDetails({
 
   return (
     <div className="flex flex-col gap-2 border-t border-t-neutral-400/20 py-6">
-      <div className="flex flex-row items-center justify-between gap-4">
-        <div className="flex flex-row items-center gap-4">
-          <ButtonWithConfirm
-            onPress={handleClosePosition}
-            color="danger"
-            className="w-fit"
-            size="sm"
-            isDisabled={loading}
-            isLoading={loading}
-          >
-            Close Position
-          </ButtonWithConfirm>
-
-          <IncreasePositionButton
-            address={address}
-            contractId={contractId}
-            index={index}
-            pairIndex={+trade.pairIndex}
-          />
-
-          <DecreasePositionButton
-            address={address}
-            contractId={contractId}
-            index={index}
-            pairIndex={+trade.pairIndex}
-          />
-
-          <UpdateLeverageButton
-            address={address}
-            contractId={contractId}
-            index={index}
-          />
-
-          <SlUpdateButton
-            address={address}
-            contractId={contractId}
-            index={index}
-          />
-
-          <TpUpdateButton
-            address={address}
-            contractId={contractId}
-            index={index}
-          />
-
-          <WithdrawPositivePnlButton
-            address={address}
-            contractId={contractId}
-            index={index}
+      <div className="flex justify-between gap-4">
+        <div className="flex-1">
+          <JsonView
+            data={trade}
+            shouldExpandNode={allExpanded}
+            style={defaultStyles}
           />
         </div>
 
-        {mission ? (
+        <div className="flex flex-col gap-4">
           <div className="flex flex-row items-center gap-4">
-            <EventLogsModalButton
-              address={mission.tasks[0]?.action?.address}
-              platform={Platform.Gmx}
-              label="GMX Event Logs"
-            />
-            <EventLogsModalButton
-              address={mission.tasks[0]?.action?.address}
-              platform={Platform.Gns}
-              label="GNS Event Logs"
+            <ButtonWithConfirm
+              onPress={handleClosePosition}
+              color="danger"
+              className="w-fit"
+              size="sm"
+              isDisabled={loading}
+              isLoading={loading}
+            >
+              Close Position
+            </ButtonWithConfirm>
+
+            <IncreasePositionButton
+              address={address}
+              contractId={contractId}
+              index={index}
+              pairIndex={+trade.pairIndex}
             />
 
-            <Button onClick={onOpen} color="primary" size="sm">
-              Mission Details
-            </Button>
+            <DecreasePositionButton
+              address={address}
+              contractId={contractId}
+              index={index}
+              pairIndex={+trade.pairIndex}
+            />
+
+            <UpdateLeverageButton
+              address={address}
+              contractId={contractId}
+              index={index}
+            />
+
+            <SlUpdateButton
+              address={address}
+              contractId={contractId}
+              index={index}
+            />
+
+            <TpUpdateButton
+              address={address}
+              contractId={contractId}
+              index={index}
+            />
+
+            <WithdrawPositivePnlButton
+              address={address}
+              contractId={contractId}
+              index={index}
+            />
           </div>
-        ) : null}
-      </div>
 
-      <JsonView
-        data={trade}
-        shouldExpandNode={allExpanded}
-        style={defaultStyles}
-      />
+          <Divider />
+
+          {mission ? (
+            <div className="flex flex-row items-center gap-4">
+              <EventLogsModalButton
+                address={mission.tasks[0]?.action?.address}
+                platform={Platform.Gmx}
+                label="GMX Event Logs"
+              />
+              <EventLogsModalButton
+                address={mission.tasks[0]?.action?.address}
+                platform={Platform.Gns}
+                label="GNS Event Logs"
+              />
+
+              <Button onPress={onOpen} color="primary" size="sm">
+                Mission Details
+              </Button>
+            </div>
+          ) : null}
+
+          <Divider />
+
+          <SLTPEditorButton
+            address={address.toLowerCase()}
+            contractId={contractId}
+            positionKey={getGnsPositionKey(address.toLowerCase(), trade.index)}
+            pairIndex={+trade.pairIndex}
+            isLong={Boolean(trade.long)}
+            leverage={+trade.leverage / 1000}
+            openPrice={openPrice}
+            collateralAmount={collateralAmount}
+          />
+
+          <div className="flex flex-wrap items-start gap-4">
+            {sltps.map((item) => (
+              <SLTPCard key={item.id} id={item.id} condition={item.condition} />
+            ))}
+          </div>
+        </div>
+      </div>
 
       <RightDrawer
         isOpen={isOpen}

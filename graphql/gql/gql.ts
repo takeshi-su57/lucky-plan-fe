@@ -38,6 +38,8 @@ type Documents = {
     "\n  fragment FollowerDetailInfo on FollowerDetail {\n    address\n    accountIndex\n    publicKey\n    userId\n    ethBalance\n    usdcBalance\n    usdcAllowance\n    contractId\n    pnlSnapshots {\n      ...PnlSnapshotV2Info\n    }\n    trades {\n      ...FollowerTradeInfo\n    }\n    pendingOrders {\n      ...FollowerPendingOrderInfo\n    }\n  }\n": typeof types.FollowerDetailInfoFragmentDoc,
     "\n  query getAllFollowers {\n    getAllFollowers {\n      ...FollowerInfo\n    }\n  }\n": typeof types.GetAllFollowersDocument,
     "\n  query getAllFollowerDetails($contractId: Int!, $after: Int, $first: Int!) {\n    getAllFollowerDetails(\n      contractId: $contractId\n      after: $after\n      first: $first\n    ) {\n      edges {\n        cursor\n        node {\n          ...FollowerDetailInfo\n        }\n      }\n      pageInfo {\n        hasNextPage\n        endCursor\n      }\n    }\n  }\n": typeof types.GetAllFollowerDetailsDocument,
+    "\n  query getALLSLTPs {\n    getALLSLTPs {\n      id\n      address\n      contractId\n      positionKey\n      condition\n      createdAt\n    }\n  }\n": typeof types.GetAllsltPsDocument,
+    "\n  query getGnsPrices($pairName: String!, $fromDate: Date!, $toDate: Date!) {\n    getGnsPrices(pairName: $pairName, fromDate: $fromDate, toDate: $toDate) {\n      id\n      pair\n      price\n      date\n    }\n  }\n": typeof types.GetGnsPricesDocument,
     "\n  mutation closeTradeMarket($input: CloseTradeInput!) {\n    closeTradeMarket(input: $input) {\n      message\n      success\n      address\n      contractId\n      index\n    }\n  }\n": typeof types.CloseTradeMarketDocument,
     "\n  mutation openTradeMarket($input: OpenTradeInput!) {\n    openTradeMarket(input: $input) {\n      message\n      success\n      address\n      contractId\n      index\n    }\n  }\n": typeof types.OpenTradeMarketDocument,
     "\n  mutation increasePositionSize($input: IncreasePositionSizeInput!) {\n    increasePositionSize(input: $input) {\n      message\n      success\n      address\n      contractId\n      index\n    }\n  }\n": typeof types.IncreasePositionSizeDocument,
@@ -56,6 +58,8 @@ type Documents = {
     "\n  mutation withdrawAllETH($input: WithdrawAllInput!) {\n    withdrawAllETH(input: $input)\n  }\n": typeof types.WithdrawAllEthDocument,
     "\n  mutation withdrawETHToUser(\n    $amount: Float!\n    $contractId: Int!\n    $password: String!\n  ) {\n    withdrawETHToUser(\n      amount: $amount\n      contractId: $contractId\n      password: $password\n    )\n  }\n": typeof types.WithdrawEthToUserDocument,
     "\n  mutation withdrawUSDCToUser(\n    $amount: Float!\n    $contractId: Int!\n    $password: String!\n  ) {\n    withdrawUSDCToUser(\n      amount: $amount\n      contractId: $contractId\n      password: $password\n    )\n  }\n": typeof types.WithdrawUsdcToUserDocument,
+    "\n  mutation createSLTP($input: SLTPRequestInput!) {\n    createSLTP(input: $input) {\n      id\n      address\n      contractId\n      positionKey\n      condition\n      createdAt\n    }\n  }\n": typeof types.CreateSltpDocument,
+    "\n  mutation deleteSLTP($id: Int!) {\n    deleteSLTP(id: $id) {\n      id\n    }\n  }\n": typeof types.DeleteSltpDocument,
     "\n  fragment PnlSnapshotV2Info on PnlSnapshotV2 {\n    accUSDPnl\n    address\n    dateStr\n    id\n    kind\n    platform\n  }\n": typeof types.PnlSnapshotV2InfoFragmentDoc,
     "\n  fragment PerpTradingEventLogInfo on PerpTradingEventLog {\n    address\n    block\n    contractId\n    date\n    id\n    jsonLog\n    logIndex\n    platform\n    usdPnl\n  }\n": typeof types.PerpTradingEventLogInfoFragmentDoc,
     "\n  fragment PnlSnapshotV2DetailsInfo on PnlSnapshotV2Details {\n    accUSDPnl\n    address\n    dateStr\n    id\n    kind\n    perpTradingEventLogs {\n      ...PerpTradingEventLogInfo\n    }\n    platform\n  }\n": typeof types.PnlSnapshotV2DetailsInfoFragmentDoc,
@@ -175,6 +179,8 @@ const documents: Documents = {
     "\n  fragment FollowerDetailInfo on FollowerDetail {\n    address\n    accountIndex\n    publicKey\n    userId\n    ethBalance\n    usdcBalance\n    usdcAllowance\n    contractId\n    pnlSnapshots {\n      ...PnlSnapshotV2Info\n    }\n    trades {\n      ...FollowerTradeInfo\n    }\n    pendingOrders {\n      ...FollowerPendingOrderInfo\n    }\n  }\n": types.FollowerDetailInfoFragmentDoc,
     "\n  query getAllFollowers {\n    getAllFollowers {\n      ...FollowerInfo\n    }\n  }\n": types.GetAllFollowersDocument,
     "\n  query getAllFollowerDetails($contractId: Int!, $after: Int, $first: Int!) {\n    getAllFollowerDetails(\n      contractId: $contractId\n      after: $after\n      first: $first\n    ) {\n      edges {\n        cursor\n        node {\n          ...FollowerDetailInfo\n        }\n      }\n      pageInfo {\n        hasNextPage\n        endCursor\n      }\n    }\n  }\n": types.GetAllFollowerDetailsDocument,
+    "\n  query getALLSLTPs {\n    getALLSLTPs {\n      id\n      address\n      contractId\n      positionKey\n      condition\n      createdAt\n    }\n  }\n": types.GetAllsltPsDocument,
+    "\n  query getGnsPrices($pairName: String!, $fromDate: Date!, $toDate: Date!) {\n    getGnsPrices(pairName: $pairName, fromDate: $fromDate, toDate: $toDate) {\n      id\n      pair\n      price\n      date\n    }\n  }\n": types.GetGnsPricesDocument,
     "\n  mutation closeTradeMarket($input: CloseTradeInput!) {\n    closeTradeMarket(input: $input) {\n      message\n      success\n      address\n      contractId\n      index\n    }\n  }\n": types.CloseTradeMarketDocument,
     "\n  mutation openTradeMarket($input: OpenTradeInput!) {\n    openTradeMarket(input: $input) {\n      message\n      success\n      address\n      contractId\n      index\n    }\n  }\n": types.OpenTradeMarketDocument,
     "\n  mutation increasePositionSize($input: IncreasePositionSizeInput!) {\n    increasePositionSize(input: $input) {\n      message\n      success\n      address\n      contractId\n      index\n    }\n  }\n": types.IncreasePositionSizeDocument,
@@ -193,6 +199,8 @@ const documents: Documents = {
     "\n  mutation withdrawAllETH($input: WithdrawAllInput!) {\n    withdrawAllETH(input: $input)\n  }\n": types.WithdrawAllEthDocument,
     "\n  mutation withdrawETHToUser(\n    $amount: Float!\n    $contractId: Int!\n    $password: String!\n  ) {\n    withdrawETHToUser(\n      amount: $amount\n      contractId: $contractId\n      password: $password\n    )\n  }\n": types.WithdrawEthToUserDocument,
     "\n  mutation withdrawUSDCToUser(\n    $amount: Float!\n    $contractId: Int!\n    $password: String!\n  ) {\n    withdrawUSDCToUser(\n      amount: $amount\n      contractId: $contractId\n      password: $password\n    )\n  }\n": types.WithdrawUsdcToUserDocument,
+    "\n  mutation createSLTP($input: SLTPRequestInput!) {\n    createSLTP(input: $input) {\n      id\n      address\n      contractId\n      positionKey\n      condition\n      createdAt\n    }\n  }\n": types.CreateSltpDocument,
+    "\n  mutation deleteSLTP($id: Int!) {\n    deleteSLTP(id: $id) {\n      id\n    }\n  }\n": types.DeleteSltpDocument,
     "\n  fragment PnlSnapshotV2Info on PnlSnapshotV2 {\n    accUSDPnl\n    address\n    dateStr\n    id\n    kind\n    platform\n  }\n": types.PnlSnapshotV2InfoFragmentDoc,
     "\n  fragment PerpTradingEventLogInfo on PerpTradingEventLog {\n    address\n    block\n    contractId\n    date\n    id\n    jsonLog\n    logIndex\n    platform\n    usdPnl\n  }\n": types.PerpTradingEventLogInfoFragmentDoc,
     "\n  fragment PnlSnapshotV2DetailsInfo on PnlSnapshotV2Details {\n    accUSDPnl\n    address\n    dateStr\n    id\n    kind\n    perpTradingEventLogs {\n      ...PerpTradingEventLogInfo\n    }\n    platform\n  }\n": types.PnlSnapshotV2DetailsInfoFragmentDoc,
@@ -401,6 +409,14 @@ export function graphql(source: "\n  query getAllFollowerDetails($contractId: In
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  query getALLSLTPs {\n    getALLSLTPs {\n      id\n      address\n      contractId\n      positionKey\n      condition\n      createdAt\n    }\n  }\n"): (typeof documents)["\n  query getALLSLTPs {\n    getALLSLTPs {\n      id\n      address\n      contractId\n      positionKey\n      condition\n      createdAt\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query getGnsPrices($pairName: String!, $fromDate: Date!, $toDate: Date!) {\n    getGnsPrices(pairName: $pairName, fromDate: $fromDate, toDate: $toDate) {\n      id\n      pair\n      price\n      date\n    }\n  }\n"): (typeof documents)["\n  query getGnsPrices($pairName: String!, $fromDate: Date!, $toDate: Date!) {\n    getGnsPrices(pairName: $pairName, fromDate: $fromDate, toDate: $toDate) {\n      id\n      pair\n      price\n      date\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  mutation closeTradeMarket($input: CloseTradeInput!) {\n    closeTradeMarket(input: $input) {\n      message\n      success\n      address\n      contractId\n      index\n    }\n  }\n"): (typeof documents)["\n  mutation closeTradeMarket($input: CloseTradeInput!) {\n    closeTradeMarket(input: $input) {\n      message\n      success\n      address\n      contractId\n      index\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -470,6 +486,14 @@ export function graphql(source: "\n  mutation withdrawETHToUser(\n    $amount: F
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation withdrawUSDCToUser(\n    $amount: Float!\n    $contractId: Int!\n    $password: String!\n  ) {\n    withdrawUSDCToUser(\n      amount: $amount\n      contractId: $contractId\n      password: $password\n    )\n  }\n"): (typeof documents)["\n  mutation withdrawUSDCToUser(\n    $amount: Float!\n    $contractId: Int!\n    $password: String!\n  ) {\n    withdrawUSDCToUser(\n      amount: $amount\n      contractId: $contractId\n      password: $password\n    )\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation createSLTP($input: SLTPRequestInput!) {\n    createSLTP(input: $input) {\n      id\n      address\n      contractId\n      positionKey\n      condition\n      createdAt\n    }\n  }\n"): (typeof documents)["\n  mutation createSLTP($input: SLTPRequestInput!) {\n    createSLTP(input: $input) {\n      id\n      address\n      contractId\n      positionKey\n      condition\n      createdAt\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation deleteSLTP($id: Int!) {\n    deleteSLTP(id: $id) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation deleteSLTP($id: Int!) {\n    deleteSLTP(id: $id) {\n      id\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

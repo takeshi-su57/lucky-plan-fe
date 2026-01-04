@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useApolloClient,
-  useLazyQuery,
-  useMutation,
-  useQuery,
-} from "@apollo/client/react";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client/react";
 
 import { getFragmentData, graphql } from "@/gql/index";
 import { useEffect, useMemo } from "react";
@@ -14,6 +9,8 @@ import { useSnackbar } from "notistack";
 import { useGetAllGnsContracts } from "./useContract";
 import { getMissionForwardDetails } from "./useMission";
 import { PNL_SNAPSHOT_V2_INFO_FRAGMENT_DOCUMENT } from "./useHistory";
+import { SLTPCondition } from "@/types";
+import { getGnsPositionKey } from "@/web3/gns/utils";
 
 export const FOLLOWER_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment FollowerInfo on Follower {
@@ -90,6 +87,30 @@ export const GET_ALL_FOLLOWER_DETAILS_DOCUMENT = graphql(`
         hasNextPage
         endCursor
       }
+    }
+  }
+`);
+
+export const GET_ALL_SLTPS_DOCUMENT = graphql(`
+  query getALLSLTPs {
+    getALLSLTPs {
+      id
+      address
+      contractId
+      positionKey
+      condition
+      createdAt
+    }
+  }
+`);
+
+export const GET_GNS_PRICE_DOCUMENT = graphql(`
+  query getGnsPrices($pairName: String!, $fromDate: Date!, $toDate: Date!) {
+    getGnsPrices(pairName: $pairName, fromDate: $fromDate, toDate: $toDate) {
+      id
+      pair
+      price
+      date
     }
   }
 `);
@@ -289,6 +310,27 @@ export const WITHDRAW_USDC_TO_USER_DOCUMENT = graphql(`
   }
 `);
 
+export const CREATE_SLTP_DOCUMENT = graphql(`
+  mutation createSLTP($input: SLTPRequestInput!) {
+    createSLTP(input: $input) {
+      id
+      address
+      contractId
+      positionKey
+      condition
+      createdAt
+    }
+  }
+`);
+
+export const DELETE_SLTP_DOCUMENT = graphql(`
+  mutation deleteSLTP($id: Int!) {
+    deleteSLTP(id: $id) {
+      id
+    }
+  }
+`);
+
 export function useGetAllFollowers() {
   const { data } = useQuery(GET_ALL_FOLLOWERS_DOCUMENT, {
     variables: {},
@@ -309,26 +351,17 @@ export function useGetAllFollowerDetails(
   contractId: string | null,
   showAll: boolean,
 ) {
-  const [query, { data, loading, error, fetchMore }] = useLazyQuery(
+  const { data, loading, error, fetchMore, refetch } = useQuery(
     GET_ALL_FOLLOWER_DETAILS_DOCUMENT,
     {
-      pollInterval: 30_000,
-    },
-  );
-
-  useEffect(() => {
-    if (contractId === null) {
-      return;
-    }
-
-    query({
       variables: {
-        contractId: +contractId,
+        contractId: +contractId!,
         first: 20,
         after: null,
       },
-    });
-  }, [query, contractId]);
+      skip: !contractId,
+    },
+  );
 
   useEffect(() => {
     if (
@@ -356,8 +389,6 @@ export function useGetAllFollowerDetails(
     if (!data) {
       return [];
     }
-
-    console.log("re-render");
 
     return data.getAllFollowerDetails.edges
       .map((edge) => edge.node)
@@ -403,6 +434,7 @@ export function useGetAllFollowerDetails(
   }, [data]);
 
   return {
+    refetch,
     details,
     loading,
     hasMore: data?.getAllFollowerDetails.pageInfo.hasNextPage,
@@ -920,4 +952,140 @@ export function useDepositAsset() {
   }, [client.cache, error, enqueueSnackbar, data]);
 
   return { depositAsset, loading };
+}
+
+export function useGetGnsPrices(
+  pairName: string,
+  fromDate: Date,
+  toDate: Date,
+) {
+  const { data } = useQuery(GET_GNS_PRICE_DOCUMENT, {
+    variables: {
+      pairName,
+      fromDate,
+      toDate,
+    },
+  });
+
+  return useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return data.getGnsPrices.map((gnsPrice) => ({
+      id: gnsPrice.id,
+      pair: gnsPrice.pair,
+      price: gnsPrice.price,
+      date: new Date(gnsPrice.date),
+    }));
+  }, [data]);
+}
+
+export function useFetchGnsPrices() {
+  const client = useApolloClient();
+
+  const fetchPrices = async (
+    pairName: string,
+    fromDate: Date,
+    toDate: Date,
+  ) => {
+    const { data } = await client.query({
+      query: GET_GNS_PRICE_DOCUMENT,
+      variables: {
+        pairName,
+        fromDate,
+        toDate,
+      },
+      fetchPolicy: "network-only",
+    });
+
+    return (
+      data?.getGnsPrices?.map((gnsPrice) => ({
+        id: gnsPrice.id,
+        pair: gnsPrice.pair,
+        price: gnsPrice.price,
+        date: new Date(gnsPrice.date),
+      })) || []
+    );
+  };
+
+  return fetchPrices;
+}
+
+export function useGetAllSLTPS(address: string, index: number) {
+  const { data } = useQuery(GET_ALL_SLTPS_DOCUMENT, {
+    variables: {},
+  });
+
+  return useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return data.getALLSLTPs
+      .map((sLTP) => ({
+        id: sLTP.id,
+        address: sLTP.address,
+        contractId: sLTP.contractId,
+        positionKey: sLTP.positionKey,
+        condition: JSON.parse(sLTP.condition) as SLTPCondition,
+        createdAt: new Date(sLTP.createdAt),
+      }))
+      .filter(
+        (item) =>
+          item.positionKey === getGnsPositionKey(address.toLowerCase(), index),
+      );
+  }, [address, data, index]);
+}
+
+export function useCreateSLTP() {
+  const [createSLTP, { data, error, loading }] = useMutation(
+    CREATE_SLTP_DOCUMENT,
+    {
+      refetchQueries: [GET_ALL_SLTPS_DOCUMENT],
+    },
+  );
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      if (data.createSLTP) {
+        enqueueSnackbar("Success at create SLTP!", {
+          variant: "success",
+        });
+      } else {
+        enqueueSnackbar("Failed to create SLTP!", {
+          variant: "error",
+        });
+      }
+    }
+  }, [error, enqueueSnackbar, data]);
+
+  return { createSLTP, loading };
+}
+
+export function useDeleteSLTP() {
+  const [deleteSLTP, { data, error, loading }] = useMutation(
+    DELETE_SLTP_DOCUMENT,
+    {
+      refetchQueries: [GET_ALL_SLTPS_DOCUMENT],
+    },
+  );
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data && !error) {
+      if (data.deleteSLTP) {
+        enqueueSnackbar("Success at delete SLTP!", {
+          variant: "success",
+        });
+      } else {
+        enqueueSnackbar("Failed to delete SLTP!", {
+          variant: "error",
+        });
+      }
+    }
+  }, [error, enqueueSnackbar, data]);
+
+  return { deleteSLTP, loading };
 }

@@ -31,7 +31,7 @@ function connectToPriceServer() {
 
   websocket.onclose = () => {
     console.log("websocket disconnect");
-    setTimeout(() => connectToPriceServer(), 60_000);
+    setTimeout(() => connectToPriceServer(), 5_000);
   };
 
   websocket.onerror = () => {
