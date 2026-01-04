@@ -55,7 +55,7 @@ export function NumericInput({
       classNames={classNames}
       isDisabled={isDisabled}
       customInput={Input}
-      allowNegative={false}
+      allowNegative
       decimalScale={12}
       thousandSeparator
       errorMessage={errorMessage}

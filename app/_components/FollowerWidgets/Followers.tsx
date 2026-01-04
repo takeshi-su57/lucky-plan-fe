@@ -9,6 +9,7 @@ import {
   AccordionItem,
   Spinner,
   Switch,
+  Button,
 } from "@heroui/react";
 
 import { ContractStatus } from "@/graphql/gql/graphql";
@@ -26,8 +27,11 @@ export function Followers() {
   const [contractId, setContractId] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
 
-  const { details: followerDetails, loading: followerLoading } =
-    useGetAllFollowerDetails(contractId, showAll);
+  const {
+    details: followerDetails,
+    loading: followerLoading,
+    refetch,
+  } = useGetAllFollowerDetails(contractId, showAll);
 
   return (
     <div className="flex h-[calc(100vh-150px)] flex-col gap-6">
@@ -67,6 +71,8 @@ export function Followers() {
               </AutocompleteItem>
             )}
           </Autocomplete>
+
+          <Button onPress={() => refetch()}>Refetch</Button>
         </div>
 
         {contractId ? (
