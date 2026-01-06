@@ -26,6 +26,23 @@ type Documents = {
     "\n  mutation stopBot($id: Int!) {\n    stopBot(id: $id)\n  }\n": typeof types.StopBotDocument,
     "\n  subscription botCreated($userId: String!) {\n    botCreated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": typeof types.BotCreatedDocument,
     "\n  subscription botUpdated($userId: String!) {\n    botUpdated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": typeof types.BotUpdatedDocument,
+    "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n": typeof types.BacktestTaskInfoFragmentDoc,
+    "\n  fragment BacktestResultInfo on BacktestResult {\n    id\n    taskId\n    configId\n    runDate\n    strategyConfig\n    totalTrades\n    winningTrades\n    losingTrades\n    winRate\n    totalPnlUsdt\n    totalPnlPercent\n    maxDrawdownUsdt\n    maxDrawdownPercent\n    sharpeRatio\n    profitFactor\n    resultFolder\n    createdAt\n  }\n": typeof types.BacktestResultInfoFragmentDoc,
+    "\n  query BacktestComponents {\n    backtestComponents {\n      signals {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      filters {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      risk {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      exits {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n    }\n  }\n": typeof types.BacktestComponentsDocument,
+    "\n  query BacktestTask($id: ID!) {\n    backtestTask(id: $id) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.BacktestTaskDocument,
+    "\n  query BacktestTasks(\n    $status: BacktestTaskStatus\n    $symbol: String\n    $limit: Int\n    $offset: Int\n  ) {\n    backtestTasks(\n      status: $status\n      symbol: $symbol\n      limit: $limit\n      offset: $offset\n    ) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.BacktestTasksDocument,
+    "\n  query BacktestTaskStats {\n    backtestTaskStats {\n      await\n      processing\n      done\n      failed\n    }\n  }\n": typeof types.BacktestTaskStatsDocument,
+    "\n  query BacktestResults(\n    $taskId: ID!\n    $sortBy: String\n    $sortOrder: String\n    $limit: Int\n    $offset: Int\n  ) {\n    backtestResults(\n      taskId: $taskId\n      sortBy: $sortBy\n      sortOrder: $sortOrder\n      limit: $limit\n      offset: $offset\n    ) {\n      ...BacktestResultInfo\n    }\n  }\n": typeof types.BacktestResultsDocument,
+    "\n  query BacktestResultDates($taskId: ID!) {\n    backtestResultDates(taskId: $taskId)\n  }\n": typeof types.BacktestResultDatesDocument,
+    "\n  query BacktestResultFolders($taskId: ID!, $date: String!) {\n    backtestResultFolders(taskId: $taskId, date: $date) {\n      taskId\n      date\n      configId\n      files\n    }\n  }\n": typeof types.BacktestResultFoldersDocument,
+    "\n  query BacktestResultFile(\n    $taskId: ID!\n    $date: String!\n    $configId: String!\n    $fileName: String!\n  ) {\n    backtestResultFile(\n      taskId: $taskId\n      date: $date\n      configId: $configId\n      fileName: $fileName\n    ) {\n      name\n      content\n      contentType\n      size\n      originalSize\n      isCompressed\n    }\n  }\n": typeof types.BacktestResultFileDocument,
+    "\n  mutation CreateBacktestTask($input: CreateBacktestTaskInput!) {\n    createBacktestTask(input: $input) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.CreateBacktestTaskDocument,
+    "\n  mutation CancelBacktestTask($taskId: ID!) {\n    cancelBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.CancelBacktestTaskDocument,
+    "\n  mutation DeleteBacktestTask($taskId: ID!) {\n    deleteBacktestTask(taskId: $taskId)\n  }\n": typeof types.DeleteBacktestTaskDocument,
+    "\n  mutation DeleteBacktestResult($resultId: ID!) {\n    deleteBacktestResult(resultId: $resultId)\n  }\n": typeof types.DeleteBacktestResultDocument,
+    "\n  mutation RetryBacktestTask($taskId: ID!) {\n    retryBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.RetryBacktestTaskDocument,
+    "\n  subscription BacktestTaskUpdated {\n    backtestTaskUpdated {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.BacktestTaskUpdatedDocument,
+    "\n  subscription BacktestResultCreated {\n    backtestResultCreated {\n      ...BacktestResultInfo\n    }\n  }\n": typeof types.BacktestResultCreatedDocument,
     "\n  fragment ContractInfo on Contract {\n    id\n    chainId\n    address\n    backendUrl\n    description\n    isTestnet\n    status\n    fromBlock\n    lastBlockNumber\n    lastLeaderboardBlockNumber\n    platform\n    toBlock\n    version\n  }\n": typeof types.ContractInfoFragmentDoc,
     "\n  query getAllContracts {\n    getAllContracts {\n      ...ContractInfo\n    }\n  }\n": typeof types.GetAllContractsDocument,
     "\n  query getAdaptionStatus {\n    getAdaptionStatus\n  }\n": typeof types.GetAdaptionStatusDocument,
@@ -167,6 +184,23 @@ const documents: Documents = {
     "\n  mutation stopBot($id: Int!) {\n    stopBot(id: $id)\n  }\n": types.StopBotDocument,
     "\n  subscription botCreated($userId: String!) {\n    botCreated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": types.BotCreatedDocument,
     "\n  subscription botUpdated($userId: String!) {\n    botUpdated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": types.BotUpdatedDocument,
+    "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n": types.BacktestTaskInfoFragmentDoc,
+    "\n  fragment BacktestResultInfo on BacktestResult {\n    id\n    taskId\n    configId\n    runDate\n    strategyConfig\n    totalTrades\n    winningTrades\n    losingTrades\n    winRate\n    totalPnlUsdt\n    totalPnlPercent\n    maxDrawdownUsdt\n    maxDrawdownPercent\n    sharpeRatio\n    profitFactor\n    resultFolder\n    createdAt\n  }\n": types.BacktestResultInfoFragmentDoc,
+    "\n  query BacktestComponents {\n    backtestComponents {\n      signals {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      filters {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      risk {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      exits {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n    }\n  }\n": types.BacktestComponentsDocument,
+    "\n  query BacktestTask($id: ID!) {\n    backtestTask(id: $id) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.BacktestTaskDocument,
+    "\n  query BacktestTasks(\n    $status: BacktestTaskStatus\n    $symbol: String\n    $limit: Int\n    $offset: Int\n  ) {\n    backtestTasks(\n      status: $status\n      symbol: $symbol\n      limit: $limit\n      offset: $offset\n    ) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.BacktestTasksDocument,
+    "\n  query BacktestTaskStats {\n    backtestTaskStats {\n      await\n      processing\n      done\n      failed\n    }\n  }\n": types.BacktestTaskStatsDocument,
+    "\n  query BacktestResults(\n    $taskId: ID!\n    $sortBy: String\n    $sortOrder: String\n    $limit: Int\n    $offset: Int\n  ) {\n    backtestResults(\n      taskId: $taskId\n      sortBy: $sortBy\n      sortOrder: $sortOrder\n      limit: $limit\n      offset: $offset\n    ) {\n      ...BacktestResultInfo\n    }\n  }\n": types.BacktestResultsDocument,
+    "\n  query BacktestResultDates($taskId: ID!) {\n    backtestResultDates(taskId: $taskId)\n  }\n": types.BacktestResultDatesDocument,
+    "\n  query BacktestResultFolders($taskId: ID!, $date: String!) {\n    backtestResultFolders(taskId: $taskId, date: $date) {\n      taskId\n      date\n      configId\n      files\n    }\n  }\n": types.BacktestResultFoldersDocument,
+    "\n  query BacktestResultFile(\n    $taskId: ID!\n    $date: String!\n    $configId: String!\n    $fileName: String!\n  ) {\n    backtestResultFile(\n      taskId: $taskId\n      date: $date\n      configId: $configId\n      fileName: $fileName\n    ) {\n      name\n      content\n      contentType\n      size\n      originalSize\n      isCompressed\n    }\n  }\n": types.BacktestResultFileDocument,
+    "\n  mutation CreateBacktestTask($input: CreateBacktestTaskInput!) {\n    createBacktestTask(input: $input) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.CreateBacktestTaskDocument,
+    "\n  mutation CancelBacktestTask($taskId: ID!) {\n    cancelBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.CancelBacktestTaskDocument,
+    "\n  mutation DeleteBacktestTask($taskId: ID!) {\n    deleteBacktestTask(taskId: $taskId)\n  }\n": types.DeleteBacktestTaskDocument,
+    "\n  mutation DeleteBacktestResult($resultId: ID!) {\n    deleteBacktestResult(resultId: $resultId)\n  }\n": types.DeleteBacktestResultDocument,
+    "\n  mutation RetryBacktestTask($taskId: ID!) {\n    retryBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.RetryBacktestTaskDocument,
+    "\n  subscription BacktestTaskUpdated {\n    backtestTaskUpdated {\n      ...BacktestTaskInfo\n    }\n  }\n": types.BacktestTaskUpdatedDocument,
+    "\n  subscription BacktestResultCreated {\n    backtestResultCreated {\n      ...BacktestResultInfo\n    }\n  }\n": types.BacktestResultCreatedDocument,
     "\n  fragment ContractInfo on Contract {\n    id\n    chainId\n    address\n    backendUrl\n    description\n    isTestnet\n    status\n    fromBlock\n    lastBlockNumber\n    lastLeaderboardBlockNumber\n    platform\n    toBlock\n    version\n  }\n": types.ContractInfoFragmentDoc,
     "\n  query getAllContracts {\n    getAllContracts {\n      ...ContractInfo\n    }\n  }\n": types.GetAllContractsDocument,
     "\n  query getAdaptionStatus {\n    getAdaptionStatus\n  }\n": types.GetAdaptionStatusDocument,
@@ -358,6 +392,74 @@ export function graphql(source: "\n  subscription botCreated($userId: String!) {
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  subscription botUpdated($userId: String!) {\n    botUpdated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n"): (typeof documents)["\n  subscription botUpdated($userId: String!) {\n    botUpdated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n"): (typeof documents)["\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment BacktestResultInfo on BacktestResult {\n    id\n    taskId\n    configId\n    runDate\n    strategyConfig\n    totalTrades\n    winningTrades\n    losingTrades\n    winRate\n    totalPnlUsdt\n    totalPnlPercent\n    maxDrawdownUsdt\n    maxDrawdownPercent\n    sharpeRatio\n    profitFactor\n    resultFolder\n    createdAt\n  }\n"): (typeof documents)["\n  fragment BacktestResultInfo on BacktestResult {\n    id\n    taskId\n    configId\n    runDate\n    strategyConfig\n    totalTrades\n    winningTrades\n    losingTrades\n    winRate\n    totalPnlUsdt\n    totalPnlPercent\n    maxDrawdownUsdt\n    maxDrawdownPercent\n    sharpeRatio\n    profitFactor\n    resultFolder\n    createdAt\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BacktestComponents {\n    backtestComponents {\n      signals {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      filters {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      risk {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      exits {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query BacktestComponents {\n    backtestComponents {\n      signals {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      filters {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      risk {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      exits {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BacktestTask($id: ID!) {\n    backtestTask(id: $id) {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  query BacktestTask($id: ID!) {\n    backtestTask(id: $id) {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BacktestTasks(\n    $status: BacktestTaskStatus\n    $symbol: String\n    $limit: Int\n    $offset: Int\n  ) {\n    backtestTasks(\n      status: $status\n      symbol: $symbol\n      limit: $limit\n      offset: $offset\n    ) {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  query BacktestTasks(\n    $status: BacktestTaskStatus\n    $symbol: String\n    $limit: Int\n    $offset: Int\n  ) {\n    backtestTasks(\n      status: $status\n      symbol: $symbol\n      limit: $limit\n      offset: $offset\n    ) {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BacktestTaskStats {\n    backtestTaskStats {\n      await\n      processing\n      done\n      failed\n    }\n  }\n"): (typeof documents)["\n  query BacktestTaskStats {\n    backtestTaskStats {\n      await\n      processing\n      done\n      failed\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BacktestResults(\n    $taskId: ID!\n    $sortBy: String\n    $sortOrder: String\n    $limit: Int\n    $offset: Int\n  ) {\n    backtestResults(\n      taskId: $taskId\n      sortBy: $sortBy\n      sortOrder: $sortOrder\n      limit: $limit\n      offset: $offset\n    ) {\n      ...BacktestResultInfo\n    }\n  }\n"): (typeof documents)["\n  query BacktestResults(\n    $taskId: ID!\n    $sortBy: String\n    $sortOrder: String\n    $limit: Int\n    $offset: Int\n  ) {\n    backtestResults(\n      taskId: $taskId\n      sortBy: $sortBy\n      sortOrder: $sortOrder\n      limit: $limit\n      offset: $offset\n    ) {\n      ...BacktestResultInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BacktestResultDates($taskId: ID!) {\n    backtestResultDates(taskId: $taskId)\n  }\n"): (typeof documents)["\n  query BacktestResultDates($taskId: ID!) {\n    backtestResultDates(taskId: $taskId)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BacktestResultFolders($taskId: ID!, $date: String!) {\n    backtestResultFolders(taskId: $taskId, date: $date) {\n      taskId\n      date\n      configId\n      files\n    }\n  }\n"): (typeof documents)["\n  query BacktestResultFolders($taskId: ID!, $date: String!) {\n    backtestResultFolders(taskId: $taskId, date: $date) {\n      taskId\n      date\n      configId\n      files\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BacktestResultFile(\n    $taskId: ID!\n    $date: String!\n    $configId: String!\n    $fileName: String!\n  ) {\n    backtestResultFile(\n      taskId: $taskId\n      date: $date\n      configId: $configId\n      fileName: $fileName\n    ) {\n      name\n      content\n      contentType\n      size\n      originalSize\n      isCompressed\n    }\n  }\n"): (typeof documents)["\n  query BacktestResultFile(\n    $taskId: ID!\n    $date: String!\n    $configId: String!\n    $fileName: String!\n  ) {\n    backtestResultFile(\n      taskId: $taskId\n      date: $date\n      configId: $configId\n      fileName: $fileName\n    ) {\n      name\n      content\n      contentType\n      size\n      originalSize\n      isCompressed\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateBacktestTask($input: CreateBacktestTaskInput!) {\n    createBacktestTask(input: $input) {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CreateBacktestTask($input: CreateBacktestTaskInput!) {\n    createBacktestTask(input: $input) {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CancelBacktestTask($taskId: ID!) {\n    cancelBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CancelBacktestTask($taskId: ID!) {\n    cancelBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation DeleteBacktestTask($taskId: ID!) {\n    deleteBacktestTask(taskId: $taskId)\n  }\n"): (typeof documents)["\n  mutation DeleteBacktestTask($taskId: ID!) {\n    deleteBacktestTask(taskId: $taskId)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation DeleteBacktestResult($resultId: ID!) {\n    deleteBacktestResult(resultId: $resultId)\n  }\n"): (typeof documents)["\n  mutation DeleteBacktestResult($resultId: ID!) {\n    deleteBacktestResult(resultId: $resultId)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation RetryBacktestTask($taskId: ID!) {\n    retryBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  mutation RetryBacktestTask($taskId: ID!) {\n    retryBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  subscription BacktestTaskUpdated {\n    backtestTaskUpdated {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  subscription BacktestTaskUpdated {\n    backtestTaskUpdated {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  subscription BacktestResultCreated {\n    backtestResultCreated {\n      ...BacktestResultInfo\n    }\n  }\n"): (typeof documents)["\n  subscription BacktestResultCreated {\n    backtestResultCreated {\n      ...BacktestResultInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

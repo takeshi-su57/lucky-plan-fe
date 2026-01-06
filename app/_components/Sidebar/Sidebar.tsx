@@ -52,6 +52,12 @@ export const links = [
     label: "Leaderboard",
     title: "",
     limited: "Public",
+  },
+  {
+    id: "backtest",
+    label: "Backtest",
+    title: "",
+    limited: UserPermission.Trader,
     showDivider: true,
   },
   {

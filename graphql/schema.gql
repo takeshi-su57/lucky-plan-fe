@@ -38,6 +38,71 @@ input AssetInput {
   kind: String!
 }
 
+type BacktestComponents {
+  exits: [ComponentInfo!]!
+  filters: [ComponentInfo!]!
+  risk: [ComponentInfo!]!
+  signals: [ComponentInfo!]!
+}
+
+type BacktestResult {
+  configId: String!
+  createdAt: Date!
+  id: ID!
+  losingTrades: Int!
+  maxDrawdownPercent: Float!
+  maxDrawdownUsdt: Float!
+  profitFactor: Float
+  resultFolder: String!
+  runDate: String!
+  sharpeRatio: Float
+  strategyConfig: JSON!
+  taskId: ID!
+  totalPnlPercent: Float!
+  totalPnlUsdt: Float!
+  totalTrades: Int!
+  winRate: Float!
+  winningTrades: Int!
+}
+
+type BacktestResultSummary {
+  configId: String!
+  id: ID!
+  maxDrawdownPercent: Float!
+  profitFactor: Float
+  runDate: String!
+  sharpeRatio: Float
+  totalPnlUsdt: Float!
+  totalTrades: Int!
+  winRate: Float!
+}
+
+type BacktestTask {
+  completedAt: Date
+  createdAt: Date!
+  currentConfig: String
+  endDate: Date!
+  errorMessage: String
+  id: ID!
+  interval: String!
+  name: String!
+  optimizationParams: JSON!
+  processedConfigs: Int!
+  startDate: Date!
+  startedAt: Date
+  status: BacktestTaskStatus!
+  symbol: String!
+  totalConfigs: Int!
+}
+
+enum BacktestTaskStatus {
+  AWAIT
+  CANCELLED
+  DONE
+  FAILED
+  PROCESSING
+}
+
 type BotBackwardDetails {
   endedAt: Date
   follower: Follower!
@@ -151,6 +216,12 @@ input CloseTradeInput {
   pairIndex: Int!
 }
 
+type ComponentInfo {
+  description: String
+  name: String!
+  params: [ParamInfo!]!
+}
+
 type Contract {
   address: String!
   backendUrl: String
@@ -178,6 +249,19 @@ type ContractExecutionResult {
 enum ContractStatus {
   Dead
   Live
+}
+
+input CreateBacktestTaskInput {
+  endDate: Date!
+  interval: String! = "1m"
+  name: String!
+
+  """
+  Dynamic optimization params. Each param value should be an array of values to test.
+  """
+  optimizationParams: JSON!
+  startDate: Date!
+  symbol: String!
 }
 
 input CreateBotAndStrategyInput {
@@ -352,6 +436,11 @@ input IncreasePositionSizeInput {
   pairIndex: Int!
 }
 
+"""
+JSON custom scalar type
+"""
+scalar JSON
+
 type Log {
   checked: Boolean!
   details: String
@@ -495,6 +584,11 @@ type Mutation {
     isForceBuild: Boolean!
     platform: Platform!
   ): Boolean!
+
+  """
+  Cancel a running or pending backtest task
+  """
+  cancelBacktestTask(taskId: ID!): BacktestTask!
   cancelOrderAfterTimeout(
     input: CancelOrderAfterTimeoutInput!
   ): ContractExecutionResult!
@@ -505,6 +599,11 @@ type Mutation {
   closeMission(id: Int!, isForce: Boolean!): Boolean!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
   createAutoPlan: Boolean!
+
+  """
+  Create a new backtest optimization task
+  """
+  createBacktestTask(input: CreateBacktestTaskInput!): BacktestTask!
   createBot(input: CreateBotInput!): BotBackwardDetails!
   createPlan(createPlanInput: CreatePlanInput!): Plan!
   createSLTP(input: SLTPRequestInput!): SLTPRequest!
@@ -516,6 +615,16 @@ type Mutation {
   decreasePositionSize(
     input: DecreasePositionSizeInput!
   ): ContractExecutionResult!
+
+  """
+  Delete a single backtest result
+  """
+  deleteBacktestResult(resultId: ID!): Boolean!
+
+  """
+  Delete a backtest task and its results
+  """
+  deleteBacktestTask(taskId: ID!): Boolean!
   deleteBot(id: Int!): BotBackwardDetails!
   deleteCategory(id: Int!): TagCategory!
   deletePlan(id: Int!): Int!
@@ -564,6 +673,11 @@ type Mutation {
   removeFromWhitelist(address: String!): Boolean!
   removeTagFromWalletAccount(input: ChangeUserTagInput!): WalletAccount!
   resumeSystem(password: String): Boolean!
+
+  """
+  Retry a failed backtest task
+  """
+  retryBacktestTask(taskId: ID!): BacktestTask!
   startAdaption(contractId: Int!, shouldRestart: Boolean!): Boolean!
   startPlan(id: Int!): Boolean!
   startSubService(service: String!): Boolean!
@@ -605,6 +719,16 @@ input OpenTradeInput {
   pairIndex: Int!
   sl: String!
   tp: String!
+}
+
+type ParamInfo {
+  default: String
+  description: String
+  max: Float
+  min: Float
+  name: String!
+  required: Boolean!
+  type: String!
 }
 
 enum PerpTradeHistoryOperation {
@@ -765,6 +889,62 @@ type Query {
     first: Int!
     severity: LogSeverity
   ): LogsConnection!
+
+  """
+  Get available backtest components with their parameters
+  """
+  backtestComponents: BacktestComponents!
+
+  """
+  Get list of result dates for a task
+  """
+  backtestResultDates(taskId: ID!): [String!]!
+
+  """
+  Get a specific result file
+  """
+  backtestResultFile(
+    configId: String!
+    date: String!
+    fileName: String!
+    taskId: ID!
+  ): ResultFile
+
+  """
+  Get list of result folders for a task and date
+  """
+  backtestResultFolders(date: String!, taskId: ID!): [ResultFolder!]!
+
+  """
+  Get backtest results for a task with sorting and pagination
+  """
+  backtestResults(
+    limit: Int! = 50
+    offset: Int! = 0
+    sortBy: String! = "totalPnlUsdt"
+    sortOrder: String! = "desc"
+    taskId: ID!
+  ): [BacktestResult!]!
+
+  """
+  Get a single backtest task by ID
+  """
+  backtestTask(id: ID!): BacktestTask
+
+  """
+  Get task count statistics by status
+  """
+  backtestTaskStats: TaskStats!
+
+  """
+  List backtest tasks with optional filtering
+  """
+  backtestTasks(
+    limit: Int! = 20
+    offset: Int! = 0
+    status: BacktestTaskStatus
+    symbol: String
+  ): [BacktestTask!]!
   findContract(id: Int!): Contract!
   findStrategy(id: Int!): Strategy
   findStrategyMetadata(key: String!): StrategyMetadata!
@@ -842,6 +1022,31 @@ type Query {
   ): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   systemStatus: Boolean!
+
+  """
+  Get top performing backtest results
+  """
+  topBacktestResults(
+    limit: Int! = 10
+    metric: String! = "totalPnlUsdt"
+    taskId: ID!
+  ): [BacktestResult!]!
+}
+
+type ResultFile {
+  content: String!
+  contentType: String!
+  isCompressed: Boolean!
+  name: String!
+  originalSize: Int!
+  size: Int!
+}
+
+type ResultFolder {
+  configId: String!
+  date: String!
+  files: [String!]!
+  taskId: String!
 }
 
 type SLTPRequest {
@@ -890,6 +1095,15 @@ type StrategyMetadata {
 }
 
 type Subscription {
+  """
+  Subscribe to new backtest results
+  """
+  backtestResultCreated: BacktestResult!
+
+  """
+  Subscribe to backtest task progress updates
+  """
+  backtestTaskUpdated: BacktestTask!
   botCreated(userId: String!): [BotBackwardDetails!]!
   botUpdated(userId: String!): [BotBackwardDetails!]!
   missionCreated(userId: String!): [MissionBackwardDetails!]!
@@ -951,6 +1165,13 @@ type TaskForwardDetails {
   logs: [String!]!
   missionId: Int!
   status: TaskStatus!
+}
+
+type TaskStats {
+  await: Int!
+  done: Int!
+  failed: Int!
+  processing: Int!
 }
 
 enum TaskStatus {

@@ -16,6 +16,8 @@ export type Scalars = {
   Float: { input: number; output: number; }
   /** Date custom scalar type */
   Date: { input: any; output: any; }
+  /** JSON custom scalar type */
+  JSON: { input: any; output: any; }
 };
 
 export type AccPnlV2 = {
@@ -56,6 +58,75 @@ export type AssetInput = {
   contractId: Scalars['Int']['input'];
   kind: Scalars['String']['input'];
 };
+
+export type BacktestComponents = {
+  __typename?: 'BacktestComponents';
+  exits: Array<ComponentInfo>;
+  filters: Array<ComponentInfo>;
+  risk: Array<ComponentInfo>;
+  signals: Array<ComponentInfo>;
+};
+
+export type BacktestResult = {
+  __typename?: 'BacktestResult';
+  configId: Scalars['String']['output'];
+  createdAt: Scalars['Date']['output'];
+  id: Scalars['ID']['output'];
+  losingTrades: Scalars['Int']['output'];
+  maxDrawdownPercent: Scalars['Float']['output'];
+  maxDrawdownUsdt: Scalars['Float']['output'];
+  profitFactor?: Maybe<Scalars['Float']['output']>;
+  resultFolder: Scalars['String']['output'];
+  runDate: Scalars['String']['output'];
+  sharpeRatio?: Maybe<Scalars['Float']['output']>;
+  strategyConfig: Scalars['JSON']['output'];
+  taskId: Scalars['ID']['output'];
+  totalPnlPercent: Scalars['Float']['output'];
+  totalPnlUsdt: Scalars['Float']['output'];
+  totalTrades: Scalars['Int']['output'];
+  winRate: Scalars['Float']['output'];
+  winningTrades: Scalars['Int']['output'];
+};
+
+export type BacktestResultSummary = {
+  __typename?: 'BacktestResultSummary';
+  configId: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  maxDrawdownPercent: Scalars['Float']['output'];
+  profitFactor?: Maybe<Scalars['Float']['output']>;
+  runDate: Scalars['String']['output'];
+  sharpeRatio?: Maybe<Scalars['Float']['output']>;
+  totalPnlUsdt: Scalars['Float']['output'];
+  totalTrades: Scalars['Int']['output'];
+  winRate: Scalars['Float']['output'];
+};
+
+export type BacktestTask = {
+  __typename?: 'BacktestTask';
+  completedAt?: Maybe<Scalars['Date']['output']>;
+  createdAt: Scalars['Date']['output'];
+  currentConfig?: Maybe<Scalars['String']['output']>;
+  endDate: Scalars['Date']['output'];
+  errorMessage?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  interval: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  optimizationParams: Scalars['JSON']['output'];
+  processedConfigs: Scalars['Int']['output'];
+  startDate: Scalars['Date']['output'];
+  startedAt?: Maybe<Scalars['Date']['output']>;
+  status: BacktestTaskStatus;
+  symbol: Scalars['String']['output'];
+  totalConfigs: Scalars['Int']['output'];
+};
+
+export enum BacktestTaskStatus {
+  Await = 'AWAIT',
+  Cancelled = 'CANCELLED',
+  Done = 'DONE',
+  Failed = 'FAILED',
+  Processing = 'PROCESSING'
+}
 
 export type BotBackwardDetails = {
   __typename?: 'BotBackwardDetails';
@@ -177,6 +248,13 @@ export type CloseTradeInput = {
   pairIndex: Scalars['Int']['input'];
 };
 
+export type ComponentInfo = {
+  __typename?: 'ComponentInfo';
+  description?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+  params: Array<ParamInfo>;
+};
+
 export type Contract = {
   __typename?: 'Contract';
   address: Scalars['String']['output'];
@@ -207,6 +285,16 @@ export enum ContractStatus {
   Dead = 'Dead',
   Live = 'Live'
 }
+
+export type CreateBacktestTaskInput = {
+  endDate: Scalars['Date']['input'];
+  interval?: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  /** Dynamic optimization params. Each param value should be an array of values to test. */
+  optimizationParams: Scalars['JSON']['input'];
+  startDate: Scalars['Date']['input'];
+  symbol: Scalars['String']['input'];
+};
 
 export type CreateBotAndStrategyInput = {
   followerAddress?: InputMaybe<Scalars['String']['input']>;
@@ -531,6 +619,8 @@ export type Mutation = {
   allowAuto: User;
   batchCreateBots: Array<BotBackwardDetails>;
   buildPnlSnapshotsV2: Scalars['Boolean']['output'];
+  /** Cancel a running or pending backtest task */
+  cancelBacktestTask: BacktestTask;
   cancelOrderAfterTimeout: ContractExecutionResult;
   changePassword: Scalars['Boolean']['output'];
   changeUserPermission: User;
@@ -539,11 +629,17 @@ export type Mutation = {
   closeMission: Scalars['Boolean']['output'];
   closeTradeMarket: ContractExecutionResult;
   createAutoPlan: Scalars['Boolean']['output'];
+  /** Create a new backtest optimization task */
+  createBacktestTask: BacktestTask;
   createBot: BotBackwardDetails;
   createPlan: Plan;
   createSLTP: SltpRequest;
   decreaseAllowanceToZero: Scalars['Boolean']['output'];
   decreasePositionSize: ContractExecutionResult;
+  /** Delete a single backtest result */
+  deleteBacktestResult: Scalars['Boolean']['output'];
+  /** Delete a backtest task and its results */
+  deleteBacktestTask: Scalars['Boolean']['output'];
   deleteBot: BotBackwardDetails;
   deleteCategory: TagCategory;
   deletePlan: Scalars['Int']['output'];
@@ -572,6 +668,8 @@ export type Mutation = {
   removeFromWhitelist: Scalars['Boolean']['output'];
   removeTagFromWalletAccount: WalletAccount;
   resumeSystem: Scalars['Boolean']['output'];
+  /** Retry a failed backtest task */
+  retryBacktestTask: BacktestTask;
   startAdaption: Scalars['Boolean']['output'];
   startPlan: Scalars['Boolean']['output'];
   startSubService: Scalars['Boolean']['output'];
@@ -636,6 +734,11 @@ export type MutationBuildPnlSnapshotsV2Args = {
 };
 
 
+export type MutationCancelBacktestTaskArgs = {
+  taskId: Scalars['ID']['input'];
+};
+
+
 export type MutationCancelOrderAfterTimeoutArgs = {
   input: CancelOrderAfterTimeoutInput;
 };
@@ -675,6 +778,11 @@ export type MutationCloseTradeMarketArgs = {
 };
 
 
+export type MutationCreateBacktestTaskArgs = {
+  input: CreateBacktestTaskInput;
+};
+
+
 export type MutationCreateBotArgs = {
   input: CreateBotInput;
 };
@@ -699,6 +807,16 @@ export type MutationDecreaseAllowanceToZeroArgs = {
 
 export type MutationDecreasePositionSizeArgs = {
   input: DecreasePositionSizeInput;
+};
+
+
+export type MutationDeleteBacktestResultArgs = {
+  resultId: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteBacktestTaskArgs = {
+  taskId: Scalars['ID']['input'];
 };
 
 
@@ -842,6 +960,11 @@ export type MutationResumeSystemArgs = {
 };
 
 
+export type MutationRetryBacktestTaskArgs = {
+  taskId: Scalars['ID']['input'];
+};
+
+
 export type MutationStartAdaptionArgs = {
   contractId: Scalars['Int']['input'];
   shouldRestart: Scalars['Boolean']['input'];
@@ -956,6 +1079,17 @@ export type OpenTradeInput = {
   pairIndex: Scalars['Int']['input'];
   sl: Scalars['String']['input'];
   tp: Scalars['String']['input'];
+};
+
+export type ParamInfo = {
+  __typename?: 'ParamInfo';
+  default?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  max?: Maybe<Scalars['Float']['output']>;
+  min?: Maybe<Scalars['Float']['output']>;
+  name: Scalars['String']['output'];
+  required: Scalars['Boolean']['output'];
+  type: Scalars['String']['output'];
 };
 
 export enum PerpTradeHistoryOperation {
@@ -1127,6 +1261,22 @@ export type PnlSnapshotV2InitializedFlag = {
 export type Query = {
   __typename?: 'Query';
   allLogs: LogsConnection;
+  /** Get available backtest components with their parameters */
+  backtestComponents: BacktestComponents;
+  /** Get list of result dates for a task */
+  backtestResultDates: Array<Scalars['String']['output']>;
+  /** Get a specific result file */
+  backtestResultFile?: Maybe<ResultFile>;
+  /** Get list of result folders for a task and date */
+  backtestResultFolders: Array<ResultFolder>;
+  /** Get backtest results for a task with sorting and pagination */
+  backtestResults: Array<BacktestResult>;
+  /** Get a single backtest task by ID */
+  backtestTask?: Maybe<BacktestTask>;
+  /** Get task count statistics by status */
+  backtestTaskStats: TaskStats;
+  /** List backtest tasks with optional filtering */
+  backtestTasks: Array<BacktestTask>;
   findContract: Contract;
   findStrategy?: Maybe<Strategy>;
   findStrategyMetadata: StrategyMetadata;
@@ -1164,6 +1314,8 @@ export type Query = {
   isPnlSnapshotV2Initialized?: Maybe<PnlSnapshotV2InitializedFlag>;
   isSafeApp: Scalars['Boolean']['output'];
   systemStatus: Scalars['Boolean']['output'];
+  /** Get top performing backtest results */
+  topBacktestResults: Array<BacktestResult>;
 };
 
 
@@ -1172,6 +1324,47 @@ export type QueryAllLogsArgs = {
   checked: Scalars['Boolean']['input'];
   first: Scalars['Int']['input'];
   severity?: InputMaybe<LogSeverity>;
+};
+
+
+export type QueryBacktestResultDatesArgs = {
+  taskId: Scalars['ID']['input'];
+};
+
+
+export type QueryBacktestResultFileArgs = {
+  configId: Scalars['String']['input'];
+  date: Scalars['String']['input'];
+  fileName: Scalars['String']['input'];
+  taskId: Scalars['ID']['input'];
+};
+
+
+export type QueryBacktestResultFoldersArgs = {
+  date: Scalars['String']['input'];
+  taskId: Scalars['ID']['input'];
+};
+
+
+export type QueryBacktestResultsArgs = {
+  limit?: Scalars['Int']['input'];
+  offset?: Scalars['Int']['input'];
+  sortBy?: Scalars['String']['input'];
+  sortOrder?: Scalars['String']['input'];
+  taskId: Scalars['ID']['input'];
+};
+
+
+export type QueryBacktestTaskArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryBacktestTasksArgs = {
+  limit?: Scalars['Int']['input'];
+  offset?: Scalars['Int']['input'];
+  status?: InputMaybe<BacktestTaskStatus>;
+  symbol?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -1276,6 +1469,31 @@ export type QueryIsPnlSnapshotV2InitializedArgs = {
   platform: Platform;
 };
 
+
+export type QueryTopBacktestResultsArgs = {
+  limit?: Scalars['Int']['input'];
+  metric?: Scalars['String']['input'];
+  taskId: Scalars['ID']['input'];
+};
+
+export type ResultFile = {
+  __typename?: 'ResultFile';
+  content: Scalars['String']['output'];
+  contentType: Scalars['String']['output'];
+  isCompressed: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+  originalSize: Scalars['Int']['output'];
+  size: Scalars['Int']['output'];
+};
+
+export type ResultFolder = {
+  __typename?: 'ResultFolder';
+  configId: Scalars['String']['output'];
+  date: Scalars['String']['output'];
+  files: Array<Scalars['String']['output']>;
+  taskId: Scalars['String']['output'];
+};
+
 export type SltpRequest = {
   __typename?: 'SLTPRequest';
   address: Scalars['String']['output'];
@@ -1328,6 +1546,10 @@ export type StrategyMetadata = {
 
 export type Subscription = {
   __typename?: 'Subscription';
+  /** Subscribe to new backtest results */
+  backtestResultCreated: BacktestResult;
+  /** Subscribe to backtest task progress updates */
+  backtestTaskUpdated: BacktestTask;
   botCreated: Array<BotBackwardDetails>;
   botUpdated: Array<BotBackwardDetails>;
   missionCreated: Array<MissionBackwardDetails>;
@@ -1439,6 +1661,14 @@ export type TaskForwardDetails = {
   logs: Array<Scalars['String']['output']>;
   missionId: Scalars['Int']['output'];
   status: TaskStatus;
+};
+
+export type TaskStats = {
+  __typename?: 'TaskStats';
+  await: Scalars['Int']['output'];
+  done: Scalars['Int']['output'];
+  failed: Scalars['Int']['output'];
+  processing: Scalars['Int']['output'];
 };
 
 export enum TaskStatus {
@@ -1742,6 +1972,142 @@ export type BotUpdatedSubscription = { __typename?: 'Subscription', botUpdated: 
     { __typename?: 'BotBackwardDetails' }
     & { ' $fragmentRefs'?: { 'BotBackwardDetailsInfoFragment': BotBackwardDetailsInfoFragment } }
   )> };
+
+export type BacktestTaskInfoFragment = { __typename?: 'BacktestTask', id: string, name: string, symbol: string, status: BacktestTaskStatus, totalConfigs: number, processedConfigs: number, currentConfig?: string | null, startDate: any, endDate: any, interval: string, optimizationParams: any, createdAt: any, startedAt?: any | null, completedAt?: any | null, errorMessage?: string | null } & { ' $fragmentName'?: 'BacktestTaskInfoFragment' };
+
+export type BacktestResultInfoFragment = { __typename?: 'BacktestResult', id: string, taskId: string, configId: string, runDate: string, strategyConfig: any, totalTrades: number, winningTrades: number, losingTrades: number, winRate: number, totalPnlUsdt: number, totalPnlPercent: number, maxDrawdownUsdt: number, maxDrawdownPercent: number, sharpeRatio?: number | null, profitFactor?: number | null, resultFolder: string, createdAt: any } & { ' $fragmentName'?: 'BacktestResultInfoFragment' };
+
+export type BacktestComponentsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type BacktestComponentsQuery = { __typename?: 'Query', backtestComponents: { __typename?: 'BacktestComponents', signals: Array<{ __typename?: 'ComponentInfo', name: string, description?: string | null, params: Array<{ __typename?: 'ParamInfo', name: string, type: string, required: boolean, default?: string | null, description?: string | null, min?: number | null, max?: number | null }> }>, filters: Array<{ __typename?: 'ComponentInfo', name: string, description?: string | null, params: Array<{ __typename?: 'ParamInfo', name: string, type: string, required: boolean, default?: string | null, description?: string | null, min?: number | null, max?: number | null }> }>, risk: Array<{ __typename?: 'ComponentInfo', name: string, description?: string | null, params: Array<{ __typename?: 'ParamInfo', name: string, type: string, required: boolean, default?: string | null, description?: string | null, min?: number | null, max?: number | null }> }>, exits: Array<{ __typename?: 'ComponentInfo', name: string, description?: string | null, params: Array<{ __typename?: 'ParamInfo', name: string, type: string, required: boolean, default?: string | null, description?: string | null, min?: number | null, max?: number | null }> }> } };
+
+export type BacktestTaskQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type BacktestTaskQuery = { __typename?: 'Query', backtestTask?: (
+    { __typename?: 'BacktestTask' }
+    & { ' $fragmentRefs'?: { 'BacktestTaskInfoFragment': BacktestTaskInfoFragment } }
+  ) | null };
+
+export type BacktestTasksQueryVariables = Exact<{
+  status?: InputMaybe<BacktestTaskStatus>;
+  symbol?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type BacktestTasksQuery = { __typename?: 'Query', backtestTasks: Array<(
+    { __typename?: 'BacktestTask' }
+    & { ' $fragmentRefs'?: { 'BacktestTaskInfoFragment': BacktestTaskInfoFragment } }
+  )> };
+
+export type BacktestTaskStatsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type BacktestTaskStatsQuery = { __typename?: 'Query', backtestTaskStats: { __typename?: 'TaskStats', await: number, processing: number, done: number, failed: number } };
+
+export type BacktestResultsQueryVariables = Exact<{
+  taskId: Scalars['ID']['input'];
+  sortBy?: InputMaybe<Scalars['String']['input']>;
+  sortOrder?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type BacktestResultsQuery = { __typename?: 'Query', backtestResults: Array<(
+    { __typename?: 'BacktestResult' }
+    & { ' $fragmentRefs'?: { 'BacktestResultInfoFragment': BacktestResultInfoFragment } }
+  )> };
+
+export type BacktestResultDatesQueryVariables = Exact<{
+  taskId: Scalars['ID']['input'];
+}>;
+
+
+export type BacktestResultDatesQuery = { __typename?: 'Query', backtestResultDates: Array<string> };
+
+export type BacktestResultFoldersQueryVariables = Exact<{
+  taskId: Scalars['ID']['input'];
+  date: Scalars['String']['input'];
+}>;
+
+
+export type BacktestResultFoldersQuery = { __typename?: 'Query', backtestResultFolders: Array<{ __typename?: 'ResultFolder', taskId: string, date: string, configId: string, files: Array<string> }> };
+
+export type BacktestResultFileQueryVariables = Exact<{
+  taskId: Scalars['ID']['input'];
+  date: Scalars['String']['input'];
+  configId: Scalars['String']['input'];
+  fileName: Scalars['String']['input'];
+}>;
+
+
+export type BacktestResultFileQuery = { __typename?: 'Query', backtestResultFile?: { __typename?: 'ResultFile', name: string, content: string, contentType: string, size: number, originalSize: number, isCompressed: boolean } | null };
+
+export type CreateBacktestTaskMutationVariables = Exact<{
+  input: CreateBacktestTaskInput;
+}>;
+
+
+export type CreateBacktestTaskMutation = { __typename?: 'Mutation', createBacktestTask: (
+    { __typename?: 'BacktestTask' }
+    & { ' $fragmentRefs'?: { 'BacktestTaskInfoFragment': BacktestTaskInfoFragment } }
+  ) };
+
+export type CancelBacktestTaskMutationVariables = Exact<{
+  taskId: Scalars['ID']['input'];
+}>;
+
+
+export type CancelBacktestTaskMutation = { __typename?: 'Mutation', cancelBacktestTask: (
+    { __typename?: 'BacktestTask' }
+    & { ' $fragmentRefs'?: { 'BacktestTaskInfoFragment': BacktestTaskInfoFragment } }
+  ) };
+
+export type DeleteBacktestTaskMutationVariables = Exact<{
+  taskId: Scalars['ID']['input'];
+}>;
+
+
+export type DeleteBacktestTaskMutation = { __typename?: 'Mutation', deleteBacktestTask: boolean };
+
+export type DeleteBacktestResultMutationVariables = Exact<{
+  resultId: Scalars['ID']['input'];
+}>;
+
+
+export type DeleteBacktestResultMutation = { __typename?: 'Mutation', deleteBacktestResult: boolean };
+
+export type RetryBacktestTaskMutationVariables = Exact<{
+  taskId: Scalars['ID']['input'];
+}>;
+
+
+export type RetryBacktestTaskMutation = { __typename?: 'Mutation', retryBacktestTask: (
+    { __typename?: 'BacktestTask' }
+    & { ' $fragmentRefs'?: { 'BacktestTaskInfoFragment': BacktestTaskInfoFragment } }
+  ) };
+
+export type BacktestTaskUpdatedSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type BacktestTaskUpdatedSubscription = { __typename?: 'Subscription', backtestTaskUpdated: (
+    { __typename?: 'BacktestTask' }
+    & { ' $fragmentRefs'?: { 'BacktestTaskInfoFragment': BacktestTaskInfoFragment } }
+  ) };
+
+export type BacktestResultCreatedSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type BacktestResultCreatedSubscription = { __typename?: 'Subscription', backtestResultCreated: (
+    { __typename?: 'BacktestResult' }
+    & { ' $fragmentRefs'?: { 'BacktestResultInfoFragment': BacktestResultInfoFragment } }
+  ) };
 
 export type ContractInfoFragment = { __typename?: 'Contract', id: number, chainId: number, address: string, backendUrl?: string | null, description: string, isTestnet: boolean, status: ContractStatus, fromBlock: number, lastBlockNumber: number, lastLeaderboardBlockNumber: number, platform: Platform, toBlock?: number | null, version: Version } & { ' $fragmentName'?: 'ContractInfoFragment' };
 
@@ -2691,6 +3057,8 @@ export const ContractInfoFragmentDoc = {"kind":"Document","definitions":[{"kind"
 export const FollowerInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Follower"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"accountIndex"}},{"kind":"Field","name":{"kind":"Name","value":"publicKey"}}]}}]} as unknown as DocumentNode<FollowerInfoFragment, unknown>;
 export const StrategyInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StrategyInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Strategy"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"lifeTime"}},{"kind":"Field","name":{"kind":"Name","value":"maxCollateral"}},{"kind":"Field","name":{"kind":"Name","value":"minCollateral"}},{"kind":"Field","name":{"kind":"Name","value":"maxLeverage"}},{"kind":"Field","name":{"kind":"Name","value":"minLeverage"}},{"kind":"Field","name":{"kind":"Name","value":"collateralBaseline"}},{"kind":"Field","name":{"kind":"Name","value":"params"}},{"kind":"Field","name":{"kind":"Name","value":"ratio"}},{"kind":"Field","name":{"kind":"Name","value":"strategyKey"}}]}}]} as unknown as DocumentNode<StrategyInfoFragment, unknown>;
 export const BotDetailsInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BotDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BotDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"leaderAddress"}},{"kind":"Field","name":{"kind":"Name","value":"followerAddress"}},{"kind":"Field","name":{"kind":"Name","value":"strategyId"}},{"kind":"Field","name":{"kind":"Name","value":"planId"}},{"kind":"Field","name":{"kind":"Name","value":"leaderContractId"}},{"kind":"Field","name":{"kind":"Name","value":"leaderCollateralBaseline"}},{"kind":"Field","name":{"kind":"Name","value":"leaderStartedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"leaderEndedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"followerContractId"}},{"kind":"Field","name":{"kind":"Name","value":"followerStartedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"followerEndedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"endedAt"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"followerContract"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ContractInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"leaderContract"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ContractInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"follower"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FollowerInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"strategy"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"StrategyInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ContractInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Contract"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"backendUrl"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"isTestnet"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"fromBlock"}},{"kind":"Field","name":{"kind":"Name","value":"lastBlockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"lastLeaderboardBlockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"toBlock"}},{"kind":"Field","name":{"kind":"Name","value":"version"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Follower"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"accountIndex"}},{"kind":"Field","name":{"kind":"Name","value":"publicKey"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StrategyInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Strategy"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"lifeTime"}},{"kind":"Field","name":{"kind":"Name","value":"maxCollateral"}},{"kind":"Field","name":{"kind":"Name","value":"minCollateral"}},{"kind":"Field","name":{"kind":"Name","value":"maxLeverage"}},{"kind":"Field","name":{"kind":"Name","value":"minLeverage"}},{"kind":"Field","name":{"kind":"Name","value":"collateralBaseline"}},{"kind":"Field","name":{"kind":"Name","value":"params"}},{"kind":"Field","name":{"kind":"Name","value":"ratio"}},{"kind":"Field","name":{"kind":"Name","value":"strategyKey"}}]}}]} as unknown as DocumentNode<BotDetailsInfoFragment, unknown>;
+export const BacktestTaskInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestTaskInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"totalConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"processedConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"currentConfig"}},{"kind":"Field","name":{"kind":"Name","value":"startDate"}},{"kind":"Field","name":{"kind":"Name","value":"endDate"}},{"kind":"Field","name":{"kind":"Name","value":"interval"}},{"kind":"Field","name":{"kind":"Name","value":"optimizationParams"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<BacktestTaskInfoFragment, unknown>;
+export const BacktestResultInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestResultInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestResult"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"taskId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"runDate"}},{"kind":"Field","name":{"kind":"Name","value":"strategyConfig"}},{"kind":"Field","name":{"kind":"Name","value":"totalTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winningTrades"}},{"kind":"Field","name":{"kind":"Name","value":"losingTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winRate"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlUsdt"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlPercent"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdownUsdt"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdownPercent"}},{"kind":"Field","name":{"kind":"Name","value":"sharpeRatio"}},{"kind":"Field","name":{"kind":"Name","value":"profitFactor"}},{"kind":"Field","name":{"kind":"Name","value":"resultFolder"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<BacktestResultInfoFragment, unknown>;
 export const PnlSnapshotV2InfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PnlSnapshotV2Info"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PnlSnapshotV2"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accUSDPnl"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"dateStr"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}}]}}]} as unknown as DocumentNode<PnlSnapshotV2InfoFragment, unknown>;
 export const ActionInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ActionInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Action"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"positionKey"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"args"}},{"kind":"Field","name":{"kind":"Name","value":"blockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"orderInBlock"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<ActionInfoFragment, unknown>;
 export const FollowerActionDetailsInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerActionDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FollowerActionDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"taskId"}},{"kind":"Field","name":{"kind":"Name","value":"actionId"}},{"kind":"Field","name":{"kind":"Name","value":"action"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ActionInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ActionInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Action"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"positionKey"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"args"}},{"kind":"Field","name":{"kind":"Name","value":"blockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"orderInBlock"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<FollowerActionDetailsInfoFragment, unknown>;
@@ -2723,6 +3091,21 @@ export const LiveBotDocument = {"kind":"Document","definitions":[{"kind":"Operat
 export const StopBotDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"stopBot"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"stopBot"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<StopBotMutation, StopBotMutationVariables>;
 export const BotCreatedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"botCreated"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"botCreated"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BotBackwardDetailsInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ContractInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Contract"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"backendUrl"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"isTestnet"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"fromBlock"}},{"kind":"Field","name":{"kind":"Name","value":"lastBlockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"lastLeaderboardBlockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"toBlock"}},{"kind":"Field","name":{"kind":"Name","value":"version"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Follower"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"accountIndex"}},{"kind":"Field","name":{"kind":"Name","value":"publicKey"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StrategyInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Strategy"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"lifeTime"}},{"kind":"Field","name":{"kind":"Name","value":"maxCollateral"}},{"kind":"Field","name":{"kind":"Name","value":"minCollateral"}},{"kind":"Field","name":{"kind":"Name","value":"maxLeverage"}},{"kind":"Field","name":{"kind":"Name","value":"minLeverage"}},{"kind":"Field","name":{"kind":"Name","value":"collateralBaseline"}},{"kind":"Field","name":{"kind":"Name","value":"params"}},{"kind":"Field","name":{"kind":"Name","value":"ratio"}},{"kind":"Field","name":{"kind":"Name","value":"strategyKey"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PlanInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Plan"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledStart"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledEnd"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"endedAt"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BotBackwardDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BotBackwardDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"leaderAddress"}},{"kind":"Field","name":{"kind":"Name","value":"followerAddress"}},{"kind":"Field","name":{"kind":"Name","value":"strategyId"}},{"kind":"Field","name":{"kind":"Name","value":"planId"}},{"kind":"Field","name":{"kind":"Name","value":"leaderContractId"}},{"kind":"Field","name":{"kind":"Name","value":"leaderCollateralBaseline"}},{"kind":"Field","name":{"kind":"Name","value":"leaderStartedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"leaderEndedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"followerContractId"}},{"kind":"Field","name":{"kind":"Name","value":"followerStartedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"followerEndedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"endedAt"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"followerContract"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ContractInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"leaderContract"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ContractInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"follower"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FollowerInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"strategy"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"StrategyInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"plan"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PlanInfo"}}]}}]}}]} as unknown as DocumentNode<BotCreatedSubscription, BotCreatedSubscriptionVariables>;
 export const BotUpdatedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"botUpdated"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"botUpdated"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BotBackwardDetailsInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ContractInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Contract"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"backendUrl"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"isTestnet"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"fromBlock"}},{"kind":"Field","name":{"kind":"Name","value":"lastBlockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"lastLeaderboardBlockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"toBlock"}},{"kind":"Field","name":{"kind":"Name","value":"version"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Follower"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"accountIndex"}},{"kind":"Field","name":{"kind":"Name","value":"publicKey"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StrategyInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Strategy"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"lifeTime"}},{"kind":"Field","name":{"kind":"Name","value":"maxCollateral"}},{"kind":"Field","name":{"kind":"Name","value":"minCollateral"}},{"kind":"Field","name":{"kind":"Name","value":"maxLeverage"}},{"kind":"Field","name":{"kind":"Name","value":"minLeverage"}},{"kind":"Field","name":{"kind":"Name","value":"collateralBaseline"}},{"kind":"Field","name":{"kind":"Name","value":"params"}},{"kind":"Field","name":{"kind":"Name","value":"ratio"}},{"kind":"Field","name":{"kind":"Name","value":"strategyKey"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PlanInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Plan"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledStart"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledEnd"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"endedAt"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BotBackwardDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BotBackwardDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"leaderAddress"}},{"kind":"Field","name":{"kind":"Name","value":"followerAddress"}},{"kind":"Field","name":{"kind":"Name","value":"strategyId"}},{"kind":"Field","name":{"kind":"Name","value":"planId"}},{"kind":"Field","name":{"kind":"Name","value":"leaderContractId"}},{"kind":"Field","name":{"kind":"Name","value":"leaderCollateralBaseline"}},{"kind":"Field","name":{"kind":"Name","value":"leaderStartedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"leaderEndedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"followerContractId"}},{"kind":"Field","name":{"kind":"Name","value":"followerStartedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"followerEndedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"endedAt"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"followerContract"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ContractInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"leaderContract"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ContractInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"follower"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FollowerInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"strategy"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"StrategyInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"plan"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PlanInfo"}}]}}]}}]} as unknown as DocumentNode<BotUpdatedSubscription, BotUpdatedSubscriptionVariables>;
+export const BacktestComponentsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"BacktestComponents"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"backtestComponents"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"signals"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"params"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"required"}},{"kind":"Field","name":{"kind":"Name","value":"default"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"min"}},{"kind":"Field","name":{"kind":"Name","value":"max"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"filters"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"params"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"required"}},{"kind":"Field","name":{"kind":"Name","value":"default"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"min"}},{"kind":"Field","name":{"kind":"Name","value":"max"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"risk"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"params"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"required"}},{"kind":"Field","name":{"kind":"Name","value":"default"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"min"}},{"kind":"Field","name":{"kind":"Name","value":"max"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"exits"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"params"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"required"}},{"kind":"Field","name":{"kind":"Name","value":"default"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"min"}},{"kind":"Field","name":{"kind":"Name","value":"max"}}]}}]}}]}}]}}]} as unknown as DocumentNode<BacktestComponentsQuery, BacktestComponentsQueryVariables>;
+export const BacktestTaskDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"BacktestTask"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"backtestTask"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BacktestTaskInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestTaskInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"totalConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"processedConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"currentConfig"}},{"kind":"Field","name":{"kind":"Name","value":"startDate"}},{"kind":"Field","name":{"kind":"Name","value":"endDate"}},{"kind":"Field","name":{"kind":"Name","value":"interval"}},{"kind":"Field","name":{"kind":"Name","value":"optimizationParams"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<BacktestTaskQuery, BacktestTaskQueryVariables>;
+export const BacktestTasksDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"BacktestTasks"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"status"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestTaskStatus"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"symbol"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"backtestTasks"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"status"},"value":{"kind":"Variable","name":{"kind":"Name","value":"status"}}},{"kind":"Argument","name":{"kind":"Name","value":"symbol"},"value":{"kind":"Variable","name":{"kind":"Name","value":"symbol"}}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BacktestTaskInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestTaskInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"totalConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"processedConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"currentConfig"}},{"kind":"Field","name":{"kind":"Name","value":"startDate"}},{"kind":"Field","name":{"kind":"Name","value":"endDate"}},{"kind":"Field","name":{"kind":"Name","value":"interval"}},{"kind":"Field","name":{"kind":"Name","value":"optimizationParams"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<BacktestTasksQuery, BacktestTasksQueryVariables>;
+export const BacktestTaskStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"BacktestTaskStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"backtestTaskStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"await"}},{"kind":"Field","name":{"kind":"Name","value":"processing"}},{"kind":"Field","name":{"kind":"Name","value":"done"}},{"kind":"Field","name":{"kind":"Name","value":"failed"}}]}}]}}]} as unknown as DocumentNode<BacktestTaskStatsQuery, BacktestTaskStatsQueryVariables>;
+export const BacktestResultsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"BacktestResults"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"taskId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sortBy"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sortOrder"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"backtestResults"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"taskId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"taskId"}}},{"kind":"Argument","name":{"kind":"Name","value":"sortBy"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sortBy"}}},{"kind":"Argument","name":{"kind":"Name","value":"sortOrder"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sortOrder"}}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BacktestResultInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestResultInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestResult"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"taskId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"runDate"}},{"kind":"Field","name":{"kind":"Name","value":"strategyConfig"}},{"kind":"Field","name":{"kind":"Name","value":"totalTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winningTrades"}},{"kind":"Field","name":{"kind":"Name","value":"losingTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winRate"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlUsdt"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlPercent"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdownUsdt"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdownPercent"}},{"kind":"Field","name":{"kind":"Name","value":"sharpeRatio"}},{"kind":"Field","name":{"kind":"Name","value":"profitFactor"}},{"kind":"Field","name":{"kind":"Name","value":"resultFolder"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<BacktestResultsQuery, BacktestResultsQueryVariables>;
+export const BacktestResultDatesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"BacktestResultDates"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"taskId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"backtestResultDates"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"taskId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"taskId"}}}]}]}}]} as unknown as DocumentNode<BacktestResultDatesQuery, BacktestResultDatesQueryVariables>;
+export const BacktestResultFoldersDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"BacktestResultFolders"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"taskId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"date"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"backtestResultFolders"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"taskId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"taskId"}}},{"kind":"Argument","name":{"kind":"Name","value":"date"},"value":{"kind":"Variable","name":{"kind":"Name","value":"date"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"taskId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"files"}}]}}]}}]} as unknown as DocumentNode<BacktestResultFoldersQuery, BacktestResultFoldersQueryVariables>;
+export const BacktestResultFileDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"BacktestResultFile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"taskId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"date"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"configId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"fileName"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"backtestResultFile"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"taskId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"taskId"}}},{"kind":"Argument","name":{"kind":"Name","value":"date"},"value":{"kind":"Variable","name":{"kind":"Name","value":"date"}}},{"kind":"Argument","name":{"kind":"Name","value":"configId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"configId"}}},{"kind":"Argument","name":{"kind":"Name","value":"fileName"},"value":{"kind":"Variable","name":{"kind":"Name","value":"fileName"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"content"}},{"kind":"Field","name":{"kind":"Name","value":"contentType"}},{"kind":"Field","name":{"kind":"Name","value":"size"}},{"kind":"Field","name":{"kind":"Name","value":"originalSize"}},{"kind":"Field","name":{"kind":"Name","value":"isCompressed"}}]}}]}}]} as unknown as DocumentNode<BacktestResultFileQuery, BacktestResultFileQueryVariables>;
+export const CreateBacktestTaskDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateBacktestTask"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateBacktestTaskInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createBacktestTask"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BacktestTaskInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestTaskInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"totalConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"processedConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"currentConfig"}},{"kind":"Field","name":{"kind":"Name","value":"startDate"}},{"kind":"Field","name":{"kind":"Name","value":"endDate"}},{"kind":"Field","name":{"kind":"Name","value":"interval"}},{"kind":"Field","name":{"kind":"Name","value":"optimizationParams"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<CreateBacktestTaskMutation, CreateBacktestTaskMutationVariables>;
+export const CancelBacktestTaskDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CancelBacktestTask"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"taskId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cancelBacktestTask"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"taskId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"taskId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BacktestTaskInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestTaskInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"totalConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"processedConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"currentConfig"}},{"kind":"Field","name":{"kind":"Name","value":"startDate"}},{"kind":"Field","name":{"kind":"Name","value":"endDate"}},{"kind":"Field","name":{"kind":"Name","value":"interval"}},{"kind":"Field","name":{"kind":"Name","value":"optimizationParams"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<CancelBacktestTaskMutation, CancelBacktestTaskMutationVariables>;
+export const DeleteBacktestTaskDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteBacktestTask"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"taskId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteBacktestTask"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"taskId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"taskId"}}}]}]}}]} as unknown as DocumentNode<DeleteBacktestTaskMutation, DeleteBacktestTaskMutationVariables>;
+export const DeleteBacktestResultDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteBacktestResult"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resultId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteBacktestResult"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"resultId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resultId"}}}]}]}}]} as unknown as DocumentNode<DeleteBacktestResultMutation, DeleteBacktestResultMutationVariables>;
+export const RetryBacktestTaskDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RetryBacktestTask"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"taskId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"retryBacktestTask"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"taskId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"taskId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BacktestTaskInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestTaskInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"totalConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"processedConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"currentConfig"}},{"kind":"Field","name":{"kind":"Name","value":"startDate"}},{"kind":"Field","name":{"kind":"Name","value":"endDate"}},{"kind":"Field","name":{"kind":"Name","value":"interval"}},{"kind":"Field","name":{"kind":"Name","value":"optimizationParams"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<RetryBacktestTaskMutation, RetryBacktestTaskMutationVariables>;
+export const BacktestTaskUpdatedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"BacktestTaskUpdated"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"backtestTaskUpdated"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BacktestTaskInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestTaskInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"totalConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"processedConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"currentConfig"}},{"kind":"Field","name":{"kind":"Name","value":"startDate"}},{"kind":"Field","name":{"kind":"Name","value":"endDate"}},{"kind":"Field","name":{"kind":"Name","value":"interval"}},{"kind":"Field","name":{"kind":"Name","value":"optimizationParams"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<BacktestTaskUpdatedSubscription, BacktestTaskUpdatedSubscriptionVariables>;
+export const BacktestResultCreatedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"BacktestResultCreated"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"backtestResultCreated"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BacktestResultInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestResultInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestResult"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"taskId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"runDate"}},{"kind":"Field","name":{"kind":"Name","value":"strategyConfig"}},{"kind":"Field","name":{"kind":"Name","value":"totalTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winningTrades"}},{"kind":"Field","name":{"kind":"Name","value":"losingTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winRate"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlUsdt"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlPercent"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdownUsdt"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdownPercent"}},{"kind":"Field","name":{"kind":"Name","value":"sharpeRatio"}},{"kind":"Field","name":{"kind":"Name","value":"profitFactor"}},{"kind":"Field","name":{"kind":"Name","value":"resultFolder"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<BacktestResultCreatedSubscription, BacktestResultCreatedSubscriptionVariables>;
 export const GetAllContractsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getAllContracts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getAllContracts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ContractInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ContractInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Contract"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"backendUrl"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"isTestnet"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"fromBlock"}},{"kind":"Field","name":{"kind":"Name","value":"lastBlockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"lastLeaderboardBlockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"toBlock"}},{"kind":"Field","name":{"kind":"Name","value":"version"}}]}}]} as unknown as DocumentNode<GetAllContractsQuery, GetAllContractsQueryVariables>;
 export const GetAdaptionStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getAdaptionStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getAdaptionStatus"}}]}}]} as unknown as DocumentNode<GetAdaptionStatusQuery, GetAdaptionStatusQueryVariables>;
 export const DisableContractDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"disableContract"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"contractId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"disableContract"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"contractId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"contractId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ContractInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ContractInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Contract"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"backendUrl"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"isTestnet"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"fromBlock"}},{"kind":"Field","name":{"kind":"Name","value":"lastBlockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"lastLeaderboardBlockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"toBlock"}},{"kind":"Field","name":{"kind":"Name","value":"version"}}]}}]} as unknown as DocumentNode<DisableContractMutation, DisableContractMutationVariables>;
