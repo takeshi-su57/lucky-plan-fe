@@ -25,7 +25,10 @@ export type BacktestResultCardProps = {
   onSelect: () => void;
 };
 
-export function BacktestResultCard({ result, onSelect }: BacktestResultCardProps) {
+export function BacktestResultCard({
+  result,
+  onSelect,
+}: BacktestResultCardProps) {
   const { file: chartFile, loading: chartLoading } = useBacktestResultFile(
     result.taskId,
     result.runDate,
@@ -54,7 +57,7 @@ export function BacktestResultCard({ result, onSelect }: BacktestResultCardProps
     <Card
       isPressable
       onPress={onSelect}
-      className="border border-neutral-800 bg-neutral-900/50 transition-colors hover:border-neutral-700"
+      className="w-full border border-neutral-800 bg-neutral-900/50 transition-colors hover:border-neutral-700"
     >
       <CardBody className="flex flex-col gap-3 p-0">
         {/* Chart Hero Section */}
@@ -81,7 +84,7 @@ export function BacktestResultCard({ result, onSelect }: BacktestResultCardProps
         {/* Info Section */}
         <div className="flex flex-col gap-2 px-4 pb-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono text-neutral-400">
+            <span className="font-mono text-xs text-neutral-400">
               #{result.configId.slice(0, 8)}
             </span>
             <span className="text-xs text-neutral-500">{result.runDate}</span>

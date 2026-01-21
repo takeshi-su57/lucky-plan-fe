@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Select, SelectItem, Spinner, Input } from "@heroui/react";
-import { FiSearch } from "react-icons/fi";
+import { Select, SelectItem, Spinner, Input, Button } from "@heroui/react";
+import { FiSearch, FiRefreshCw } from "react-icons/fi";
 
 import { BacktestTaskStatus } from "@/graphql/gql/graphql";
 import {
@@ -14,10 +14,6 @@ import {
 } from "@/app-hooks/useBacktest";
 import { BacktestTaskRow } from "./BacktestTaskRow";
 
-export type BacktestTaskListProps = {
-  onSelectTask: (taskId: string) => void;
-};
-
 const statusOptions = [
   { key: "all", label: "All Status" },
   { key: BacktestTaskStatus.Await, label: "Awaiting" },
@@ -27,12 +23,14 @@ const statusOptions = [
   { key: BacktestTaskStatus.Cancelled, label: "Cancelled" },
 ];
 
-export function BacktestTaskList({ onSelectTask }: BacktestTaskListProps) {
+export function BacktestTaskList() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [symbolFilter, setSymbolFilter] = useState<string>("");
   const [actionTaskId, setActionTaskId] = useState<string | null>(null);
 
-  const { stats } = useBacktestTaskStats();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const { stats, refetch: refetchStats } = useBacktestTaskStats();
   const { tasks, loading, refetch } = useBacktestTasks({
     status:
       statusFilter === "all" ? undefined : (statusFilter as BacktestTaskStatus),
@@ -55,7 +53,6 @@ export function BacktestTaskList({ onSelectTask }: BacktestTaskListProps) {
     setActionTaskId(taskId);
     await deleteTask({ variables: { taskId } });
     setActionTaskId(null);
-    refetch();
   };
 
   const handleRetry = async (taskId: string) => {
@@ -63,6 +60,12 @@ export function BacktestTaskList({ onSelectTask }: BacktestTaskListProps) {
     await retryTask({ variables: { taskId } });
     setActionTaskId(null);
     refetch();
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await Promise.all([refetch(), refetchStats()]);
+    setIsRefreshing(false);
   };
 
   return (
@@ -107,6 +110,18 @@ export function BacktestTaskList({ onSelectTask }: BacktestTaskListProps) {
           startContent={<FiSearch className="text-neutral-400" />}
           className="w-48"
         />
+
+        <Button
+          isIconOnly
+          size="sm"
+          variant="flat"
+          onPress={handleRefresh}
+          isLoading={isRefreshing}
+        >
+          <FiRefreshCw
+            className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+          />
+        </Button>
       </div>
 
       {/* Task List */}
@@ -141,8 +156,11 @@ export function BacktestTaskList({ onSelectTask }: BacktestTaskListProps) {
                 startedAt: task.startedAt,
                 completedAt: task.completedAt,
                 errorMessage: task.errorMessage,
+                searchStrategy: task.searchStrategy,
+                optimizationMetrics: task.optimizationMetrics,
+                trials: task.trials,
+                bestConfigIds: task.bestConfigIds,
               }}
-              onView={onSelectTask}
               onCancel={handleCancel}
               onDelete={handleDelete}
               onRetry={handleRetry}

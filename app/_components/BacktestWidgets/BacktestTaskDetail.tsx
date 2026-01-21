@@ -1,11 +1,28 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Button, Select, SelectItem, Spinner } from "@heroui/react";
-import { FiArrowLeft, FiRefreshCw } from "react-icons/fi";
+import { Button, Select, SelectItem, Spinner, Chip, Link } from "@heroui/react";
+import {
+  FiArrowLeft,
+  FiRefreshCw,
+  FiChevronLeft,
+  FiChevronRight,
+  FiPlay,
+  FiSquare,
+} from "react-icons/fi";
 import dayjs from "dayjs";
 
-import { useBacktestTask, useBacktestResults } from "@/app-hooks/useBacktest";
+import {
+  useBacktestTask,
+  useBacktestResults,
+  useOptunaStudyDates,
+  useOptunaDashboardStatus,
+  useStartOptunaDashboard,
+  useStopOptunaDashboard,
+  useBestBacktestResults,
+} from "@/app-hooks/useBacktest";
+
+import { BestConfigCarousel } from "./BestConfigCarousel";
 import { BacktestTaskStatusBadge } from "./BacktestTaskStatusBadge";
 import { BacktestTaskProgress } from "./BacktestTaskProgress";
 import { BacktestResultGrid } from "./BacktestResultGrid";
@@ -37,6 +54,9 @@ export function BacktestTaskDetail({
   const [sortOrder, setSortOrder] = useState("desc");
   const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
   const [offset, setOffset] = useState(0);
+  const [selectedStudyDate, setSelectedStudyDate] = useState<string | null>(
+    null,
+  );
   const limit = 20;
 
   const {
@@ -55,18 +75,62 @@ export function BacktestTaskDetail({
     offset,
   });
 
+  // Optuna-related hooks
+  const isOptuna = task?.searchStrategy === "optuna";
+  const hasBestConfigs = task?.bestConfigIds && task.bestConfigIds.length > 0;
+
+  // Fetch best results for bestConfigIds
+  const { bestResults, loading: bestResultsLoading } = useBestBacktestResults(
+    hasBestConfigs ? taskId : null,
+    task?.bestConfigIds ?? null,
+  );
+
+  const { dates: studyDates, loading: studyDatesLoading } = useOptunaStudyDates(
+    isOptuna ? taskId : null,
+  );
+  const { status: dashboardStatus, refetch: refetchDashboardStatus } =
+    useOptunaDashboardStatus();
+  const { startDashboard, loading: startingDashboard } =
+    useStartOptunaDashboard();
+  const { stopDashboard, loading: stoppingDashboard } =
+    useStopOptunaDashboard();
+
+  const isDashboardRunningForThisTask =
+    dashboardStatus?.running && dashboardStatus?.taskId === taskId;
+
   const handleRefresh = async () => {
     setOffset(0);
     await Promise.all([refetchTask(), refetchResults()]);
+  };
+
+  const handleStartDashboard = async () => {
+    if (!selectedStudyDate) return;
+    await startDashboard({
+      variables: { taskId, date: selectedStudyDate, port: 8080 },
+    });
+    await refetchDashboardStatus();
+  };
+
+  const handleStopDashboard = async () => {
+    await stopDashboard();
+    await refetchDashboardStatus();
   };
 
   const selectedResult = useMemo(() => {
     return results.find((r) => r.id === selectedResultId);
   }, [results, selectedResultId]);
 
-  const handleLoadMore = () => {
+  const handlePrevPage = () => {
+    setOffset((prev) => Math.max(0, prev - limit));
+  };
+
+  const handleNextPage = () => {
     setOffset((prev) => prev + limit);
   };
+
+  const currentPage = Math.floor(offset / limit) + 1;
+  const hasPrevPage = offset > 0;
+  const hasNextPage = results.length === limit;
 
   if (taskLoading) {
     return (
@@ -98,6 +162,15 @@ export function BacktestTaskDetail({
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold text-white">{task.name}</h2>
             <BacktestTaskStatusBadge status={task.status} />
+            {task.searchStrategy && (
+              <Chip
+                size="sm"
+                variant="flat"
+                color={isOptuna ? "secondary" : "default"}
+              >
+                {isOptuna ? "Optuna" : "Grid"}
+              </Chip>
+            )}
           </div>
           <div className="flex items-center gap-3 text-sm text-neutral-400">
             <span className="font-mono">{task.symbol}</span>
@@ -108,6 +181,16 @@ export function BacktestTaskDetail({
             </span>
             <span>|</span>
             <span>{task.interval}</span>
+            {isOptuna && task.optimizationMetrics && task.optimizationMetrics.length > 0 && (
+              <>
+                <span>|</span>
+                <span className="text-secondary-400">
+                  {task.optimizationMetrics.length > 3
+                    ? `${task.optimizationMetrics.slice(0, 3).join(", ")}...`
+                    : task.optimizationMetrics.join(", ")}
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -129,6 +212,145 @@ export function BacktestTaskDetail({
           </p>
         )}
       </div>
+
+      {/* Best Configs Carousel */}
+      {hasBestConfigs && bestResults.length > 0 && (
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-success-400 text-sm font-semibold">
+              Best Configurations (Pareto Optimal)
+            </h3>
+            <Chip
+              size="sm"
+              variant="flat"
+              color="success"
+              classNames={{ base: "h-5" }}
+            >
+              {bestResults.length} config{bestResults.length > 1 ? "s" : ""}
+            </Chip>
+          </div>
+
+          <div className="h-[320px] w-[400px]">
+            <BestConfigCarousel
+              results={bestResults}
+              variant="full"
+              onSelectResult={setSelectedResultId}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Best Config Loading State */}
+      {hasBestConfigs && bestResultsLoading && (
+        <div className="flex flex-col gap-3">
+          <h3 className="text-success-400 text-sm font-semibold">
+            Best Configurations
+          </h3>
+          <div className="flex items-center gap-2 text-sm text-neutral-400">
+            <Spinner size="sm" />
+            <span>Loading best configurations...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Optuna Info Panel */}
+      {isOptuna && (
+        <div className="border-secondary-800 rounded-lg border p-4">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-secondary-300 text-sm font-semibold">
+                Optuna Optimization
+              </h3>
+              {task.trials && (
+                <span className="text-sm text-neutral-400">
+                  {task.trials} trials
+                </span>
+              )}
+            </div>
+
+            {/* Dashboard Controls */}
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-medium text-neutral-400">
+                Optuna Dashboard
+              </span>
+              <div className="flex items-center gap-3">
+                {studyDatesLoading ? (
+                  <Spinner size="sm" />
+                ) : studyDates.length > 0 ? (
+                  <>
+                    <Select
+                      size="sm"
+                      variant="bordered"
+                      placeholder="Select study date"
+                      selectedKeys={
+                        selectedStudyDate ? [selectedStudyDate] : []
+                      }
+                      onSelectionChange={(keys) => {
+                        const date = Array.from(keys)[0] as string;
+                        setSelectedStudyDate(date || null);
+                      }}
+                      className="w-40"
+                      isDisabled={isDashboardRunningForThisTask}
+                    >
+                      {studyDates.map((date) => (
+                        <SelectItem key={date}>{date}</SelectItem>
+                      ))}
+                    </Select>
+
+                    {isDashboardRunningForThisTask ? (
+                      <>
+                        <Button
+                          size="sm"
+                          color="danger"
+                          variant="flat"
+                          startContent={<FiSquare className="h-3 w-3" />}
+                          isLoading={stoppingDashboard}
+                          onPress={handleStopDashboard}
+                        >
+                          Stop
+                        </Button>
+                        {dashboardStatus?.url && (
+                          <Link
+                            href={dashboardStatus.url}
+                            isExternal
+                            showAnchorIcon
+                            className="text-secondary-400 text-sm"
+                          >
+                            Open Dashboard
+                          </Link>
+                        )}
+                      </>
+                    ) : (
+                      <Button
+                        size="sm"
+                        color="secondary"
+                        variant="flat"
+                        startContent={<FiPlay className="h-3 w-3" />}
+                        isLoading={startingDashboard}
+                        isDisabled={!selectedStudyDate}
+                        onPress={handleStartDashboard}
+                      >
+                        Start Dashboard
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-xs text-neutral-500">
+                    No study data available yet
+                  </span>
+                )}
+
+                {dashboardStatus?.running &&
+                  dashboardStatus?.taskId !== taskId && (
+                    <span className="text-warning-400 text-xs">
+                      Dashboard is running for another task
+                    </span>
+                  )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sort Controls */}
       <div className="flex items-center gap-4">
@@ -167,7 +389,7 @@ export function BacktestTaskDetail({
         </Select>
 
         <span className="text-sm text-neutral-400">
-          Showing {results.length} results
+          Page {currentPage} · Showing {results.length} results
         </span>
 
         <div className="ml-auto">
@@ -199,14 +421,28 @@ export function BacktestTaskDetail({
             onSelectResult={setSelectedResultId}
           />
 
-          {results.length >= offset + limit && (
-            <div className="flex justify-center">
+          {(hasPrevPage || hasNextPage) && (
+            <div className="flex items-center justify-center gap-2">
               <Button
+                size="sm"
                 variant="flat"
-                onPress={handleLoadMore}
-                isLoading={resultsLoading}
+                startContent={<FiChevronLeft className="h-4 w-4" />}
+                onPress={handlePrevPage}
+                isDisabled={!hasPrevPage || resultsLoading}
               >
-                Load More
+                Previous
+              </Button>
+              <span className="px-3 text-sm text-neutral-400">
+                Page {currentPage}
+              </span>
+              <Button
+                size="sm"
+                variant="flat"
+                endContent={<FiChevronRight className="h-4 w-4" />}
+                onPress={handleNextPage}
+                isDisabled={!hasNextPage || resultsLoading}
+              >
+                Next
               </Button>
             </div>
           )}

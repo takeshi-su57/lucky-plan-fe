@@ -10,4 +10,6 @@ export * from "./BacktestChartView";
 export * from "./BacktestConfigView";
 export * from "./BacktestTradeTable";
 export * from "./BacktestSummaryView";
-export * from "./CreateBacktestTaskDrawer";
+export * from "./BestConfigCarousel";
+export * from "./CreateGridBacktestTaskDrawer";
+export * from "./CreateOptunaBacktestTaskDrawer";

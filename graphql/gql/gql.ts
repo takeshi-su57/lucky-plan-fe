@@ -26,7 +26,7 @@ type Documents = {
     "\n  mutation stopBot($id: Int!) {\n    stopBot(id: $id)\n  }\n": typeof types.StopBotDocument,
     "\n  subscription botCreated($userId: String!) {\n    botCreated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": typeof types.BotCreatedDocument,
     "\n  subscription botUpdated($userId: String!) {\n    botUpdated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": typeof types.BotUpdatedDocument,
-    "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n": typeof types.BacktestTaskInfoFragmentDoc,
+    "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    searchStrategy\n    optimizationMetrics\n    trials\n    bestConfigIds\n    optunaStudyPath\n    optimizerPid\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n": typeof types.BacktestTaskInfoFragmentDoc,
     "\n  fragment BacktestResultInfo on BacktestResult {\n    id\n    taskId\n    configId\n    runDate\n    strategyConfig\n    totalTrades\n    winningTrades\n    losingTrades\n    winRate\n    totalPnlUsdt\n    totalPnlPercent\n    maxDrawdownUsdt\n    maxDrawdownPercent\n    sharpeRatio\n    profitFactor\n    resultFolder\n    createdAt\n  }\n": typeof types.BacktestResultInfoFragmentDoc,
     "\n  query BacktestComponents {\n    backtestComponents {\n      signals {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      filters {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      risk {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      exits {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n    }\n  }\n": typeof types.BacktestComponentsDocument,
     "\n  query BacktestTask($id: ID!) {\n    backtestTask(id: $id) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.BacktestTaskDocument,
@@ -36,11 +36,16 @@ type Documents = {
     "\n  query BacktestResultDates($taskId: ID!) {\n    backtestResultDates(taskId: $taskId)\n  }\n": typeof types.BacktestResultDatesDocument,
     "\n  query BacktestResultFolders($taskId: ID!, $date: String!) {\n    backtestResultFolders(taskId: $taskId, date: $date) {\n      taskId\n      date\n      configId\n      files\n    }\n  }\n": typeof types.BacktestResultFoldersDocument,
     "\n  query BacktestResultFile(\n    $taskId: ID!\n    $date: String!\n    $configId: String!\n    $fileName: String!\n  ) {\n    backtestResultFile(\n      taskId: $taskId\n      date: $date\n      configId: $configId\n      fileName: $fileName\n    ) {\n      name\n      content\n      contentType\n      size\n      originalSize\n      isCompressed\n    }\n  }\n": typeof types.BacktestResultFileDocument,
+    "\n  query TopBacktestResults($taskId: ID!, $metric: String, $limit: Int) {\n    topBacktestResults(taskId: $taskId, metric: $metric, limit: $limit) {\n      ...BacktestResultInfo\n    }\n  }\n": typeof types.TopBacktestResultsDocument,
+    "\n  query OptunaDashboardStatus {\n    optunaDashboardStatus {\n      running\n      taskId\n      url\n    }\n  }\n": typeof types.OptunaDashboardStatusDocument,
+    "\n  query OptunaStudyDates($taskId: ID!) {\n    optunaStudyDates(taskId: $taskId)\n  }\n": typeof types.OptunaStudyDatesDocument,
     "\n  mutation CreateBacktestTask($input: CreateBacktestTaskInput!) {\n    createBacktestTask(input: $input) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.CreateBacktestTaskDocument,
     "\n  mutation CancelBacktestTask($taskId: ID!) {\n    cancelBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.CancelBacktestTaskDocument,
     "\n  mutation DeleteBacktestTask($taskId: ID!) {\n    deleteBacktestTask(taskId: $taskId)\n  }\n": typeof types.DeleteBacktestTaskDocument,
     "\n  mutation DeleteBacktestResult($resultId: ID!) {\n    deleteBacktestResult(resultId: $resultId)\n  }\n": typeof types.DeleteBacktestResultDocument,
     "\n  mutation RetryBacktestTask($taskId: ID!) {\n    retryBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.RetryBacktestTaskDocument,
+    "\n  mutation StartOptunaDashboard($taskId: ID!, $date: String!, $port: Int) {\n    startOptunaDashboard(taskId: $taskId, date: $date, port: $port) {\n      running\n      taskId\n      url\n    }\n  }\n": typeof types.StartOptunaDashboardDocument,
+    "\n  mutation StopOptunaDashboard {\n    stopOptunaDashboard\n  }\n": typeof types.StopOptunaDashboardDocument,
     "\n  subscription BacktestTaskUpdated {\n    backtestTaskUpdated {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.BacktestTaskUpdatedDocument,
     "\n  subscription BacktestResultCreated {\n    backtestResultCreated {\n      ...BacktestResultInfo\n    }\n  }\n": typeof types.BacktestResultCreatedDocument,
     "\n  fragment ContractInfo on Contract {\n    id\n    chainId\n    address\n    backendUrl\n    description\n    isTestnet\n    status\n    fromBlock\n    lastBlockNumber\n    lastLeaderboardBlockNumber\n    platform\n    toBlock\n    version\n  }\n": typeof types.ContractInfoFragmentDoc,
@@ -184,7 +189,7 @@ const documents: Documents = {
     "\n  mutation stopBot($id: Int!) {\n    stopBot(id: $id)\n  }\n": types.StopBotDocument,
     "\n  subscription botCreated($userId: String!) {\n    botCreated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": types.BotCreatedDocument,
     "\n  subscription botUpdated($userId: String!) {\n    botUpdated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": types.BotUpdatedDocument,
-    "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n": types.BacktestTaskInfoFragmentDoc,
+    "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    searchStrategy\n    optimizationMetrics\n    trials\n    bestConfigIds\n    optunaStudyPath\n    optimizerPid\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n": types.BacktestTaskInfoFragmentDoc,
     "\n  fragment BacktestResultInfo on BacktestResult {\n    id\n    taskId\n    configId\n    runDate\n    strategyConfig\n    totalTrades\n    winningTrades\n    losingTrades\n    winRate\n    totalPnlUsdt\n    totalPnlPercent\n    maxDrawdownUsdt\n    maxDrawdownPercent\n    sharpeRatio\n    profitFactor\n    resultFolder\n    createdAt\n  }\n": types.BacktestResultInfoFragmentDoc,
     "\n  query BacktestComponents {\n    backtestComponents {\n      signals {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      filters {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      risk {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n      exits {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n        }\n      }\n    }\n  }\n": types.BacktestComponentsDocument,
     "\n  query BacktestTask($id: ID!) {\n    backtestTask(id: $id) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.BacktestTaskDocument,
@@ -194,11 +199,16 @@ const documents: Documents = {
     "\n  query BacktestResultDates($taskId: ID!) {\n    backtestResultDates(taskId: $taskId)\n  }\n": types.BacktestResultDatesDocument,
     "\n  query BacktestResultFolders($taskId: ID!, $date: String!) {\n    backtestResultFolders(taskId: $taskId, date: $date) {\n      taskId\n      date\n      configId\n      files\n    }\n  }\n": types.BacktestResultFoldersDocument,
     "\n  query BacktestResultFile(\n    $taskId: ID!\n    $date: String!\n    $configId: String!\n    $fileName: String!\n  ) {\n    backtestResultFile(\n      taskId: $taskId\n      date: $date\n      configId: $configId\n      fileName: $fileName\n    ) {\n      name\n      content\n      contentType\n      size\n      originalSize\n      isCompressed\n    }\n  }\n": types.BacktestResultFileDocument,
+    "\n  query TopBacktestResults($taskId: ID!, $metric: String, $limit: Int) {\n    topBacktestResults(taskId: $taskId, metric: $metric, limit: $limit) {\n      ...BacktestResultInfo\n    }\n  }\n": types.TopBacktestResultsDocument,
+    "\n  query OptunaDashboardStatus {\n    optunaDashboardStatus {\n      running\n      taskId\n      url\n    }\n  }\n": types.OptunaDashboardStatusDocument,
+    "\n  query OptunaStudyDates($taskId: ID!) {\n    optunaStudyDates(taskId: $taskId)\n  }\n": types.OptunaStudyDatesDocument,
     "\n  mutation CreateBacktestTask($input: CreateBacktestTaskInput!) {\n    createBacktestTask(input: $input) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.CreateBacktestTaskDocument,
     "\n  mutation CancelBacktestTask($taskId: ID!) {\n    cancelBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.CancelBacktestTaskDocument,
     "\n  mutation DeleteBacktestTask($taskId: ID!) {\n    deleteBacktestTask(taskId: $taskId)\n  }\n": types.DeleteBacktestTaskDocument,
     "\n  mutation DeleteBacktestResult($resultId: ID!) {\n    deleteBacktestResult(resultId: $resultId)\n  }\n": types.DeleteBacktestResultDocument,
     "\n  mutation RetryBacktestTask($taskId: ID!) {\n    retryBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.RetryBacktestTaskDocument,
+    "\n  mutation StartOptunaDashboard($taskId: ID!, $date: String!, $port: Int) {\n    startOptunaDashboard(taskId: $taskId, date: $date, port: $port) {\n      running\n      taskId\n      url\n    }\n  }\n": types.StartOptunaDashboardDocument,
+    "\n  mutation StopOptunaDashboard {\n    stopOptunaDashboard\n  }\n": types.StopOptunaDashboardDocument,
     "\n  subscription BacktestTaskUpdated {\n    backtestTaskUpdated {\n      ...BacktestTaskInfo\n    }\n  }\n": types.BacktestTaskUpdatedDocument,
     "\n  subscription BacktestResultCreated {\n    backtestResultCreated {\n      ...BacktestResultInfo\n    }\n  }\n": types.BacktestResultCreatedDocument,
     "\n  fragment ContractInfo on Contract {\n    id\n    chainId\n    address\n    backendUrl\n    description\n    isTestnet\n    status\n    fromBlock\n    lastBlockNumber\n    lastLeaderboardBlockNumber\n    platform\n    toBlock\n    version\n  }\n": types.ContractInfoFragmentDoc,
@@ -395,7 +405,7 @@ export function graphql(source: "\n  subscription botUpdated($userId: String!) {
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n"): (typeof documents)["\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n"];
+export function graphql(source: "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    searchStrategy\n    optimizationMetrics\n    trials\n    bestConfigIds\n    optunaStudyPath\n    optimizerPid\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n"): (typeof documents)["\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    searchStrategy\n    optimizationMetrics\n    trials\n    bestConfigIds\n    optunaStudyPath\n    optimizerPid\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -435,6 +445,18 @@ export function graphql(source: "\n  query BacktestResultFile(\n    $taskId: ID!
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  query TopBacktestResults($taskId: ID!, $metric: String, $limit: Int) {\n    topBacktestResults(taskId: $taskId, metric: $metric, limit: $limit) {\n      ...BacktestResultInfo\n    }\n  }\n"): (typeof documents)["\n  query TopBacktestResults($taskId: ID!, $metric: String, $limit: Int) {\n    topBacktestResults(taskId: $taskId, metric: $metric, limit: $limit) {\n      ...BacktestResultInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query OptunaDashboardStatus {\n    optunaDashboardStatus {\n      running\n      taskId\n      url\n    }\n  }\n"): (typeof documents)["\n  query OptunaDashboardStatus {\n    optunaDashboardStatus {\n      running\n      taskId\n      url\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query OptunaStudyDates($taskId: ID!) {\n    optunaStudyDates(taskId: $taskId)\n  }\n"): (typeof documents)["\n  query OptunaStudyDates($taskId: ID!) {\n    optunaStudyDates(taskId: $taskId)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  mutation CreateBacktestTask($input: CreateBacktestTaskInput!) {\n    createBacktestTask(input: $input) {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CreateBacktestTask($input: CreateBacktestTaskInput!) {\n    createBacktestTask(input: $input) {\n      ...BacktestTaskInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -452,6 +474,14 @@ export function graphql(source: "\n  mutation DeleteBacktestResult($resultId: ID
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation RetryBacktestTask($taskId: ID!) {\n    retryBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  mutation RetryBacktestTask($taskId: ID!) {\n    retryBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation StartOptunaDashboard($taskId: ID!, $date: String!, $port: Int) {\n    startOptunaDashboard(taskId: $taskId, date: $date, port: $port) {\n      running\n      taskId\n      url\n    }\n  }\n"): (typeof documents)["\n  mutation StartOptunaDashboard($taskId: ID!, $date: String!, $port: Int) {\n    startOptunaDashboard(taskId: $taskId, date: $date, port: $port) {\n      running\n      taskId\n      url\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation StopOptunaDashboard {\n    stopOptunaDashboard\n  }\n"): (typeof documents)["\n  mutation StopOptunaDashboard {\n    stopOptunaDashboard\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

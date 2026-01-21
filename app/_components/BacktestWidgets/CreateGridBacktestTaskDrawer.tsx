@@ -7,143 +7,103 @@ import {
   Select,
   SelectItem,
   Spinner,
-  Chip,
   Divider,
 } from "@heroui/react";
-import { FiPlus, FiX, FiAlertTriangle } from "react-icons/fi";
+import { FiX, FiAlertTriangle } from "react-icons/fi";
 
 import { RightDrawer } from "@/components/modals/RightDrawer";
-import { NumericInput } from "@/components/inputs/NumericInput";
 import {
   useBacktestComponents,
   useCreateBacktestTask,
 } from "@/app-hooks/useBacktest";
+import {
+  type ParamValues,
+  type ComponentConfig,
+  type Interval,
+  type GridOptimizationParams,
+  type BacktestComponent,
+  initializeGridComponent,
+  ParamInputs,
+  ArrayInput,
+  IntervalInput,
+} from "./BacktestFormComponents";
 
-export type CreateBacktestTaskDrawerProps = {
+export type CreateGridBacktestTaskDrawerProps = {
   isOpen: boolean;
   onClose: () => void;
   onOpenChange: (open: boolean) => void;
 };
 
-type ParamValues = Record<string, (number | string | boolean)[]>;
-
-type ComponentConfig = {
-  type: string;
-  params: ParamValues;
-};
-
-type OptimizationParams = {
-  signal: ComponentConfig;
-  filters: ComponentConfig[];
-  risk: ComponentConfig;
-  exits: ComponentConfig[];
-  settings?: {
-    capitalBase?: number[];
-  };
-};
-
-const INTERVALS = ["1m", "5m", "15m", "30m", "1h", "4h", "1d"];
-
-export function CreateBacktestTaskDrawer({
+export function CreateGridBacktestTaskDrawer({
   isOpen,
   onClose,
   onOpenChange,
-}: CreateBacktestTaskDrawerProps) {
+}: CreateGridBacktestTaskDrawerProps) {
   const { components, loading: componentsLoading } = useBacktestComponents();
   const { createTask, loading: createLoading } = useCreateBacktestTask();
 
   // Form state
   const [name, setName] = useState("");
-  const [symbol, setSymbol] = useState("");
-  const [interval, setInterval] = useState("1m");
+  const [symbols, setSymbols] = useState<string[]>([]);
+  const [intervals, setIntervals] = useState<Interval[]>([
+    { value: 1, unit: "m" },
+  ]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
   // Component selections
   const [signalType, setSignalType] = useState<string>("");
   const [signalParams, setSignalParams] = useState<ParamValues>({});
-
   const [filters, setFilters] = useState<ComponentConfig[]>([]);
-
   const [riskType, setRiskType] = useState<string>("");
   const [riskParams, setRiskParams] = useState<ParamValues>({});
-
   const [exits, setExits] = useState<ComponentConfig[]>([]);
-
   const [capitalBase, setCapitalBase] = useState<number[]>([10000]);
 
   // Get component definitions
-  const signalComponents = components?.signals ?? [];
-  const filterComponents = components?.filters ?? [];
-  const riskComponents = components?.risk ?? [];
-  const exitComponents = components?.exits ?? [];
-
-  // Initialize defaults when component loads
-  const initializeComponent = useCallback(
-    (type: string, componentList: typeof signalComponents) => {
-      const component = componentList.find((c) => c.name === type);
-      if (!component) return {};
-
-      const params: ParamValues = {};
-      for (const param of component.params) {
-        if (param.default) {
-          try {
-            const defaultValue = JSON.parse(param.default);
-            params[param.name] = Array.isArray(defaultValue)
-              ? defaultValue
-              : [defaultValue];
-          } catch {
-            params[param.name] = [param.default];
-          }
-        } else {
-          params[param.name] = [];
-        }
-      }
-      return params;
-    },
-    [],
-  );
+  const signalComponents = (components?.signals ?? []) as BacktestComponent[];
+  const filterComponents = (components?.filters ?? []) as BacktestComponent[];
+  const riskComponents = (components?.risk ?? []) as BacktestComponent[];
+  const exitComponents = (components?.exits ?? []) as BacktestComponent[];
 
   // Calculate total configurations
-  const totalConfigs = useMemo(() => {
+  const configsPerSymbol = useMemo(() => {
     let total = 1;
 
-    // Signal params
     Object.values(signalParams).forEach((arr) => {
       if (arr.length > 0) total *= arr.length;
     });
 
-    // Filter params
     filters.forEach((filter) => {
       Object.values(filter.params).forEach((arr) => {
         if (arr.length > 0) total *= arr.length;
       });
     });
 
-    // Risk params
     Object.values(riskParams).forEach((arr) => {
       if (arr.length > 0) total *= arr.length;
     });
 
-    // Exit params
     exits.forEach((exit) => {
       Object.values(exit.params).forEach((arr) => {
         if (arr.length > 0) total *= arr.length;
       });
     });
 
-    // Capital base
     if (capitalBase.length > 0) total *= capitalBase.length;
 
     return total;
   }, [signalParams, filters, riskParams, exits, capitalBase]);
 
+  const totalTasks = symbols.length * intervals.length;
+  const totalConfigs = configsPerSymbol * Math.max(1, totalTasks);
   const isLargeOptimization = totalConfigs > 500;
 
   // Form validation
   const isValid =
     name.trim() !== "" &&
-    symbol.trim() !== "" &&
+    symbols.length > 0 &&
+    intervals.length > 0 &&
     startDate !== "" &&
     endDate !== "" &&
     signalType !== "" &&
@@ -152,7 +112,7 @@ export function CreateBacktestTaskDrawer({
   const handleSubmit = async () => {
     if (!isValid || createLoading) return;
 
-    const optimizationParams: OptimizationParams = {
+    const optimizationParams: GridOptimizationParams = {
       signal: { type: signalType, params: signalParams },
       filters: filters,
       risk: { type: riskType, params: riskParams },
@@ -160,22 +120,37 @@ export function CreateBacktestTaskDrawer({
       settings: { capitalBase },
     };
 
-    await createTask({
-      variables: {
-        input: {
-          name: name.trim(),
-          symbol: symbol.trim().toUpperCase(),
-          startDate: new Date(startDate),
-          endDate: new Date(endDate),
-          interval,
-          optimizationParams: JSON.stringify(optimizationParams),
-        },
-      },
-    });
+    const tasks: Promise<unknown>[] = [];
+    for (const symbol of symbols) {
+      for (const interval of intervals) {
+        const intervalStr = `${interval.value}${interval.unit}`;
+        tasks.push(
+          createTask({
+            variables: {
+              input: {
+                name: `${name.trim()} - ${symbol} - ${intervalStr}`,
+                symbol: symbol.toUpperCase(),
+                startDate: new Date(startDate),
+                endDate: new Date(endDate),
+                interval: intervalStr,
+                optimizationParams: JSON.stringify(optimizationParams),
+                searchStrategy: "grid",
+              },
+            },
+          }),
+        );
+      }
+    }
+    await Promise.all(tasks);
 
-    // Reset form
+    resetForm();
+    onClose();
+  };
+
+  const resetForm = () => {
     setName("");
-    setSymbol("");
+    setSymbols([]);
+    setIntervals([{ value: 1, unit: "m" }]);
     setSignalType("");
     setSignalParams({});
     setFilters([]);
@@ -183,22 +158,20 @@ export function CreateBacktestTaskDrawer({
     setRiskParams({});
     setExits([]);
     setCapitalBase([10000]);
-
-    onClose();
   };
 
   const handleSignalTypeChange = (type: string) => {
     setSignalType(type);
-    setSignalParams(initializeComponent(type, signalComponents));
+    setSignalParams(initializeGridComponent(type, signalComponents));
   };
 
   const handleRiskTypeChange = (type: string) => {
     setRiskType(type);
-    setRiskParams(initializeComponent(type, riskComponents));
+    setRiskParams(initializeGridComponent(type, riskComponents));
   };
 
   const addFilter = (type: string) => {
-    const params = initializeComponent(type, filterComponents);
+    const params = initializeGridComponent(type, filterComponents);
     setFilters([...filters, { type, params }]);
   };
 
@@ -213,7 +186,7 @@ export function CreateBacktestTaskDrawer({
   };
 
   const addExit = (type: string) => {
-    const params = initializeComponent(type, exitComponents);
+    const params = initializeGridComponent(type, exitComponents);
     setExits([...exits, { type, params }]);
   };
 
@@ -234,7 +207,12 @@ export function CreateBacktestTaskDrawer({
       classNames={{ base: "max-w-[600px]" }}
     >
       <div className="flex h-full flex-col gap-6 overflow-auto">
-        <h1 className="text-xl font-bold text-white">Create Backtest Task</h1>
+        <div>
+          <h1 className="text-xl font-bold text-white">Create Grid Search Task</h1>
+          <p className="mt-1 text-sm text-neutral-400">
+            Exhaustive search of all parameter combinations
+          </p>
+        </div>
 
         {componentsLoading ? (
           <div className="flex items-center justify-center py-12">
@@ -253,26 +231,19 @@ export function CreateBacktestTaskDrawer({
               />
 
               <div className="grid grid-cols-2 gap-4">
-                <Input
-                  label="Symbol"
-                  placeholder="e.g., BTCUSDT"
-                  value={symbol}
-                  onValueChange={setSymbol}
-                  variant="bordered"
+                <ArrayInput
+                  label="Symbols"
+                  description="e.g., BTCUSDT, ETHUSDT"
+                  values={symbols}
+                  onChange={(values) => setSymbols(values as string[])}
+                  type="string"
                 />
 
-                <Select
-                  label="Interval"
-                  selectedKeys={[interval]}
-                  onSelectionChange={(keys) =>
-                    setInterval(Array.from(keys)[0] as string)
-                  }
-                  variant="bordered"
-                >
-                  {INTERVALS.map((i) => (
-                    <SelectItem key={i}>{i}</SelectItem>
-                  ))}
-                </Select>
+                <IntervalInput
+                  label="Intervals"
+                  intervals={intervals}
+                  onChange={setIntervals}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -322,9 +293,7 @@ export function CreateBacktestTaskDrawer({
 
               {signalType && (
                 <ParamInputs
-                  component={signalComponents.find(
-                    (c) => c.name === signalType,
-                  )}
+                  component={signalComponents.find((c) => c.name === signalType)}
                   params={signalParams}
                   onChange={setSignalParams}
                 />
@@ -376,9 +345,7 @@ export function CreateBacktestTaskDrawer({
                     </Button>
                   </div>
                   <ParamInputs
-                    component={filterComponents.find(
-                      (c) => c.name === filter.type,
-                    )}
+                    component={filterComponents.find((c) => c.name === filter.type)}
                     params={filter.params}
                     onChange={(params) => updateFilterParams(index, params)}
                   />
@@ -494,13 +461,31 @@ export function CreateBacktestTaskDrawer({
 
             {/* Total Configs Preview */}
             <div className="rounded-lg border border-neutral-800 bg-neutral-900/50 p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-neutral-400">
-                  Total Configurations:
-                </span>
-                <span className="text-lg font-bold text-white">
-                  {totalConfigs.toLocaleString()}
-                </span>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-neutral-400">
+                    Tasks to Create:
+                  </span>
+                  <span className="text-lg font-bold text-white">
+                    {totalTasks.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-neutral-400">
+                    Configurations per Task:
+                  </span>
+                  <span className="text-lg font-bold text-white">
+                    {configsPerSymbol.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-neutral-400">
+                    Total Configurations:
+                  </span>
+                  <span className="text-lg font-bold text-white">
+                    {totalConfigs.toLocaleString()}
+                  </span>
+                </div>
               </div>
               {isLargeOptimization && (
                 <div className="text-warning-400 mt-2 flex items-center gap-2">
@@ -523,154 +508,12 @@ export function CreateBacktestTaskDrawer({
                 isDisabled={!isValid}
                 onPress={handleSubmit}
               >
-                Create Task
+                {totalTasks > 1 ? `Create ${totalTasks} Tasks` : "Create Task"}
               </Button>
             </div>
           </>
         )}
       </div>
     </RightDrawer>
-  );
-}
-
-// Helper component for rendering parameter inputs
-type ParamInputsProps = {
-  component?: {
-    params: Array<{
-      name: string;
-      type: string;
-      required: boolean;
-      default?: string | null;
-      description?: string | null;
-      min?: number | null;
-      max?: number | null;
-    }>;
-  };
-  params: ParamValues;
-  onChange: (params: ParamValues) => void;
-};
-
-function ParamInputs({ component, params, onChange }: ParamInputsProps) {
-  if (!component) return null;
-
-  return (
-    <div className="flex flex-col gap-3">
-      {component.params.map((param) => (
-        <ArrayInput
-          key={param.name}
-          label={param.name}
-          description={param.description}
-          values={(params[param.name] ?? []) as (number | string)[]}
-          onChange={(values) => onChange({ ...params, [param.name]: values })}
-          type={param.type === "number" ? "number" : "string"}
-          required={param.required}
-        />
-      ))}
-    </div>
-  );
-}
-
-// Helper component for array inputs
-type ArrayInputProps = {
-  label: string;
-  description?: string | null;
-  values: (number | string)[];
-  onChange: (values: (number | string)[]) => void;
-  type: "number" | "string";
-  min?: number;
-  max?: number;
-  required?: boolean;
-};
-
-function ArrayInput({
-  label,
-  description,
-  values,
-  onChange,
-  type,
-  min,
-  max,
-}: ArrayInputProps) {
-  const [inputValue, setInputValue] = useState("");
-
-  const handleAdd = () => {
-    if (inputValue.trim() === "") return;
-
-    let newValue: number | string;
-    if (type === "number") {
-      newValue = parseFloat(inputValue);
-      if (isNaN(newValue)) return;
-      if (min !== undefined && newValue < min) return;
-      if (max !== undefined && newValue > max) return;
-    } else {
-      newValue = inputValue.trim();
-    }
-
-    if (!values.includes(newValue)) {
-      onChange([...values, newValue]);
-    }
-    setInputValue("");
-  };
-
-  const handleRemove = (index: number) => {
-    onChange(values.filter((_, i) => i !== index));
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAdd();
-    }
-  };
-
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-neutral-400">{label}</span>
-        {min !== undefined && max !== undefined && (
-          <span className="text-xs text-neutral-500">
-            (Min: {min}, Max: {max})
-          </span>
-        )}
-      </div>
-      {description && (
-        <span className="text-xs text-neutral-500">{description}</span>
-      )}
-      <div className="flex flex-wrap items-center gap-2">
-        {values.map((value, index) => (
-          <Chip
-            key={index}
-            onClose={() => handleRemove(index)}
-            variant="flat"
-            size="sm"
-          >
-            {String(value)}
-          </Chip>
-        ))}
-        <div className="flex items-center gap-1">
-          {type === "number" ? (
-            <NumericInput
-              amount={inputValue}
-              onChange={setInputValue}
-              classNames={{
-                base: "w-24",
-                input: "text-sm",
-              }}
-            />
-          ) : (
-            <Input
-              size="sm"
-              value={inputValue}
-              onValueChange={setInputValue}
-              onKeyDown={handleKeyDown}
-              className="w-24"
-            />
-          )}
-          <Button isIconOnly size="sm" variant="flat" onPress={handleAdd}>
-            <FiPlus className="h-3 w-3" />
-          </Button>
-        </div>
-      </div>
-    </div>
   );
 }

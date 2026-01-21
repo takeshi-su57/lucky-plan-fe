@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(npm run generate:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npx prettier:*)",
+      "Bash(if not exist \"E:\\\\New folder\\\\research\\\\newwork\\\\plan\\\\gns\\\\platform-client\\\\.vscode\" mkdir \"E:\\\\New folder\\\\research\\\\newwork\\\\plan\\\\gns\\\\platform-client\\\\.vscode\")",
+      "mcp__ide__getDiagnostics",
+      "Bash(timeout:*)"
     ]
   }
 }

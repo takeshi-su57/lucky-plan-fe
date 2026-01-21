@@ -78,6 +78,10 @@ type BacktestResultSummary {
 }
 
 type BacktestTask {
+  """
+  Config IDs of Pareto-optimal results (optuna only)
+  """
+  bestConfigIds: [String!]!
   completedAt: Date
   createdAt: Date!
   currentConfig: String
@@ -86,13 +90,38 @@ type BacktestTask {
   id: ID!
   interval: String!
   name: String!
+
+  """
+  Metrics to optimize (multi-objective)
+  """
+  optimizationMetrics: [String!]!
   optimizationParams: JSON!
+
+  """
+  PID of running optimizer process
+  """
+  optimizerPid: Int
+
+  """
+  Path to Optuna SQLite DB
+  """
+  optunaStudyPath: String
   processedConfigs: Int!
+
+  """
+  Search strategy: grid or optuna
+  """
+  searchStrategy: String!
   startDate: Date!
   startedAt: Date
   status: BacktestTaskStatus!
   symbol: String!
   totalConfigs: Int!
+
+  """
+  Number of Optuna trials
+  """
+  trials: Int
 }
 
 enum BacktestTaskStatus {
@@ -255,13 +284,16 @@ input CreateBacktestTaskInput {
   endDate: Date!
   interval: String! = "1m"
   name: String!
+  optimizationMetrics: [String!] = ["sharpeRatio"]
 
   """
-  Dynamic optimization params. Each param value should be an array of values to test.
+  Dynamic optimization params. Format depends on searchStrategy.
   """
   optimizationParams: JSON!
+  searchStrategy: String = "grid"
   startDate: Date!
   symbol: String!
+  trials: Int
 }
 
 input CreateBotAndStrategyInput {
@@ -679,9 +711,23 @@ type Mutation {
   """
   retryBacktestTask(taskId: ID!): BacktestTask!
   startAdaption(contractId: Int!, shouldRestart: Boolean!): Boolean!
+
+  """
+  Start Optuna dashboard for a specific task
+  """
+  startOptunaDashboard(
+    date: String!
+    port: Int! = 8080
+    taskId: ID!
+  ): OptunaDashboardStatus!
   startPlan(id: Int!): Boolean!
   startSubService(service: String!): Boolean!
   stopBot(id: Int!): Boolean!
+
+  """
+  Stop the running Optuna dashboard
+  """
+  stopOptunaDashboard: Boolean!
   stopTask(id: Int!): Boolean!
   unregisterTradingSignalLog(signalId: Int!): TradingSignalLog!
   updateLeverage(input: UpdateLeverageInput!): ContractExecutionResult!
@@ -719,6 +765,12 @@ input OpenTradeInput {
   pairIndex: Int!
   sl: String!
   tp: String!
+}
+
+type OptunaDashboardStatus {
+  running: Boolean!
+  taskId: ID
+  url: String
 }
 
 type ParamInfo {
@@ -1021,6 +1073,16 @@ type Query {
     platform: Platform!
   ): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
+
+  """
+  Get current Optuna dashboard status
+  """
+  optunaDashboardStatus: OptunaDashboardStatus!
+
+  """
+  Get available study dates for a task (dates with optuna-study.db)
+  """
+  optunaStudyDates(taskId: ID!): [String!]!
   systemStatus: Boolean!
 
   """

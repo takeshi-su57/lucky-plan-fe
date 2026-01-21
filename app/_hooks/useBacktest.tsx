@@ -33,6 +33,12 @@ export const BacktestTaskInfoFragment = graphql(`
     endDate
     interval
     optimizationParams
+    searchStrategy
+    optimizationMetrics
+    trials
+    bestConfigIds
+    optunaStudyPath
+    optimizerPid
     createdAt
     startedAt
     completedAt
@@ -222,6 +228,30 @@ export const BacktestResultFileQuery = graphql(`
   }
 `);
 
+export const TopBacktestResultsQuery = graphql(`
+  query TopBacktestResults($taskId: ID!, $metric: String, $limit: Int) {
+    topBacktestResults(taskId: $taskId, metric: $metric, limit: $limit) {
+      ...BacktestResultInfo
+    }
+  }
+`);
+
+export const OptunaDashboardStatusQuery = graphql(`
+  query OptunaDashboardStatus {
+    optunaDashboardStatus {
+      running
+      taskId
+      url
+    }
+  }
+`);
+
+export const OptunaStudyDatesQuery = graphql(`
+  query OptunaStudyDates($taskId: ID!) {
+    optunaStudyDates(taskId: $taskId)
+  }
+`);
+
 // ============================================
 // Mutations
 // ============================================
@@ -259,6 +289,25 @@ export const RetryBacktestTaskMutation = graphql(`
     retryBacktestTask(taskId: $taskId) {
       ...BacktestTaskInfo
     }
+  }
+`);
+
+export const StartOptunaDashboardMutation = graphql(`
+  mutation StartOptunaDashboard($taskId: ID!, $date: String!, $port: Int) {
+    startOptunaDashboard(taskId: $taskId, date: $date, port: $port) {
+      running
+      taskId
+      url
+    }
+  }
+`);
+
+
+
+
+export const StopOptunaDashboardMutation = graphql(`
+  mutation StopOptunaDashboard {
+    stopOptunaDashboard
   }
 `);
 
@@ -447,6 +496,97 @@ export function useBacktestResultFile(
   };
 }
 
+export function useTopBacktestResults(
+  taskId: string | null,
+  options?: {
+    metric?: string;
+    limit?: number;
+  },
+) {
+  const { data, loading, error, refetch } = useQuery(TopBacktestResultsQuery, {
+    variables: {
+      taskId: taskId!,
+      metric: options?.metric ?? "totalPnlUsdt",
+      limit: options?.limit ?? 10,
+    },
+    skip: !taskId,
+    fetchPolicy: "cache-and-network",
+  });
+
+  return {
+    results: (data?.topBacktestResults ?? [])
+      .map((item) => getFragmentData(BacktestResultInfoFragment, item) ?? null)
+      .filter((item) => item !== null) as BacktestResult[],
+    loading,
+    error,
+    refetch,
+  };
+}
+
+export function useOptunaDashboardStatus() {
+  const { data, loading, error, refetch } = useQuery(
+    OptunaDashboardStatusQuery,
+    {
+      fetchPolicy: "cache-and-network",
+    },
+  );
+
+  return {
+    status: data?.optunaDashboardStatus,
+    loading,
+    error,
+    refetch,
+  };
+}
+
+export function useOptunaStudyDates(taskId: string | null) {
+  const { data, loading, error, refetch } = useQuery(OptunaStudyDatesQuery, {
+    variables: { taskId: taskId! },
+    skip: !taskId,
+  });
+
+  return {
+    dates: data?.optunaStudyDates ?? [],
+    loading,
+    error,
+    refetch,
+  };
+}
+
+export function useBestBacktestResults(
+  taskId: string | null,
+  bestConfigIds: string[] | null,
+) {
+  const { data, loading, error, refetch } = useQuery(BacktestResultsQuery, {
+    variables: {
+      taskId: taskId!,
+      sortBy: "totalPnlUsdt",
+      sortOrder: "desc",
+      limit: 200,
+      offset: 0,
+    },
+    skip: !taskId || !bestConfigIds || bestConfigIds.length === 0,
+    fetchPolicy: "cache-first",
+  });
+
+  const allResults = (data?.backtestResults ?? [])
+    .map((item) => getFragmentData(BacktestResultInfoFragment, item) ?? null)
+    .filter((item) => item !== null) as BacktestResult[];
+
+  const bestResults = bestConfigIds
+    ? bestConfigIds
+        .map((configId) => allResults.find((r) => r.configId === configId))
+        .filter((r): r is BacktestResult => r !== undefined)
+    : [];
+
+  return {
+    bestResults,
+    loading,
+    error,
+    refetch,
+  };
+}
+
 // ============================================
 // Mutation Hooks
 // ============================================
@@ -498,7 +638,6 @@ export function useCancelBacktestTask() {
 export function useDeleteBacktestTask() {
   const { enqueueSnackbar } = useSnackbar();
   const [mutate, { loading, error }] = useMutation(DeleteBacktestTaskMutation, {
-    refetchQueries: [BacktestTasksQuery, BacktestTaskStatsQuery],
     onCompleted: () => {
       enqueueSnackbar("Backtest task deleted", { variant: "success" });
     },
@@ -555,6 +694,56 @@ export function useRetryBacktestTask() {
 
   return {
     retryTask: mutate,
+    loading,
+    error,
+  };
+}
+
+export function useStartOptunaDashboard() {
+  const { enqueueSnackbar } = useSnackbar();
+  const [mutate, { loading, error }] = useMutation(
+    StartOptunaDashboardMutation,
+    {
+      refetchQueries: [OptunaDashboardStatusQuery],
+      onCompleted: (data) => {
+        if (data.startOptunaDashboard?.url) {
+          enqueueSnackbar(
+            `Optuna dashboard started at ${data.startOptunaDashboard.url}`,
+            { variant: "success" },
+          );
+        }
+      },
+      onError: (err) => {
+        enqueueSnackbar(`Failed to start Optuna dashboard: ${err.message}`, {
+          variant: "error",
+        });
+      },
+    },
+  );
+
+  return {
+    startDashboard: mutate,
+    loading,
+    error,
+  };
+}
+
+export function useStopOptunaDashboard() {
+  const { enqueueSnackbar } = useSnackbar();
+  const [mutate, { loading, error }] = useMutation(StopOptunaDashboardMutation, {
+    refetchQueries: [OptunaDashboardStatusQuery],
+    onCompleted: () => {
+      enqueueSnackbar("Optuna dashboard stopped", { variant: "info" });
+    },
+    onError: (err) => {
+      enqueueSnackbar(`Failed to stop Optuna dashboard: ${err.message}`, {
+        variant: "error",
+      });
+    },
+  });
+
+  return {
+    stopDashboard: mutate,
     loading,
     error,
   };
