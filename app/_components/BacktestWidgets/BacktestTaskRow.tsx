@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import { BacktestTaskStatus } from "@/graphql/gql/graphql";
 import { BacktestTaskStatusBadge } from "./BacktestTaskStatusBadge";
 import { BacktestTaskProgress } from "./BacktestTaskProgress";
-import { BestConfigCarousel } from "./BestConfigCarousel";
+import { BestConfigChartCarousel } from "./BestConfigChartCarousel";
 import { useBestBacktestResults } from "@/app-hooks/useBacktest";
 
 export type BacktestTaskRowProps = {
@@ -82,7 +82,7 @@ export function BacktestTaskRow({
               <Spinner size="sm" color="white" />
             </div>
           ) : bestResults.length > 0 ? (
-            <BestConfigCarousel results={bestResults} variant="compact" />
+            <BestConfigChartCarousel results={bestResults} />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-xs text-neutral-500">
               No best configs

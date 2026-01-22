@@ -117,8 +117,11 @@ export function BacktestTaskDetail({
   };
 
   const selectedResult = useMemo(() => {
-    return results.find((r) => r.id === selectedResultId);
-  }, [results, selectedResultId]);
+    return (
+      results.find((r) => r.id === selectedResultId) ||
+      bestResults.find((r) => r.id === selectedResultId)
+    );
+  }, [results, selectedResultId, bestResults]);
 
   const handlePrevPage = () => {
     setOffset((prev) => Math.max(0, prev - limit));
@@ -181,16 +184,18 @@ export function BacktestTaskDetail({
             </span>
             <span>|</span>
             <span>{task.interval}</span>
-            {isOptuna && task.optimizationMetrics && task.optimizationMetrics.length > 0 && (
-              <>
-                <span>|</span>
-                <span className="text-secondary-400">
-                  {task.optimizationMetrics.length > 3
-                    ? `${task.optimizationMetrics.slice(0, 3).join(", ")}...`
-                    : task.optimizationMetrics.join(", ")}
-                </span>
-              </>
-            )}
+            {isOptuna &&
+              task.optimizationMetrics &&
+              task.optimizationMetrics.length > 0 && (
+                <>
+                  <span>|</span>
+                  <span className="text-secondary-400">
+                    {task.optimizationMetrics.length > 3
+                      ? `${task.optimizationMetrics.slice(0, 3).join(", ")}...`
+                      : task.optimizationMetrics.join(", ")}
+                  </span>
+                </>
+              )}
           </div>
         </div>
       </div>
@@ -230,10 +235,9 @@ export function BacktestTaskDetail({
             </Chip>
           </div>
 
-          <div className="h-[320px] w-[400px]">
+          <div className="h-[450px] w-[400px]">
             <BestConfigCarousel
               results={bestResults}
-              variant="full"
               onSelectResult={setSelectedResultId}
             />
           </div>

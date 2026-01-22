@@ -11,5 +11,6 @@ export * from "./BacktestConfigView";
 export * from "./BacktestTradeTable";
 export * from "./BacktestSummaryView";
 export * from "./BestConfigCarousel";
+export * from "./BestConfigChartCarousel";
 export * from "./CreateGridBacktestTaskDrawer";
 export * from "./CreateOptunaBacktestTaskDrawer";

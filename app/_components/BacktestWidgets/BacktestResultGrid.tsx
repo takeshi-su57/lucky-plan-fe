@@ -39,7 +39,9 @@ export function BacktestResultGrid({
         <BacktestResultCard
           key={result.id}
           result={result}
-          onSelect={() => onSelectResult(result.id)}
+          onSelect={() => {
+            onSelectResult(result.id);
+          }}
         />
       ))}
     </div>
