@@ -127,6 +127,19 @@ export const BacktestComponentsQuery = graphql(`
           max
         }
       }
+      platforms {
+        name
+        description
+        params {
+          name
+          type
+          required
+          default
+          description
+          min
+          max
+        }
+      }
     }
   }
 `);
@@ -301,9 +314,6 @@ export const StartOptunaDashboardMutation = graphql(`
     }
   }
 `);
-
-
-
 
 export const StopOptunaDashboardMutation = graphql(`
   mutation StopOptunaDashboard {
@@ -730,17 +740,20 @@ export function useStartOptunaDashboard() {
 
 export function useStopOptunaDashboard() {
   const { enqueueSnackbar } = useSnackbar();
-  const [mutate, { loading, error }] = useMutation(StopOptunaDashboardMutation, {
-    refetchQueries: [OptunaDashboardStatusQuery],
-    onCompleted: () => {
-      enqueueSnackbar("Optuna dashboard stopped", { variant: "info" });
+  const [mutate, { loading, error }] = useMutation(
+    StopOptunaDashboardMutation,
+    {
+      refetchQueries: [OptunaDashboardStatusQuery],
+      onCompleted: () => {
+        enqueueSnackbar("Optuna dashboard stopped", { variant: "info" });
+      },
+      onError: (err) => {
+        enqueueSnackbar(`Failed to stop Optuna dashboard: ${err.message}`, {
+          variant: "error",
+        });
+      },
     },
-    onError: (err) => {
-      enqueueSnackbar(`Failed to stop Optuna dashboard: ${err.message}`, {
-        variant: "error",
-      });
-    },
-  });
+  );
 
   return {
     stopDashboard: mutate,

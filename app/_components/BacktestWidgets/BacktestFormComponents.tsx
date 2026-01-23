@@ -36,8 +36,9 @@ export type GridOptimizationParams = {
   filters: ComponentConfig[];
   risk: ComponentConfig;
   exits: ComponentConfig[];
-  settings?: {
-    capitalBase?: number[];
+  platform: ComponentConfig; // REQUIRED - uses same structure as other components
+  settings: {
+    initialCapital: number[]; // REQUIRED - array for grid search
   };
 };
 
@@ -47,15 +48,16 @@ export type OptunaOptimizationParams = {
   filters: OptunaComponentConfig[];
   risk: OptunaComponentConfig;
   exits: OptunaComponentConfig[];
-  settings?: {
-    capitalBase: number;
+  platform: OptunaComponentConfig; // REQUIRED - uses same structure as other components
+  settings: {
+    initialCapital: number[]; // REQUIRED - array for optuna search
   };
 };
 
 // FactorJSON format for backend - infers mode from structure
 export type FactorJSONParamValue =
-  | { min: number; max: number }  // range mode
-  | (number | string | boolean)[];  // array mode
+  | { min: number; max: number } // range mode
+  | (number | string | boolean)[]; // array mode
 
 export type FactorJSONParams = Record<string, FactorJSONParamValue>;
 
@@ -70,13 +72,16 @@ export type FactorJSONOptimizationParams = {
   filters: FactorJSONComponentConfig[];
   risk: FactorJSONComponentConfig;
   exits: FactorJSONComponentConfig[];
-  settings?: {
-    capitalBase: number;
+  platform: FactorJSONComponentConfig; // REQUIRED - uses same structure as other components
+  settings: {
+    initialCapital: number[]; // REQUIRED - array
   };
 };
 
 // Convert internal OptunaParamValues to FactorJSON format
-export function convertToFactorJSON(params: OptunaParamValues): FactorJSONParams {
+export function convertToFactorJSON(
+  params: OptunaParamValues,
+): FactorJSONParams {
   const result: FactorJSONParams = {};
   for (const [key, value] of Object.entries(params)) {
     if (typeof value === "number") {
@@ -92,7 +97,9 @@ export function convertToFactorJSON(params: OptunaParamValues): FactorJSONParams
 }
 
 // Convert OptunaComponentConfig to FactorJSON format
-export function convertComponentToFactorJSON(config: OptunaComponentConfig): FactorJSONComponentConfig {
+export function convertComponentToFactorJSON(
+  config: OptunaComponentConfig,
+): FactorJSONComponentConfig {
   return {
     type: config.type,
     params: convertToFactorJSON(config.params),
@@ -101,7 +108,7 @@ export function convertComponentToFactorJSON(config: OptunaComponentConfig): Fac
 
 // Convert full OptunaOptimizationParams to FactorJSON format
 export function convertOptimizationParamsToFactorJSON(
-  params: OptunaOptimizationParams
+  params: OptunaOptimizationParams,
 ): FactorJSONOptimizationParams {
   return {
     name: params.name,
@@ -109,6 +116,7 @@ export function convertOptimizationParamsToFactorJSON(
     filters: params.filters.map(convertComponentToFactorJSON),
     risk: convertComponentToFactorJSON(params.risk),
     exits: params.exits.map(convertComponentToFactorJSON),
+    platform: convertComponentToFactorJSON(params.platform),
     settings: params.settings,
   };
 }
@@ -134,18 +142,62 @@ export type BacktestComponent = {
 
 // Available optimization metrics for Optuna
 export const OPTIMIZATION_METRICS = [
-  { key: "sharpeRatio", label: "Sharpe Ratio", description: "Risk-adjusted return" },
-  { key: "totalPnlPercent", label: "Total PnL %", description: "Total return percentage" },
+  {
+    key: "sharpeRatio",
+    label: "Sharpe Ratio",
+    description: "Risk-adjusted return",
+  },
+  {
+    key: "totalPnlPercent",
+    label: "Total PnL %",
+    description: "Total return percentage",
+  },
   { key: "winRate", label: "Win Rate", description: "Win rate percentage" },
-  { key: "profitFactor", label: "Profit Factor", description: "Gross profit / Gross loss" },
-  { key: "maxDrawdownPercent", label: "Max Drawdown %", description: "Maximum drawdown (use with minimize)" },
-  { key: "calmar", label: "Calmar Ratio", description: "Return / Max drawdown" },
-  { key: "risk_adjusted", label: "Risk Adjusted", description: "PnL / (1 + drawdown)" },
-  { key: "sortino_like", label: "Sortino-like", description: "Sharpe * (1 - drawdown/100)" },
-  { key: "balanced", label: "Balanced", description: "Sharpe * winRate * (1 - drawdown/100)" },
-  { key: "conservative", label: "Conservative", description: "Heavy drawdown penalty" },
-  { key: "aggressive", label: "Aggressive", description: "Maximize returns with winRate weighting" },
-  { key: "profit_factor_weighted", label: "Profit Factor Weighted", description: "profitFactor * winRate" },
+  {
+    key: "profitFactor",
+    label: "Profit Factor",
+    description: "Gross profit / Gross loss",
+  },
+  {
+    key: "maxDrawdownPercent",
+    label: "Max Drawdown %",
+    description: "Maximum drawdown (use with minimize)",
+  },
+  {
+    key: "calmar",
+    label: "Calmar Ratio",
+    description: "Return / Max drawdown",
+  },
+  {
+    key: "risk_adjusted",
+    label: "Risk Adjusted",
+    description: "PnL / (1 + drawdown)",
+  },
+  {
+    key: "sortino_like",
+    label: "Sortino-like",
+    description: "Sharpe * (1 - drawdown/100)",
+  },
+  {
+    key: "balanced",
+    label: "Balanced",
+    description: "Sharpe * winRate * (1 - drawdown/100)",
+  },
+  {
+    key: "conservative",
+    label: "Conservative",
+    description: "Heavy drawdown penalty",
+  },
+  {
+    key: "aggressive",
+    label: "Aggressive",
+    description: "Maximize returns with winRate weighting",
+  },
+  {
+    key: "profit_factor_weighted",
+    label: "Profit Factor Weighted",
+    description: "profitFactor * winRate",
+  },
 ];
 
 // ============================================
@@ -188,7 +240,10 @@ export function initializeOptunaComponent(
   for (const param of component.params) {
     if (param.type === "number" && param.min !== null && param.max !== null) {
       // Default to range mode for numbers with defined min/max
-      params[param.name] = { mode: "range", value: { min: param.min!, max: param.max! } };
+      params[param.name] = {
+        mode: "range",
+        value: { min: param.min!, max: param.max! },
+      };
     } else if (param.default) {
       try {
         const defaultValue = JSON.parse(param.default);
@@ -222,9 +277,7 @@ type ParamInputsProps = {
 export function ParamInputs({ component, params, onChange }: ParamInputsProps) {
   if (!component) return null;
 
-  const getParamType = (
-    paramType: string,
-  ): "number" | "string" | "boolean" => {
+  const getParamType = (paramType: string): "number" | "string" | "boolean" => {
     if (paramType === "number") return "number";
     if (paramType === "boolean") return "boolean";
     return "string";
@@ -257,7 +310,11 @@ type OptunaParamInputsProps = {
   onChange: (params: OptunaParamValues) => void;
 };
 
-export function OptunaParamInputs({ component, params, onChange }: OptunaParamInputsProps) {
+export function OptunaParamInputs({
+  component,
+  params,
+  onChange,
+}: OptunaParamInputsProps) {
   if (!component) return null;
 
   const getParamMode = (value: OptunaParamValue): "range" | "array" => {
@@ -283,19 +340,31 @@ export function OptunaParamInputs({ component, params, onChange }: OptunaParamIn
     return "string";
   };
 
-  const toggleMode = (paramName: string, currentValue: OptunaParamValue, param: BacktestComponent["params"][0]) => {
+  const toggleMode = (
+    paramName: string,
+    currentValue: OptunaParamValue,
+    param: BacktestComponent["params"][0],
+  ) => {
     const currentMode = getParamMode(currentValue);
     if (currentMode === "range") {
       // Switch to array mode
       const rangeVal = getRangeValue(currentValue);
-      onChange({ ...params, [paramName]: { mode: "array", value: [rangeVal.min] } });
+      onChange({
+        ...params,
+        [paramName]: { mode: "array", value: [rangeVal.min] },
+      });
     } else {
       // Switch to range mode
       const arrayVal = getArrayValue(currentValue);
-      const firstNum = arrayVal.find((v) => typeof v === "number") as number | undefined;
+      const firstNum = arrayVal.find((v) => typeof v === "number") as
+        | number
+        | undefined;
       const min = param.min ?? firstNum ?? 0;
       const max = param.max ?? firstNum ?? 0;
-      onChange({ ...params, [paramName]: { mode: "range", value: { min, max } } });
+      onChange({
+        ...params,
+        [paramName]: { mode: "range", value: { min, max } },
+      });
     }
   };
 
@@ -310,11 +379,13 @@ export function OptunaParamInputs({ component, params, onChange }: OptunaParamIn
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-neutral-400">{param.name}</span>
-                {param.type === "number" && param.min !== null && param.max !== null && (
-                  <span className="text-xs text-neutral-500">
-                    (Range: {param.min} - {param.max})
-                  </span>
-                )}
+                {param.type === "number" &&
+                  param.min !== null &&
+                  param.max !== null && (
+                    <span className="text-xs text-neutral-500">
+                      (Range: {param.min} ~ {param.max})
+                    </span>
+                  )}
               </div>
               {param.type === "number" && (
                 <div className="flex gap-1">
@@ -340,51 +411,30 @@ export function OptunaParamInputs({ component, params, onChange }: OptunaParamIn
               )}
             </div>
             {param.description && (
-              <span className="text-xs text-neutral-500">{param.description}</span>
+              <span className="text-xs text-neutral-500">
+                {param.description}
+              </span>
             )}
 
             {mode === "range" && param.type === "number" ? (
-              <div className="flex items-center gap-2">
-                <Input
-                  size="sm"
-                  type="number"
-                  label="Min"
-                  value={getRangeValue(value).min.toString()}
-                  onValueChange={(v) => {
-                    const numVal = parseFloat(v);
-                    if (!isNaN(numVal)) {
-                      const rangeVal = getRangeValue(value);
-                      onChange({ ...params, [param.name]: { mode: "range", value: { min: numVal, max: rangeVal.max } } });
-                    }
-                  }}
-                  className="w-24"
-
-                  
-                  variant="bordered"
-                />
-                <span className="text-neutral-500">to</span>
-                <Input
-                  size="sm"
-                  type="number"
-                  label="Max"
-                  value={getRangeValue(value).max.toString()}
-                  onValueChange={(v) => {
-                    const numVal = parseFloat(v);
-                    if (!isNaN(numVal)) {
-                      const rangeVal = getRangeValue(value);
-                      onChange({ ...params, [param.name]: { mode: "range", value: { min: rangeVal.min, max: numVal } } });
-                    }
-                  }}
-                  className="w-24"
-                  variant="bordered"
-                />
-              </div>
+              <RangeInput
+                value={getRangeValue(value)}
+                onChange={(newRange) => {
+                  onChange({
+                    ...params,
+                    [param.name]: { mode: "range", value: newRange },
+                  });
+                }}
+              />
             ) : (
               <ArrayInput
                 label=""
                 values={getArrayValue(value)}
                 onChange={(newValues) => {
-                  onChange({ ...params, [param.name]: { mode: "array", value: newValues } });
+                  onChange({
+                    ...params,
+                    [param.name]: { mode: "array", value: newValues },
+                  });
                 }}
                 type={getParamType(param.type)}
                 min={param.min ?? undefined}
@@ -394,6 +444,81 @@ export function OptunaParamInputs({ component, params, onChange }: OptunaParamIn
           </div>
         );
       })}
+    </div>
+  );
+}
+
+// ============================================
+// RangeInput Component (for Optuna range mode)
+// ============================================
+
+type RangeInputProps = {
+  value: RangeValue;
+  onChange: (value: RangeValue) => void;
+};
+
+function RangeInput({ value, onChange }: RangeInputProps) {
+  const [minInput, setMinInput] = useState(value.min.toString());
+  const [maxInput, setMaxInput] = useState(value.max.toString());
+
+  const minNum = parseFloat(minInput);
+  const maxNum = parseFloat(maxInput);
+  const isMinValid = !isNaN(minNum);
+  const isMaxValid = !isNaN(maxNum);
+  const isValid = isMinValid && isMaxValid;
+
+  // Check if there are pending changes
+  const hasPendingChanges =
+    (isMinValid && minNum !== value.min) ||
+    (isMaxValid && maxNum !== value.max);
+
+  const handleConfirm = () => {
+    if (!isValid) return;
+    onChange({ min: minNum, max: maxNum });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && isValid && hasPendingChanges) {
+      e.preventDefault();
+      handleConfirm();
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <Input
+        size="sm"
+        label="Min"
+        placeholder="e.g. -2.5"
+        value={minInput}
+        onValueChange={setMinInput}
+        onKeyDown={handleKeyDown}
+        className="w-28"
+        variant="bordered"
+        color={!isMinValid && minInput !== "" ? "danger" : "default"}
+      />
+      <span className="text-neutral-500">to</span>
+      <Input
+        size="sm"
+        label="Max"
+        placeholder="e.g. 10.5"
+        value={maxInput}
+        onValueChange={setMaxInput}
+        onKeyDown={handleKeyDown}
+        className="w-28"
+        variant="bordered"
+        color={!isMaxValid && maxInput !== "" ? "danger" : "default"}
+      />
+      <Button
+        size="sm"
+        variant={hasPendingChanges ? "solid" : "flat"}
+        color={hasPendingChanges ? "primary" : "default"}
+        isDisabled={!isValid || !hasPendingChanges}
+        onPress={handleConfirm}
+        className="min-w-0 px-3"
+      >
+        {hasPendingChanges ? "Apply" : "OK"}
+      </Button>
     </div>
   );
 }
@@ -431,8 +556,7 @@ export function ArrayInput({
     if (type === "number") {
       newValue = parseFloat(inputValue);
       if (isNaN(newValue)) return;
-      if (min !== undefined && newValue < min) return;
-      if (max !== undefined && newValue > max) return;
+      // No min/max validation - allow any numeric value
     } else {
       newValue = inputValue.trim();
     }
@@ -466,7 +590,7 @@ export function ArrayInput({
         <span className="text-xs text-neutral-400">{label}</span>
         {min !== undefined && max !== undefined && (
           <span className="text-xs text-neutral-500">
-            (Min: {min}, Max: {max})
+            (Range: {min} ~ {max})
           </span>
         )}
       </div>
@@ -486,13 +610,13 @@ export function ArrayInput({
         ))}
         <div className="flex items-center gap-1">
           {type === "number" ? (
-            <NumericInput
-              amount={inputValue}
-              onChange={setInputValue}
-              classNames={{
-                base: "w-24",
-                input: "text-sm",
-              }}
+            <Input
+              size="sm"
+              value={inputValue}
+              onValueChange={setInputValue}
+              onKeyDown={handleKeyDown}
+              className="w-28"
+              placeholder="e.g. -2.5"
             />
           ) : type === "boolean" ? (
             <>
@@ -550,7 +674,11 @@ const UNIT_OPTIONS = [
   { value: "m", label: "Minute" },
 ] as const;
 
-export function IntervalInput({ label, intervals, onChange }: IntervalInputProps) {
+export function IntervalInput({
+  label,
+  intervals,
+  onChange,
+}: IntervalInputProps) {
   const [inputValue, setInputValue] = useState("1");
   const [unit, setUnit] = useState<"s" | "m">("m");
 

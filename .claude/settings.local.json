@@ -6,7 +6,8 @@
       "Bash(npx prettier:*)",
       "Bash(if not exist \"E:\\\\New folder\\\\research\\\\newwork\\\\plan\\\\gns\\\\platform-client\\\\.vscode\" mkdir \"E:\\\\New folder\\\\research\\\\newwork\\\\plan\\\\gns\\\\platform-client\\\\.vscode\")",
       "mcp__ide__getDiagnostics",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(dir:*)"
     ]
   }
 }

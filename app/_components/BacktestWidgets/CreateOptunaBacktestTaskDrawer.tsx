@@ -77,15 +77,20 @@ export function CreateOptunaBacktestTaskDrawer({
   const [riskType, setRiskType] = useState<string>("");
   const [riskParams, setRiskParams] = useState<OptunaParamValues>({});
   const [exits, setExits] = useState<OptunaComponentConfig[]>([]);
-  const [capitalBase, setCapitalBase] = useState<number>(10000);
+  const [platformType, setPlatformType] = useState<string>("");
+  const [platformParams, setPlatformParams] = useState<OptunaParamValues>({});
+  const [initialCapital, setInitialCapital] = useState<number[]>([10000]);
 
   // Get component definitions
   const signalComponents = (components?.signals ?? []) as BacktestComponent[];
   const filterComponents = (components?.filters ?? []) as BacktestComponent[];
   const riskComponents = (components?.risk ?? []) as BacktestComponent[];
   const exitComponents = (components?.exits ?? []) as BacktestComponent[];
+  const platformComponents = (components?.platforms ??
+    []) as BacktestComponent[];
 
-  const totalTasks = symbols.length * intervals.length * metricCombinations.length;
+  const totalTasks =
+    symbols.length * intervals.length * metricCombinations.length;
   const totalTrials = trials * Math.max(1, totalTasks);
 
   // Form validation
@@ -97,6 +102,7 @@ export function CreateOptunaBacktestTaskDrawer({
     endDate !== "" &&
     signalType !== "" &&
     riskType !== "" &&
+    platformType !== "" &&
     metricCombinations.length > 0 &&
     metricCombinations.every((c) => c.metrics.length > 0) &&
     trials > 0;
@@ -137,7 +143,12 @@ export function CreateOptunaBacktestTaskDrawer({
       },
       {
         label: "All Key Metrics",
-        metrics: ["sharpeRatio", "totalPnlUsdt", "winRate", "maxDrawdownPercent"],
+        metrics: [
+          "sharpeRatio",
+          "totalPnlUsdt",
+          "winRate",
+          "maxDrawdownPercent",
+        ],
       },
     ],
     [],
@@ -146,13 +157,20 @@ export function CreateOptunaBacktestTaskDrawer({
   const handleSubmit = async () => {
     if (!isValid || createLoading) return;
 
+    // Build platform config using OptunaComponentConfig structure
+    const platform: OptunaComponentConfig = {
+      type: platformType,
+      params: platformParams,
+    };
+
     // Build internal params structure
     const internalParams = {
       signal: { type: signalType, params: signalParams },
       filters: filters,
       risk: { type: riskType, params: riskParams },
       exits: exits,
-      settings: { capitalBase },
+      platform,
+      settings: { initialCapital },
     };
 
     // Convert to FactorJSON format for backend
@@ -209,7 +227,9 @@ export function CreateOptunaBacktestTaskDrawer({
     setRiskType("");
     setRiskParams({});
     setExits([]);
-    setCapitalBase(10000);
+    setPlatformType("");
+    setPlatformParams({});
+    setInitialCapital([10000]);
   };
 
   const handleSignalTypeChange = (type: string) => {
@@ -220,6 +240,11 @@ export function CreateOptunaBacktestTaskDrawer({
   const handleRiskTypeChange = (type: string) => {
     setRiskType(type);
     setRiskParams(initializeOptunaComponent(type, riskComponents));
+  };
+
+  const handlePlatformTypeChange = (type: string) => {
+    setPlatformType(type);
+    setPlatformParams(initializeOptunaComponent(type, platformComponents));
   };
 
   const addFilter = (type: string) => {
@@ -329,8 +354,8 @@ export function CreateOptunaBacktestTaskDrawer({
                   <FiInfo className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>
                     Select metrics for multi-objective optimization. Each
-                    combination creates a separate task that finds Pareto-optimal
-                    configurations.
+                    combination creates a separate task that finds
+                    Pareto-optimal configurations.
                   </span>
                 </div>
 
@@ -436,6 +461,46 @@ export function CreateOptunaBacktestTaskDrawer({
                   max={10000}
                 />
               </div>
+            </div>
+
+            <Divider />
+
+            {/* Platform Section */}
+            <div className="flex flex-col gap-3">
+              <h2 className="text-sm font-semibold text-neutral-300">
+                Platform
+              </h2>
+              <Select
+                label="Platform Type"
+                selectedKeys={platformType ? [platformType] : []}
+                onSelectionChange={(keys) =>
+                  handlePlatformTypeChange(Array.from(keys)[0] as string)
+                }
+                variant="bordered"
+              >
+                {platformComponents.map((c) => (
+                  <SelectItem key={c.name} textValue={c.name}>
+                    <div className="flex flex-col">
+                      <span>{c.name}</span>
+                      {c.description && (
+                        <span className="text-xs text-neutral-400">
+                          {c.description}
+                        </span>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
+              </Select>
+
+              {platformType && (
+                <OptunaParamInputs
+                  component={platformComponents.find(
+                    (c) => c.name === platformType,
+                  )}
+                  params={platformParams}
+                  onChange={setPlatformParams}
+                />
+              )}
             </div>
 
             <Divider />
@@ -629,12 +694,13 @@ export function CreateOptunaBacktestTaskDrawer({
               <h2 className="text-sm font-semibold text-neutral-300">
                 Settings
               </h2>
-              <Input
+              <ArrayInput
+                label="Initial Capital (USDT)"
+                description="Starting capital values for backtesting"
+                values={initialCapital}
+                onChange={(values) => setInitialCapital(values as number[])}
                 type="number"
-                label="Capital Base (USDT)"
-                value={capitalBase.toString()}
-                onValueChange={(v) => setCapitalBase(parseFloat(v) || 10000)}
-                variant="bordered"
+                min={100}
               />
             </div>
 

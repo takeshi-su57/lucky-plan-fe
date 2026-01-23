@@ -91,7 +91,7 @@ export function BestConfigChartCarousel({
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {results.map((result) => (
-            <div key={result.id} className="h-full w-full flex-shrink-0">
+            <div key={result.id} className="h-full w-full shrink-0">
               <ChartSlide
                 result={result}
                 onSelect={
@@ -110,7 +110,7 @@ export function BestConfigChartCarousel({
             isIconOnly
             size="sm"
             variant="flat"
-            className="absolute left-1 top-1/2 z-10 h-6 w-6 min-w-0 -translate-y-1/2 bg-black/50 hover:bg-black/70"
+            className="absolute top-1/2 left-1 z-10 h-6 w-6 min-w-0 -translate-y-1/2 bg-black/50 hover:bg-black/70"
             onPress={handlePrev}
           >
             <FiChevronLeft className="h-3 w-3" />
@@ -119,7 +119,7 @@ export function BestConfigChartCarousel({
             isIconOnly
             size="sm"
             variant="flat"
-            className="absolute right-1 top-1/2 z-10 h-6 w-6 min-w-0 -translate-y-1/2 bg-black/50 hover:bg-black/70"
+            className="absolute top-1/2 right-1 z-10 h-6 w-6 min-w-0 -translate-y-1/2 bg-black/50 hover:bg-black/70"
             onPress={handleNext}
           >
             <FiChevronRight className="h-3 w-3" />
@@ -129,21 +129,21 @@ export function BestConfigChartCarousel({
 
       {/* Counter Badge */}
       {showNavigation && (
-        <div className="absolute right-1 top-1 z-10 rounded bg-black/60 px-1.5 py-0.5 text-xs text-white">
+        <div className="absolute top-1 right-1 z-10 rounded bg-black/60 px-1.5 py-0.5 text-xs text-white">
           {currentIndex + 1}/{results.length}
         </div>
       )}
 
       {/* Pagination Dots */}
       {showNavigation && (
-        <div className="absolute bottom-1 left-0 right-0 z-10 flex items-center justify-center gap-1">
+        <div className="absolute right-0 bottom-1 left-0 z-10 flex items-center justify-center gap-1">
           {results.map((_, index) => (
             <button
               key={index}
               className={twMerge(
                 "h-1.5 rounded-full transition-all",
                 index === currentIndex
-                  ? "w-3 bg-primary-400"
+                  ? "bg-primary-400 w-3"
                   : "w-1.5 bg-neutral-600 hover:bg-neutral-500",
               )}
               onClick={() => setCurrentIndex(index)}

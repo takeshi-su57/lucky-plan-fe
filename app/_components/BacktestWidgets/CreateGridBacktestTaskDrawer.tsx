@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import {
   Button,
   Input,
@@ -58,13 +58,17 @@ export function CreateGridBacktestTaskDrawer({
   const [riskType, setRiskType] = useState<string>("");
   const [riskParams, setRiskParams] = useState<ParamValues>({});
   const [exits, setExits] = useState<ComponentConfig[]>([]);
-  const [capitalBase, setCapitalBase] = useState<number[]>([10000]);
+  const [platformType, setPlatformType] = useState<string>("");
+  const [platformParams, setPlatformParams] = useState<ParamValues>({});
+  const [initialCapital, setInitialCapital] = useState<number[]>([10000]);
 
   // Get component definitions
   const signalComponents = (components?.signals ?? []) as BacktestComponent[];
   const filterComponents = (components?.filters ?? []) as BacktestComponent[];
   const riskComponents = (components?.risk ?? []) as BacktestComponent[];
   const exitComponents = (components?.exits ?? []) as BacktestComponent[];
+  const platformComponents = (components?.platforms ??
+    []) as BacktestComponent[];
 
   // Calculate total configurations
   const configsPerSymbol = useMemo(() => {
@@ -90,10 +94,22 @@ export function CreateGridBacktestTaskDrawer({
       });
     });
 
-    if (capitalBase.length > 0) total *= capitalBase.length;
+    if (initialCapital.length > 0) total *= initialCapital.length;
+
+    // Platform params
+    Object.values(platformParams).forEach((arr) => {
+      if (arr.length > 0) total *= arr.length;
+    });
 
     return total;
-  }, [signalParams, filters, riskParams, exits, capitalBase]);
+  }, [
+    signalParams,
+    filters,
+    riskParams,
+    exits,
+    initialCapital,
+    platformParams,
+  ]);
 
   const totalTasks = symbols.length * intervals.length;
   const totalConfigs = configsPerSymbol * Math.max(1, totalTasks);
@@ -107,17 +123,25 @@ export function CreateGridBacktestTaskDrawer({
     startDate !== "" &&
     endDate !== "" &&
     signalType !== "" &&
-    riskType !== "";
+    riskType !== "" &&
+    platformType !== "";
 
   const handleSubmit = async () => {
     if (!isValid || createLoading) return;
+
+    // Build platform config using ComponentConfig structure
+    const platform: ComponentConfig = {
+      type: platformType,
+      params: platformParams,
+    };
 
     const optimizationParams: GridOptimizationParams = {
       signal: { type: signalType, params: signalParams },
       filters: filters,
       risk: { type: riskType, params: riskParams },
       exits: exits,
-      settings: { capitalBase },
+      platform,
+      settings: { initialCapital },
     };
 
     const tasks: Promise<unknown>[] = [];
@@ -157,7 +181,9 @@ export function CreateGridBacktestTaskDrawer({
     setRiskType("");
     setRiskParams({});
     setExits([]);
-    setCapitalBase([10000]);
+    setPlatformType("");
+    setPlatformParams({});
+    setInitialCapital([10000]);
   };
 
   const handleSignalTypeChange = (type: string) => {
@@ -168,6 +194,11 @@ export function CreateGridBacktestTaskDrawer({
   const handleRiskTypeChange = (type: string) => {
     setRiskType(type);
     setRiskParams(initializeGridComponent(type, riskComponents));
+  };
+
+  const handlePlatformTypeChange = (type: string) => {
+    setPlatformType(type);
+    setPlatformParams(initializeGridComponent(type, platformComponents));
   };
 
   const addFilter = (type: string) => {
@@ -208,7 +239,9 @@ export function CreateGridBacktestTaskDrawer({
     >
       <div className="flex h-full flex-col gap-6 overflow-auto">
         <div>
-          <h1 className="text-xl font-bold text-white">Create Grid Search Task</h1>
+          <h1 className="text-xl font-bold text-white">
+            Create Grid Search Task
+          </h1>
           <p className="mt-1 text-sm text-neutral-400">
             Exhaustive search of all parameter combinations
           </p>
@@ -266,6 +299,46 @@ export function CreateGridBacktestTaskDrawer({
 
             <Divider />
 
+            {/* Platform Section */}
+            <div className="flex flex-col gap-3">
+              <h2 className="text-sm font-semibold text-neutral-300">
+                Platform
+              </h2>
+              <Select
+                label="Platform Type"
+                selectedKeys={platformType ? [platformType] : []}
+                onSelectionChange={(keys) =>
+                  handlePlatformTypeChange(Array.from(keys)[0] as string)
+                }
+                variant="bordered"
+              >
+                {platformComponents.map((c) => (
+                  <SelectItem key={c.name} textValue={c.name}>
+                    <div className="flex flex-col">
+                      <span>{c.name}</span>
+                      {c.description && (
+                        <span className="text-xs text-neutral-400">
+                          {c.description}
+                        </span>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
+              </Select>
+
+              {platformType && (
+                <ParamInputs
+                  component={platformComponents.find(
+                    (c) => c.name === platformType,
+                  )}
+                  params={platformParams}
+                  onChange={setPlatformParams}
+                />
+              )}
+            </div>
+
+            <Divider />
+
             {/* Signal Section */}
             <div className="flex flex-col gap-3">
               <h2 className="text-sm font-semibold text-neutral-300">Signal</h2>
@@ -293,7 +366,9 @@ export function CreateGridBacktestTaskDrawer({
 
               {signalType && (
                 <ParamInputs
-                  component={signalComponents.find((c) => c.name === signalType)}
+                  component={signalComponents.find(
+                    (c) => c.name === signalType,
+                  )}
                   params={signalParams}
                   onChange={setSignalParams}
                 />
@@ -345,7 +420,9 @@ export function CreateGridBacktestTaskDrawer({
                     </Button>
                   </div>
                   <ParamInputs
-                    component={filterComponents.find((c) => c.name === filter.type)}
+                    component={filterComponents.find(
+                      (c) => c.name === filter.type,
+                    )}
                     params={filter.params}
                     onChange={(params) => updateFilterParams(index, params)}
                   />
@@ -452,10 +529,12 @@ export function CreateGridBacktestTaskDrawer({
                 Settings
               </h2>
               <ArrayInput
-                label="Capital Base (USDT)"
-                values={capitalBase}
-                onChange={(values) => setCapitalBase(values as number[])}
+                label="Initial Capital (USDT)"
+                description="Starting capital for backtesting"
+                values={initialCapital}
+                onChange={(values) => setInitialCapital(values as number[])}
                 type="number"
+                min={100}
               />
             </div>
 

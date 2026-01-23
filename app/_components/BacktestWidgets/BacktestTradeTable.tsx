@@ -63,7 +63,8 @@ export function BacktestTradeTable({
     return (
       lowerHeader.includes("pnl") ||
       lowerHeader.includes("profit") ||
-      lowerHeader.includes("loss")
+      lowerHeader.includes("loss") ||
+      lowerHeader === "grosspnl"
     );
   };
 
@@ -79,7 +80,13 @@ export function BacktestTradeTable({
       lowerHeader.includes("qty") ||
       lowerHeader.includes("quantity") ||
       lowerHeader.includes("cum") ||
-      lowerHeader.includes("drawdown")
+      lowerHeader.includes("drawdown") ||
+      lowerHeader.includes("margin") ||
+      lowerHeader.includes("leverage") ||
+      lowerHeader.includes("fee") ||
+      lowerHeader === "grosspnl" ||
+      lowerHeader === "openingfee" ||
+      lowerHeader === "closingfee"
     );
   };
 
@@ -87,6 +94,22 @@ export function BacktestTradeTable({
   const isSideColumn = (header: string) => {
     const lowerHeader = header.toLowerCase();
     return lowerHeader === "side" || lowerHeader === "direction";
+  };
+
+  // Helper to detect liquidated column for special styling
+  const isLiquidatedColumn = (header: string) => {
+    const lowerHeader = header.toLowerCase();
+    return lowerHeader === "liquidated";
+  };
+
+  // Helper to detect fee columns
+  const isFeeColumn = (header: string) => {
+    const lowerHeader = header.toLowerCase();
+    return (
+      lowerHeader.includes("fee") ||
+      lowerHeader === "openingfee" ||
+      lowerHeader === "closingfee"
+    );
   };
 
   const getPnlColor = (value: string) => {
@@ -100,7 +123,8 @@ export function BacktestTradeTable({
 
     // Side column - special badge styling
     if (isSideColumn(header)) {
-      const isLong = value.toUpperCase() === "LONG" || value.toUpperCase() === "BUY";
+      const isLong =
+        value.toUpperCase() === "LONG" || value.toUpperCase() === "BUY";
       return (
         <span
           className={twMerge(
@@ -113,6 +137,28 @@ export function BacktestTradeTable({
           {value}
         </span>
       );
+    }
+
+    // Liquidated column - special badge styling
+    if (isLiquidatedColumn(header)) {
+      const isLiquidated = value.toLowerCase() === "true" || value === "1";
+      if (isLiquidated) {
+        return (
+          <span className="bg-danger-500/20 text-danger-400 rounded px-2 py-0.5 text-xs font-semibold">
+            LIQUIDATED
+          </span>
+        );
+      }
+      return <span className="text-neutral-500">-</span>;
+    }
+
+    // Fee columns - muted color
+    if (isFeeColumn(header)) {
+      const numValue = parseFloat(value.replace(/[^0-9.-]/g, ""));
+      if (!isNaN(numValue) && numValue > 0) {
+        return <span className="text-warning-400">{value}</span>;
+      }
+      return <span className="text-neutral-500">{value}</span>;
     }
 
     // PnL columns - colored based on value
@@ -138,7 +184,7 @@ export function BacktestTradeTable({
               <th
                 key={index}
                 className={twMerge(
-                  "px-3 py-2 text-xs font-semibold text-neutral-300 whitespace-nowrap",
+                  "px-3 py-2 text-xs font-semibold whitespace-nowrap text-neutral-300",
                   isNumericColumn(header) ? "text-right" : "text-left",
                 )}
               >

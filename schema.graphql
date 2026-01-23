@@ -43,6 +43,7 @@ input AssetInput {
 type BacktestComponents {
   exits: [ComponentInfo!]!
   filters: [ComponentInfo!]!
+  platforms: [ComponentInfo!]!
   risk: [ComponentInfo!]!
   signals: [ComponentInfo!]!
 }
