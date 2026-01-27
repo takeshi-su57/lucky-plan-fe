@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Select, SelectItem, Spinner, Input, Button } from "@heroui/react";
+import { Select, SelectItem, Input, Button } from "@heroui/react";
 import { FiSearch, FiRefreshCw } from "react-icons/fi";
 
 import { BacktestTaskStatus } from "@/graphql/gql/graphql";
+import { PaginatedViews } from "@/components/views/PaginatedViews";
 import {
   useBacktestTasks,
   useBacktestTaskStats,
@@ -13,6 +14,8 @@ import {
   useRetryBacktestTask,
 } from "@/app-hooks/useBacktest";
 import { BacktestTaskRow } from "./BacktestTaskRow";
+
+const PAGE_SIZE = 10;
 
 const statusOptions = [
   { key: "all", label: "All Status" },
@@ -27,6 +30,7 @@ export function BacktestTaskList() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [symbolFilter, setSymbolFilter] = useState<string>("");
   const [actionTaskId, setActionTaskId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -93,6 +97,7 @@ export function BacktestTaskList() {
           onSelectionChange={(keys) => {
             const selected = Array.from(keys)[0] as string;
             setStatusFilter(selected);
+            setPage(1);
           }}
           className="w-40"
         >
@@ -106,7 +111,10 @@ export function BacktestTaskList() {
           variant="bordered"
           placeholder="Filter by symbol..."
           value={symbolFilter}
-          onValueChange={setSymbolFilter}
+          onValueChange={(value) => {
+            setSymbolFilter(value);
+            setPage(1);
+          }}
           startContent={<FiSearch className="text-neutral-400" />}
           className="w-48"
         />
@@ -125,11 +133,7 @@ export function BacktestTaskList() {
       </div>
 
       {/* Task List */}
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Spinner color="white" size="lg" />
-        </div>
-      ) : tasks.length === 0 ? (
+      {tasks.length === 0 && !loading ? (
         <div className="flex flex-col items-center justify-center gap-2 py-12 text-neutral-400">
           <p>No backtest tasks found</p>
           <p className="text-sm">
@@ -137,39 +141,48 @@ export function BacktestTaskList() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
-          {tasks.map((task) => (
-            <BacktestTaskRow
-              key={task.id}
-              task={{
-                id: task.id,
-                name: task.name,
-                symbol: task.symbol,
-                status: task.status,
-                progress:
-                  task.totalConfigs && task.totalConfigs > 0
-                    ? task.processedConfigs / task.totalConfigs
-                    : 0,
-                totalConfigs: task.totalConfigs,
-                processedConfigs: task.processedConfigs,
-                createdAt: task.createdAt,
-                startedAt: task.startedAt,
-                completedAt: task.completedAt,
-                errorMessage: task.errorMessage,
-                searchStrategy: task.searchStrategy,
-                optimizationMetrics: task.optimizationMetrics,
-                trials: task.trials,
-                bestConfigIds: task.bestConfigIds,
-              }}
-              onCancel={handleCancel}
-              onDelete={handleDelete}
-              onRetry={handleRetry}
-              isCancelling={cancelLoading && actionTaskId === task.id}
-              isDeleting={deleteLoading && actionTaskId === task.id}
-              isRetrying={retryLoading && actionTaskId === task.id}
-            />
-          ))}
-        </div>
+        <PaginatedViews
+          currentPage={page}
+          totalPages={Math.ceil(tasks.length / PAGE_SIZE)}
+          onChangePage={setPage}
+          loading={loading}
+        >
+          <div className="flex flex-col gap-3">
+            {tasks
+              .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+              .map((task) => (
+                <BacktestTaskRow
+                  key={task.id}
+                  task={{
+                    id: task.id,
+                    name: task.name,
+                    symbol: task.symbol,
+                    status: task.status,
+                    progress:
+                      task.totalConfigs && task.totalConfigs > 0
+                        ? task.processedConfigs / task.totalConfigs
+                        : 0,
+                    totalConfigs: task.totalConfigs,
+                    processedConfigs: task.processedConfigs,
+                    createdAt: task.createdAt,
+                    startedAt: task.startedAt,
+                    completedAt: task.completedAt,
+                    errorMessage: task.errorMessage,
+                    searchStrategy: task.searchStrategy,
+                    optimizationMetrics: task.optimizationMetrics,
+                    trials: task.trials,
+                    bestConfigIds: task.bestConfigIds,
+                  }}
+                  onCancel={handleCancel}
+                  onDelete={handleDelete}
+                  onRetry={handleRetry}
+                  isCancelling={cancelLoading && actionTaskId === task.id}
+                  isDeleting={deleteLoading && actionTaskId === task.id}
+                  isRetrying={retryLoading && actionTaskId === task.id}
+                />
+              ))}
+          </div>
+        </PaginatedViews>
       )}
     </div>
   );

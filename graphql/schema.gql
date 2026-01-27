@@ -780,6 +780,7 @@ type ParamInfo {
   max: Float
   min: Float
   name: String!
+  options: [SelectOptionInfo!]
   required: Boolean!
   type: String!
 }
@@ -1126,6 +1127,11 @@ input SLTPRequestInput {
   condition: String!
   contractId: Int!
   positionKey: String!
+}
+
+type SelectOptionInfo {
+  label: String!
+  value: String!
 }
 
 type ServerTime {

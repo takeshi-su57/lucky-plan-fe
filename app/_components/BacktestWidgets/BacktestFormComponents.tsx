@@ -126,6 +126,11 @@ export type Interval = {
   unit: "s" | "m";
 };
 
+export type SelectOption = {
+  label: string;
+  value: string;
+};
+
 export type BacktestComponent = {
   name: string;
   description?: string | null;
@@ -137,6 +142,7 @@ export type BacktestComponent = {
     description?: string | null;
     min?: number | null;
     max?: number | null;
+    options?: SelectOption[] | null;
   }>;
 };
 
@@ -238,7 +244,23 @@ export function initializeOptunaComponent(
 
   const params: OptunaParamValues = {};
   for (const param of component.params) {
-    if (param.type === "number" && param.min !== null && param.max !== null) {
+    // Select type always uses array mode
+    if (param.type === "select") {
+      if (param.default) {
+        try {
+          const defaultValue = JSON.parse(param.default);
+          if (Array.isArray(defaultValue)) {
+            params[param.name] = { mode: "array", value: defaultValue };
+          } else {
+            params[param.name] = { mode: "array", value: [defaultValue] };
+          }
+        } catch {
+          params[param.name] = { mode: "array", value: [param.default] };
+        }
+      } else {
+        params[param.name] = { mode: "array", value: [] };
+      }
+    } else if (param.type === "number" && param.min !== null && param.max !== null) {
       // Default to range mode for numbers with defined min/max
       params[param.name] = {
         mode: "range",
@@ -285,17 +307,34 @@ export function ParamInputs({ component, params, onChange }: ParamInputsProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      {component.params.map((param) => (
-        <ArrayInput
-          key={param.name}
-          label={param.name}
-          description={param.description}
-          values={(params[param.name] ?? []) as (number | string | boolean)[]}
-          onChange={(values) => onChange({ ...params, [param.name]: values })}
-          type={getParamType(param.type)}
-          required={param.required}
-        />
-      ))}
+      {component.params.map((param) => {
+        // Handle select type with options
+        if (param.type === "select" && param.options && param.options.length > 0) {
+          return (
+            <SelectArrayInput
+              key={param.name}
+              label={param.name}
+              description={param.description}
+              values={(params[param.name] ?? []) as string[]}
+              onChange={(values) => onChange({ ...params, [param.name]: values })}
+              options={param.options}
+              required={param.required}
+            />
+          );
+        }
+
+        return (
+          <ArrayInput
+            key={param.name}
+            label={param.name}
+            description={param.description}
+            values={(params[param.name] ?? []) as (number | string | boolean)[]}
+            onChange={(values) => onChange({ ...params, [param.name]: values })}
+            type={getParamType(param.type)}
+            required={param.required}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -373,6 +412,33 @@ export function OptunaParamInputs({
       {component.params.map((param) => {
         const value = params[param.name] ?? { mode: "array", value: [] };
         const mode = getParamMode(value);
+
+        // Handle select type with options - only array mode allowed
+        if (param.type === "select" && param.options && param.options.length > 0) {
+          return (
+            <div key={param.name} className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-neutral-400">{param.name}</span>
+              </div>
+              {param.description && (
+                <span className="text-xs text-neutral-500">
+                  {param.description}
+                </span>
+              )}
+              <SelectArrayInput
+                label=""
+                values={getArrayValue(value) as string[]}
+                onChange={(newValues) => {
+                  onChange({
+                    ...params,
+                    [param.name]: { mode: "array", value: newValues },
+                  });
+                }}
+                options={param.options}
+              />
+            </div>
+          );
+        }
 
         return (
           <div key={param.name} className="flex flex-col gap-2">
@@ -747,6 +813,88 @@ export function IntervalInput({
             <FiPlus className="h-3 w-3" />
           </Button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// SelectArrayInput Component (for select type params)
+// ============================================
+
+type SelectArrayInputProps = {
+  label: string;
+  description?: string | null;
+  values: string[];
+  onChange: (values: string[]) => void;
+  options: SelectOption[];
+  required?: boolean;
+};
+
+export function SelectArrayInput({
+  label,
+  description,
+  values,
+  onChange,
+  options,
+}: SelectArrayInputProps) {
+  const handleAdd = (value: string) => {
+    if (!values.includes(value)) {
+      onChange([...values, value]);
+    }
+  };
+
+  const handleRemove = (index: number) => {
+    onChange(values.filter((_, i) => i !== index));
+  };
+
+  // Get label for a value
+  const getOptionLabel = (value: string) => {
+    const option = options.find((o) => o.value === value);
+    return option?.label ?? value;
+  };
+
+  // Filter out already selected options
+  const availableOptions = options.filter((o) => !values.includes(o.value));
+
+  return (
+    <div className="flex flex-col gap-2">
+      {label && (
+        <span className="text-xs text-neutral-400">{label}</span>
+      )}
+      {description && (
+        <span className="text-xs text-neutral-500">{description}</span>
+      )}
+      <div className="flex flex-wrap items-center gap-2">
+        {values.map((value, index) => (
+          <Chip
+            key={index}
+            onClose={() => handleRemove(index)}
+            variant="flat"
+            size="sm"
+          >
+            {getOptionLabel(value)}
+          </Chip>
+        ))}
+        {availableOptions.length > 0 && (
+          <Select
+            size="sm"
+            placeholder="Add value"
+            className="w-36"
+            variant="bordered"
+            selectedKeys={[]}
+            onSelectionChange={(keys) => {
+              const selected = Array.from(keys)[0] as string;
+              if (selected) handleAdd(selected);
+            }}
+          >
+            {availableOptions.map((option) => (
+              <SelectItem key={option.value} textValue={option.label}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </Select>
+        )}
       </div>
     </div>
   );

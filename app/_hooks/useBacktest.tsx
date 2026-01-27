@@ -86,6 +86,10 @@ export const BacktestComponentsQuery = graphql(`
           description
           min
           max
+          options {
+            label
+            value
+          }
         }
       }
       filters {
@@ -99,6 +103,10 @@ export const BacktestComponentsQuery = graphql(`
           description
           min
           max
+          options {
+            label
+            value
+          }
         }
       }
       risk {
@@ -112,6 +120,10 @@ export const BacktestComponentsQuery = graphql(`
           description
           min
           max
+          options {
+            label
+            value
+          }
         }
       }
       exits {
@@ -125,6 +137,10 @@ export const BacktestComponentsQuery = graphql(`
           description
           min
           max
+          options {
+            label
+            value
+          }
         }
       }
       platforms {
@@ -138,6 +154,10 @@ export const BacktestComponentsQuery = graphql(`
           description
           min
           max
+          options {
+            label
+            value
+          }
         }
       }
     }
