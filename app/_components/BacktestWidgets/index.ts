@@ -1,7 +1,6 @@
 export * from "./BacktestTaskStatusBadge";
 export * from "./BacktestTaskProgress";
 export * from "./BacktestTaskRow";
-export * from "./BacktestTaskList";
 export * from "./BacktestTaskDetail";
 export * from "./BacktestResultCard";
 export * from "./BacktestResultGrid";
@@ -14,3 +13,4 @@ export * from "./BestConfigCarousel";
 export * from "./BestConfigChartCarousel";
 export * from "./CreateGridBacktestTaskDrawer";
 export * from "./CreateOptunaBacktestTaskDrawer";
+export * from "./UnifiedTaskList";

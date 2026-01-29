@@ -26,7 +26,7 @@ type Documents = {
     "\n  mutation stopBot($id: Int!) {\n    stopBot(id: $id)\n  }\n": typeof types.StopBotDocument,
     "\n  subscription botCreated($userId: String!) {\n    botCreated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": typeof types.BotCreatedDocument,
     "\n  subscription botUpdated($userId: String!) {\n    botUpdated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": typeof types.BotUpdatedDocument,
-    "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    searchStrategy\n    optimizationMetrics\n    trials\n    bestConfigIds\n    optunaStudyPath\n    optimizerPid\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n": typeof types.BacktestTaskInfoFragmentDoc,
+    "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    searchStrategy\n    optimizationMetrics\n    trials\n    bestConfigIds\n    optunaStudyPath\n    optimizerPid\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    templateId\n    templateSearchId\n  }\n": typeof types.BacktestTaskInfoFragmentDoc,
     "\n  fragment BacktestResultInfo on BacktestResult {\n    id\n    taskId\n    configId\n    runDate\n    strategyConfig\n    totalTrades\n    winningTrades\n    losingTrades\n    winRate\n    totalPnlUsdt\n    totalPnlPercent\n    maxDrawdownUsdt\n    maxDrawdownPercent\n    sharpeRatio\n    profitFactor\n    resultFolder\n    createdAt\n  }\n": typeof types.BacktestResultInfoFragmentDoc,
     "\n  query BacktestComponents {\n    backtestComponents {\n      signals {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      filters {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      risk {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      exits {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      platforms {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n    }\n  }\n": typeof types.BacktestComponentsDocument,
     "\n  query BacktestTask($id: ID!) {\n    backtestTask(id: $id) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.BacktestTaskDocument,
@@ -133,6 +133,14 @@ type Documents = {
     "\n  query getAllStrategyMetadata {\n    getAllStrategyMetadata {\n      ...StrategyMetadataInfo\n    }\n  }\n": typeof types.GetAllStrategyMetadataDocument,
     "\n  query getAllStrategy {\n    getAllStrategy {\n      ...StrategyInfo\n    }\n  }\n": typeof types.GetAllStrategyDocument,
     "\n  mutation updateStrategy($id: Int!, $input: UpdateStrategyInput!) {\n    updateStrategy(id: $id, input: $input) {\n      ...StrategyInfo\n    }\n  }\n": typeof types.UpdateStrategyDocument,
+    "\n  fragment StrategyTemplateInfo on StrategyTemplate {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n  }\n": typeof types.StrategyTemplateInfoFragmentDoc,
+    "\n  fragment StrategyTemplateWithStatsInfo on StrategyTemplateWithStats {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n    totalSearches\n    totalTasks\n  }\n": typeof types.StrategyTemplateWithStatsInfoFragmentDoc,
+    "\n  query StrategyTemplate($id: ID!) {\n    strategyTemplate(id: $id) {\n      ...StrategyTemplateInfo\n    }\n  }\n": typeof types.StrategyTemplateDocument,
+    "\n  query StrategyTemplates(\n    $category: StrategyCategory\n    $isActive: Boolean\n    $limit: Int\n    $offset: Int\n  ) {\n    strategyTemplates(\n      category: $category\n      isActive: $isActive\n      limit: $limit\n      offset: $offset\n    ) {\n      ...StrategyTemplateInfo\n    }\n  }\n": typeof types.StrategyTemplatesDocument,
+    "\n  query StrategyTemplateWithStats($id: ID!) {\n    strategyTemplateWithStats(id: $id) {\n      ...StrategyTemplateWithStatsInfo\n    }\n  }\n": typeof types.StrategyTemplateWithStatsDocument,
+    "\n  mutation CreateStrategyTemplate($input: CreateStrategyTemplateInput!) {\n    createStrategyTemplate(input: $input) {\n      ...StrategyTemplateInfo\n    }\n  }\n": typeof types.CreateStrategyTemplateDocument,
+    "\n  mutation UpdateStrategyTemplate($input: UpdateStrategyTemplateInput!) {\n    updateStrategyTemplate(input: $input) {\n      ...StrategyTemplateInfo\n    }\n  }\n": typeof types.UpdateStrategyTemplateDocument,
+    "\n  mutation DeleteStrategyTemplate($id: ID!) {\n    deleteStrategyTemplate(id: $id)\n  }\n": typeof types.DeleteStrategyTemplateDocument,
     "\n  mutation pauseSystem {\n    pauseSystem\n  }\n": typeof types.PauseSystemDocument,
     "\n  mutation resumeSystem($password: String) {\n    resumeSystem(password: $password)\n  }\n": typeof types.ResumeSystemDocument,
     "\n  mutation killSubService($service: String!) {\n    killSubService(service: $service)\n  }\n": typeof types.KillSubServiceDocument,
@@ -160,6 +168,18 @@ type Documents = {
     "\n  mutation stopTask($id: Int!) {\n    stopTask(id: $id)\n  }\n": typeof types.StopTaskDocument,
     "\n  subscription taskCreated($userId: String!) {\n    taskCreated(userId: $userId) {\n      ...TaskBackwardDetailsInfo\n    }\n  }\n": typeof types.TaskCreatedDocument,
     "\n  subscription taskUpdated($userId: String!) {\n    taskUpdated(userId: $userId) {\n      ...TaskBackwardDetailsInfo\n    }\n  }\n": typeof types.TaskUpdatedDocument,
+    "\n  fragment TemplateSearchInfo on TemplateSearch {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n": typeof types.TemplateSearchInfoFragmentDoc,
+    "\n  fragment TemplateSearchWithTemplateInfo on TemplateSearchWithTemplate {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    template {\n      ...StrategyTemplateInfo\n    }\n  }\n": typeof types.TemplateSearchWithTemplateInfoFragmentDoc,
+    "\n  fragment TemplateSearchWithTaskInfo on TemplateSearchWithTask {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    template {\n      ...StrategyTemplateInfo\n    }\n    task {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.TemplateSearchWithTaskInfoFragmentDoc,
+    "\n  query TemplateSearch($id: ID!) {\n    templateSearch(id: $id) {\n      ...TemplateSearchInfo\n    }\n  }\n": typeof types.TemplateSearchDocument,
+    "\n  query TemplateSearchWithTask($id: ID!) {\n    templateSearchWithTask(id: $id) {\n      ...TemplateSearchWithTaskInfo\n    }\n  }\n": typeof types.TemplateSearchWithTaskDocument,
+    "\n  query TemplateSearches($filter: TemplateSearchFilterInput) {\n    templateSearches(filter: $filter) {\n      ...TemplateSearchWithTemplateInfo\n    }\n  }\n": typeof types.TemplateSearchesDocument,
+    "\n  query TemplateSearchStats {\n    templateSearchStats {\n      await\n      processing\n      done\n      failed\n      cancelled\n    }\n  }\n": typeof types.TemplateSearchStatsDocument,
+    "\n  query TaskByTemplateSearch($searchId: ID!) {\n    taskByTemplateSearch(searchId: $searchId) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.TaskByTemplateSearchDocument,
+    "\n  mutation CreateTemplateSearch($input: CreateTemplateSearchInput!) {\n    createTemplateSearch(input: $input) {\n      ...TemplateSearchWithTemplateInfo\n    }\n  }\n": typeof types.CreateTemplateSearchDocument,
+    "\n  mutation CancelTemplateSearch($id: ID!) {\n    cancelTemplateSearch(id: $id) {\n      ...TemplateSearchInfo\n    }\n  }\n": typeof types.CancelTemplateSearchDocument,
+    "\n  mutation DeleteTemplateSearch($id: ID!) {\n    deleteTemplateSearch(id: $id)\n  }\n": typeof types.DeleteTemplateSearchDocument,
+    "\n  subscription TemplateSearchUpdated {\n    templateSearchUpdated {\n      ...TemplateSearchInfo\n    }\n  }\n": typeof types.TemplateSearchUpdatedDocument,
     "\n  fragment TradingSignalLogInfo on TradingSignalLog {\n    id\n    address\n    platform\n    eventLogs {\n      ...PerpTradingEventLogInfo\n    }\n  }\n": typeof types.TradingSignalLogInfoFragmentDoc,
     "\n  query getTradingSignalLogs {\n    getTradingSignalLogs {\n      ...TradingSignalLogInfo\n    }\n  }\n": typeof types.GetTradingSignalLogsDocument,
     "\n  mutation registerTradingSignalLog($address: String!, $platform: Platform!) {\n    registerTradingSignalLog(address: $address, platform: $platform) {\n      ...TradingSignalLogInfo\n    }\n  }\n": typeof types.RegisterTradingSignalLogDocument,
@@ -189,7 +209,7 @@ const documents: Documents = {
     "\n  mutation stopBot($id: Int!) {\n    stopBot(id: $id)\n  }\n": types.StopBotDocument,
     "\n  subscription botCreated($userId: String!) {\n    botCreated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": types.BotCreatedDocument,
     "\n  subscription botUpdated($userId: String!) {\n    botUpdated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": types.BotUpdatedDocument,
-    "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    searchStrategy\n    optimizationMetrics\n    trials\n    bestConfigIds\n    optunaStudyPath\n    optimizerPid\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n": types.BacktestTaskInfoFragmentDoc,
+    "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    searchStrategy\n    optimizationMetrics\n    trials\n    bestConfigIds\n    optunaStudyPath\n    optimizerPid\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    templateId\n    templateSearchId\n  }\n": types.BacktestTaskInfoFragmentDoc,
     "\n  fragment BacktestResultInfo on BacktestResult {\n    id\n    taskId\n    configId\n    runDate\n    strategyConfig\n    totalTrades\n    winningTrades\n    losingTrades\n    winRate\n    totalPnlUsdt\n    totalPnlPercent\n    maxDrawdownUsdt\n    maxDrawdownPercent\n    sharpeRatio\n    profitFactor\n    resultFolder\n    createdAt\n  }\n": types.BacktestResultInfoFragmentDoc,
     "\n  query BacktestComponents {\n    backtestComponents {\n      signals {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      filters {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      risk {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      exits {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      platforms {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n    }\n  }\n": types.BacktestComponentsDocument,
     "\n  query BacktestTask($id: ID!) {\n    backtestTask(id: $id) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.BacktestTaskDocument,
@@ -296,6 +316,14 @@ const documents: Documents = {
     "\n  query getAllStrategyMetadata {\n    getAllStrategyMetadata {\n      ...StrategyMetadataInfo\n    }\n  }\n": types.GetAllStrategyMetadataDocument,
     "\n  query getAllStrategy {\n    getAllStrategy {\n      ...StrategyInfo\n    }\n  }\n": types.GetAllStrategyDocument,
     "\n  mutation updateStrategy($id: Int!, $input: UpdateStrategyInput!) {\n    updateStrategy(id: $id, input: $input) {\n      ...StrategyInfo\n    }\n  }\n": types.UpdateStrategyDocument,
+    "\n  fragment StrategyTemplateInfo on StrategyTemplate {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n  }\n": types.StrategyTemplateInfoFragmentDoc,
+    "\n  fragment StrategyTemplateWithStatsInfo on StrategyTemplateWithStats {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n    totalSearches\n    totalTasks\n  }\n": types.StrategyTemplateWithStatsInfoFragmentDoc,
+    "\n  query StrategyTemplate($id: ID!) {\n    strategyTemplate(id: $id) {\n      ...StrategyTemplateInfo\n    }\n  }\n": types.StrategyTemplateDocument,
+    "\n  query StrategyTemplates(\n    $category: StrategyCategory\n    $isActive: Boolean\n    $limit: Int\n    $offset: Int\n  ) {\n    strategyTemplates(\n      category: $category\n      isActive: $isActive\n      limit: $limit\n      offset: $offset\n    ) {\n      ...StrategyTemplateInfo\n    }\n  }\n": types.StrategyTemplatesDocument,
+    "\n  query StrategyTemplateWithStats($id: ID!) {\n    strategyTemplateWithStats(id: $id) {\n      ...StrategyTemplateWithStatsInfo\n    }\n  }\n": types.StrategyTemplateWithStatsDocument,
+    "\n  mutation CreateStrategyTemplate($input: CreateStrategyTemplateInput!) {\n    createStrategyTemplate(input: $input) {\n      ...StrategyTemplateInfo\n    }\n  }\n": types.CreateStrategyTemplateDocument,
+    "\n  mutation UpdateStrategyTemplate($input: UpdateStrategyTemplateInput!) {\n    updateStrategyTemplate(input: $input) {\n      ...StrategyTemplateInfo\n    }\n  }\n": types.UpdateStrategyTemplateDocument,
+    "\n  mutation DeleteStrategyTemplate($id: ID!) {\n    deleteStrategyTemplate(id: $id)\n  }\n": types.DeleteStrategyTemplateDocument,
     "\n  mutation pauseSystem {\n    pauseSystem\n  }\n": types.PauseSystemDocument,
     "\n  mutation resumeSystem($password: String) {\n    resumeSystem(password: $password)\n  }\n": types.ResumeSystemDocument,
     "\n  mutation killSubService($service: String!) {\n    killSubService(service: $service)\n  }\n": types.KillSubServiceDocument,
@@ -323,6 +351,18 @@ const documents: Documents = {
     "\n  mutation stopTask($id: Int!) {\n    stopTask(id: $id)\n  }\n": types.StopTaskDocument,
     "\n  subscription taskCreated($userId: String!) {\n    taskCreated(userId: $userId) {\n      ...TaskBackwardDetailsInfo\n    }\n  }\n": types.TaskCreatedDocument,
     "\n  subscription taskUpdated($userId: String!) {\n    taskUpdated(userId: $userId) {\n      ...TaskBackwardDetailsInfo\n    }\n  }\n": types.TaskUpdatedDocument,
+    "\n  fragment TemplateSearchInfo on TemplateSearch {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n": types.TemplateSearchInfoFragmentDoc,
+    "\n  fragment TemplateSearchWithTemplateInfo on TemplateSearchWithTemplate {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    template {\n      ...StrategyTemplateInfo\n    }\n  }\n": types.TemplateSearchWithTemplateInfoFragmentDoc,
+    "\n  fragment TemplateSearchWithTaskInfo on TemplateSearchWithTask {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    template {\n      ...StrategyTemplateInfo\n    }\n    task {\n      ...BacktestTaskInfo\n    }\n  }\n": types.TemplateSearchWithTaskInfoFragmentDoc,
+    "\n  query TemplateSearch($id: ID!) {\n    templateSearch(id: $id) {\n      ...TemplateSearchInfo\n    }\n  }\n": types.TemplateSearchDocument,
+    "\n  query TemplateSearchWithTask($id: ID!) {\n    templateSearchWithTask(id: $id) {\n      ...TemplateSearchWithTaskInfo\n    }\n  }\n": types.TemplateSearchWithTaskDocument,
+    "\n  query TemplateSearches($filter: TemplateSearchFilterInput) {\n    templateSearches(filter: $filter) {\n      ...TemplateSearchWithTemplateInfo\n    }\n  }\n": types.TemplateSearchesDocument,
+    "\n  query TemplateSearchStats {\n    templateSearchStats {\n      await\n      processing\n      done\n      failed\n      cancelled\n    }\n  }\n": types.TemplateSearchStatsDocument,
+    "\n  query TaskByTemplateSearch($searchId: ID!) {\n    taskByTemplateSearch(searchId: $searchId) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.TaskByTemplateSearchDocument,
+    "\n  mutation CreateTemplateSearch($input: CreateTemplateSearchInput!) {\n    createTemplateSearch(input: $input) {\n      ...TemplateSearchWithTemplateInfo\n    }\n  }\n": types.CreateTemplateSearchDocument,
+    "\n  mutation CancelTemplateSearch($id: ID!) {\n    cancelTemplateSearch(id: $id) {\n      ...TemplateSearchInfo\n    }\n  }\n": types.CancelTemplateSearchDocument,
+    "\n  mutation DeleteTemplateSearch($id: ID!) {\n    deleteTemplateSearch(id: $id)\n  }\n": types.DeleteTemplateSearchDocument,
+    "\n  subscription TemplateSearchUpdated {\n    templateSearchUpdated {\n      ...TemplateSearchInfo\n    }\n  }\n": types.TemplateSearchUpdatedDocument,
     "\n  fragment TradingSignalLogInfo on TradingSignalLog {\n    id\n    address\n    platform\n    eventLogs {\n      ...PerpTradingEventLogInfo\n    }\n  }\n": types.TradingSignalLogInfoFragmentDoc,
     "\n  query getTradingSignalLogs {\n    getTradingSignalLogs {\n      ...TradingSignalLogInfo\n    }\n  }\n": types.GetTradingSignalLogsDocument,
     "\n  mutation registerTradingSignalLog($address: String!, $platform: Platform!) {\n    registerTradingSignalLog(address: $address, platform: $platform) {\n      ...TradingSignalLogInfo\n    }\n  }\n": types.RegisterTradingSignalLogDocument,
@@ -405,7 +445,7 @@ export function graphql(source: "\n  subscription botUpdated($userId: String!) {
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    searchStrategy\n    optimizationMetrics\n    trials\n    bestConfigIds\n    optunaStudyPath\n    optimizerPid\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n"): (typeof documents)["\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    searchStrategy\n    optimizationMetrics\n    trials\n    bestConfigIds\n    optunaStudyPath\n    optimizerPid\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n"];
+export function graphql(source: "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    searchStrategy\n    optimizationMetrics\n    trials\n    bestConfigIds\n    optunaStudyPath\n    optimizerPid\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    templateId\n    templateSearchId\n  }\n"): (typeof documents)["\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    searchStrategy\n    optimizationMetrics\n    trials\n    bestConfigIds\n    optunaStudyPath\n    optimizerPid\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    templateId\n    templateSearchId\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -833,6 +873,38 @@ export function graphql(source: "\n  mutation updateStrategy($id: Int!, $input: 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  fragment StrategyTemplateInfo on StrategyTemplate {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n  }\n"): (typeof documents)["\n  fragment StrategyTemplateInfo on StrategyTemplate {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment StrategyTemplateWithStatsInfo on StrategyTemplateWithStats {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n    totalSearches\n    totalTasks\n  }\n"): (typeof documents)["\n  fragment StrategyTemplateWithStatsInfo on StrategyTemplateWithStats {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n    totalSearches\n    totalTasks\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query StrategyTemplate($id: ID!) {\n    strategyTemplate(id: $id) {\n      ...StrategyTemplateInfo\n    }\n  }\n"): (typeof documents)["\n  query StrategyTemplate($id: ID!) {\n    strategyTemplate(id: $id) {\n      ...StrategyTemplateInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query StrategyTemplates(\n    $category: StrategyCategory\n    $isActive: Boolean\n    $limit: Int\n    $offset: Int\n  ) {\n    strategyTemplates(\n      category: $category\n      isActive: $isActive\n      limit: $limit\n      offset: $offset\n    ) {\n      ...StrategyTemplateInfo\n    }\n  }\n"): (typeof documents)["\n  query StrategyTemplates(\n    $category: StrategyCategory\n    $isActive: Boolean\n    $limit: Int\n    $offset: Int\n  ) {\n    strategyTemplates(\n      category: $category\n      isActive: $isActive\n      limit: $limit\n      offset: $offset\n    ) {\n      ...StrategyTemplateInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query StrategyTemplateWithStats($id: ID!) {\n    strategyTemplateWithStats(id: $id) {\n      ...StrategyTemplateWithStatsInfo\n    }\n  }\n"): (typeof documents)["\n  query StrategyTemplateWithStats($id: ID!) {\n    strategyTemplateWithStats(id: $id) {\n      ...StrategyTemplateWithStatsInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateStrategyTemplate($input: CreateStrategyTemplateInput!) {\n    createStrategyTemplate(input: $input) {\n      ...StrategyTemplateInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CreateStrategyTemplate($input: CreateStrategyTemplateInput!) {\n    createStrategyTemplate(input: $input) {\n      ...StrategyTemplateInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation UpdateStrategyTemplate($input: UpdateStrategyTemplateInput!) {\n    updateStrategyTemplate(input: $input) {\n      ...StrategyTemplateInfo\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateStrategyTemplate($input: UpdateStrategyTemplateInput!) {\n    updateStrategyTemplate(input: $input) {\n      ...StrategyTemplateInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation DeleteStrategyTemplate($id: ID!) {\n    deleteStrategyTemplate(id: $id)\n  }\n"): (typeof documents)["\n  mutation DeleteStrategyTemplate($id: ID!) {\n    deleteStrategyTemplate(id: $id)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  mutation pauseSystem {\n    pauseSystem\n  }\n"): (typeof documents)["\n  mutation pauseSystem {\n    pauseSystem\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -938,6 +1010,54 @@ export function graphql(source: "\n  subscription taskCreated($userId: String!) 
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  subscription taskUpdated($userId: String!) {\n    taskUpdated(userId: $userId) {\n      ...TaskBackwardDetailsInfo\n    }\n  }\n"): (typeof documents)["\n  subscription taskUpdated($userId: String!) {\n    taskUpdated(userId: $userId) {\n      ...TaskBackwardDetailsInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment TemplateSearchInfo on TemplateSearch {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n"): (typeof documents)["\n  fragment TemplateSearchInfo on TemplateSearch {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment TemplateSearchWithTemplateInfo on TemplateSearchWithTemplate {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    template {\n      ...StrategyTemplateInfo\n    }\n  }\n"): (typeof documents)["\n  fragment TemplateSearchWithTemplateInfo on TemplateSearchWithTemplate {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    template {\n      ...StrategyTemplateInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment TemplateSearchWithTaskInfo on TemplateSearchWithTask {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    template {\n      ...StrategyTemplateInfo\n    }\n    task {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  fragment TemplateSearchWithTaskInfo on TemplateSearchWithTask {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    template {\n      ...StrategyTemplateInfo\n    }\n    task {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query TemplateSearch($id: ID!) {\n    templateSearch(id: $id) {\n      ...TemplateSearchInfo\n    }\n  }\n"): (typeof documents)["\n  query TemplateSearch($id: ID!) {\n    templateSearch(id: $id) {\n      ...TemplateSearchInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query TemplateSearchWithTask($id: ID!) {\n    templateSearchWithTask(id: $id) {\n      ...TemplateSearchWithTaskInfo\n    }\n  }\n"): (typeof documents)["\n  query TemplateSearchWithTask($id: ID!) {\n    templateSearchWithTask(id: $id) {\n      ...TemplateSearchWithTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query TemplateSearches($filter: TemplateSearchFilterInput) {\n    templateSearches(filter: $filter) {\n      ...TemplateSearchWithTemplateInfo\n    }\n  }\n"): (typeof documents)["\n  query TemplateSearches($filter: TemplateSearchFilterInput) {\n    templateSearches(filter: $filter) {\n      ...TemplateSearchWithTemplateInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query TemplateSearchStats {\n    templateSearchStats {\n      await\n      processing\n      done\n      failed\n      cancelled\n    }\n  }\n"): (typeof documents)["\n  query TemplateSearchStats {\n    templateSearchStats {\n      await\n      processing\n      done\n      failed\n      cancelled\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query TaskByTemplateSearch($searchId: ID!) {\n    taskByTemplateSearch(searchId: $searchId) {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  query TaskByTemplateSearch($searchId: ID!) {\n    taskByTemplateSearch(searchId: $searchId) {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateTemplateSearch($input: CreateTemplateSearchInput!) {\n    createTemplateSearch(input: $input) {\n      ...TemplateSearchWithTemplateInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CreateTemplateSearch($input: CreateTemplateSearchInput!) {\n    createTemplateSearch(input: $input) {\n      ...TemplateSearchWithTemplateInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CancelTemplateSearch($id: ID!) {\n    cancelTemplateSearch(id: $id) {\n      ...TemplateSearchInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CancelTemplateSearch($id: ID!) {\n    cancelTemplateSearch(id: $id) {\n      ...TemplateSearchInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation DeleteTemplateSearch($id: ID!) {\n    deleteTemplateSearch(id: $id)\n  }\n"): (typeof documents)["\n  mutation DeleteTemplateSearch($id: ID!) {\n    deleteTemplateSearch(id: $id)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  subscription TemplateSearchUpdated {\n    templateSearchUpdated {\n      ...TemplateSearchInfo\n    }\n  }\n"): (typeof documents)["\n  subscription TemplateSearchUpdated {\n    templateSearchUpdated {\n      ...TemplateSearchInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

@@ -260,7 +260,11 @@ export function initializeOptunaComponent(
       } else {
         params[param.name] = { mode: "array", value: [] };
       }
-    } else if (param.type === "number" && param.min !== null && param.max !== null) {
+    } else if (
+      param.type === "number" &&
+      param.min !== null &&
+      param.max !== null
+    ) {
       // Default to range mode for numbers with defined min/max
       params[param.name] = {
         mode: "range",
@@ -309,14 +313,20 @@ export function ParamInputs({ component, params, onChange }: ParamInputsProps) {
     <div className="flex flex-col gap-3">
       {component.params.map((param) => {
         // Handle select type with options
-        if (param.type === "select" && param.options && param.options.length > 0) {
+        if (
+          param.type === "select" &&
+          param.options &&
+          param.options.length > 0
+        ) {
           return (
             <SelectArrayInput
               key={param.name}
               label={param.name}
               description={param.description}
               values={(params[param.name] ?? []) as string[]}
-              onChange={(values) => onChange({ ...params, [param.name]: values })}
+              onChange={(values) =>
+                onChange({ ...params, [param.name]: values })
+              }
               options={param.options}
               required={param.required}
             />
@@ -414,7 +424,11 @@ export function OptunaParamInputs({
         const mode = getParamMode(value);
 
         // Handle select type with options - only array mode allowed
-        if (param.type === "select" && param.options && param.options.length > 0) {
+        if (
+          param.type === "select" &&
+          param.options &&
+          param.options.length > 0
+        ) {
           return (
             <div key={param.name} className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
@@ -859,9 +873,7 @@ export function SelectArrayInput({
 
   return (
     <div className="flex flex-col gap-2">
-      {label && (
-        <span className="text-xs text-neutral-400">{label}</span>
-      )}
+      {label && <span className="text-xs text-neutral-400">{label}</span>}
       {description && (
         <span className="text-xs text-neutral-500">{description}</span>
       )}

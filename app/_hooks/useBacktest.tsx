@@ -43,6 +43,8 @@ export const BacktestTaskInfoFragment = graphql(`
     startedAt
     completedAt
     errorMessage
+    templateId
+    templateSearchId
   }
 `);
 

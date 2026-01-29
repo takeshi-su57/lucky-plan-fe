@@ -9,7 +9,9 @@
       "Bash(timeout:*)",
       "Bash(dir:*)",
       "Bash(npm run codegen:*)",
-      "Bash(npm run)"
+      "Bash(npm run)",
+      "Bash(wc:*)",
+      "Bash(npm run lint)"
     ]
   }
 }

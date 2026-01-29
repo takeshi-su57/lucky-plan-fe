@@ -117,6 +117,8 @@ type BacktestTask {
   startedAt: Date
   status: BacktestTaskStatus!
   symbol: String!
+  templateId: ID
+  templateSearchId: ID
   totalConfigs: Int!
 
   """
@@ -334,6 +336,33 @@ input CreateStrategyInput {
   params: String!
   ratio: Float!
   strategyKey: String!
+}
+
+input CreateStrategyTemplateInput {
+  category: StrategyCategory!
+  description: String
+
+  """
+  Factory configuration - same structure as OptimizationParams
+  """
+  factoryConfig: JSON!
+  name: String!
+}
+
+input CreateTemplateSearchInput {
+  endDate: Date!
+  interval: String = "1m"
+  name: String!
+  optimizationMetrics: [String!] = ["sharpeRatio"]
+  searchStrategy: String = "optuna"
+  startDate: Date!
+
+  """
+  Symbol to run backtest on
+  """
+  symbol: String!
+  templateId: ID!
+  trials: Int = 100
 }
 
 """
@@ -625,6 +654,11 @@ type Mutation {
   cancelOrderAfterTimeout(
     input: CancelOrderAfterTimeoutInput!
   ): ContractExecutionResult!
+
+  """
+  Cancel a template search and its task
+  """
+  cancelTemplateSearch(id: ID!): TemplateSearch!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
   checkLog(id: Int!): Log!
@@ -640,6 +674,18 @@ type Mutation {
   createBot(input: CreateBotInput!): BotBackwardDetails!
   createPlan(createPlanInput: CreatePlanInput!): Plan!
   createSLTP(input: SLTPRequestInput!): SLTPRequest!
+
+  """
+  Create a new strategy template
+  """
+  createStrategyTemplate(input: CreateStrategyTemplateInput!): StrategyTemplate!
+
+  """
+  Create a new template search (spawns a BacktestTask)
+  """
+  createTemplateSearch(
+    input: CreateTemplateSearchInput!
+  ): TemplateSearchWithTemplate!
   decreaseAllowanceToZero(
     contractId: Int!
     followerAddress: String!
@@ -662,7 +708,17 @@ type Mutation {
   deleteCategory(id: Int!): TagCategory!
   deletePlan(id: Int!): Int!
   deleteSLTP(id: Int!): SLTPRequest!
+
+  """
+  Delete a strategy template
+  """
+  deleteStrategyTemplate(id: ID!): Boolean!
   deleteTag(tag: String!): Tag!
+
+  """
+  Delete a template search and its task
+  """
+  deleteTemplateSearch(id: ID!): Boolean!
   depositAsset(input: AssetInput!): Boolean!
   disableContract(contractId: Int!): Contract!
   dynamicSnapshotBuildV2(dateStr: String!, platform: Platform!): Boolean!
@@ -736,6 +792,11 @@ type Mutation {
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
   updateSl(input: UpdateSlInput!): ContractExecutionResult!
   updateStrategy(id: Int!, input: UpdateStrategyInput!): Strategy!
+
+  """
+  Update an existing strategy template
+  """
+  updateStrategyTemplate(input: UpdateStrategyTemplateInput!): StrategyTemplate!
   updateTp(input: UpdateTpInput!): ContractExecutionResult!
   upsertCategory(input: TagCategoryInput!): TagCategory!
   upsertTag(input: TagInput!): Tag!
@@ -1085,7 +1146,64 @@ type Query {
   Get available study dates for a task (dates with optuna-study.db)
   """
   optunaStudyDates(taskId: ID!): [String!]!
+
+  """
+  Get a strategy template by ID
+  """
+  strategyTemplate(id: ID!): StrategyTemplate
+
+  """
+  Get a strategy template by name
+  """
+  strategyTemplateByName(name: String!): StrategyTemplate
+
+  """
+  Get a strategy template with usage statistics
+  """
+  strategyTemplateWithStats(id: ID!): StrategyTemplateWithStats
+
+  """
+  List strategy templates with optional filtering
+  """
+  strategyTemplates(
+    category: StrategyCategory
+    isActive: Boolean
+    limit: Int! = 20
+    offset: Int! = 0
+  ): [StrategyTemplate!]!
   systemStatus: Boolean!
+
+  """
+  Get the task for a specific template search
+  """
+  taskByTemplateSearch(searchId: ID!): BacktestTask
+
+  """
+  Get all tasks using a specific template
+  """
+  tasksByTemplate(templateId: ID!): [BacktestTask!]!
+
+  """
+  Get a template search by ID
+  """
+  templateSearch(id: ID!): TemplateSearch
+
+  """
+  Get template search count statistics by status
+  """
+  templateSearchStats: TemplateSearchStats!
+
+  """
+  Get a template search with template and task
+  """
+  templateSearchWithTask(id: ID!): TemplateSearchWithTask
+
+  """
+  List template searches with optional filtering
+  """
+  templateSearches(
+    filter: TemplateSearchFilterInput
+  ): [TemplateSearchWithTemplate!]!
 
   """
   Get top performing backtest results
@@ -1157,10 +1275,64 @@ type Strategy {
   strategyKey: String!
 }
 
+"""
+Category of trading strategy
+"""
+enum StrategyCategory {
+  BREAKOUT
+  CUSTOM
+  MEAN_REVERSION
+  MOMENTUM
+  SCALPING
+  SWING
+  TREND_FOLLOWING
+  VOLATILITY
+}
+
 type StrategyMetadata {
   description: String!
   key: String!
   title: String!
+}
+
+type StrategyTemplate {
+  category: StrategyCategory!
+  createdAt: Date!
+  description: String
+
+  """
+  Factory configuration (same structure as OptimizationParams)
+  """
+  factoryConfig: JSON!
+  id: ID!
+  isActive: Boolean!
+  name: String!
+  updatedAt: Date!
+}
+
+type StrategyTemplateWithStats {
+  category: StrategyCategory!
+  createdAt: Date!
+  description: String
+
+  """
+  Factory configuration (same structure as OptimizationParams)
+  """
+  factoryConfig: JSON!
+  id: ID!
+  isActive: Boolean!
+  name: String!
+
+  """
+  Total number of searches using this template
+  """
+  totalSearches: Int!
+
+  """
+  Total number of backtest tasks using this template
+  """
+  totalTasks: Int!
+  updatedAt: Date!
 }
 
 type Subscription {
@@ -1182,6 +1354,11 @@ type Subscription {
   planUpdated(userId: String!): Plan!
   taskCreated(userId: String!): [TaskBackwardDetails!]!
   taskUpdated(userId: String!): [TaskBackwardDetails!]!
+
+  """
+  Subscribe to template search status updates
+  """
+  templateSearchUpdated: TemplateSearch!
   tradingSignalLogUpdated: [TradingSignalLogUpdated!]!
 }
 
@@ -1250,6 +1427,95 @@ enum TaskStatus {
   Failed
   Initiated
   Stopped
+}
+
+type TemplateSearch {
+  completedAt: Date
+  createdAt: Date!
+  endDate: Date!
+  errorMessage: String
+  id: ID!
+  interval: String!
+  name: String!
+  searchStrategy: String!
+  startDate: Date!
+  startedAt: Date
+  status: TemplateSearchStatus!
+
+  """
+  Symbol to run backtest on
+  """
+  symbol: String!
+  templateId: ID!
+}
+
+input TemplateSearchFilterInput {
+  limit: Int! = 20
+  offset: Int! = 0
+  status: TemplateSearchStatus
+  templateId: ID
+}
+
+type TemplateSearchStats {
+  await: Int!
+  cancelled: Int!
+  done: Int!
+  failed: Int!
+  processing: Int!
+}
+
+"""
+Status of a template search
+"""
+enum TemplateSearchStatus {
+  AWAIT
+  CANCELLED
+  DONE
+  FAILED
+  PROCESSING
+}
+
+type TemplateSearchWithTask {
+  completedAt: Date
+  createdAt: Date!
+  endDate: Date!
+  errorMessage: String
+  id: ID!
+  interval: String!
+  name: String!
+  searchStrategy: String!
+  startDate: Date!
+  startedAt: Date
+  status: TemplateSearchStatus!
+
+  """
+  Symbol to run backtest on
+  """
+  symbol: String!
+  task: BacktestTask
+  template: StrategyTemplate!
+  templateId: ID!
+}
+
+type TemplateSearchWithTemplate {
+  completedAt: Date
+  createdAt: Date!
+  endDate: Date!
+  errorMessage: String
+  id: ID!
+  interval: String!
+  name: String!
+  searchStrategy: String!
+  startDate: Date!
+  startedAt: Date
+  status: TemplateSearchStatus!
+
+  """
+  Symbol to run backtest on
+  """
+  symbol: String!
+  template: StrategyTemplate!
+  templateId: ID!
 }
 
 type TestingReport {
@@ -1346,6 +1612,15 @@ input UpdateStrategyInput {
   minLeverage: Int!
   params: String!
   ratio: Float!
+}
+
+input UpdateStrategyTemplateInput {
+  category: StrategyCategory
+  description: String
+  factoryConfig: JSON
+  id: ID!
+  isActive: Boolean
+  name: String
 }
 
 input UpdateTpInput {
