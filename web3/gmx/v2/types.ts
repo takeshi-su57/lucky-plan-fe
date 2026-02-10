@@ -1,4 +1,4 @@
-export type TokenCategory = 'meme' | 'layer1' | 'layer2' | 'defi';
+export type TokenCategory = "meme" | "layer1" | "layer2" | "defi" | "rwa";;
 
 export type Token = {
   name: string;
