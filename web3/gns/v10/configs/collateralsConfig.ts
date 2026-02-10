@@ -36,6 +36,16 @@ export const collateralConfigs: Record<number, ConfigCollateral[]> = {
       collateralIndex: 3,
     },
   ],
+  "4326": [
+    {
+      collateral: "0xFAfDdbb3FC7688494971a79cc65DCa3EF82079E7",
+      isActive: true,
+      __placeholder: "0",
+      precision: "1000000000000000000",
+      precisionDelta: "1",
+      collateralIndex: 1,
+    },
+  ],
   "8453": [
     {
       collateral: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",

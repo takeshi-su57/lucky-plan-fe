@@ -576,4 +576,10 @@ export const pairConfigs: ConfigPair[] = [
     to: "USD",
     numTiers: "2",
   },
+  {
+    pairIndex: 95,
+    from: "LIT",
+    to: "USD",
+    numTiers: "1",
+  },
 ];
