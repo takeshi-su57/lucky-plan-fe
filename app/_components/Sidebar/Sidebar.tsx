@@ -28,13 +28,6 @@ export const links = [
     limited: UserPermission.Trader,
     showDivider: true,
   },
-  // {
-  //   id: "followers",
-  //   label: "Follower",
-  //   title: "",
-  //   showDivider: true,
-  //   limited: UserPermission.Trader,
-  // },
   {
     id: "trading-signals",
     label: "Signals",
@@ -58,6 +51,12 @@ export const links = [
     label: "Backtest",
     title: "",
     limited: UserPermission.Trader,
+  },
+  {
+    id: "validation-pipelines",
+    label: "Validation",
+    title: "",
+    limited: UserPermission.Trader,
     showDivider: true,
   },
   {
@@ -66,29 +65,6 @@ export const links = [
     title: "",
     limited: "Public",
   },
-  // {
-  //   id: "traders",
-  //   label: "Trader",
-  //   title: "",
-  //   limited: UserPermission.Trial,
-  //   isDevMode: true,
-  // },
-  // {
-  //   id: "tags",
-  //   label: "Tag",
-  //   title: "",
-  //   limited: UserPermission.Trial,
-  //   showDivider: true,
-  //   isDevMode: true,
-  // },
-  // {
-  //   id: "dev-page",
-  //   label: "Dev Page",
-  //   title: "",
-  //   limited: "Public",
-  //   showDivider: true,
-  //   isDevMode: true,
-  // },
   {
     id: "logs",
     label: "Log",

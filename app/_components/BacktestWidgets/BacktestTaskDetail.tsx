@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Button, Select, SelectItem, Spinner, Chip, Link } from "@heroui/react";
+import { Button, Select, SelectItem, Spinner, Chip, Link, Input } from "@heroui/react";
 import {
   FiArrowLeft,
   FiRefreshCw,
@@ -15,11 +15,11 @@ import dayjs from "dayjs";
 import {
   useBacktestTask,
   useBacktestResults,
-  useOptunaStudyDates,
   useOptunaDashboardStatus,
   useStartOptunaDashboard,
   useStopOptunaDashboard,
   useBestBacktestResults,
+  useResumeBacktestTask,
 } from "@/app-hooks/useBacktest";
 
 import { BestConfigCarousel } from "./BestConfigCarousel";
@@ -54,9 +54,7 @@ export function BacktestTaskDetail({
   const [sortOrder, setSortOrder] = useState("desc");
   const [selectedResultId, setSelectedResultId] = useState<string | null>(null);
   const [offset, setOffset] = useState(0);
-  const [selectedStudyDate, setSelectedStudyDate] = useState<string | null>(
-    null,
-  );
+  const [extendTrials, setExtendTrials] = useState("50");
   const limit = 20;
 
   const {
@@ -85,18 +83,15 @@ export function BacktestTaskDetail({
     task?.bestConfigIds ?? null,
   );
 
-  const { dates: studyDates, loading: studyDatesLoading } = useOptunaStudyDates(
-    isOptuna ? taskId : null,
-  );
   const { status: dashboardStatus, refetch: refetchDashboardStatus } =
     useOptunaDashboardStatus();
   const { startDashboard, loading: startingDashboard } =
     useStartOptunaDashboard();
   const { stopDashboard, loading: stoppingDashboard } =
     useStopOptunaDashboard();
+  const { resumeTask, loading: resumingTask } = useResumeBacktestTask();
 
-  const isDashboardRunningForThisTask =
-    dashboardStatus?.running && dashboardStatus?.taskId === taskId;
+  const isDashboardRunning = dashboardStatus?.running ?? false;
 
   const handleRefresh = async () => {
     setOffset(0);
@@ -104,9 +99,8 @@ export function BacktestTaskDetail({
   };
 
   const handleStartDashboard = async () => {
-    if (!selectedStudyDate) return;
     await startDashboard({
-      variables: { taskId, date: selectedStudyDate, port: 8080 },
+      variables: { port: 8080 },
     });
     await refetchDashboardStatus();
   };
@@ -114,6 +108,31 @@ export function BacktestTaskDetail({
   const handleStopDashboard = async () => {
     await stopDashboard();
     await refetchDashboardStatus();
+  };
+
+  const handleResumeTask = async () => {
+    if (!task) return;
+    await resumeTask({
+      variables: {
+        taskId: task.id,
+        additionalTrials: 0,
+      },
+    });
+    refetchTask();
+  };
+
+  const handleExtendTask = async () => {
+    if (!task || !extendTrials) return;
+    const trials = parseInt(extendTrials, 10);
+    if (isNaN(trials) || trials <= 0) return;
+
+    await resumeTask({
+      variables: {
+        taskId: task.id,
+        additionalTrials: trials,
+      },
+    });
+    refetchTask();
   };
 
   const selectedResult = useMemo(() => {
@@ -278,80 +297,100 @@ export function BacktestTaskDetail({
                 Optuna Dashboard
               </span>
               <div className="flex items-center gap-3">
-                {studyDatesLoading ? (
-                  <Spinner size="sm" />
-                ) : studyDates.length > 0 ? (
+                {isDashboardRunning ? (
                   <>
-                    <Select
+                    <Button
                       size="sm"
-                      variant="bordered"
-                      placeholder="Select study date"
-                      selectedKeys={
-                        selectedStudyDate ? [selectedStudyDate] : []
-                      }
-                      onSelectionChange={(keys) => {
-                        const date = Array.from(keys)[0] as string;
-                        setSelectedStudyDate(date || null);
-                      }}
-                      className="w-40"
-                      isDisabled={isDashboardRunningForThisTask}
+                      color="danger"
+                      variant="flat"
+                      startContent={<FiSquare className="h-3 w-3" />}
+                      isLoading={stoppingDashboard}
+                      onPress={handleStopDashboard}
                     >
-                      {studyDates.map((date) => (
-                        <SelectItem key={date}>{date}</SelectItem>
-                      ))}
-                    </Select>
-
-                    {isDashboardRunningForThisTask ? (
-                      <>
-                        <Button
-                          size="sm"
-                          color="danger"
-                          variant="flat"
-                          startContent={<FiSquare className="h-3 w-3" />}
-                          isLoading={stoppingDashboard}
-                          onPress={handleStopDashboard}
-                        >
-                          Stop
-                        </Button>
-                        {dashboardStatus?.url && (
-                          <Link
-                            href={dashboardStatus.url}
-                            isExternal
-                            showAnchorIcon
-                            className="text-secondary-400 text-sm"
-                          >
-                            Open Dashboard
-                          </Link>
-                        )}
-                      </>
-                    ) : (
-                      <Button
-                        size="sm"
-                        color="secondary"
-                        variant="flat"
-                        startContent={<FiPlay className="h-3 w-3" />}
-                        isLoading={startingDashboard}
-                        isDisabled={!selectedStudyDate}
-                        onPress={handleStartDashboard}
+                      Stop Dashboard
+                    </Button>
+                    {dashboardStatus?.url && (
+                      <Link
+                        href={dashboardStatus.url}
+                        isExternal
+                        showAnchorIcon
+                        className="text-secondary-400 text-sm"
                       >
-                        Start Dashboard
-                      </Button>
+                        Open Dashboard
+                      </Link>
                     )}
                   </>
                 ) : (
-                  <span className="text-xs text-neutral-500">
-                    No study data available yet
-                  </span>
+                  <Button
+                    size="sm"
+                    color="secondary"
+                    variant="flat"
+                    startContent={<FiPlay className="h-3 w-3" />}
+                    isLoading={startingDashboard}
+                    onPress={handleStartDashboard}
+                  >
+                    Start Dashboard
+                  </Button>
                 )}
-
-                {dashboardStatus?.running &&
-                  dashboardStatus?.taskId !== taskId && (
-                    <span className="text-warning-400 text-xs">
-                      Dashboard is running for another task
-                    </span>
-                  )}
+                <span className="text-xs text-neutral-500">
+                  Study: task-{taskId.slice(0, 8)}...
+                </span>
               </div>
             </div>
+
+            {/* Extend Optimization Panel */}
+            {task.status === "DONE" && (
+              <div className="flex flex-col gap-2 border-t border-neutral-800 pt-3">
+                <span className="text-xs font-medium text-neutral-400">
+                  Extend Optimization
+                </span>
+                <div className="flex items-center gap-3">
+                  <Input
+                    size="sm"
+                    variant="bordered"
+                    placeholder="Trials"
+                    value={extendTrials}
+                    onValueChange={setExtendTrials}
+                    className="w-24"
+                    type="number"
+                  />
+                  <Button
+                    size="sm"
+                    color="primary"
+                    variant="flat"
+                    onPress={handleExtendTask}
+                    isLoading={resumingTask}
+                    isDisabled={!extendTrials || parseInt(extendTrials) <= 0}
+                  >
+                    Add Trials & Resume
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Resume Optimization Panel (for FAILED/CANCELLED) */}
+            {(task.status === "FAILED" || task.status === "CANCELLED") && (
+              <div className="flex flex-col gap-2 border-t border-neutral-800 pt-3">
+                <span className="text-xs font-medium text-neutral-400">
+                  Resume Optimization
+                </span>
+                <div className="flex items-center gap-3">
+                  <Button
+                    size="sm"
+                    color="success"
+                    variant="flat"
+                    onPress={handleResumeTask}
+                    isLoading={resumingTask}
+                    startContent={!resumingTask && <FiPlay className="h-3 w-3" />}
+                  >
+                    Resume from Last Checkpoint
+                  </Button>
+                  <span className="text-xs text-neutral-500">
+                    Continue from {task.processedConfigs} / {task.totalConfigs} trials
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

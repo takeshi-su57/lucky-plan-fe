@@ -37,7 +37,6 @@ export const BacktestTaskInfoFragment = graphql(`
     optimizationMetrics
     trials
     bestConfigIds
-    optunaStudyPath
     optimizerPid
     createdAt
     startedAt
@@ -275,17 +274,11 @@ export const OptunaDashboardStatusQuery = graphql(`
   query OptunaDashboardStatus {
     optunaDashboardStatus {
       running
-      taskId
       url
     }
   }
 `);
 
-export const OptunaStudyDatesQuery = graphql(`
-  query OptunaStudyDates($taskId: ID!) {
-    optunaStudyDates(taskId: $taskId)
-  }
-`);
 
 // ============================================
 // Mutations
@@ -328,11 +321,18 @@ export const RetryBacktestTaskMutation = graphql(`
 `);
 
 export const StartOptunaDashboardMutation = graphql(`
-  mutation StartOptunaDashboard($taskId: ID!, $date: String!, $port: Int) {
-    startOptunaDashboard(taskId: $taskId, date: $date, port: $port) {
+  mutation StartOptunaDashboard($port: Int) {
+    startOptunaDashboard(port: $port) {
       running
-      taskId
       url
+    }
+  }
+`);
+
+export const ResumeBacktestTaskMutation = graphql(`
+  mutation ResumeBacktestTask($taskId: ID!, $additionalTrials: Int) {
+    resumeBacktestTask(taskId: $taskId, additionalTrials: $additionalTrials) {
+      ...BacktestTaskInfo
     }
   }
 `);
@@ -571,19 +571,6 @@ export function useOptunaDashboardStatus() {
   };
 }
 
-export function useOptunaStudyDates(taskId: string | null) {
-  const { data, loading, error, refetch } = useQuery(OptunaStudyDatesQuery, {
-    variables: { taskId: taskId! },
-    skip: !taskId,
-  });
-
-  return {
-    dates: data?.optunaStudyDates ?? [],
-    loading,
-    error,
-    refetch,
-  };
-}
 
 export function useBestBacktestResults(
   taskId: string | null,
@@ -755,6 +742,29 @@ export function useStartOptunaDashboard() {
 
   return {
     startDashboard: mutate,
+    loading,
+    error,
+  };
+}
+
+export function useResumeBacktestTask() {
+  const { enqueueSnackbar } = useSnackbar();
+  const [mutate, { loading, error }] = useMutation(ResumeBacktestTaskMutation, {
+    refetchQueries: [BacktestTasksQuery, BacktestTaskStatsQuery],
+    onCompleted: (data) => {
+      if (data.resumeBacktestTask) {
+        enqueueSnackbar("Task resumed successfully", { variant: "success" });
+      }
+    },
+    onError: (err) => {
+      enqueueSnackbar(`Failed to resume task: ${err.message}`, {
+        variant: "error",
+      });
+    },
+  });
+
+  return {
+    resumeTask: mutate,
     loading,
     error,
   };

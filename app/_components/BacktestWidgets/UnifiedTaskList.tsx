@@ -15,6 +15,7 @@ import {
   FiSearch,
   FiGrid,
   FiLayers,
+  FiCheckCircle,
 } from "react-icons/fi";
 
 import { BacktestTaskStatus, StrategyCategory } from "@/graphql/gql/graphql";
@@ -25,11 +26,13 @@ import {
   useCancelBacktestTask,
   useDeleteBacktestTask,
   useRetryBacktestTask,
+  useResumeBacktestTask,
 } from "@/app-hooks/useBacktest";
 import { useStrategyTemplates } from "@/app-hooks/useStrategyTemplate";
 import { BacktestTaskRow } from "./BacktestTaskRow";
 import { BacktestTaskStatusBadge } from "./BacktestTaskStatusBadge";
 import { TemplateCategoryChip } from "@/app-components/TemplateWidgets/TemplateCategoryChip";
+import { CreatePipelineModal } from "@/app-components/ValidationWidgets/CreatePipelineModal";
 
 const PAGE_SIZE = 10;
 const INDIVIDUAL_TEMPLATE_ID = "__individual_template__";
@@ -124,10 +127,15 @@ export function UnifiedTaskList() {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
     null,
   );
-  const [selectedSearchId, setSelectedSearchId] = useState<string | null>(null);
   const [actionTaskId, setActionTaskId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Validation pipeline modal state
+  const [createPipelineSearch, setCreatePipelineSearch] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   const { stats, refetch: refetchStats } = useBacktestTaskStats();
   const { tasks, loading, refetch } = useBacktestTasks({
@@ -149,6 +157,7 @@ export function UnifiedTaskList() {
   const { cancelTask, loading: cancelLoading } = useCancelBacktestTask();
   const { deleteTask, loading: deleteLoading } = useDeleteBacktestTask();
   const { retryTask, loading: retryLoading } = useRetryBacktestTask();
+  const { resumeTask, loading: resumeLoading } = useResumeBacktestTask();
 
   // Group tasks by templateId (primary) then by templateSearchId (secondary)
   const templateGroups = useMemo(() => {
@@ -253,15 +262,10 @@ export function UnifiedTaskList() {
       });
   }, [tasks, templateMap]);
 
-  // Get selected template and search
+  // Get selected template
   const selectedTemplate = selectedTemplateId
     ? templateGroups.find((t) => t.templateId === selectedTemplateId)
     : null;
-
-  const selectedSearch =
-    selectedTemplate && selectedSearchId
-      ? selectedTemplate.searches.find((s) => s.searchId === selectedSearchId)
-      : null;
 
   const handleCancel = async (taskId: string) => {
     setActionTaskId(taskId);
@@ -283,6 +287,18 @@ export function UnifiedTaskList() {
     refetch();
   };
 
+  const handleResume = async (taskId: string, additionalTrials?: number) => {
+    setActionTaskId(taskId);
+    await resumeTask({
+      variables: {
+        taskId,
+        additionalTrials: additionalTrials ?? 0,
+      },
+    });
+    setActionTaskId(null);
+    refetch();
+  };
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await Promise.all([refetch(), refetchStats()]);
@@ -291,57 +307,20 @@ export function UnifiedTaskList() {
 
   const handleSelectTemplate = (templateId: string) => {
     setSelectedTemplateId(templateId);
-    setSelectedSearchId(null);
-    setPage(1);
-  };
-
-  const handleSelectSearch = (searchId: string) => {
-    setSelectedSearchId(searchId);
     setPage(1);
   };
 
   const handleBack = () => {
-    if (selectedSearchId) {
-      // Go back to template's search list
-      setSelectedSearchId(null);
-    } else if (selectedTemplateId) {
-      // Go back to template list
-      setSelectedTemplateId(null);
-    }
+    setSelectedTemplateId(null);
     setPage(1);
   };
 
   // Determine current view level
-  const viewLevel = selectedSearchId
-    ? "tasks"
-    : selectedTemplateId
-      ? "searches"
-      : "templates";
+  const viewLevel = selectedTemplateId ? "tasks" : "templates";
 
   // Get breadcrumb info
   const getBreadcrumb = () => {
-    if (viewLevel === "tasks" && selectedTemplate && selectedSearch) {
-      return (
-        <div className="flex items-center gap-2">
-          <FiSearch className="text-secondary-400 h-4 w-4" />
-          <span className="text-sm font-medium text-white">
-            {selectedSearch.isIndividual
-              ? "Individual Tasks"
-              : selectedSearch.symbol}
-          </span>
-          {selectedSearch.searchStrategy && (
-            <Chip size="sm" variant="flat" className="text-xs capitalize">
-              {selectedSearch.searchStrategy}
-            </Chip>
-          )}
-          <Chip size="sm" variant="flat">
-            {selectedSearch.tasks.length} tasks
-          </Chip>
-        </div>
-      );
-    }
-
-    if (viewLevel === "searches" && selectedTemplate) {
+    if (viewLevel === "tasks" && selectedTemplate) {
       return (
         <div className="flex items-center gap-2">
           {selectedTemplate.isIndividual ? (
@@ -361,7 +340,7 @@ export function UnifiedTaskList() {
             />
           )}
           <Chip size="sm" variant="flat">
-            {selectedTemplate.searches.length} searches
+            {selectedTemplate.totalTasks} tasks
           </Chip>
         </div>
       );
@@ -432,81 +411,30 @@ export function UnifiedTaskList() {
       </div>
 
       {/* Content based on view level */}
-      {viewLevel === "tasks" && selectedSearch ? (
-        // Task list view
-        selectedSearch.tasks.length === 0 && !loading ? (
+      {viewLevel === "tasks" && selectedTemplate ? (
+        // Task list view with search group headers
+        selectedTemplate.totalTasks === 0 && !loading ? (
           <div className="flex flex-col items-center justify-center gap-2 py-12 text-neutral-400">
-            <p>No tasks found in this search</p>
+            <p>No tasks found for this template</p>
           </div>
         ) : (
-          <PaginatedViews
-            currentPage={page}
-            totalPages={Math.ceil(selectedSearch.tasks.length / PAGE_SIZE)}
+          <PaginatedTaskView
+            selectedTemplate={selectedTemplate}
+            page={page}
+            pageSize={PAGE_SIZE}
             onChangePage={setPage}
             loading={loading}
-          >
-            <div className="flex flex-col gap-3">
-              {selectedSearch.tasks
-                .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-                .map((task) => (
-                  <BacktestTaskRow
-                    key={task.id}
-                    task={{
-                      id: task.id,
-                      name: task.name,
-                      symbol: task.symbol,
-                      status: task.status,
-                      progress:
-                        task.totalConfigs && task.totalConfigs > 0
-                          ? task.processedConfigs / task.totalConfigs
-                          : 0,
-                      totalConfigs: task.totalConfigs,
-                      processedConfigs: task.processedConfigs,
-                      createdAt: task.createdAt,
-                      startedAt: task.startedAt,
-                      completedAt: task.completedAt,
-                      errorMessage: task.errorMessage,
-                      searchStrategy: task.searchStrategy,
-                      optimizationMetrics: task.optimizationMetrics,
-                      trials: task.trials,
-                      bestConfigIds: task.bestConfigIds,
-                    }}
-                    onCancel={handleCancel}
-                    onDelete={handleDelete}
-                    onRetry={handleRetry}
-                    isCancelling={cancelLoading && actionTaskId === task.id}
-                    isDeleting={deleteLoading && actionTaskId === task.id}
-                    isRetrying={retryLoading && actionTaskId === task.id}
-                  />
-                ))}
-            </div>
-          </PaginatedViews>
-        )
-      ) : viewLevel === "searches" && selectedTemplate ? (
-        // Search groups view within a template
-        selectedTemplate.searches.length === 0 && !loading ? (
-          <div className="flex flex-col items-center justify-center gap-2 py-12 text-neutral-400">
-            <p>No searches found for this template</p>
-          </div>
-        ) : (
-          <PaginatedViews
-            currentPage={page}
-            totalPages={Math.ceil(selectedTemplate.searches.length / PAGE_SIZE)}
-            onChangePage={setPage}
-            loading={loading}
-          >
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {selectedTemplate.searches
-                .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-                .map((search) => (
-                  <SearchGroupCard
-                    key={search.searchId}
-                    search={search}
-                    onClick={() => handleSelectSearch(search.searchId)}
-                  />
-                ))}
-            </div>
-          </PaginatedViews>
+            handleCancel={handleCancel}
+            handleDelete={handleDelete}
+            handleRetry={handleRetry}
+            handleResume={handleResume}
+            setCreatePipelineSearch={setCreatePipelineSearch}
+            cancelLoading={cancelLoading}
+            deleteLoading={deleteLoading}
+            retryLoading={retryLoading}
+            resumeLoading={resumeLoading}
+            actionTaskId={actionTaskId}
+          />
         )
       ) : // Template groups view (top level)
       templateGroups.length === 0 && !loading ? (
@@ -536,7 +464,156 @@ export function UnifiedTaskList() {
           </div>
         </PaginatedViews>
       )}
+
+      {/* Create Validation Pipeline Modal */}
+      {createPipelineSearch && (
+        <CreatePipelineModal
+          isOpen={!!createPipelineSearch}
+          onClose={() => setCreatePipelineSearch(null)}
+          templateSearchId={createPipelineSearch.id}
+          templateSearchName={createPipelineSearch.name}
+        />
+      )}
     </div>
+  );
+}
+
+// Paginated Task View Component
+type PaginatedTaskViewProps = {
+  selectedTemplate: TemplateGroup;
+  page: number;
+  pageSize: number;
+  onChangePage: (page: number) => void;
+  loading: boolean;
+  handleCancel: (taskId: string) => Promise<void>;
+  handleDelete: (taskId: string) => Promise<void>;
+  handleRetry: (taskId: string) => Promise<void>;
+  handleResume: (taskId: string, additionalTrials?: number) => Promise<void>;
+  setCreatePipelineSearch: (
+    search: { id: string; name: string } | null,
+  ) => void;
+  cancelLoading: boolean;
+  deleteLoading: boolean;
+  retryLoading: boolean;
+  resumeLoading: boolean;
+  actionTaskId: string | null;
+};
+
+function PaginatedTaskView({
+  selectedTemplate,
+  page,
+  pageSize,
+  onChangePage,
+  loading,
+  handleCancel,
+  handleDelete,
+  handleRetry,
+  handleResume,
+  setCreatePipelineSearch,
+  cancelLoading,
+  deleteLoading,
+  retryLoading,
+  resumeLoading,
+  actionTaskId,
+}: PaginatedTaskViewProps) {
+  // Flatten all tasks from all searches into a single array with search context
+  const allTasksWithSearch = useMemo(() => {
+    const tasks: Array<{ task: TaskData; search: SearchGroup }> = [];
+    for (const search of selectedTemplate.searches) {
+      for (const task of search.tasks) {
+        tasks.push({ task, search });
+      }
+    }
+    return tasks;
+  }, [selectedTemplate]);
+
+  const totalTasks = allTasksWithSearch.length;
+  const totalPages = Math.ceil(totalTasks / pageSize);
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedTasks = allTasksWithSearch.slice(startIndex, endIndex);
+
+  // Group paginated tasks by search
+  const groupedPaginatedTasks = useMemo(() => {
+    const groups = new Map<
+      string,
+      { search: SearchGroup; tasks: TaskData[] }
+    >();
+
+    for (const { task, search } of paginatedTasks) {
+      if (!groups.has(search.searchId)) {
+        groups.set(search.searchId, { search, tasks: [] });
+      }
+      groups.get(search.searchId)!.tasks.push(task);
+    }
+
+    return Array.from(groups.values());
+  }, [paginatedTasks]);
+
+  return (
+    <PaginatedViews
+      currentPage={page}
+      totalPages={totalPages}
+      onChangePage={onChangePage}
+      loading={loading}
+    >
+      <div className="flex flex-col gap-4">
+        {groupedPaginatedTasks.map(({ search, tasks }) => (
+          <div key={search.searchId} className="flex flex-col gap-3">
+            {/* Search Group Header */}
+            <SearchGroupHeader
+              search={search}
+              onCreateValidation={
+                search.templateSearchId
+                  ? () =>
+                      setCreatePipelineSearch({
+                        id: search.templateSearchId!,
+                        name: search.symbol,
+                      })
+                  : undefined
+              }
+            />
+
+            {/* Tasks for this search */}
+            <div className="flex flex-col gap-3">
+              {tasks.map((task) => (
+                <BacktestTaskRow
+                  key={task.id}
+                  task={{
+                    id: task.id,
+                    name: task.name,
+                    symbol: task.symbol,
+                    status: task.status,
+                    progress:
+                      task.totalConfigs && task.totalConfigs > 0
+                        ? task.processedConfigs / task.totalConfigs
+                        : 0,
+                    totalConfigs: task.totalConfigs,
+                    processedConfigs: task.processedConfigs,
+                    createdAt: task.createdAt,
+                    startedAt: task.startedAt,
+                    completedAt: task.completedAt,
+                    errorMessage: task.errorMessage,
+                    searchStrategy: task.searchStrategy,
+                    optimizationMetrics: task.optimizationMetrics,
+                    trials: task.trials,
+                    bestConfigIds: task.bestConfigIds,
+                  }}
+                  onCancel={handleCancel}
+                  onDelete={handleDelete}
+                  onRetry={handleRetry}
+                  onResume={handleResume}
+                  isCancelling={cancelLoading && actionTaskId === task.id}
+                  isDeleting={deleteLoading && actionTaskId === task.id}
+                  isRetrying={retryLoading && actionTaskId === task.id}
+                  isResuming={resumeLoading && actionTaskId === task.id}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </PaginatedViews>
   );
 }
 
@@ -604,36 +681,33 @@ function TemplateGroupCard({ template, onClick }: TemplateGroupCardProps) {
   );
 }
 
-// Search Group Card Component (within a template)
-type SearchGroupCardProps = {
+// Search Group Header Component (flat header for grouping tasks)
+type SearchGroupHeaderProps = {
   search: SearchGroup;
-  onClick: () => void;
+  onCreateValidation?: () => void;
 };
 
-function SearchGroupCard({ search, onClick }: SearchGroupCardProps) {
+function SearchGroupHeader({
+  search,
+  onCreateValidation,
+}: SearchGroupHeaderProps) {
   const totalTasks = search.tasks.length;
   const hasActive =
     search.statusCounts.await > 0 || search.statusCounts.processing > 0;
 
   return (
-    <Card
-      isPressable
-      onPress={onClick}
-      className="border border-neutral-800 bg-neutral-900/50 transition-colors hover:border-neutral-700"
-    >
-      <CardBody className="gap-3">
-        {/* Header - Symbol or Individual */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {search.isIndividual ? (
-              <FiGrid className="h-4 w-4 text-neutral-400" />
-            ) : (
-              <FiSearch className="text-secondary-400 h-4 w-4" />
-            )}
-            <span className="font-semibold text-white">
-              {search.isIndividual ? "Individual Tasks" : search.symbol}
-            </span>
-          </div>
+    <div className="flex items-center justify-between rounded-lg border border-neutral-800 bg-neutral-900/30 px-4 py-3">
+      <div className="flex items-center gap-4">
+        {/* Symbol or Individual */}
+        <div className="flex items-center gap-2">
+          {search.isIndividual ? (
+            <FiGrid className="h-4 w-4 text-neutral-400" />
+          ) : (
+            <FiSearch className="text-secondary-400 h-4 w-4" />
+          )}
+          <span className="font-semibold text-white">
+            {search.isIndividual ? "Individual Tasks" : search.symbol}
+          </span>
           {hasActive && (
             <Chip size="sm" color="primary" variant="dot">
               Active
@@ -643,22 +717,35 @@ function SearchGroupCard({ search, onClick }: SearchGroupCardProps) {
 
         {/* Search strategy */}
         {search.searchStrategy && (
-          <Chip size="sm" variant="flat" className="w-fit text-xs capitalize">
+          <Chip size="sm" variant="flat" className="text-xs capitalize">
             {search.searchStrategy}
           </Chip>
         )}
 
         {/* Task count */}
-        <div className="flex items-center">
-          <span className="text-sm text-neutral-400">
-            {totalTasks} {totalTasks === 1 ? "task" : "tasks"}
-          </span>
-        </div>
+        <span className="text-sm text-neutral-400">
+          {totalTasks} {totalTasks === 1 ? "task" : "tasks"}
+        </span>
 
         {/* Status breakdown */}
         <StatusBreakdown statusCounts={search.statusCounts} />
-      </CardBody>
-    </Card>
+      </div>
+
+      {/* Create Validation Pipeline button */}
+      {onCreateValidation && (
+        <Button
+          size="sm"
+          color="success"
+          variant="flat"
+          startContent={<FiCheckCircle className="h-3 w-3" />}
+          onPress={() => {
+            onCreateValidation();
+          }}
+        >
+          Create Validation Pipeline
+        </Button>
+      )}
+    </div>
   );
 }
 
