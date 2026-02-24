@@ -113,7 +113,7 @@ export function UserSelectionPanel({
         <div className="flex items-center gap-2">
           <FiAlertCircle className="text-warning-400 h-5 w-5" />
           <h3 className="text-warning-300 text-lg font-semibold">
-            User Selection Required (Layer 4)
+            User Selection Required (Step 5)
           </h3>
         </div>
         <p className="text-sm text-neutral-400">
@@ -123,7 +123,6 @@ export function UserSelectionPanel({
       </CardHeader>
 
       <CardBody className="flex flex-col gap-4 py-4">
-        {/* Selection stats */}
         <div className="flex items-center justify-between">
           <span className="text-sm text-neutral-400">
             {selectedIds.size} of {candidates.length} candidates selected
@@ -135,7 +134,6 @@ export function UserSelectionPanel({
           </Button>
         </div>
 
-        {/* Candidates Table */}
         <Table
           aria-label="WFA passed candidates"
           classNames={{
@@ -204,7 +202,6 @@ export function UserSelectionPanel({
           </TableBody>
         </Table>
 
-        {/* Notes */}
         <Textarea
           label="Selection Notes (optional)"
           placeholder="Add notes about your selection criteria..."

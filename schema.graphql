@@ -33,6 +33,18 @@ input AddUserInput {
   address: String!
 }
 
+input ApplyParetoStepInput {
+  metrics: [String!]!
+  pipelineId: ID!
+}
+
+input ApplyThresholdStepInput {
+  metricName: String!
+  operator: String!
+  pipelineId: ID!
+  value: Float!
+}
+
 input AssetInput {
   address: String!
   amount: String!
@@ -243,6 +255,12 @@ type ComponentInfo {
   params: [ParamInfo!]!
 }
 
+input ConfigureRobustnessInput {
+  minScore: Float!
+  pipelineId: ID!
+  steps: Int!
+}
+
 type Contract {
   address: String!
   backendUrl: String
@@ -346,15 +364,8 @@ input CreateTemplateSearchInput {
 }
 
 input CreateValidationPipelineInput {
+  backtestTaskId: ID!
   name: String!
-  paretoMetrics: [String!] = ["sharpeRatio", "totalPnlPercent", "maxDrawdownPercent"]
-  robustnessMinScore: Float = 0.7
-  robustnessSteps: Int = 10
-  templateSearchId: ID!
-  thresholdConfig: ThresholdConfigInput!
-  wfaMinConsistency: Float = 0.6
-  wfaTrainRatio: Float = 0.7
-  wfaWindows: Int = 3
 }
 
 """Date custom scalar type"""
@@ -627,6 +638,10 @@ type Mutation {
   addToWhitelist(params: String!): Boolean!
   addWalletAccount(input: AddUserInput!): WalletAccount!
   allowAuto(address: String!, allowAuto: Boolean!, budget: Float!, followerContractId: Int!, ratio: Float!): User!
+  """Apply a Pareto selection run with specified metrics"""
+  applyParetoStep(input: ApplyParetoStepInput!): ValidationPipeline!
+  """Apply a single threshold filter to pipeline candidates"""
+  applyThresholdStep(input: ApplyThresholdStepInput!): ValidationPipeline!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
   buildPnlSnapshotsV2(dateStr: String!, isForceBuild: Boolean!, platform: Platform!): Boolean!
   """Cancel a running or pending backtest task"""
@@ -642,6 +657,20 @@ type Mutation {
   cloneMission(id: Int!, manualParams: ManualParams): Boolean!
   closeMission(id: Int!, isForce: Boolean!): Boolean!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
+  """Complete Pareto step and advance to WFA"""
+  completeParetoStep(pipelineId: ID!): ValidationPipeline!
+  """
+  Complete robustness testing, aggregate results, and advance to final approval
+  """
+  completeRobustness(pipelineId: ID!): ValidationPipeline!
+  """Complete threshold step and advance to Pareto selection"""
+  completeThresholdStep(pipelineId: ID!): ValidationPipeline!
+  """
+  Approve WFA results, remove failed candidates, and advance to user selection
+  """
+  completeWfa(pipelineId: ID!): ValidationPipeline!
+  """Configure robustness test parameters before running steps"""
+  configureRobustness(input: ConfigureRobustnessInput!): ValidationPipeline!
   createAutoPlan: Boolean!
   """Create a new backtest optimization task"""
   createBacktestTask(input: CreateBacktestTaskInput!): BacktestTask!
@@ -652,7 +681,7 @@ type Mutation {
   createStrategyTemplate(input: CreateStrategyTemplateInput!): StrategyTemplate!
   """Create a new template search (spawns a BacktestTask)"""
   createTemplateSearch(input: CreateTemplateSearchInput!): TemplateSearchWithTemplate!
-  """Create a new validation pipeline from a completed template search"""
+  """Create a new validation pipeline from a completed backtest task"""
   createValidationPipeline(input: CreateValidationPipelineInput!): ValidationPipeline!
   decreaseAllowanceToZero(contractId: Int!, followerAddress: String!, password: String!): Boolean!
   decreasePositionSize(input: DecreasePositionSizeInput!): ContractExecutionResult!
@@ -687,17 +716,33 @@ type Mutation {
   makeSafeApp(password: String!): Boolean!
   openTradeMarket(input: OpenTradeInput!): ContractExecutionResult!
   pauseSystem: Boolean!
+  """
+  Pause a running WFA process. Takes effect after current candidate finishes.
+  """
+  pauseWfa(pipelineId: ID!): ValidationPipeline!
   performTask(id: Int!): Boolean!
+  """Preview Pareto selection without applying it"""
+  previewParetoStep(input: PreviewParetoStepInput!): ParetoPreviewResult!
+  """Preview a threshold filter without applying it"""
+  previewThresholdStep(input: PreviewThresholdStepInput!): ThresholdPreviewResult!
   registerTradingSignalLog(address: String!, platform: Platform!): TradingSignalLog!
   removeEventLogsFromTradingSignalLog(eventLogIds: [Int!]!, signalId: Int!): TradingSignalLog!
   removeFromBlacklist(address: String!): Boolean!
   removeFromWhitelist(address: String!): Boolean!
+  """Remove a Pareto step and recalculate"""
+  removeParetoStep(pipelineId: ID!, stepId: ID!): ValidationPipeline!
   removeTagFromWalletAccount(input: ChangeUserTagInput!): WalletAccount!
+  """Remove a threshold step and recalculate"""
+  removeThresholdStep(pipelineId: ID!, stepId: ID!): ValidationPipeline!
   """Resume or extend an Optuna optimization task"""
   resumeBacktestTask(additionalTrials: Int, taskId: ID!): BacktestTask!
   resumeSystem(password: String): Boolean!
+  """Resume a paused WFA process. Continues from where it left off."""
+  resumeWfa(pipelineId: ID!): ValidationPipeline!
   """Retry a failed backtest task"""
   retryBacktestTask(taskId: ID!): BacktestTask!
+  """Run a single robustness step across all selected candidates"""
+  runRobustnessStep(input: RunRobustnessStepInput!): [RobustnessStepResult!]!
   startAdaption(contractId: Int!, shouldRestart: Boolean!): Boolean!
   """
   Start global Optuna dashboard (connects to PostgreSQL, shows all studies)
@@ -705,15 +750,17 @@ type Mutation {
   startOptunaDashboard(port: Int! = 8080): OptunaDashboardStatus!
   startPlan(id: Int!): Boolean!
   startSubService(service: String!): Boolean!
-  """Start a validation pipeline (triggers Layer 1-3 processing)"""
-  startValidationPipeline(id: ID!): ValidationPipeline!
+  """
+  Start WFA background process. Returns immediately, progress via subscription.
+  """
+  startWfa(input: StartWfaInput!): ValidationPipeline!
   stopBot(id: Int!): Boolean!
   """Stop the running Optuna dashboard"""
   stopOptunaDashboard: Boolean!
   stopTask(id: Int!): Boolean!
-  """Submit final approval of candidates (Layer 6) to complete pipeline"""
+  """Submit final approval of candidates to complete the pipeline"""
   submitFinalApproval(input: FinalApprovalInput!, pipelineId: ID!): ValidationPipeline!
-  """Submit user selection of candidates (Layer 4) to proceed to Layer 5"""
+  """Submit user selection of candidates and advance to robustness"""
   submitUserSelection(input: UserSelectionInput!, pipelineId: ID!): ValidationPipeline!
   unregisterTradingSignalLog(signalId: Int!): TradingSignalLog!
   updateLeverage(input: UpdateLeverageInput!): ContractExecutionResult!
@@ -750,6 +797,12 @@ type OptunaDashboardStatus {
   url: String
 }
 
+"""Paginated validation candidates with total count"""
+type PaginatedValidationCandidatesResult {
+  candidates: [ValidationCandidateWithResult!]!
+  totalCount: Int!
+}
+
 type ParamInfo {
   default: String
   description: String
@@ -759,6 +812,22 @@ type ParamInfo {
   options: [SelectOptionInfo!]
   required: Boolean!
   type: String!
+}
+
+type ParetoPreviewResult {
+  currentCount: Int!
+  dominatedCount: Int!
+  optimalCount: Int!
+}
+
+type ParetoStep {
+  candidatesAfter: Int!
+  candidatesBefore: Int!
+  createdAt: Date!
+  id: ID!
+  metrics: [String!]!
+  pipelineId: ID!
+  stepOrder: Int!
 }
 
 enum PerpTradeHistoryOperation {
@@ -912,6 +981,18 @@ type PnlSnapshotV2InitializedFlag {
   platform: Platform!
 }
 
+input PreviewParetoStepInput {
+  metrics: [String!]!
+  pipelineId: ID!
+}
+
+input PreviewThresholdStepInput {
+  metricName: String!
+  operator: String!
+  pipelineId: ID!
+  value: Float!
+}
+
 type Query {
   allLogs(after: Int, checked: Boolean!, first: Int!, severity: LogSeverity): LogsConnection!
   """Get available backtest components with their parameters"""
@@ -968,6 +1049,8 @@ type Query {
   isSafeApp: Boolean!
   """Get current Optuna dashboard status"""
   optunaDashboardStatus: OptunaDashboardStatus!
+  """Get all Pareto steps for a pipeline"""
+  paretoSteps(pipelineId: ID!): [ParetoStep!]!
   """Get a strategy template by ID"""
   strategyTemplate(id: ID!): StrategyTemplate
   """Get a strategy template by name"""
@@ -989,12 +1072,14 @@ type Query {
   templateSearchWithTask(id: ID!): TemplateSearchWithTask
   """List template searches with optional filtering"""
   templateSearches(filter: TemplateSearchFilterInput): [TemplateSearchWithTemplate!]!
+  """Get all threshold steps for a pipeline"""
+  thresholdSteps(pipelineId: ID!): [ThresholdStep!]!
   """Get top performing backtest results"""
   topBacktestResults(limit: Int! = 10, metric: String! = "totalPnlUsdt", taskId: ID!): [BacktestResult!]!
-  """Get a validation candidate with full details"""
-  validationCandidate(id: ID!): ValidationCandidateWithDetails
+  """Get a validation candidate with result details"""
+  validationCandidate(id: ID!): ValidationCandidateWithResult
   """Get validation candidates by pipeline and optional status"""
-  validationCandidatesByStatus(filter: ValidationCandidateFilterInput!): [ValidationCandidateWithResult!]!
+  validationCandidatesByStatus(filter: ValidationCandidateFilterInput!): PaginatedValidationCandidatesResult!
   """Get a validation pipeline by ID"""
   validationPipeline(id: ID!): ValidationPipeline
   """Get validation pipeline count statistics by status"""
@@ -1021,27 +1106,20 @@ type ResultFolder {
   taskId: String!
 }
 
-type RobustnessTest {
+type RobustnessStepResult {
   candidateId: ID!
-  createdAt: Date!
-  endDate: Date!
+  configId: String!
   errorMessage: String
-  id: ID!
   maxDrawdown: Float
-  metrics: JSON
   sharpeRatio: Float
-  startDate: Date!
-  status: RobustnessTestStatus!
+  status: String!
   stepIndex: Int!
   totalPnl: Float
 }
 
-"""Status of a robustness test"""
-enum RobustnessTestStatus {
-  DONE
-  FAILED
-  PENDING
-  PROCESSING
+input RunRobustnessStepInput {
+  pipelineId: ID!
+  stepIndex: Int!
 }
 
 type SLTPRequest {
@@ -1073,6 +1151,13 @@ type ServerTime {
 type SeverityCount {
   counts: Int!
   severity: LogSeverity!
+}
+
+input StartWfaInput {
+  minConsistency: Float!
+  pipelineId: ID!
+  trainRatio: Float!
+  windows: Int!
 }
 
 type Strategy {
@@ -1346,14 +1431,22 @@ type TestingReportPageInfo {
   hasNextPage: Boolean!
 }
 
-input ThresholdConfigInput {
-  maxDrawdownPercent: Float
-  maxSharpeRatio: Float
-  minProfitFactor: Float
-  minSharpeRatio: Float
-  minTotalPnlPercent: Float
-  minTotalTrades: Int
-  minWinRate: Float
+type ThresholdPreviewResult {
+  currentCount: Int!
+  eliminatedCount: Int!
+  survivingCount: Int!
+}
+
+type ThresholdStep {
+  candidatesAfter: Int!
+  candidatesBefore: Int!
+  createdAt: Date!
+  id: ID!
+  metricName: String!
+  operator: String!
+  pipelineId: ID!
+  stepOrder: Int!
+  value: Float!
 }
 
 type TotalBotV2 {
@@ -1456,14 +1549,17 @@ type ValidationCandidate {
   resultId: ID!
   robustnessPassed: Boolean
   robustnessScore: Float
+  """Per-step robustness results JSON array"""
+  robustnessStepResults: JSON
   status: ValidationCandidateStatus!
-  thresholdDetails: JSON
   thresholdPassed: Boolean
   updatedAt: Date!
   userNotes: String
   userSelectedAt: Date
   wfaConsistency: Float
   wfaPassed: Boolean
+  """Per-window WFA results JSON array"""
+  wfaWindowResults: JSON
 }
 
 input ValidationCandidateFilterInput {
@@ -1475,46 +1571,19 @@ input ValidationCandidateFilterInput {
 
 """Status of a validation candidate"""
 enum ValidationCandidateStatus {
-  FAILED_THRESHOLD
+  ACTIVE
   FINAL_APPROVED
   FINAL_REJECTED
   PARETO_DOMINATED
   PARETO_OPTIMAL
-  PASSED_THRESHOLD
   PENDING
   ROBUSTNESS_FAILED
   ROBUSTNESS_PASSED
-  ROBUSTNESS_PENDING
+  THRESHOLD_ELIMINATED
   USER_REJECTED
   USER_SELECTED
   WFA_FAILED
   WFA_PASSED
-  WFA_PENDING
-}
-
-type ValidationCandidateWithDetails {
-  configId: String!
-  createdAt: Date!
-  dominatedBy: [String!]
-  finalApprovedAt: Date
-  finalNotes: String
-  id: ID!
-  paretoRank: Int
-  pipelineId: ID!
-  result: BacktestResult!
-  resultId: ID!
-  robustnessPassed: Boolean
-  robustnessScore: Float
-  robustnessTests: [RobustnessTest!]!
-  status: ValidationCandidateStatus!
-  thresholdDetails: JSON
-  thresholdPassed: Boolean
-  updatedAt: Date!
-  userNotes: String
-  userSelectedAt: Date
-  walkForwardResults: [WalkForwardResult!]!
-  wfaConsistency: Float
-  wfaPassed: Boolean
 }
 
 type ValidationCandidateWithResult {
@@ -1530,53 +1599,54 @@ type ValidationCandidateWithResult {
   resultId: ID!
   robustnessPassed: Boolean
   robustnessScore: Float
+  """Per-step robustness results JSON array"""
+  robustnessStepResults: JSON
   status: ValidationCandidateStatus!
-  thresholdDetails: JSON
   thresholdPassed: Boolean
   updatedAt: Date!
   userNotes: String
   userSelectedAt: Date
   wfaConsistency: Float
   wfaPassed: Boolean
+  """Per-window WFA results JSON array"""
+  wfaWindowResults: JSON
 }
 
 type ValidationPipeline {
+  backtestTaskId: ID!
   completedAt: Date
   createdAt: Date!
+  """Current step (1-7)"""
+  currentStep: Int!
   errorMessage: String
   finalApproved: Int!
   id: ID!
   name: String!
-  """Metrics for Pareto optimization"""
-  paretoMetrics: [String!]!
+  """Pareto config: { metrics: string[] }"""
+  paretoConfig: JSON
   paretoOptimal: Int!
   passedRobustness: Int!
   passedThreshold: Int!
   passedWfa: Int!
-  """Minimum robustness score to pass"""
-  robustnessMinScore: Float!
-  """Number of robustness test steps"""
-  robustnessSteps: Int!
+  """Number of completed robustness steps"""
+  robustnessCompletedSteps: Int!
+  """Robustness config: { steps, minScore }"""
+  robustnessConfig: JSON
   startedAt: Date
   status: ValidationPipelineStatus!
-  templateSearchId: ID!
-  """Threshold filter configuration"""
-  thresholdConfig: JSON!
   totalCandidates: Int!
   userSelected: Int!
-  """Minimum consistency score to pass WFA"""
-  wfaMinConsistency: Float!
-  """Train ratio for walk-forward analysis"""
-  wfaTrainRatio: Float!
-  """Number of walk-forward windows"""
-  wfaWindows: Int!
+  """Number of completed WFA windows"""
+  wfaCompletedWindows: Int!
+  """WFA config: { trainRatio, windows, minConsistency }"""
+  wfaConfig: JSON
 }
 
 input ValidationPipelineFilterInput {
+  backtestTaskId: ID
   limit: Int! = 20
   offset: Int! = 0
   status: ValidationPipelineStatus
-  templateSearchId: ID
 }
 
 type ValidationPipelineStats {
@@ -1585,58 +1655,52 @@ type ValidationPipelineStats {
   completed: Int!
   created: Int!
   failed: Int!
-  running: Int!
+  inProgress: Int!
 }
 
 """Status of a validation pipeline"""
 enum ValidationPipelineStatus {
-  AWAITING_FINAL_APPROVAL
-  AWAITING_USER_SELECTION
   CANCELLED
   COMPLETED
   CREATED
   FAILED
-  LAYER_1_DONE
-  LAYER_1_RUNNING
-  LAYER_2_DONE
-  LAYER_2_RUNNING
-  LAYER_3_DONE
-  LAYER_3_RUNNING
-  LAYER_5_DONE
-  LAYER_5_RUNNING
+  STEP_FINAL_APPROVAL
+  STEP_PARETO
+  STEP_ROBUSTNESS
+  STEP_THRESHOLD
+  STEP_USER_SELECTION
+  STEP_WFA
 }
 
 type ValidationPipelineWithCandidates {
+  backtestTaskId: ID!
   candidates: [ValidationCandidate!]!
   completedAt: Date
   createdAt: Date!
+  """Current step (1-7)"""
+  currentStep: Int!
   errorMessage: String
   finalApproved: Int!
   id: ID!
   name: String!
-  """Metrics for Pareto optimization"""
-  paretoMetrics: [String!]!
+  """Pareto config: { metrics: string[] }"""
+  paretoConfig: JSON
   paretoOptimal: Int!
   passedRobustness: Int!
   passedThreshold: Int!
   passedWfa: Int!
-  """Minimum robustness score to pass"""
-  robustnessMinScore: Float!
-  """Number of robustness test steps"""
-  robustnessSteps: Int!
+  """Number of completed robustness steps"""
+  robustnessCompletedSteps: Int!
+  """Robustness config: { steps, minScore }"""
+  robustnessConfig: JSON
   startedAt: Date
   status: ValidationPipelineStatus!
-  templateSearchId: ID!
-  """Threshold filter configuration"""
-  thresholdConfig: JSON!
   totalCandidates: Int!
   userSelected: Int!
-  """Minimum consistency score to pass WFA"""
-  wfaMinConsistency: Float!
-  """Train ratio for walk-forward analysis"""
-  wfaTrainRatio: Float!
-  """Number of walk-forward windows"""
-  wfaWindows: Int!
+  """Number of completed WFA windows"""
+  wfaCompletedWindows: Int!
+  """WFA config: { trainRatio, windows, minConsistency }"""
+  wfaConfig: JSON
 }
 
 enum Version {
@@ -1644,31 +1708,6 @@ enum Version {
   V2
   V9
   V10
-}
-
-type WalkForwardResult {
-  candidateId: ID!
-  consistency: Float
-  createdAt: Date!
-  degradation: Float
-  errorMessage: String
-  id: ID!
-  status: WalkForwardStatus!
-  testEnd: Date!
-  testMetrics: JSON
-  testStart: Date!
-  trainEnd: Date!
-  trainMetrics: JSON
-  trainStart: Date!
-  windowIndex: Int!
-}
-
-"""Status of a walk-forward result"""
-enum WalkForwardStatus {
-  DONE
-  FAILED
-  PENDING
-  PROCESSING
 }
 
 type WalletAccount {

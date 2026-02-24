@@ -5,8 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import {
   Button,
   Spinner,
-  Tabs,
-  Tab,
   Modal,
   ModalContent,
   ModalHeader,
@@ -18,15 +16,12 @@ import {
   FiRefreshCw,
   FiXCircle,
   FiTrash2,
-  FiPlay,
   FiList,
-  FiSettings,
 } from "react-icons/fi";
 import dayjs from "dayjs";
 
 import {
   useValidationPipeline,
-  useStartValidationPipeline,
   useCancelValidationPipeline,
   useDeleteValidationPipeline,
   useSubscribeValidationPipeline,
@@ -35,25 +30,22 @@ import {
 import { ValidationPipelineStatus } from "@/graphql/gql/graphql";
 import {
   ValidationPipelineStatusBadge,
-  LayerProgressTracker,
+  StepProgressTracker,
   CandidatesTab,
-  PipelineConfigTab,
+  ThresholdWizard,
+  ParetoConfigPanel,
+  WfaWizard,
+  RobustnessWizard,
+  UserSelectionPanel,
+  FinalApprovalPanel,
 } from "@/app-components/ValidationWidgets";
-import { UserSelectionPanel } from "@/app-components/ValidationWidgets/UserSelectionPanel";
-import { FinalApprovalPanel } from "@/app-components/ValidationWidgets/FinalApprovalPanel";
-
-type TabKey = "candidates" | "config";
 
 export default function ValidationPipelineDetailPage() {
   const params = useParams();
   const router = useRouter();
   const pipelineId = params.id as string;
 
-  const [selectedTab, setSelectedTab] = useState<TabKey>("candidates");
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [_selectedCandidateId, setSelectedCandidateId] = useState<
-    string | null
-  >(null);
 
   // Subscribe to real-time updates
   useSubscribeValidationPipeline(pipelineId);
@@ -63,17 +55,11 @@ export default function ValidationPipelineDetailPage() {
   const { pipeline, loading, refetch } = useValidationPipeline(pipelineId);
 
   // Mutations
-  const { startPipeline, loading: starting } = useStartValidationPipeline();
   const { cancelPipeline, loading: cancelling } = useCancelValidationPipeline();
   const { deletePipeline, loading: deleting } = useDeleteValidationPipeline();
 
   const handleBack = () => {
     router.push("/validation-pipelines");
-  };
-
-  const handleStart = async () => {
-    await startPipeline({ variables: { id: pipelineId } });
-    await refetch();
   };
 
   const handleCancel = async () => {
@@ -86,7 +72,6 @@ export default function ValidationPipelineDetailPage() {
     router.push("/validation-pipelines");
   };
 
-  const canStart = pipeline?.status === ValidationPipelineStatus.Created;
   const canCancel =
     pipeline &&
     ![
@@ -102,11 +87,6 @@ export default function ValidationPipelineDetailPage() {
       ValidationPipelineStatus.Failed,
       ValidationPipelineStatus.Cancelled,
     ].includes(pipeline.status);
-
-  const isAwaitingUserSelection =
-    pipeline?.status === ValidationPipelineStatus.AwaitingUserSelection;
-  const isAwaitingFinalApproval =
-    pipeline?.status === ValidationPipelineStatus.AwaitingFinalApproval;
 
   if (loading) {
     return (
@@ -126,6 +106,45 @@ export default function ValidationPipelineDetailPage() {
       </div>
     );
   }
+
+  const renderWizardStep = () => {
+    switch (pipeline.status) {
+      case ValidationPipelineStatus.StepThreshold:
+        return (
+          <ThresholdWizard pipelineId={pipelineId} onComplete={refetch} />
+        );
+      case ValidationPipelineStatus.StepPareto:
+        return (
+          <ParetoConfigPanel pipelineId={pipelineId} onComplete={refetch} />
+        );
+      case ValidationPipelineStatus.StepWfa:
+        return (
+          <WfaWizard
+            pipelineId={pipelineId}
+            pipeline={pipeline}
+            onComplete={refetch}
+          />
+        );
+      case ValidationPipelineStatus.StepUserSelection:
+        return (
+          <UserSelectionPanel pipelineId={pipelineId} onComplete={refetch} />
+        );
+      case ValidationPipelineStatus.StepRobustness:
+        return (
+          <RobustnessWizard
+            pipelineId={pipelineId}
+            pipeline={pipeline}
+            onComplete={refetch}
+          />
+        );
+      case ValidationPipelineStatus.StepFinalApproval:
+        return (
+          <FinalApprovalPanel pipelineId={pipelineId} onComplete={refetch} />
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <Suspense fallback={<Spinner color="white" size="lg" />}>
@@ -178,18 +197,6 @@ export default function ValidationPipelineDetailPage() {
               Refresh
             </Button>
 
-            {canStart && (
-              <Button
-                color="primary"
-                size="sm"
-                startContent={<FiPlay className="h-4 w-4" />}
-                onPress={handleStart}
-                isLoading={starting}
-              >
-                Start
-              </Button>
-            )}
-
             {canCancel && (
               <Button
                 color="warning"
@@ -218,7 +225,7 @@ export default function ValidationPipelineDetailPage() {
         </div>
 
         {/* Progress Tracker */}
-        <LayerProgressTracker
+        <StepProgressTracker
           status={pipeline.status}
           stats={{
             totalCandidates: pipeline.totalCandidates,
@@ -231,14 +238,8 @@ export default function ValidationPipelineDetailPage() {
           }}
         />
 
-        {/* User Action Panels */}
-        {isAwaitingUserSelection && (
-          <UserSelectionPanel pipelineId={pipelineId} onComplete={refetch} />
-        )}
-
-        {isAwaitingFinalApproval && (
-          <FinalApprovalPanel pipelineId={pipelineId} onComplete={refetch} />
-        )}
+        {/* Wizard Step Panel */}
+        {renderWizardStep()}
 
         {/* Error Message */}
         {pipeline.errorMessage && (
@@ -248,49 +249,16 @@ export default function ValidationPipelineDetailPage() {
           </div>
         )}
 
-        {/* Tabs */}
-        <Tabs
-          selectedKey={selectedTab}
-          onSelectionChange={(key) => setSelectedTab(key as TabKey)}
-          color="secondary"
-          variant="underlined"
-          classNames={{
-            tabList: "gap-6",
-            cursor: "bg-secondary-500",
-            tab: "h-10 px-0",
-          }}
-        >
-          <Tab
-            key="candidates"
-            title={
-              <div className="flex items-center gap-2">
-                <FiList className="h-4 w-4" />
-                <span>Candidates ({pipeline.totalCandidates})</span>
-              </div>
-            }
-          >
-            <div className="pt-4">
-              <CandidatesTab
-                pipelineId={pipelineId}
-                onSelectCandidate={setSelectedCandidateId}
-              />
-            </div>
-          </Tab>
-
-          <Tab
-            key="config"
-            title={
-              <div className="flex items-center gap-2">
-                <FiSettings className="h-4 w-4" />
-                <span>Configuration</span>
-              </div>
-            }
-          >
-            <div className="pt-4">
-              <PipelineConfigTab pipeline={pipeline} />
-            </div>
-          </Tab>
-        </Tabs>
+        {/* Candidates Table */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 text-neutral-300">
+            <FiList className="h-4 w-4" />
+            <span className="text-sm font-medium">
+              Candidates ({pipeline.totalCandidates})
+            </span>
+          </div>
+          <CandidatesTab pipelineId={pipelineId} />
+        </div>
 
         {/* Delete Confirmation Modal */}
         <Modal

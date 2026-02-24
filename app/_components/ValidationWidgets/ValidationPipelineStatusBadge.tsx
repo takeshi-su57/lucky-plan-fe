@@ -22,44 +22,28 @@ const statusConfig: Record<
   }
 > = {
   [ValidationPipelineStatus.Created]: { label: "Created", color: "default" },
-  [ValidationPipelineStatus.Layer_1Running]: {
-    label: "Layer 1 Running",
+  [ValidationPipelineStatus.StepThreshold]: {
+    label: "Threshold",
     color: "primary",
   },
-  [ValidationPipelineStatus.Layer_1Done]: {
-    label: "Layer 1 Done",
+  [ValidationPipelineStatus.StepPareto]: {
+    label: "Pareto",
     color: "primary",
   },
-  [ValidationPipelineStatus.Layer_2Running]: {
-    label: "Layer 2 Running",
+  [ValidationPipelineStatus.StepWfa]: {
+    label: "WFA",
     color: "primary",
   },
-  [ValidationPipelineStatus.Layer_2Done]: {
-    label: "Layer 2 Done",
-    color: "primary",
-  },
-  [ValidationPipelineStatus.Layer_3Running]: {
-    label: "Layer 3 Running",
-    color: "primary",
-  },
-  [ValidationPipelineStatus.Layer_3Done]: {
-    label: "Layer 3 Done",
-    color: "primary",
-  },
-  [ValidationPipelineStatus.AwaitingUserSelection]: {
-    label: "Awaiting Selection",
+  [ValidationPipelineStatus.StepUserSelection]: {
+    label: "User Selection",
     color: "warning",
   },
-  [ValidationPipelineStatus.Layer_5Running]: {
-    label: "Layer 5 Running",
+  [ValidationPipelineStatus.StepRobustness]: {
+    label: "Robustness",
     color: "primary",
   },
-  [ValidationPipelineStatus.Layer_5Done]: {
-    label: "Layer 5 Done",
-    color: "primary",
-  },
-  [ValidationPipelineStatus.AwaitingFinalApproval]: {
-    label: "Awaiting Approval",
+  [ValidationPipelineStatus.StepFinalApproval]: {
+    label: "Final Approval",
     color: "warning",
   },
   [ValidationPipelineStatus.Completed]: {

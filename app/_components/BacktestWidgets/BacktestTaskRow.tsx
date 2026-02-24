@@ -17,6 +17,7 @@ import {
   FiRefreshCw,
   FiTrash2,
   FiPlay,
+  FiLayers,
 } from "react-icons/fi";
 import dayjs from "dayjs";
 
@@ -48,6 +49,7 @@ export type BacktestTaskRowProps = {
   onRetry: (taskId: string) => void;
   onDelete: (taskId: string) => void;
   onResume?: (taskId: string, additionalTrials?: number) => void;
+  onCreateValidation?: (taskId: string, taskName: string) => void;
   isDeleting?: boolean;
   isCancelling?: boolean;
   isRetrying?: boolean;
@@ -60,6 +62,7 @@ export function BacktestTaskRow({
   onRetry,
   onDelete,
   onResume,
+  onCreateValidation,
   isDeleting,
   isCancelling,
   isRetrying,
@@ -196,6 +199,18 @@ export function BacktestTaskRow({
                 View
               </Button>
             </Link>
+
+            {isDone && onCreateValidation && (
+              <Button
+                size="sm"
+                variant="flat"
+                color="secondary"
+                startContent={<FiLayers className="h-3 w-3" />}
+                onPress={() => onCreateValidation(task.id, task.name)}
+              >
+                Validate
+              </Button>
+            )}
 
             {(isProcessing || isAwaiting) && (
               <Button

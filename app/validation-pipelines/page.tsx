@@ -31,14 +31,17 @@ import {
 const statusFilterOptions = [
   { key: "all", label: "All Pipelines" },
   { key: ValidationPipelineStatus.Created, label: "Created" },
-  { key: ValidationPipelineStatus.Layer_1Running, label: "Running" },
+  { key: ValidationPipelineStatus.StepThreshold, label: "Threshold" },
+  { key: ValidationPipelineStatus.StepPareto, label: "Pareto" },
+  { key: ValidationPipelineStatus.StepWfa, label: "WFA" },
   {
-    key: ValidationPipelineStatus.AwaitingUserSelection,
-    label: "Awaiting Selection",
+    key: ValidationPipelineStatus.StepUserSelection,
+    label: "User Selection",
   },
+  { key: ValidationPipelineStatus.StepRobustness, label: "Robustness" },
   {
-    key: ValidationPipelineStatus.AwaitingFinalApproval,
-    label: "Awaiting Approval",
+    key: ValidationPipelineStatus.StepFinalApproval,
+    label: "Final Approval",
   },
   { key: ValidationPipelineStatus.Completed, label: "Completed" },
   { key: ValidationPipelineStatus.Failed, label: "Failed" },
@@ -106,7 +109,7 @@ export default function ValidationPipelinesPage() {
               Validation Pipelines
             </h1>
             <p className="text-sm text-neutral-400">
-              Multi-layer validation for backtest strategies
+              Interactive step-by-step validation for backtest strategies
             </p>
           </div>
 

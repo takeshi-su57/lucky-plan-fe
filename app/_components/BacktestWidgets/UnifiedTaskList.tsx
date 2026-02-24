@@ -15,7 +15,6 @@ import {
   FiSearch,
   FiGrid,
   FiLayers,
-  FiCheckCircle,
 } from "react-icons/fi";
 
 import { BacktestTaskStatus, StrategyCategory } from "@/graphql/gql/graphql";
@@ -132,7 +131,7 @@ export function UnifiedTaskList() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Validation pipeline modal state
-  const [createPipelineSearch, setCreatePipelineSearch] = useState<{
+  const [createPipelineTask, setCreatePipelineTask] = useState<{
     id: string;
     name: string;
   } | null>(null);
@@ -428,7 +427,7 @@ export function UnifiedTaskList() {
             handleDelete={handleDelete}
             handleRetry={handleRetry}
             handleResume={handleResume}
-            setCreatePipelineSearch={setCreatePipelineSearch}
+            setCreatePipelineTask={setCreatePipelineTask}
             cancelLoading={cancelLoading}
             deleteLoading={deleteLoading}
             retryLoading={retryLoading}
@@ -466,12 +465,12 @@ export function UnifiedTaskList() {
       )}
 
       {/* Create Validation Pipeline Modal */}
-      {createPipelineSearch && (
+      {createPipelineTask && (
         <CreatePipelineModal
-          isOpen={!!createPipelineSearch}
-          onClose={() => setCreatePipelineSearch(null)}
-          templateSearchId={createPipelineSearch.id}
-          templateSearchName={createPipelineSearch.name}
+          isOpen={!!createPipelineTask}
+          onClose={() => setCreatePipelineTask(null)}
+          backtestTaskId={createPipelineTask.id}
+          backtestTaskName={createPipelineTask.name}
         />
       )}
     </div>
@@ -489,8 +488,8 @@ type PaginatedTaskViewProps = {
   handleDelete: (taskId: string) => Promise<void>;
   handleRetry: (taskId: string) => Promise<void>;
   handleResume: (taskId: string, additionalTrials?: number) => Promise<void>;
-  setCreatePipelineSearch: (
-    search: { id: string; name: string } | null,
+  setCreatePipelineTask: (
+    task: { id: string; name: string } | null,
   ) => void;
   cancelLoading: boolean;
   deleteLoading: boolean;
@@ -509,7 +508,7 @@ function PaginatedTaskView({
   handleDelete,
   handleRetry,
   handleResume,
-  setCreatePipelineSearch,
+  setCreatePipelineTask,
   cancelLoading,
   deleteLoading,
   retryLoading,
@@ -561,18 +560,7 @@ function PaginatedTaskView({
         {groupedPaginatedTasks.map(({ search, tasks }) => (
           <div key={search.searchId} className="flex flex-col gap-3">
             {/* Search Group Header */}
-            <SearchGroupHeader
-              search={search}
-              onCreateValidation={
-                search.templateSearchId
-                  ? () =>
-                      setCreatePipelineSearch({
-                        id: search.templateSearchId!,
-                        name: search.symbol,
-                      })
-                  : undefined
-              }
-            />
+            <SearchGroupHeader search={search} />
 
             {/* Tasks for this search */}
             <div className="flex flex-col gap-3">
@@ -603,6 +591,9 @@ function PaginatedTaskView({
                   onDelete={handleDelete}
                   onRetry={handleRetry}
                   onResume={handleResume}
+                  onCreateValidation={(taskId, taskName) =>
+                    setCreatePipelineTask({ id: taskId, name: taskName })
+                  }
                   isCancelling={cancelLoading && actionTaskId === task.id}
                   isDeleting={deleteLoading && actionTaskId === task.id}
                   isRetrying={retryLoading && actionTaskId === task.id}
@@ -684,12 +675,10 @@ function TemplateGroupCard({ template, onClick }: TemplateGroupCardProps) {
 // Search Group Header Component (flat header for grouping tasks)
 type SearchGroupHeaderProps = {
   search: SearchGroup;
-  onCreateValidation?: () => void;
 };
 
 function SearchGroupHeader({
   search,
-  onCreateValidation,
 }: SearchGroupHeaderProps) {
   const totalTasks = search.tasks.length;
   const hasActive =
@@ -731,20 +720,6 @@ function SearchGroupHeader({
         <StatusBreakdown statusCounts={search.statusCounts} />
       </div>
 
-      {/* Create Validation Pipeline button */}
-      {onCreateValidation && (
-        <Button
-          size="sm"
-          color="success"
-          variant="flat"
-          startContent={<FiCheckCircle className="h-3 w-3" />}
-          onPress={() => {
-            onCreateValidation();
-          }}
-        >
-          Create Validation Pipeline
-        </Button>
-      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import {
   useApolloClient,
   useMutation,
@@ -25,15 +25,14 @@ export const ValidationPipelineInfoFragment = graphql(`
   fragment ValidationPipelineInfo on ValidationPipeline {
     id
     name
-    templateSearchId
+    backtestTaskId
     status
-    thresholdConfig
-    paretoMetrics
-    wfaTrainRatio
-    wfaWindows
-    wfaMinConsistency
-    robustnessSteps
-    robustnessMinScore
+    currentStep
+    paretoConfig
+    wfaConfig
+    robustnessConfig
+    wfaCompletedWindows
+    robustnessCompletedSteps
     totalCandidates
     passedThreshold
     paretoOptimal
@@ -56,15 +55,16 @@ export const ValidationCandidateInfoFragment = graphql(`
     configId
     status
     thresholdPassed
-    thresholdDetails
     paretoRank
     dominatedBy
     wfaConsistency
     wfaPassed
+    wfaWindowResults
     userSelectedAt
     userNotes
     robustnessScore
     robustnessPassed
+    robustnessStepResults
     finalApprovedAt
     finalNotes
     createdAt
@@ -75,53 +75,20 @@ export const ValidationCandidateInfoFragment = graphql(`
 export const BacktestResultSummaryFragment = graphql(`
   fragment BacktestResultSummary on BacktestResult {
     id
+    taskId
     configId
+    runDate
     totalTrades
     winningTrades
     losingTrades
     winRate
     totalPnlUsdt
     totalPnlPercent
+    maxDrawdownUsdt
     maxDrawdownPercent
     sharpeRatio
     profitFactor
     strategyConfig
-  }
-`);
-
-export const WalkForwardResultFragment = graphql(`
-  fragment WalkForwardResultInfo on WalkForwardResult {
-    id
-    candidateId
-    windowIndex
-    status
-    trainStart
-    trainEnd
-    trainMetrics
-    testStart
-    testEnd
-    testMetrics
-    consistency
-    degradation
-    errorMessage
-    createdAt
-  }
-`);
-
-export const RobustnessTestFragment = graphql(`
-  fragment RobustnessTestInfo on RobustnessTest {
-    id
-    candidateId
-    stepIndex
-    status
-    startDate
-    endDate
-    metrics
-    sharpeRatio
-    totalPnl
-    maxDrawdown
-    errorMessage
-    createdAt
   }
 `);
 
@@ -150,15 +117,14 @@ export const ValidationPipelineWithCandidatesQuery = graphql(`
     validationPipelineWithCandidates(id: $id) {
       id
       name
-      templateSearchId
+      backtestTaskId
       status
-      thresholdConfig
-      paretoMetrics
-      wfaTrainRatio
-      wfaWindows
-      wfaMinConsistency
-      robustnessSteps
-      robustnessMinScore
+      currentStep
+      paretoConfig
+      wfaConfig
+      robustnessConfig
+      wfaCompletedWindows
+      robustnessCompletedSteps
       totalCandidates
       passedThreshold
       paretoOptimal
@@ -180,27 +146,31 @@ export const ValidationPipelineWithCandidatesQuery = graphql(`
 export const ValidationCandidatesByStatusQuery = graphql(`
   query ValidationCandidatesByStatus($filter: ValidationCandidateFilterInput!) {
     validationCandidatesByStatus(filter: $filter) {
-      id
-      pipelineId
-      resultId
-      configId
-      status
-      thresholdPassed
-      thresholdDetails
-      paretoRank
-      dominatedBy
-      wfaConsistency
-      wfaPassed
-      userSelectedAt
-      userNotes
-      robustnessScore
-      robustnessPassed
-      finalApprovedAt
-      finalNotes
-      createdAt
-      updatedAt
-      result {
-        ...BacktestResultSummary
+      totalCount
+      candidates {
+        id
+        pipelineId
+        resultId
+        configId
+        status
+        thresholdPassed
+        paretoRank
+        dominatedBy
+        wfaConsistency
+        wfaPassed
+        wfaWindowResults
+        userSelectedAt
+        userNotes
+        robustnessScore
+        robustnessPassed
+        robustnessStepResults
+        finalApprovedAt
+        finalNotes
+        createdAt
+        updatedAt
+        result {
+          ...BacktestResultSummary
+        }
       }
     }
   }
@@ -215,27 +185,22 @@ export const ValidationCandidateQuery = graphql(`
       configId
       status
       thresholdPassed
-      thresholdDetails
       paretoRank
       dominatedBy
       wfaConsistency
       wfaPassed
+      wfaWindowResults
       userSelectedAt
       userNotes
       robustnessScore
       robustnessPassed
+      robustnessStepResults
       finalApprovedAt
       finalNotes
       createdAt
       updatedAt
       result {
         ...BacktestResultSummary
-      }
-      walkForwardResults {
-        ...WalkForwardResultInfo
-      }
-      robustnessTests {
-        ...RobustnessTestInfo
       }
     }
   }
@@ -245,11 +210,41 @@ export const ValidationPipelineStatsQuery = graphql(`
   query ValidationPipelineStats {
     validationPipelineStats {
       created
-      running
+      inProgress
       awaitingUser
       completed
       failed
       cancelled
+    }
+  }
+`);
+
+export const ThresholdStepsQuery = graphql(`
+  query ThresholdSteps($pipelineId: ID!) {
+    thresholdSteps(pipelineId: $pipelineId) {
+      id
+      pipelineId
+      stepOrder
+      metricName
+      operator
+      value
+      candidatesBefore
+      candidatesAfter
+      createdAt
+    }
+  }
+`);
+
+export const ParetoStepsQuery = graphql(`
+  query ParetoSteps($pipelineId: ID!) {
+    paretoSteps(pipelineId: $pipelineId) {
+      id
+      pipelineId
+      stepOrder
+      metrics
+      candidatesBefore
+      candidatesAfter
+      createdAt
     }
   }
 `);
@@ -266,13 +261,113 @@ export const CreateValidationPipelineMutation = graphql(`
   }
 `);
 
-export const StartValidationPipelineMutation = graphql(`
-  mutation StartValidationPipeline($id: ID!) {
-    startValidationPipeline(id: $id) {
+// --- Threshold mutations ---
+
+export const ApplyThresholdStepMutation = graphql(`
+  mutation ApplyThresholdStep($input: ApplyThresholdStepInput!) {
+    applyThresholdStep(input: $input) {
       ...ValidationPipelineInfo
     }
   }
 `);
+
+export const PreviewThresholdStepMutation = graphql(`
+  mutation PreviewThresholdStep($input: PreviewThresholdStepInput!) {
+    previewThresholdStep(input: $input) {
+      currentCount
+      survivingCount
+      eliminatedCount
+    }
+  }
+`);
+
+export const RemoveThresholdStepMutation = graphql(`
+  mutation RemoveThresholdStep($pipelineId: ID!, $stepId: ID!) {
+    removeThresholdStep(pipelineId: $pipelineId, stepId: $stepId) {
+      ...ValidationPipelineInfo
+    }
+  }
+`);
+
+export const CompleteThresholdStepMutation = graphql(`
+  mutation CompleteThresholdStep($pipelineId: ID!) {
+    completeThresholdStep(pipelineId: $pipelineId) {
+      ...ValidationPipelineInfo
+    }
+  }
+`);
+
+// --- Pareto mutations ---
+
+export const PreviewParetoStepMutation = graphql(`
+  mutation PreviewParetoStep($input: PreviewParetoStepInput!) {
+    previewParetoStep(input: $input) {
+      currentCount
+      optimalCount
+      dominatedCount
+    }
+  }
+`);
+
+export const ApplyParetoStepMutation = graphql(`
+  mutation ApplyParetoStep($input: ApplyParetoStepInput!) {
+    applyParetoStep(input: $input) {
+      ...ValidationPipelineInfo
+    }
+  }
+`);
+
+export const RemoveParetoStepMutation = graphql(`
+  mutation RemoveParetoStep($pipelineId: ID!, $stepId: ID!) {
+    removeParetoStep(pipelineId: $pipelineId, stepId: $stepId) {
+      ...ValidationPipelineInfo
+    }
+  }
+`);
+
+export const CompleteParetoStepMutation = graphql(`
+  mutation CompleteParetoStep($pipelineId: ID!) {
+    completeParetoStep(pipelineId: $pipelineId) {
+      ...ValidationPipelineInfo
+    }
+  }
+`);
+
+// --- WFA mutations ---
+
+export const StartWfaMutation = graphql(`
+  mutation StartWfa($input: StartWfaInput!) {
+    startWfa(input: $input) {
+      ...ValidationPipelineInfo
+    }
+  }
+`);
+
+export const PauseWfaMutation = graphql(`
+  mutation PauseWfa($pipelineId: ID!) {
+    pauseWfa(pipelineId: $pipelineId) {
+      ...ValidationPipelineInfo
+    }
+  }
+`);
+
+export const ResumeWfaMutation = graphql(`
+  mutation ResumeWfa($pipelineId: ID!) {
+    resumeWfa(pipelineId: $pipelineId) {
+      ...ValidationPipelineInfo
+    }
+  }
+`);
+
+export const CompleteWfaMutation = graphql(`
+  mutation CompleteWfa($pipelineId: ID!) {
+    completeWfa(pipelineId: $pipelineId) {
+      ...ValidationPipelineInfo
+    }
+  }
+`);
+
+// --- User Selection ---
 
 export const SubmitUserSelectionMutation = graphql(`
   mutation SubmitUserSelection($pipelineId: ID!, $input: UserSelectionInput!) {
@@ -282,6 +377,41 @@ export const SubmitUserSelectionMutation = graphql(`
   }
 `);
 
+// --- Robustness mutations ---
+
+export const ConfigureRobustnessMutation = graphql(`
+  mutation ConfigureRobustness($input: ConfigureRobustnessInput!) {
+    configureRobustness(input: $input) {
+      ...ValidationPipelineInfo
+    }
+  }
+`);
+
+export const RunRobustnessStepMutation = graphql(`
+  mutation RunRobustnessStep($input: RunRobustnessStepInput!) {
+    runRobustnessStep(input: $input) {
+      candidateId
+      configId
+      stepIndex
+      sharpeRatio
+      totalPnl
+      maxDrawdown
+      status
+      errorMessage
+    }
+  }
+`);
+
+export const CompleteRobustnessMutation = graphql(`
+  mutation CompleteRobustness($pipelineId: ID!) {
+    completeRobustness(pipelineId: $pipelineId) {
+      ...ValidationPipelineInfo
+    }
+  }
+`);
+
+// --- Final Approval ---
+
 export const SubmitFinalApprovalMutation = graphql(`
   mutation SubmitFinalApproval($pipelineId: ID!, $input: FinalApprovalInput!) {
     submitFinalApproval(pipelineId: $pipelineId, input: $input) {
@@ -289,6 +419,8 @@ export const SubmitFinalApprovalMutation = graphql(`
     }
   }
 `);
+
+// --- Pipeline Management ---
 
 export const CancelValidationPipelineMutation = graphql(`
   mutation CancelValidationPipeline($id: ID!) {
@@ -325,12 +457,12 @@ export const ValidationCandidateUpdatedSubscription = graphql(`
 `);
 
 // ============================================
-// Hooks
+// Query Hooks
 // ============================================
 
 export function useValidationPipelines(filter?: {
   status?: ValidationPipelineStatus;
-  templateSearchId?: string;
+  backtestTaskId?: string;
   limit?: number;
   offset?: number;
 }) {
@@ -338,7 +470,7 @@ export function useValidationPipelines(filter?: {
     variables: {
       filter: {
         status: filter?.status,
-        templateSearchId: filter?.templateSearchId,
+        backtestTaskId: filter?.backtestTaskId,
         limit: filter?.limit ?? 20,
         offset: filter?.offset ?? 0,
       },
@@ -401,17 +533,19 @@ export function useValidationPipelineWithCandidates(id: string | null) {
 export function useValidationCandidatesByStatus(
   pipelineId: string | null,
   status?: ValidationCandidateStatus,
-  options?: { limit?: number; offset?: number },
+  options?: { limit?: number },
 ) {
-  const { data, loading, error, refetch } = useQuery(
+  const limit = options?.limit ?? 100;
+
+  const { data, loading, error, refetch, fetchMore } = useQuery(
     ValidationCandidatesByStatusQuery,
     {
       variables: {
         filter: {
           pipelineId: pipelineId!,
           status,
-          limit: options?.limit ?? 100,
-          offset: options?.offset ?? 0,
+          limit,
+          offset: 0,
         },
       },
       skip: !pipelineId,
@@ -419,14 +553,49 @@ export function useValidationCandidatesByStatus(
     },
   );
 
+  const result = data?.validationCandidatesByStatus;
+  const candidates = (result?.candidates ?? []).map((item) => ({
+    ...item,
+    result: getFragmentData(BacktestResultSummaryFragment, item.result),
+  }));
+  const totalCount = result?.totalCount ?? 0;
+  const hasMore = candidates.length < totalCount;
+
+  const loadMore = useCallback(() => {
+    if (!hasMore || loading) return;
+    fetchMore({
+      variables: {
+        filter: {
+          pipelineId: pipelineId!,
+          status,
+          limit,
+          offset: result?.candidates.length ?? 0,
+        },
+      },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        if (!fetchMoreResult) return prev;
+        return {
+          ...prev,
+          validationCandidatesByStatus: {
+            ...fetchMoreResult.validationCandidatesByStatus,
+            candidates: [
+              ...prev.validationCandidatesByStatus.candidates,
+              ...fetchMoreResult.validationCandidatesByStatus.candidates,
+            ],
+          },
+        };
+      },
+    });
+  }, [hasMore, loading, fetchMore, pipelineId, status, limit, result?.candidates.length]);
+
   return {
-    candidates: (data?.validationCandidatesByStatus ?? []).map((item) => ({
-      ...item,
-      result: getFragmentData(BacktestResultSummaryFragment, item.result),
-    })),
+    candidates,
+    totalCount,
+    hasMore,
     loading,
     error,
     refetch,
+    loadMore,
   };
 }
 
@@ -455,6 +624,36 @@ export function useValidationPipelineStats() {
 
   return {
     stats: data?.validationPipelineStats ?? null,
+    loading,
+    error,
+    refetch,
+  };
+}
+
+export function useThresholdSteps(pipelineId: string | null) {
+  const { data, loading, error, refetch } = useQuery(ThresholdStepsQuery, {
+    variables: { pipelineId: pipelineId! },
+    skip: !pipelineId,
+    fetchPolicy: "cache-and-network",
+  });
+
+  return {
+    steps: data?.thresholdSteps ?? [],
+    loading,
+    error,
+    refetch,
+  };
+}
+
+export function useParetoSteps(pipelineId: string | null) {
+  const { data, loading, error, refetch } = useQuery(ParetoStepsQuery, {
+    variables: { pipelineId: pipelineId! },
+    skip: !pipelineId,
+    fetchPolicy: "cache-and-network",
+  });
+
+  return {
+    steps: data?.paretoSteps ?? [],
     loading,
     error,
     refetch,
@@ -493,29 +692,230 @@ export function useCreateValidationPipeline() {
   };
 }
 
-export function useStartValidationPipeline() {
+// --- Threshold hooks ---
+
+export function useApplyThresholdStep() {
   const { enqueueSnackbar } = useSnackbar();
   const [mutate, { loading, error }] = useMutation(
-    StartValidationPipelineMutation,
+    ApplyThresholdStepMutation,
     {
-      refetchQueries: [ValidationPipelinesQuery, ValidationPipelineStatsQuery],
+      refetchQueries: [ValidationCandidatesByStatusQuery],
       onCompleted: () => {
-        enqueueSnackbar("Validation pipeline started", { variant: "info" });
+        enqueueSnackbar("Threshold filter applied", { variant: "success" });
       },
       onError: (err) => {
-        enqueueSnackbar(`Failed to start pipeline: ${err.message}`, {
+        enqueueSnackbar(`Failed to apply threshold: ${err.message}`, {
           variant: "error",
         });
       },
     },
   );
 
+  return { applyThreshold: mutate, loading, error };
+}
+
+export function usePreviewThresholdStep() {
+  const [mutate, { loading, error, data }] = useMutation(
+    PreviewThresholdStepMutation,
+  );
+
   return {
-    startPipeline: mutate,
+    previewThreshold: mutate,
+    preview: data?.previewThresholdStep ?? null,
     loading,
     error,
   };
 }
+
+export function useRemoveThresholdStep() {
+  const { enqueueSnackbar } = useSnackbar();
+  const [mutate, { loading, error }] = useMutation(
+    RemoveThresholdStepMutation,
+    {
+      refetchQueries: [ValidationCandidatesByStatusQuery],
+      onCompleted: () => {
+        enqueueSnackbar("Threshold filter removed", { variant: "info" });
+      },
+      onError: (err) => {
+        enqueueSnackbar(`Failed to remove threshold: ${err.message}`, {
+          variant: "error",
+        });
+      },
+    },
+  );
+
+  return { removeThreshold: mutate, loading, error };
+}
+
+export function useCompleteThresholdStep() {
+  const { enqueueSnackbar } = useSnackbar();
+  const [mutate, { loading, error }] = useMutation(
+    CompleteThresholdStepMutation,
+    {
+      refetchQueries: [ValidationCandidatesByStatusQuery],
+      onCompleted: () => {
+        enqueueSnackbar("Threshold step completed, moving to Pareto", {
+          variant: "success",
+        });
+      },
+      onError: (err) => {
+        enqueueSnackbar(`Failed to complete threshold step: ${err.message}`, {
+          variant: "error",
+        });
+      },
+    },
+  );
+
+  return { completeThreshold: mutate, loading, error };
+}
+
+// --- Pareto hooks ---
+
+export function usePreviewParetoStep() {
+  const [mutate, { loading, error, data }] = useMutation(
+    PreviewParetoStepMutation,
+  );
+
+  return {
+    previewPareto: mutate,
+    preview: data?.previewParetoStep ?? null,
+    loading,
+    error,
+  };
+}
+
+export function useApplyParetoStep() {
+  const { enqueueSnackbar } = useSnackbar();
+  const [mutate, { loading, error }] = useMutation(
+    ApplyParetoStepMutation,
+    {
+      refetchQueries: [ValidationCandidatesByStatusQuery],
+      onCompleted: () => {
+        enqueueSnackbar("Pareto selection applied", { variant: "success" });
+      },
+      onError: (err) => {
+        enqueueSnackbar(`Failed to apply Pareto: ${err.message}`, {
+          variant: "error",
+        });
+      },
+    },
+  );
+
+  return { applyPareto: mutate, loading, error };
+}
+
+export function useRemoveParetoStep() {
+  const { enqueueSnackbar } = useSnackbar();
+  const [mutate, { loading, error }] = useMutation(
+    RemoveParetoStepMutation,
+    {
+      refetchQueries: [ValidationCandidatesByStatusQuery],
+      onCompleted: () => {
+        enqueueSnackbar("Pareto step removed", { variant: "info" });
+      },
+      onError: (err) => {
+        enqueueSnackbar(`Failed to remove Pareto step: ${err.message}`, {
+          variant: "error",
+        });
+      },
+    },
+  );
+
+  return { removePareto: mutate, loading, error };
+}
+
+export function useCompleteParetoStep() {
+  const { enqueueSnackbar } = useSnackbar();
+  const [mutate, { loading, error }] = useMutation(
+    CompleteParetoStepMutation,
+    {
+      refetchQueries: [ValidationCandidatesByStatusQuery],
+      onCompleted: () => {
+        enqueueSnackbar("Pareto step completed, moving to WFA", {
+          variant: "success",
+        });
+      },
+      onError: (err) => {
+        enqueueSnackbar(`Failed to complete Pareto step: ${err.message}`, {
+          variant: "error",
+        });
+      },
+    },
+  );
+
+  return { completePareto: mutate, loading, error };
+}
+
+// --- WFA hooks ---
+
+export function useStartWfa() {
+  const { enqueueSnackbar } = useSnackbar();
+  const [mutate, { loading, error }] = useMutation(StartWfaMutation, {
+    onCompleted: () => {
+      enqueueSnackbar("WFA started", { variant: "success" });
+    },
+    onError: (err) => {
+      enqueueSnackbar(`Failed to start WFA: ${err.message}`, {
+        variant: "error",
+      });
+    },
+  });
+
+  return { startWfa: mutate, loading, error };
+}
+
+export function usePauseWfa() {
+  const { enqueueSnackbar } = useSnackbar();
+  const [mutate, { loading, error }] = useMutation(PauseWfaMutation, {
+    onCompleted: () => {
+      enqueueSnackbar("WFA pausing...", { variant: "info" });
+    },
+    onError: (err) => {
+      enqueueSnackbar(`Failed to pause WFA: ${err.message}`, {
+        variant: "error",
+      });
+    },
+  });
+
+  return { pauseWfa: mutate, loading, error };
+}
+
+export function useResumeWfa() {
+  const { enqueueSnackbar } = useSnackbar();
+  const [mutate, { loading, error }] = useMutation(ResumeWfaMutation, {
+    onCompleted: () => {
+      enqueueSnackbar("WFA resumed", { variant: "success" });
+    },
+    onError: (err) => {
+      enqueueSnackbar(`Failed to resume WFA: ${err.message}`, {
+        variant: "error",
+      });
+    },
+  });
+
+  return { resumeWfa: mutate, loading, error };
+}
+
+export function useCompleteWfa() {
+  const { enqueueSnackbar } = useSnackbar();
+  const [mutate, { loading, error }] = useMutation(CompleteWfaMutation, {
+    refetchQueries: [ValidationCandidatesByStatusQuery],
+    onCompleted: () => {
+      enqueueSnackbar("WFA approved, moving to user selection", {
+        variant: "success",
+      });
+    },
+    onError: (err) => {
+      enqueueSnackbar(`Failed to complete WFA: ${err.message}`, {
+        variant: "error",
+      });
+    },
+  });
+
+  return { completeWfa: mutate, loading, error };
+}
+
+// --- User Selection hook ---
 
 export function useSubmitUserSelection() {
   const { enqueueSnackbar } = useSnackbar();
@@ -552,6 +952,70 @@ export function useSubmitUserSelection() {
   };
 }
 
+// --- Robustness hooks ---
+
+export function useConfigureRobustness() {
+  const { enqueueSnackbar } = useSnackbar();
+  const [mutate, { loading, error }] = useMutation(
+    ConfigureRobustnessMutation,
+    {
+      onCompleted: () => {
+        enqueueSnackbar("Robustness testing configured", {
+          variant: "success",
+        });
+      },
+      onError: (err) => {
+        enqueueSnackbar(`Failed to configure robustness: ${err.message}`, {
+          variant: "error",
+        });
+      },
+    },
+  );
+
+  return { configureRobustness: mutate, loading, error };
+}
+
+export function useRunRobustnessStep() {
+  const { enqueueSnackbar } = useSnackbar();
+  const [mutate, { loading, error, data }] = useMutation(
+    RunRobustnessStepMutation,
+    {
+      onError: (err) => {
+        enqueueSnackbar(`Robustness step failed: ${err.message}`, {
+          variant: "error",
+        });
+      },
+    },
+  );
+
+  return {
+    runStep: mutate,
+    stepResults: data?.runRobustnessStep ?? null,
+    loading,
+    error,
+  };
+}
+
+export function useCompleteRobustness() {
+  const { enqueueSnackbar } = useSnackbar();
+  const [mutate, { loading, error }] = useMutation(CompleteRobustnessMutation, {
+    onCompleted: () => {
+      enqueueSnackbar("Robustness completed, moving to final approval", {
+        variant: "success",
+      });
+    },
+    onError: (err) => {
+      enqueueSnackbar(`Failed to complete robustness: ${err.message}`, {
+        variant: "error",
+      });
+    },
+  });
+
+  return { completeRobustness: mutate, loading, error };
+}
+
+// --- Final Approval hook ---
+
 export function useSubmitFinalApproval() {
   const { enqueueSnackbar } = useSnackbar();
   const [mutate, { loading, error }] = useMutation(
@@ -586,6 +1050,8 @@ export function useSubmitFinalApproval() {
     error,
   };
 }
+
+// --- Pipeline Management hooks ---
 
 export function useCancelValidationPipeline() {
   const { enqueueSnackbar } = useSnackbar();
@@ -655,7 +1121,6 @@ export function useSubscribeValidationPipeline(pipelineId?: string | null) {
       ) as ValidationPipeline;
 
       if (pipelineInfo) {
-        // Update the cache
         client.cache.writeFragment({
           id: client.cache.identify({
             __typename: "ValidationPipeline",
@@ -669,19 +1134,17 @@ export function useSubscribeValidationPipeline(pipelineId?: string | null) {
           },
         });
 
-        // Only show notifications if watching a specific pipeline
         if (pipelineId && pipelineInfo.id === pipelineId) {
-          // Notify on key status changes
           if (
             pipelineInfo.status ===
-            ValidationPipelineStatus.AwaitingUserSelection
+            ValidationPipelineStatus.StepUserSelection
           ) {
             enqueueSnackbar("Pipeline ready for user selection", {
               variant: "info",
             });
           } else if (
             pipelineInfo.status ===
-            ValidationPipelineStatus.AwaitingFinalApproval
+            ValidationPipelineStatus.StepFinalApproval
           ) {
             enqueueSnackbar("Pipeline ready for final approval", {
               variant: "info",
@@ -729,7 +1192,6 @@ export function useSubscribeValidationCandidate(pipelineId?: string | null) {
       ) as ValidationCandidate;
 
       if (candidateInfo) {
-        // Only update cache if watching the same pipeline
         if (!pipelineId || candidateInfo.pipelineId === pipelineId) {
           client.cache.writeFragment({
             id: client.cache.identify({
@@ -768,21 +1230,17 @@ export function useSubscribeValidationCandidate(pipelineId?: string | null) {
 
 export function getPipelineStatusGroup(
   status: ValidationPipelineStatus,
-): "created" | "running" | "awaiting" | "completed" | "failed" | "cancelled" {
+): "created" | "inProgress" | "awaiting" | "completed" | "failed" | "cancelled" {
   switch (status) {
     case ValidationPipelineStatus.Created:
       return "created";
-    case ValidationPipelineStatus.Layer_1Running:
-    case ValidationPipelineStatus.Layer_1Done:
-    case ValidationPipelineStatus.Layer_2Running:
-    case ValidationPipelineStatus.Layer_2Done:
-    case ValidationPipelineStatus.Layer_3Running:
-    case ValidationPipelineStatus.Layer_3Done:
-    case ValidationPipelineStatus.Layer_5Running:
-    case ValidationPipelineStatus.Layer_5Done:
-      return "running";
-    case ValidationPipelineStatus.AwaitingUserSelection:
-    case ValidationPipelineStatus.AwaitingFinalApproval:
+    case ValidationPipelineStatus.StepThreshold:
+    case ValidationPipelineStatus.StepPareto:
+    case ValidationPipelineStatus.StepWfa:
+    case ValidationPipelineStatus.StepRobustness:
+      return "inProgress";
+    case ValidationPipelineStatus.StepUserSelection:
+    case ValidationPipelineStatus.StepFinalApproval:
       return "awaiting";
     case ValidationPipelineStatus.Completed:
       return "completed";
@@ -795,56 +1253,53 @@ export function getPipelineStatusGroup(
   }
 }
 
-export function getPipelineCurrentLayer(
+export function getPipelineCurrentStep(
   status: ValidationPipelineStatus,
 ): number {
   switch (status) {
     case ValidationPipelineStatus.Created:
-      return 0;
-    case ValidationPipelineStatus.Layer_1Running:
-    case ValidationPipelineStatus.Layer_1Done:
       return 1;
-    case ValidationPipelineStatus.Layer_2Running:
-    case ValidationPipelineStatus.Layer_2Done:
+    case ValidationPipelineStatus.StepThreshold:
       return 2;
-    case ValidationPipelineStatus.Layer_3Running:
-    case ValidationPipelineStatus.Layer_3Done:
+    case ValidationPipelineStatus.StepPareto:
       return 3;
-    case ValidationPipelineStatus.AwaitingUserSelection:
+    case ValidationPipelineStatus.StepWfa:
       return 4;
-    case ValidationPipelineStatus.Layer_5Running:
-    case ValidationPipelineStatus.Layer_5Done:
+    case ValidationPipelineStatus.StepUserSelection:
       return 5;
-    case ValidationPipelineStatus.AwaitingFinalApproval:
-    case ValidationPipelineStatus.Completed:
+    case ValidationPipelineStatus.StepRobustness:
       return 6;
+    case ValidationPipelineStatus.StepFinalApproval:
+      return 7;
+    case ValidationPipelineStatus.Completed:
+      return 7;
     default:
-      return 0;
+      return 1;
   }
 }
 
 export function isPipelineAwaiting(status: ValidationPipelineStatus): boolean {
   return (
-    status === ValidationPipelineStatus.AwaitingUserSelection ||
-    status === ValidationPipelineStatus.AwaitingFinalApproval
+    status === ValidationPipelineStatus.StepUserSelection ||
+    status === ValidationPipelineStatus.StepFinalApproval
   );
 }
 
 export function getCandidateStatusGroup(
   status: ValidationCandidateStatus,
-): "pending" | "passed" | "failed" | "selected" | "approved" {
+): "pending" | "active" | "eliminated" | "passed" | "failed" | "selected" | "approved" {
   switch (status) {
     case ValidationCandidateStatus.Pending:
-    case ValidationCandidateStatus.WfaPending:
-    case ValidationCandidateStatus.RobustnessPending:
       return "pending";
-    case ValidationCandidateStatus.PassedThreshold:
+    case ValidationCandidateStatus.Active:
     case ValidationCandidateStatus.ParetoOptimal:
+      return "active";
+    case ValidationCandidateStatus.ThresholdEliminated:
+    case ValidationCandidateStatus.ParetoDominated:
+      return "eliminated";
     case ValidationCandidateStatus.WfaPassed:
     case ValidationCandidateStatus.RobustnessPassed:
       return "passed";
-    case ValidationCandidateStatus.FailedThreshold:
-    case ValidationCandidateStatus.ParetoDominated:
     case ValidationCandidateStatus.WfaFailed:
     case ValidationCandidateStatus.RobustnessFailed:
     case ValidationCandidateStatus.UserRejected:

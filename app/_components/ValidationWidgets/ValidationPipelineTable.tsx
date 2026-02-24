@@ -22,7 +22,7 @@ import {
 } from "@/graphql/gql/graphql";
 import { ValidationPipelineStatusBadge } from "./ValidationPipelineStatusBadge";
 import {
-  getPipelineCurrentLayer,
+  getPipelineCurrentStep,
   isPipelineAwaiting,
 } from "@/app-hooks/useValidationPipeline";
 
@@ -38,24 +38,16 @@ function MiniProgress({
   status,
 }: {
   status: ValidationPipelineStatus;
-  stats: {
-    passedThreshold: number;
-    paretoOptimal: number;
-    passedWfa: number;
-    userSelected: number;
-    passedRobustness: number;
-    finalApproved: number;
-  };
 }) {
-  const currentLayer = getPipelineCurrentLayer(status);
-  const layers = [1, 2, 3, 4, 5, 6];
+  const currentStep = getPipelineCurrentStep(status);
+  const stepIds = [1, 2, 3, 4, 5, 6, 7];
 
   return (
     <div className="flex items-center gap-0.5">
-      {layers.map((layer) => {
+      {stepIds.map((step) => {
         let bgColor = "bg-neutral-700";
-        if (layer < currentLayer) bgColor = "bg-success-500";
-        else if (layer === currentLayer) {
+        if (step < currentStep) bgColor = "bg-success-500";
+        else if (step === currentStep) {
           if (isPipelineAwaiting(status)) bgColor = "bg-warning-500";
           else if (status === ValidationPipelineStatus.Failed)
             bgColor = "bg-danger-500";
@@ -64,9 +56,9 @@ function MiniProgress({
 
         return (
           <div
-            key={layer}
+            key={step}
             className={`h-2 w-3 rounded-sm ${bgColor}`}
-            title={`Layer ${layer}`}
+            title={`Step ${step}`}
           />
         );
       })}
@@ -110,7 +102,7 @@ export function ValidationPipelineTable({
     return (
       <div className="flex flex-col items-center justify-center gap-2 py-12 text-neutral-400">
         <p>No validation pipelines found</p>
-        <p className="text-sm">Create one from a completed template search</p>
+        <p className="text-sm">Create one from a completed backtest task</p>
       </div>
     );
   }
@@ -151,17 +143,7 @@ export function ValidationPipelineTable({
               <ValidationPipelineStatusBadge status={pipeline.status} />
             </TableCell>
             <TableCell>
-              <MiniProgress
-                status={pipeline.status}
-                stats={{
-                  passedThreshold: pipeline.passedThreshold,
-                  paretoOptimal: pipeline.paretoOptimal,
-                  passedWfa: pipeline.passedWfa,
-                  userSelected: pipeline.userSelected,
-                  passedRobustness: pipeline.passedRobustness,
-                  finalApproved: pipeline.finalApproved,
-                }}
-              />
+              <MiniProgress status={pipeline.status} />
             </TableCell>
             <TableCell>
               <div className="flex flex-col text-sm">

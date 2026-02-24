@@ -48,7 +48,7 @@ export function ValidationStatsCards({
 
   const statItems: StatCardProps[] = [
     { label: "Created", value: stats.created, color: "text-neutral-300" },
-    { label: "Running", value: stats.running, color: "text-primary-400" },
+    { label: "In Progress", value: stats.inProgress, color: "text-primary-400" },
     {
       label: "Awaiting User",
       value: stats.awaitingUser,

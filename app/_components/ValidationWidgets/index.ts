@@ -8,3 +8,7 @@ export * from "./PipelineConfigTab";
 export * from "./UserSelectionPanel";
 export * from "./FinalApprovalPanel";
 export * from "./CreatePipelineModal";
+export * from "./ThresholdWizard";
+export * from "./ParetoConfigPanel";
+export * from "./WfaWizard";
+export * from "./RobustnessWizard";

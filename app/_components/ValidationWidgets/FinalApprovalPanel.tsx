@@ -92,7 +92,6 @@ export function FinalApprovalPanel({
 
   const sortedCandidates = useMemo(() => {
     return [...candidates].sort((a, b) => {
-      // Sort by robustness score descending
       const robustA = a.robustnessScore ?? 0;
       const robustB = b.robustnessScore ?? 0;
       return robustB - robustA;
@@ -115,7 +114,7 @@ export function FinalApprovalPanel({
         <div className="flex items-center gap-2">
           <FiAward className="text-success-400 h-5 w-5" />
           <h3 className="text-success-300 text-lg font-semibold">
-            Final Approval Required (Layer 6)
+            Final Approval Required (Step 7)
           </h3>
         </div>
         <p className="text-sm text-neutral-400">
@@ -125,7 +124,6 @@ export function FinalApprovalPanel({
       </CardHeader>
 
       <CardBody className="flex flex-col gap-4 py-4">
-        {/* Selection stats */}
         <div className="flex items-center justify-between">
           <span className="text-sm text-neutral-400">
             {approvedIds.size} of {candidates.length} candidates approved
@@ -137,7 +135,6 @@ export function FinalApprovalPanel({
           </Button>
         </div>
 
-        {/* Candidates Table */}
         <Table
           aria-label="Robustness passed candidates"
           classNames={{
@@ -220,7 +217,6 @@ export function FinalApprovalPanel({
           </TableBody>
         </Table>
 
-        {/* Notes */}
         <Textarea
           label="Approval Notes (optional)"
           placeholder="Add notes about your approval criteria or observations..."

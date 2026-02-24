@@ -52,6 +52,18 @@ export type AddUserInput = {
   address: Scalars['String']['input'];
 };
 
+export type ApplyParetoStepInput = {
+  metrics: Array<Scalars['String']['input']>;
+  pipelineId: Scalars['ID']['input'];
+};
+
+export type ApplyThresholdStepInput = {
+  metricName: Scalars['String']['input'];
+  operator: Scalars['String']['input'];
+  pipelineId: Scalars['ID']['input'];
+  value: Scalars['Float']['input'];
+};
+
 export type AssetInput = {
   address: Scalars['String']['input'];
   amount: Scalars['String']['input'];
@@ -274,6 +286,12 @@ export type ComponentInfo = {
   params: Array<ParamInfo>;
 };
 
+export type ConfigureRobustnessInput = {
+  minScore: Scalars['Float']['input'];
+  pipelineId: Scalars['ID']['input'];
+  steps: Scalars['Int']['input'];
+};
+
 export type Contract = {
   __typename?: 'Contract';
   address: Scalars['String']['output'];
@@ -379,15 +397,8 @@ export type CreateTemplateSearchInput = {
 };
 
 export type CreateValidationPipelineInput = {
+  backtestTaskId: Scalars['ID']['input'];
   name: Scalars['String']['input'];
-  paretoMetrics?: InputMaybe<Array<Scalars['String']['input']>>;
-  robustnessMinScore?: InputMaybe<Scalars['Float']['input']>;
-  robustnessSteps?: InputMaybe<Scalars['Int']['input']>;
-  templateSearchId: Scalars['ID']['input'];
-  thresholdConfig: ThresholdConfigInput;
-  wfaMinConsistency?: InputMaybe<Scalars['Float']['input']>;
-  wfaTrainRatio?: InputMaybe<Scalars['Float']['input']>;
-  wfaWindows?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export type DecreasePositionSizeInput = {
@@ -677,6 +688,10 @@ export type Mutation = {
   addToWhitelist: Scalars['Boolean']['output'];
   addWalletAccount: WalletAccount;
   allowAuto: User;
+  /** Apply a Pareto selection run with specified metrics */
+  applyParetoStep: ValidationPipeline;
+  /** Apply a single threshold filter to pipeline candidates */
+  applyThresholdStep: ValidationPipeline;
   batchCreateBots: Array<BotBackwardDetails>;
   buildPnlSnapshotsV2: Scalars['Boolean']['output'];
   /** Cancel a running or pending backtest task */
@@ -692,6 +707,16 @@ export type Mutation = {
   cloneMission: Scalars['Boolean']['output'];
   closeMission: Scalars['Boolean']['output'];
   closeTradeMarket: ContractExecutionResult;
+  /** Complete Pareto step and advance to WFA */
+  completeParetoStep: ValidationPipeline;
+  /** Complete robustness testing, aggregate results, and advance to final approval */
+  completeRobustness: ValidationPipeline;
+  /** Complete threshold step and advance to Pareto selection */
+  completeThresholdStep: ValidationPipeline;
+  /** Approve WFA results, remove failed candidates, and advance to user selection */
+  completeWfa: ValidationPipeline;
+  /** Configure robustness test parameters before running steps */
+  configureRobustness: ValidationPipeline;
   createAutoPlan: Scalars['Boolean']['output'];
   /** Create a new backtest optimization task */
   createBacktestTask: BacktestTask;
@@ -702,7 +727,7 @@ export type Mutation = {
   createStrategyTemplate: StrategyTemplate;
   /** Create a new template search (spawns a BacktestTask) */
   createTemplateSearch: TemplateSearchWithTemplate;
-  /** Create a new validation pipeline from a completed template search */
+  /** Create a new validation pipeline from a completed backtest task */
   createValidationPipeline: ValidationPipeline;
   decreaseAllowanceToZero: Scalars['Boolean']['output'];
   decreasePositionSize: ContractExecutionResult;
@@ -737,31 +762,45 @@ export type Mutation = {
   makeSafeApp: Scalars['Boolean']['output'];
   openTradeMarket: ContractExecutionResult;
   pauseSystem: Scalars['Boolean']['output'];
+  /** Pause a running WFA process. Takes effect after current candidate finishes. */
+  pauseWfa: ValidationPipeline;
   performTask: Scalars['Boolean']['output'];
+  /** Preview Pareto selection without applying it */
+  previewParetoStep: ParetoPreviewResult;
+  /** Preview a threshold filter without applying it */
+  previewThresholdStep: ThresholdPreviewResult;
   registerTradingSignalLog: TradingSignalLog;
   removeEventLogsFromTradingSignalLog: TradingSignalLog;
   removeFromBlacklist: Scalars['Boolean']['output'];
   removeFromWhitelist: Scalars['Boolean']['output'];
+  /** Remove a Pareto step and recalculate */
+  removeParetoStep: ValidationPipeline;
   removeTagFromWalletAccount: WalletAccount;
+  /** Remove a threshold step and recalculate */
+  removeThresholdStep: ValidationPipeline;
   /** Resume or extend an Optuna optimization task */
   resumeBacktestTask: BacktestTask;
   resumeSystem: Scalars['Boolean']['output'];
+  /** Resume a paused WFA process. Continues from where it left off. */
+  resumeWfa: ValidationPipeline;
   /** Retry a failed backtest task */
   retryBacktestTask: BacktestTask;
+  /** Run a single robustness step across all selected candidates */
+  runRobustnessStep: Array<RobustnessStepResult>;
   startAdaption: Scalars['Boolean']['output'];
   /** Start global Optuna dashboard (connects to PostgreSQL, shows all studies) */
   startOptunaDashboard: OptunaDashboardStatus;
   startPlan: Scalars['Boolean']['output'];
   startSubService: Scalars['Boolean']['output'];
-  /** Start a validation pipeline (triggers Layer 1-3 processing) */
-  startValidationPipeline: ValidationPipeline;
+  /** Start WFA background process. Returns immediately, progress via subscription. */
+  startWfa: ValidationPipeline;
   stopBot: Scalars['Boolean']['output'];
   /** Stop the running Optuna dashboard */
   stopOptunaDashboard: Scalars['Boolean']['output'];
   stopTask: Scalars['Boolean']['output'];
-  /** Submit final approval of candidates (Layer 6) to complete pipeline */
+  /** Submit final approval of candidates to complete the pipeline */
   submitFinalApproval: ValidationPipeline;
-  /** Submit user selection of candidates (Layer 4) to proceed to Layer 5 */
+  /** Submit user selection of candidates and advance to robustness */
   submitUserSelection: ValidationPipeline;
   unregisterTradingSignalLog: TradingSignalLog;
   updateLeverage: ContractExecutionResult;
@@ -809,6 +848,16 @@ export type MutationAllowAutoArgs = {
   budget: Scalars['Float']['input'];
   followerContractId: Scalars['Int']['input'];
   ratio: Scalars['Float']['input'];
+};
+
+
+export type MutationApplyParetoStepArgs = {
+  input: ApplyParetoStepInput;
+};
+
+
+export type MutationApplyThresholdStepArgs = {
+  input: ApplyThresholdStepInput;
 };
 
 
@@ -875,6 +924,31 @@ export type MutationCloseMissionArgs = {
 
 export type MutationCloseTradeMarketArgs = {
   input: CloseTradeInput;
+};
+
+
+export type MutationCompleteParetoStepArgs = {
+  pipelineId: Scalars['ID']['input'];
+};
+
+
+export type MutationCompleteRobustnessArgs = {
+  pipelineId: Scalars['ID']['input'];
+};
+
+
+export type MutationCompleteThresholdStepArgs = {
+  pipelineId: Scalars['ID']['input'];
+};
+
+
+export type MutationCompleteWfaArgs = {
+  pipelineId: Scalars['ID']['input'];
+};
+
+
+export type MutationConfigureRobustnessArgs = {
+  input: ConfigureRobustnessInput;
 };
 
 
@@ -1053,8 +1127,23 @@ export type MutationOpenTradeMarketArgs = {
 };
 
 
+export type MutationPauseWfaArgs = {
+  pipelineId: Scalars['ID']['input'];
+};
+
+
 export type MutationPerformTaskArgs = {
   id: Scalars['Int']['input'];
+};
+
+
+export type MutationPreviewParetoStepArgs = {
+  input: PreviewParetoStepInput;
+};
+
+
+export type MutationPreviewThresholdStepArgs = {
+  input: PreviewThresholdStepInput;
 };
 
 
@@ -1080,8 +1169,20 @@ export type MutationRemoveFromWhitelistArgs = {
 };
 
 
+export type MutationRemoveParetoStepArgs = {
+  pipelineId: Scalars['ID']['input'];
+  stepId: Scalars['ID']['input'];
+};
+
+
 export type MutationRemoveTagFromWalletAccountArgs = {
   input: ChangeUserTagInput;
+};
+
+
+export type MutationRemoveThresholdStepArgs = {
+  pipelineId: Scalars['ID']['input'];
+  stepId: Scalars['ID']['input'];
 };
 
 
@@ -1096,8 +1197,18 @@ export type MutationResumeSystemArgs = {
 };
 
 
+export type MutationResumeWfaArgs = {
+  pipelineId: Scalars['ID']['input'];
+};
+
+
 export type MutationRetryBacktestTaskArgs = {
   taskId: Scalars['ID']['input'];
+};
+
+
+export type MutationRunRobustnessStepArgs = {
+  input: RunRobustnessStepInput;
 };
 
 
@@ -1122,8 +1233,8 @@ export type MutationStartSubServiceArgs = {
 };
 
 
-export type MutationStartValidationPipelineArgs = {
-  id: Scalars['ID']['input'];
+export type MutationStartWfaArgs = {
+  input: StartWfaInput;
 };
 
 
@@ -1250,6 +1361,13 @@ export type OptunaDashboardStatus = {
   url?: Maybe<Scalars['String']['output']>;
 };
 
+/** Paginated validation candidates with total count */
+export type PaginatedValidationCandidatesResult = {
+  __typename?: 'PaginatedValidationCandidatesResult';
+  candidates: Array<ValidationCandidateWithResult>;
+  totalCount: Scalars['Int']['output'];
+};
+
 export type ParamInfo = {
   __typename?: 'ParamInfo';
   default?: Maybe<Scalars['String']['output']>;
@@ -1260,6 +1378,24 @@ export type ParamInfo = {
   options?: Maybe<Array<SelectOptionInfo>>;
   required: Scalars['Boolean']['output'];
   type: Scalars['String']['output'];
+};
+
+export type ParetoPreviewResult = {
+  __typename?: 'ParetoPreviewResult';
+  currentCount: Scalars['Int']['output'];
+  dominatedCount: Scalars['Int']['output'];
+  optimalCount: Scalars['Int']['output'];
+};
+
+export type ParetoStep = {
+  __typename?: 'ParetoStep';
+  candidatesAfter: Scalars['Int']['output'];
+  candidatesBefore: Scalars['Int']['output'];
+  createdAt: Scalars['Date']['output'];
+  id: Scalars['ID']['output'];
+  metrics: Array<Scalars['String']['output']>;
+  pipelineId: Scalars['ID']['output'];
+  stepOrder: Scalars['Int']['output'];
 };
 
 export enum PerpTradeHistoryOperation {
@@ -1428,6 +1564,18 @@ export type PnlSnapshotV2InitializedFlag = {
   platform: Platform;
 };
 
+export type PreviewParetoStepInput = {
+  metrics: Array<Scalars['String']['input']>;
+  pipelineId: Scalars['ID']['input'];
+};
+
+export type PreviewThresholdStepInput = {
+  metricName: Scalars['String']['input'];
+  operator: Scalars['String']['input'];
+  pipelineId: Scalars['ID']['input'];
+  value: Scalars['Float']['input'];
+};
+
 export type Query = {
   __typename?: 'Query';
   allLogs: LogsConnection;
@@ -1485,6 +1633,8 @@ export type Query = {
   isSafeApp: Scalars['Boolean']['output'];
   /** Get current Optuna dashboard status */
   optunaDashboardStatus: OptunaDashboardStatus;
+  /** Get all Pareto steps for a pipeline */
+  paretoSteps: Array<ParetoStep>;
   /** Get a strategy template by ID */
   strategyTemplate?: Maybe<StrategyTemplate>;
   /** Get a strategy template by name */
@@ -1506,12 +1656,14 @@ export type Query = {
   templateSearchWithTask?: Maybe<TemplateSearchWithTask>;
   /** List template searches with optional filtering */
   templateSearches: Array<TemplateSearchWithTemplate>;
+  /** Get all threshold steps for a pipeline */
+  thresholdSteps: Array<ThresholdStep>;
   /** Get top performing backtest results */
   topBacktestResults: Array<BacktestResult>;
-  /** Get a validation candidate with full details */
-  validationCandidate?: Maybe<ValidationCandidateWithDetails>;
+  /** Get a validation candidate with result details */
+  validationCandidate?: Maybe<ValidationCandidateWithResult>;
   /** Get validation candidates by pipeline and optional status */
-  validationCandidatesByStatus: Array<ValidationCandidateWithResult>;
+  validationCandidatesByStatus: PaginatedValidationCandidatesResult;
   /** Get a validation pipeline by ID */
   validationPipeline?: Maybe<ValidationPipeline>;
   /** Get validation pipeline count statistics by status */
@@ -1674,6 +1826,11 @@ export type QueryIsPnlSnapshotV2InitializedArgs = {
 };
 
 
+export type QueryParetoStepsArgs = {
+  pipelineId: Scalars['ID']['input'];
+};
+
+
 export type QueryStrategyTemplateArgs = {
   id: Scalars['ID']['input'];
 };
@@ -1719,6 +1876,11 @@ export type QueryTemplateSearchWithTaskArgs = {
 
 export type QueryTemplateSearchesArgs = {
   filter?: InputMaybe<TemplateSearchFilterInput>;
+};
+
+
+export type QueryThresholdStepsArgs = {
+  pipelineId: Scalars['ID']['input'];
 };
 
 
@@ -1771,29 +1933,22 @@ export type ResultFolder = {
   taskId: Scalars['String']['output'];
 };
 
-export type RobustnessTest = {
-  __typename?: 'RobustnessTest';
+export type RobustnessStepResult = {
+  __typename?: 'RobustnessStepResult';
   candidateId: Scalars['ID']['output'];
-  createdAt: Scalars['Date']['output'];
-  endDate: Scalars['Date']['output'];
+  configId: Scalars['String']['output'];
   errorMessage?: Maybe<Scalars['String']['output']>;
-  id: Scalars['ID']['output'];
   maxDrawdown?: Maybe<Scalars['Float']['output']>;
-  metrics?: Maybe<Scalars['JSON']['output']>;
   sharpeRatio?: Maybe<Scalars['Float']['output']>;
-  startDate: Scalars['Date']['output'];
-  status: RobustnessTestStatus;
+  status: Scalars['String']['output'];
   stepIndex: Scalars['Int']['output'];
   totalPnl?: Maybe<Scalars['Float']['output']>;
 };
 
-/** Status of a robustness test */
-export enum RobustnessTestStatus {
-  Done = 'DONE',
-  Failed = 'FAILED',
-  Pending = 'PENDING',
-  Processing = 'PROCESSING'
-}
+export type RunRobustnessStepInput = {
+  pipelineId: Scalars['ID']['input'];
+  stepIndex: Scalars['Int']['input'];
+};
 
 export type SltpRequest = {
   __typename?: 'SLTPRequest';
@@ -1828,6 +1983,13 @@ export type SeverityCount = {
   __typename?: 'SeverityCount';
   counts: Scalars['Int']['output'];
   severity: LogSeverity;
+};
+
+export type StartWfaInput = {
+  minConsistency: Scalars['Float']['input'];
+  pipelineId: Scalars['ID']['input'];
+  trainRatio: Scalars['Float']['input'];
+  windows: Scalars['Int']['input'];
 };
 
 export type Strategy = {
@@ -2164,14 +2326,24 @@ export type TestingReportPageInfo = {
   hasNextPage: Scalars['Boolean']['output'];
 };
 
-export type ThresholdConfigInput = {
-  maxDrawdownPercent?: InputMaybe<Scalars['Float']['input']>;
-  maxSharpeRatio?: InputMaybe<Scalars['Float']['input']>;
-  minProfitFactor?: InputMaybe<Scalars['Float']['input']>;
-  minSharpeRatio?: InputMaybe<Scalars['Float']['input']>;
-  minTotalPnlPercent?: InputMaybe<Scalars['Float']['input']>;
-  minTotalTrades?: InputMaybe<Scalars['Int']['input']>;
-  minWinRate?: InputMaybe<Scalars['Float']['input']>;
+export type ThresholdPreviewResult = {
+  __typename?: 'ThresholdPreviewResult';
+  currentCount: Scalars['Int']['output'];
+  eliminatedCount: Scalars['Int']['output'];
+  survivingCount: Scalars['Int']['output'];
+};
+
+export type ThresholdStep = {
+  __typename?: 'ThresholdStep';
+  candidatesAfter: Scalars['Int']['output'];
+  candidatesBefore: Scalars['Int']['output'];
+  createdAt: Scalars['Date']['output'];
+  id: Scalars['ID']['output'];
+  metricName: Scalars['String']['output'];
+  operator: Scalars['String']['output'];
+  pipelineId: Scalars['ID']['output'];
+  stepOrder: Scalars['Int']['output'];
+  value: Scalars['Float']['output'];
 };
 
 export type TotalBotV2 = {
@@ -2279,14 +2451,17 @@ export type ValidationCandidate = {
   resultId: Scalars['ID']['output'];
   robustnessPassed?: Maybe<Scalars['Boolean']['output']>;
   robustnessScore?: Maybe<Scalars['Float']['output']>;
+  /** Per-step robustness results JSON array */
+  robustnessStepResults?: Maybe<Scalars['JSON']['output']>;
   status: ValidationCandidateStatus;
-  thresholdDetails?: Maybe<Scalars['JSON']['output']>;
   thresholdPassed?: Maybe<Scalars['Boolean']['output']>;
   updatedAt: Scalars['Date']['output'];
   userNotes?: Maybe<Scalars['String']['output']>;
   userSelectedAt?: Maybe<Scalars['Date']['output']>;
   wfaConsistency?: Maybe<Scalars['Float']['output']>;
   wfaPassed?: Maybe<Scalars['Boolean']['output']>;
+  /** Per-window WFA results JSON array */
+  wfaWindowResults?: Maybe<Scalars['JSON']['output']>;
 };
 
 export type ValidationCandidateFilterInput = {
@@ -2298,48 +2473,20 @@ export type ValidationCandidateFilterInput = {
 
 /** Status of a validation candidate */
 export enum ValidationCandidateStatus {
-  FailedThreshold = 'FAILED_THRESHOLD',
+  Active = 'ACTIVE',
   FinalApproved = 'FINAL_APPROVED',
   FinalRejected = 'FINAL_REJECTED',
   ParetoDominated = 'PARETO_DOMINATED',
   ParetoOptimal = 'PARETO_OPTIMAL',
-  PassedThreshold = 'PASSED_THRESHOLD',
   Pending = 'PENDING',
   RobustnessFailed = 'ROBUSTNESS_FAILED',
   RobustnessPassed = 'ROBUSTNESS_PASSED',
-  RobustnessPending = 'ROBUSTNESS_PENDING',
+  ThresholdEliminated = 'THRESHOLD_ELIMINATED',
   UserRejected = 'USER_REJECTED',
   UserSelected = 'USER_SELECTED',
   WfaFailed = 'WFA_FAILED',
-  WfaPassed = 'WFA_PASSED',
-  WfaPending = 'WFA_PENDING'
+  WfaPassed = 'WFA_PASSED'
 }
-
-export type ValidationCandidateWithDetails = {
-  __typename?: 'ValidationCandidateWithDetails';
-  configId: Scalars['String']['output'];
-  createdAt: Scalars['Date']['output'];
-  dominatedBy?: Maybe<Array<Scalars['String']['output']>>;
-  finalApprovedAt?: Maybe<Scalars['Date']['output']>;
-  finalNotes?: Maybe<Scalars['String']['output']>;
-  id: Scalars['ID']['output'];
-  paretoRank?: Maybe<Scalars['Int']['output']>;
-  pipelineId: Scalars['ID']['output'];
-  result: BacktestResult;
-  resultId: Scalars['ID']['output'];
-  robustnessPassed?: Maybe<Scalars['Boolean']['output']>;
-  robustnessScore?: Maybe<Scalars['Float']['output']>;
-  robustnessTests: Array<RobustnessTest>;
-  status: ValidationCandidateStatus;
-  thresholdDetails?: Maybe<Scalars['JSON']['output']>;
-  thresholdPassed?: Maybe<Scalars['Boolean']['output']>;
-  updatedAt: Scalars['Date']['output'];
-  userNotes?: Maybe<Scalars['String']['output']>;
-  userSelectedAt?: Maybe<Scalars['Date']['output']>;
-  walkForwardResults: Array<WalkForwardResult>;
-  wfaConsistency?: Maybe<Scalars['Float']['output']>;
-  wfaPassed?: Maybe<Scalars['Boolean']['output']>;
-};
 
 export type ValidationCandidateWithResult = {
   __typename?: 'ValidationCandidateWithResult';
@@ -2355,54 +2502,55 @@ export type ValidationCandidateWithResult = {
   resultId: Scalars['ID']['output'];
   robustnessPassed?: Maybe<Scalars['Boolean']['output']>;
   robustnessScore?: Maybe<Scalars['Float']['output']>;
+  /** Per-step robustness results JSON array */
+  robustnessStepResults?: Maybe<Scalars['JSON']['output']>;
   status: ValidationCandidateStatus;
-  thresholdDetails?: Maybe<Scalars['JSON']['output']>;
   thresholdPassed?: Maybe<Scalars['Boolean']['output']>;
   updatedAt: Scalars['Date']['output'];
   userNotes?: Maybe<Scalars['String']['output']>;
   userSelectedAt?: Maybe<Scalars['Date']['output']>;
   wfaConsistency?: Maybe<Scalars['Float']['output']>;
   wfaPassed?: Maybe<Scalars['Boolean']['output']>;
+  /** Per-window WFA results JSON array */
+  wfaWindowResults?: Maybe<Scalars['JSON']['output']>;
 };
 
 export type ValidationPipeline = {
   __typename?: 'ValidationPipeline';
+  backtestTaskId: Scalars['ID']['output'];
   completedAt?: Maybe<Scalars['Date']['output']>;
   createdAt: Scalars['Date']['output'];
+  /** Current step (1-7) */
+  currentStep: Scalars['Int']['output'];
   errorMessage?: Maybe<Scalars['String']['output']>;
   finalApproved: Scalars['Int']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
-  /** Metrics for Pareto optimization */
-  paretoMetrics: Array<Scalars['String']['output']>;
+  /** Pareto config: { metrics: string[] } */
+  paretoConfig?: Maybe<Scalars['JSON']['output']>;
   paretoOptimal: Scalars['Int']['output'];
   passedRobustness: Scalars['Int']['output'];
   passedThreshold: Scalars['Int']['output'];
   passedWfa: Scalars['Int']['output'];
-  /** Minimum robustness score to pass */
-  robustnessMinScore: Scalars['Float']['output'];
-  /** Number of robustness test steps */
-  robustnessSteps: Scalars['Int']['output'];
+  /** Number of completed robustness steps */
+  robustnessCompletedSteps: Scalars['Int']['output'];
+  /** Robustness config: { steps, minScore } */
+  robustnessConfig?: Maybe<Scalars['JSON']['output']>;
   startedAt?: Maybe<Scalars['Date']['output']>;
   status: ValidationPipelineStatus;
-  templateSearchId: Scalars['ID']['output'];
-  /** Threshold filter configuration */
-  thresholdConfig: Scalars['JSON']['output'];
   totalCandidates: Scalars['Int']['output'];
   userSelected: Scalars['Int']['output'];
-  /** Minimum consistency score to pass WFA */
-  wfaMinConsistency: Scalars['Float']['output'];
-  /** Train ratio for walk-forward analysis */
-  wfaTrainRatio: Scalars['Float']['output'];
-  /** Number of walk-forward windows */
-  wfaWindows: Scalars['Int']['output'];
+  /** Number of completed WFA windows */
+  wfaCompletedWindows: Scalars['Int']['output'];
+  /** WFA config: { trainRatio, windows, minConsistency } */
+  wfaConfig?: Maybe<Scalars['JSON']['output']>;
 };
 
 export type ValidationPipelineFilterInput = {
+  backtestTaskId?: InputMaybe<Scalars['ID']['input']>;
   limit?: Scalars['Int']['input'];
   offset?: Scalars['Int']['input'];
   status?: InputMaybe<ValidationPipelineStatus>;
-  templateSearchId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type ValidationPipelineStats = {
@@ -2412,59 +2560,53 @@ export type ValidationPipelineStats = {
   completed: Scalars['Int']['output'];
   created: Scalars['Int']['output'];
   failed: Scalars['Int']['output'];
-  running: Scalars['Int']['output'];
+  inProgress: Scalars['Int']['output'];
 };
 
 /** Status of a validation pipeline */
 export enum ValidationPipelineStatus {
-  AwaitingFinalApproval = 'AWAITING_FINAL_APPROVAL',
-  AwaitingUserSelection = 'AWAITING_USER_SELECTION',
   Cancelled = 'CANCELLED',
   Completed = 'COMPLETED',
   Created = 'CREATED',
   Failed = 'FAILED',
-  Layer_1Done = 'LAYER_1_DONE',
-  Layer_1Running = 'LAYER_1_RUNNING',
-  Layer_2Done = 'LAYER_2_DONE',
-  Layer_2Running = 'LAYER_2_RUNNING',
-  Layer_3Done = 'LAYER_3_DONE',
-  Layer_3Running = 'LAYER_3_RUNNING',
-  Layer_5Done = 'LAYER_5_DONE',
-  Layer_5Running = 'LAYER_5_RUNNING'
+  StepFinalApproval = 'STEP_FINAL_APPROVAL',
+  StepPareto = 'STEP_PARETO',
+  StepRobustness = 'STEP_ROBUSTNESS',
+  StepThreshold = 'STEP_THRESHOLD',
+  StepUserSelection = 'STEP_USER_SELECTION',
+  StepWfa = 'STEP_WFA'
 }
 
 export type ValidationPipelineWithCandidates = {
   __typename?: 'ValidationPipelineWithCandidates';
+  backtestTaskId: Scalars['ID']['output'];
   candidates: Array<ValidationCandidate>;
   completedAt?: Maybe<Scalars['Date']['output']>;
   createdAt: Scalars['Date']['output'];
+  /** Current step (1-7) */
+  currentStep: Scalars['Int']['output'];
   errorMessage?: Maybe<Scalars['String']['output']>;
   finalApproved: Scalars['Int']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
-  /** Metrics for Pareto optimization */
-  paretoMetrics: Array<Scalars['String']['output']>;
+  /** Pareto config: { metrics: string[] } */
+  paretoConfig?: Maybe<Scalars['JSON']['output']>;
   paretoOptimal: Scalars['Int']['output'];
   passedRobustness: Scalars['Int']['output'];
   passedThreshold: Scalars['Int']['output'];
   passedWfa: Scalars['Int']['output'];
-  /** Minimum robustness score to pass */
-  robustnessMinScore: Scalars['Float']['output'];
-  /** Number of robustness test steps */
-  robustnessSteps: Scalars['Int']['output'];
+  /** Number of completed robustness steps */
+  robustnessCompletedSteps: Scalars['Int']['output'];
+  /** Robustness config: { steps, minScore } */
+  robustnessConfig?: Maybe<Scalars['JSON']['output']>;
   startedAt?: Maybe<Scalars['Date']['output']>;
   status: ValidationPipelineStatus;
-  templateSearchId: Scalars['ID']['output'];
-  /** Threshold filter configuration */
-  thresholdConfig: Scalars['JSON']['output'];
   totalCandidates: Scalars['Int']['output'];
   userSelected: Scalars['Int']['output'];
-  /** Minimum consistency score to pass WFA */
-  wfaMinConsistency: Scalars['Float']['output'];
-  /** Train ratio for walk-forward analysis */
-  wfaTrainRatio: Scalars['Float']['output'];
-  /** Number of walk-forward windows */
-  wfaWindows: Scalars['Int']['output'];
+  /** Number of completed WFA windows */
+  wfaCompletedWindows: Scalars['Int']['output'];
+  /** WFA config: { trainRatio, windows, minConsistency } */
+  wfaConfig?: Maybe<Scalars['JSON']['output']>;
 };
 
 export enum Version {
@@ -2472,32 +2614,6 @@ export enum Version {
   V2 = 'V2',
   V9 = 'V9',
   V10 = 'V10'
-}
-
-export type WalkForwardResult = {
-  __typename?: 'WalkForwardResult';
-  candidateId: Scalars['ID']['output'];
-  consistency?: Maybe<Scalars['Float']['output']>;
-  createdAt: Scalars['Date']['output'];
-  degradation?: Maybe<Scalars['Float']['output']>;
-  errorMessage?: Maybe<Scalars['String']['output']>;
-  id: Scalars['ID']['output'];
-  status: WalkForwardStatus;
-  testEnd: Scalars['Date']['output'];
-  testMetrics?: Maybe<Scalars['JSON']['output']>;
-  testStart: Scalars['Date']['output'];
-  trainEnd: Scalars['Date']['output'];
-  trainMetrics?: Maybe<Scalars['JSON']['output']>;
-  trainStart: Scalars['Date']['output'];
-  windowIndex: Scalars['Int']['output'];
-};
-
-/** Status of a walk-forward result */
-export enum WalkForwardStatus {
-  Done = 'DONE',
-  Failed = 'FAILED',
-  Pending = 'PENDING',
-  Processing = 'PROCESSING'
 }
 
 export type WalletAccount = {
@@ -3897,15 +4013,11 @@ export type AllowAutoMutationVariables = Exact<{
 
 export type AllowAutoMutation = { __typename?: 'Mutation', allowAuto: { __typename?: 'User', address: string, permission: UserPermission, allowAuto: boolean, budget: number, ratio: number, followerContractId: number } };
 
-export type ValidationPipelineInfoFragment = { __typename?: 'ValidationPipeline', id: string, name: string, templateSearchId: string, status: ValidationPipelineStatus, thresholdConfig: any, paretoMetrics: Array<string>, wfaTrainRatio: number, wfaWindows: number, wfaMinConsistency: number, robustnessSteps: number, robustnessMinScore: number, totalCandidates: number, passedThreshold: number, paretoOptimal: number, passedWfa: number, userSelected: number, passedRobustness: number, finalApproved: number, createdAt: any, startedAt?: any | null, completedAt?: any | null, errorMessage?: string | null } & { ' $fragmentName'?: 'ValidationPipelineInfoFragment' };
+export type ValidationPipelineInfoFragment = { __typename?: 'ValidationPipeline', id: string, name: string, backtestTaskId: string, status: ValidationPipelineStatus, currentStep: number, paretoConfig?: any | null, wfaConfig?: any | null, robustnessConfig?: any | null, wfaCompletedWindows: number, robustnessCompletedSteps: number, totalCandidates: number, passedThreshold: number, paretoOptimal: number, passedWfa: number, userSelected: number, passedRobustness: number, finalApproved: number, createdAt: any, startedAt?: any | null, completedAt?: any | null, errorMessage?: string | null } & { ' $fragmentName'?: 'ValidationPipelineInfoFragment' };
 
-export type ValidationCandidateInfoFragment = { __typename?: 'ValidationCandidate', id: string, pipelineId: string, resultId: string, configId: string, status: ValidationCandidateStatus, thresholdPassed?: boolean | null, thresholdDetails?: any | null, paretoRank?: number | null, dominatedBy?: Array<string> | null, wfaConsistency?: number | null, wfaPassed?: boolean | null, userSelectedAt?: any | null, userNotes?: string | null, robustnessScore?: number | null, robustnessPassed?: boolean | null, finalApprovedAt?: any | null, finalNotes?: string | null, createdAt: any, updatedAt: any } & { ' $fragmentName'?: 'ValidationCandidateInfoFragment' };
+export type ValidationCandidateInfoFragment = { __typename?: 'ValidationCandidate', id: string, pipelineId: string, resultId: string, configId: string, status: ValidationCandidateStatus, thresholdPassed?: boolean | null, paretoRank?: number | null, dominatedBy?: Array<string> | null, wfaConsistency?: number | null, wfaPassed?: boolean | null, wfaWindowResults?: any | null, userSelectedAt?: any | null, userNotes?: string | null, robustnessScore?: number | null, robustnessPassed?: boolean | null, robustnessStepResults?: any | null, finalApprovedAt?: any | null, finalNotes?: string | null, createdAt: any, updatedAt: any } & { ' $fragmentName'?: 'ValidationCandidateInfoFragment' };
 
-export type BacktestResultSummaryFragment = { __typename?: 'BacktestResult', id: string, configId: string, totalTrades: number, winningTrades: number, losingTrades: number, winRate: number, totalPnlUsdt: number, totalPnlPercent: number, maxDrawdownPercent: number, sharpeRatio?: number | null, profitFactor?: number | null, strategyConfig: any } & { ' $fragmentName'?: 'BacktestResultSummaryFragment' };
-
-export type WalkForwardResultInfoFragment = { __typename?: 'WalkForwardResult', id: string, candidateId: string, windowIndex: number, status: WalkForwardStatus, trainStart: any, trainEnd: any, trainMetrics?: any | null, testStart: any, testEnd: any, testMetrics?: any | null, consistency?: number | null, degradation?: number | null, errorMessage?: string | null, createdAt: any } & { ' $fragmentName'?: 'WalkForwardResultInfoFragment' };
-
-export type RobustnessTestInfoFragment = { __typename?: 'RobustnessTest', id: string, candidateId: string, stepIndex: number, status: RobustnessTestStatus, startDate: any, endDate: any, metrics?: any | null, sharpeRatio?: number | null, totalPnl?: number | null, maxDrawdown?: number | null, errorMessage?: string | null, createdAt: any } & { ' $fragmentName'?: 'RobustnessTestInfoFragment' };
+export type BacktestResultSummaryFragment = { __typename?: 'BacktestResult', id: string, taskId: string, configId: string, runDate: string, totalTrades: number, winningTrades: number, losingTrades: number, winRate: number, totalPnlUsdt: number, totalPnlPercent: number, maxDrawdownUsdt: number, maxDrawdownPercent: number, sharpeRatio?: number | null, profitFactor?: number | null, strategyConfig: any } & { ' $fragmentName'?: 'BacktestResultSummaryFragment' };
 
 export type ValidationPipelinesQueryVariables = Exact<{
   filter?: InputMaybe<ValidationPipelineFilterInput>;
@@ -3932,7 +4044,7 @@ export type ValidationPipelineWithCandidatesQueryVariables = Exact<{
 }>;
 
 
-export type ValidationPipelineWithCandidatesQuery = { __typename?: 'Query', validationPipelineWithCandidates?: { __typename?: 'ValidationPipelineWithCandidates', id: string, name: string, templateSearchId: string, status: ValidationPipelineStatus, thresholdConfig: any, paretoMetrics: Array<string>, wfaTrainRatio: number, wfaWindows: number, wfaMinConsistency: number, robustnessSteps: number, robustnessMinScore: number, totalCandidates: number, passedThreshold: number, paretoOptimal: number, passedWfa: number, userSelected: number, passedRobustness: number, finalApproved: number, createdAt: any, startedAt?: any | null, completedAt?: any | null, errorMessage?: string | null, candidates: Array<(
+export type ValidationPipelineWithCandidatesQuery = { __typename?: 'Query', validationPipelineWithCandidates?: { __typename?: 'ValidationPipelineWithCandidates', id: string, name: string, backtestTaskId: string, status: ValidationPipelineStatus, currentStep: number, paretoConfig?: any | null, wfaConfig?: any | null, robustnessConfig?: any | null, wfaCompletedWindows: number, robustnessCompletedSteps: number, totalCandidates: number, passedThreshold: number, paretoOptimal: number, passedWfa: number, userSelected: number, passedRobustness: number, finalApproved: number, createdAt: any, startedAt?: any | null, completedAt?: any | null, errorMessage?: string | null, candidates: Array<(
       { __typename?: 'ValidationCandidate' }
       & { ' $fragmentRefs'?: { 'ValidationCandidateInfoFragment': ValidationCandidateInfoFragment } }
     )> } | null };
@@ -3942,31 +4054,39 @@ export type ValidationCandidatesByStatusQueryVariables = Exact<{
 }>;
 
 
-export type ValidationCandidatesByStatusQuery = { __typename?: 'Query', validationCandidatesByStatus: Array<{ __typename?: 'ValidationCandidateWithResult', id: string, pipelineId: string, resultId: string, configId: string, status: ValidationCandidateStatus, thresholdPassed?: boolean | null, thresholdDetails?: any | null, paretoRank?: number | null, dominatedBy?: Array<string> | null, wfaConsistency?: number | null, wfaPassed?: boolean | null, userSelectedAt?: any | null, userNotes?: string | null, robustnessScore?: number | null, robustnessPassed?: boolean | null, finalApprovedAt?: any | null, finalNotes?: string | null, createdAt: any, updatedAt: any, result: (
-      { __typename?: 'BacktestResult' }
-      & { ' $fragmentRefs'?: { 'BacktestResultSummaryFragment': BacktestResultSummaryFragment } }
-    ) }> };
+export type ValidationCandidatesByStatusQuery = { __typename?: 'Query', validationCandidatesByStatus: { __typename?: 'PaginatedValidationCandidatesResult', totalCount: number, candidates: Array<{ __typename?: 'ValidationCandidateWithResult', id: string, pipelineId: string, resultId: string, configId: string, status: ValidationCandidateStatus, thresholdPassed?: boolean | null, paretoRank?: number | null, dominatedBy?: Array<string> | null, wfaConsistency?: number | null, wfaPassed?: boolean | null, wfaWindowResults?: any | null, userSelectedAt?: any | null, userNotes?: string | null, robustnessScore?: number | null, robustnessPassed?: boolean | null, robustnessStepResults?: any | null, finalApprovedAt?: any | null, finalNotes?: string | null, createdAt: any, updatedAt: any, result: (
+        { __typename?: 'BacktestResult' }
+        & { ' $fragmentRefs'?: { 'BacktestResultSummaryFragment': BacktestResultSummaryFragment } }
+      ) }> } };
 
 export type ValidationCandidateQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type ValidationCandidateQuery = { __typename?: 'Query', validationCandidate?: { __typename?: 'ValidationCandidateWithDetails', id: string, pipelineId: string, resultId: string, configId: string, status: ValidationCandidateStatus, thresholdPassed?: boolean | null, thresholdDetails?: any | null, paretoRank?: number | null, dominatedBy?: Array<string> | null, wfaConsistency?: number | null, wfaPassed?: boolean | null, userSelectedAt?: any | null, userNotes?: string | null, robustnessScore?: number | null, robustnessPassed?: boolean | null, finalApprovedAt?: any | null, finalNotes?: string | null, createdAt: any, updatedAt: any, result: (
+export type ValidationCandidateQuery = { __typename?: 'Query', validationCandidate?: { __typename?: 'ValidationCandidateWithResult', id: string, pipelineId: string, resultId: string, configId: string, status: ValidationCandidateStatus, thresholdPassed?: boolean | null, paretoRank?: number | null, dominatedBy?: Array<string> | null, wfaConsistency?: number | null, wfaPassed?: boolean | null, wfaWindowResults?: any | null, userSelectedAt?: any | null, userNotes?: string | null, robustnessScore?: number | null, robustnessPassed?: boolean | null, robustnessStepResults?: any | null, finalApprovedAt?: any | null, finalNotes?: string | null, createdAt: any, updatedAt: any, result: (
       { __typename?: 'BacktestResult' }
       & { ' $fragmentRefs'?: { 'BacktestResultSummaryFragment': BacktestResultSummaryFragment } }
-    ), walkForwardResults: Array<(
-      { __typename?: 'WalkForwardResult' }
-      & { ' $fragmentRefs'?: { 'WalkForwardResultInfoFragment': WalkForwardResultInfoFragment } }
-    )>, robustnessTests: Array<(
-      { __typename?: 'RobustnessTest' }
-      & { ' $fragmentRefs'?: { 'RobustnessTestInfoFragment': RobustnessTestInfoFragment } }
-    )> } | null };
+    ) } | null };
 
 export type ValidationPipelineStatsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ValidationPipelineStatsQuery = { __typename?: 'Query', validationPipelineStats: { __typename?: 'ValidationPipelineStats', created: number, running: number, awaitingUser: number, completed: number, failed: number, cancelled: number } };
+export type ValidationPipelineStatsQuery = { __typename?: 'Query', validationPipelineStats: { __typename?: 'ValidationPipelineStats', created: number, inProgress: number, awaitingUser: number, completed: number, failed: number, cancelled: number } };
+
+export type ThresholdStepsQueryVariables = Exact<{
+  pipelineId: Scalars['ID']['input'];
+}>;
+
+
+export type ThresholdStepsQuery = { __typename?: 'Query', thresholdSteps: Array<{ __typename?: 'ThresholdStep', id: string, pipelineId: string, stepOrder: number, metricName: string, operator: string, value: number, candidatesBefore: number, candidatesAfter: number, createdAt: any }> };
+
+export type ParetoStepsQueryVariables = Exact<{
+  pipelineId: Scalars['ID']['input'];
+}>;
+
+
+export type ParetoStepsQuery = { __typename?: 'Query', paretoSteps: Array<{ __typename?: 'ParetoStep', id: string, pipelineId: string, stepOrder: number, metrics: Array<string>, candidatesBefore: number, candidatesAfter: number, createdAt: any }> };
 
 export type CreateValidationPipelineMutationVariables = Exact<{
   input: CreateValidationPipelineInput;
@@ -3978,12 +4098,118 @@ export type CreateValidationPipelineMutation = { __typename?: 'Mutation', create
     & { ' $fragmentRefs'?: { 'ValidationPipelineInfoFragment': ValidationPipelineInfoFragment } }
   ) };
 
-export type StartValidationPipelineMutationVariables = Exact<{
-  id: Scalars['ID']['input'];
+export type ApplyThresholdStepMutationVariables = Exact<{
+  input: ApplyThresholdStepInput;
 }>;
 
 
-export type StartValidationPipelineMutation = { __typename?: 'Mutation', startValidationPipeline: (
+export type ApplyThresholdStepMutation = { __typename?: 'Mutation', applyThresholdStep: (
+    { __typename?: 'ValidationPipeline' }
+    & { ' $fragmentRefs'?: { 'ValidationPipelineInfoFragment': ValidationPipelineInfoFragment } }
+  ) };
+
+export type PreviewThresholdStepMutationVariables = Exact<{
+  input: PreviewThresholdStepInput;
+}>;
+
+
+export type PreviewThresholdStepMutation = { __typename?: 'Mutation', previewThresholdStep: { __typename?: 'ThresholdPreviewResult', currentCount: number, survivingCount: number, eliminatedCount: number } };
+
+export type RemoveThresholdStepMutationVariables = Exact<{
+  pipelineId: Scalars['ID']['input'];
+  stepId: Scalars['ID']['input'];
+}>;
+
+
+export type RemoveThresholdStepMutation = { __typename?: 'Mutation', removeThresholdStep: (
+    { __typename?: 'ValidationPipeline' }
+    & { ' $fragmentRefs'?: { 'ValidationPipelineInfoFragment': ValidationPipelineInfoFragment } }
+  ) };
+
+export type CompleteThresholdStepMutationVariables = Exact<{
+  pipelineId: Scalars['ID']['input'];
+}>;
+
+
+export type CompleteThresholdStepMutation = { __typename?: 'Mutation', completeThresholdStep: (
+    { __typename?: 'ValidationPipeline' }
+    & { ' $fragmentRefs'?: { 'ValidationPipelineInfoFragment': ValidationPipelineInfoFragment } }
+  ) };
+
+export type PreviewParetoStepMutationVariables = Exact<{
+  input: PreviewParetoStepInput;
+}>;
+
+
+export type PreviewParetoStepMutation = { __typename?: 'Mutation', previewParetoStep: { __typename?: 'ParetoPreviewResult', currentCount: number, optimalCount: number, dominatedCount: number } };
+
+export type ApplyParetoStepMutationVariables = Exact<{
+  input: ApplyParetoStepInput;
+}>;
+
+
+export type ApplyParetoStepMutation = { __typename?: 'Mutation', applyParetoStep: (
+    { __typename?: 'ValidationPipeline' }
+    & { ' $fragmentRefs'?: { 'ValidationPipelineInfoFragment': ValidationPipelineInfoFragment } }
+  ) };
+
+export type RemoveParetoStepMutationVariables = Exact<{
+  pipelineId: Scalars['ID']['input'];
+  stepId: Scalars['ID']['input'];
+}>;
+
+
+export type RemoveParetoStepMutation = { __typename?: 'Mutation', removeParetoStep: (
+    { __typename?: 'ValidationPipeline' }
+    & { ' $fragmentRefs'?: { 'ValidationPipelineInfoFragment': ValidationPipelineInfoFragment } }
+  ) };
+
+export type CompleteParetoStepMutationVariables = Exact<{
+  pipelineId: Scalars['ID']['input'];
+}>;
+
+
+export type CompleteParetoStepMutation = { __typename?: 'Mutation', completeParetoStep: (
+    { __typename?: 'ValidationPipeline' }
+    & { ' $fragmentRefs'?: { 'ValidationPipelineInfoFragment': ValidationPipelineInfoFragment } }
+  ) };
+
+export type StartWfaMutationVariables = Exact<{
+  input: StartWfaInput;
+}>;
+
+
+export type StartWfaMutation = { __typename?: 'Mutation', startWfa: (
+    { __typename?: 'ValidationPipeline' }
+    & { ' $fragmentRefs'?: { 'ValidationPipelineInfoFragment': ValidationPipelineInfoFragment } }
+  ) };
+
+export type PauseWfaMutationVariables = Exact<{
+  pipelineId: Scalars['ID']['input'];
+}>;
+
+
+export type PauseWfaMutation = { __typename?: 'Mutation', pauseWfa: (
+    { __typename?: 'ValidationPipeline' }
+    & { ' $fragmentRefs'?: { 'ValidationPipelineInfoFragment': ValidationPipelineInfoFragment } }
+  ) };
+
+export type ResumeWfaMutationVariables = Exact<{
+  pipelineId: Scalars['ID']['input'];
+}>;
+
+
+export type ResumeWfaMutation = { __typename?: 'Mutation', resumeWfa: (
+    { __typename?: 'ValidationPipeline' }
+    & { ' $fragmentRefs'?: { 'ValidationPipelineInfoFragment': ValidationPipelineInfoFragment } }
+  ) };
+
+export type CompleteWfaMutationVariables = Exact<{
+  pipelineId: Scalars['ID']['input'];
+}>;
+
+
+export type CompleteWfaMutation = { __typename?: 'Mutation', completeWfa: (
     { __typename?: 'ValidationPipeline' }
     & { ' $fragmentRefs'?: { 'ValidationPipelineInfoFragment': ValidationPipelineInfoFragment } }
   ) };
@@ -3995,6 +4221,33 @@ export type SubmitUserSelectionMutationVariables = Exact<{
 
 
 export type SubmitUserSelectionMutation = { __typename?: 'Mutation', submitUserSelection: (
+    { __typename?: 'ValidationPipeline' }
+    & { ' $fragmentRefs'?: { 'ValidationPipelineInfoFragment': ValidationPipelineInfoFragment } }
+  ) };
+
+export type ConfigureRobustnessMutationVariables = Exact<{
+  input: ConfigureRobustnessInput;
+}>;
+
+
+export type ConfigureRobustnessMutation = { __typename?: 'Mutation', configureRobustness: (
+    { __typename?: 'ValidationPipeline' }
+    & { ' $fragmentRefs'?: { 'ValidationPipelineInfoFragment': ValidationPipelineInfoFragment } }
+  ) };
+
+export type RunRobustnessStepMutationVariables = Exact<{
+  input: RunRobustnessStepInput;
+}>;
+
+
+export type RunRobustnessStepMutation = { __typename?: 'Mutation', runRobustnessStep: Array<{ __typename?: 'RobustnessStepResult', candidateId: string, configId: string, stepIndex: number, sharpeRatio?: number | null, totalPnl?: number | null, maxDrawdown?: number | null, status: string, errorMessage?: string | null }> };
+
+export type CompleteRobustnessMutationVariables = Exact<{
+  pipelineId: Scalars['ID']['input'];
+}>;
+
+
+export type CompleteRobustnessMutation = { __typename?: 'Mutation', completeRobustness: (
     { __typename?: 'ValidationPipeline' }
     & { ' $fragmentRefs'?: { 'ValidationPipelineInfoFragment': ValidationPipelineInfoFragment } }
   ) };
@@ -4118,11 +4371,9 @@ export const TemplateSearchWithTemplateInfoFragmentDoc = {"kind":"Document","def
 export const BacktestTaskInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestTaskInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"totalConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"processedConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"currentConfig"}},{"kind":"Field","name":{"kind":"Name","value":"startDate"}},{"kind":"Field","name":{"kind":"Name","value":"endDate"}},{"kind":"Field","name":{"kind":"Name","value":"interval"}},{"kind":"Field","name":{"kind":"Name","value":"optimizationParams"}},{"kind":"Field","name":{"kind":"Name","value":"searchStrategy"}},{"kind":"Field","name":{"kind":"Name","value":"optimizationMetrics"}},{"kind":"Field","name":{"kind":"Name","value":"trials"}},{"kind":"Field","name":{"kind":"Name","value":"bestConfigIds"}},{"kind":"Field","name":{"kind":"Name","value":"optimizerPid"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}},{"kind":"Field","name":{"kind":"Name","value":"templateId"}},{"kind":"Field","name":{"kind":"Name","value":"templateSearchId"}}]}}]} as unknown as DocumentNode<BacktestTaskInfoFragment, unknown>;
 export const TemplateSearchWithTaskInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TemplateSearchWithTaskInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TemplateSearchWithTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"templateId"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"startDate"}},{"kind":"Field","name":{"kind":"Name","value":"endDate"}},{"kind":"Field","name":{"kind":"Name","value":"interval"}},{"kind":"Field","name":{"kind":"Name","value":"searchStrategy"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}},{"kind":"Field","name":{"kind":"Name","value":"template"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"StrategyTemplateInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"task"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BacktestTaskInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StrategyTemplateInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"StrategyTemplate"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"factoryConfig"}},{"kind":"Field","name":{"kind":"Name","value":"isActive"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestTaskInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestTask"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"symbol"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"totalConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"processedConfigs"}},{"kind":"Field","name":{"kind":"Name","value":"currentConfig"}},{"kind":"Field","name":{"kind":"Name","value":"startDate"}},{"kind":"Field","name":{"kind":"Name","value":"endDate"}},{"kind":"Field","name":{"kind":"Name","value":"interval"}},{"kind":"Field","name":{"kind":"Name","value":"optimizationParams"}},{"kind":"Field","name":{"kind":"Name","value":"searchStrategy"}},{"kind":"Field","name":{"kind":"Name","value":"optimizationMetrics"}},{"kind":"Field","name":{"kind":"Name","value":"trials"}},{"kind":"Field","name":{"kind":"Name","value":"bestConfigIds"}},{"kind":"Field","name":{"kind":"Name","value":"optimizerPid"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}},{"kind":"Field","name":{"kind":"Name","value":"templateId"}},{"kind":"Field","name":{"kind":"Name","value":"templateSearchId"}}]}}]} as unknown as DocumentNode<TemplateSearchWithTaskInfoFragment, unknown>;
 export const TradingSignalLogInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TradingSignalLogInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TradingSignalLog"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"eventLogs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PerpTradingEventLogInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PerpTradingEventLogInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PerpTradingEventLog"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"block"}},{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"jsonLog"}},{"kind":"Field","name":{"kind":"Name","value":"logIndex"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"usdPnl"}}]}}]} as unknown as DocumentNode<TradingSignalLogInfoFragment, unknown>;
-export const ValidationPipelineInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"templateSearchId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdConfig"}},{"kind":"Field","name":{"kind":"Name","value":"paretoMetrics"}},{"kind":"Field","name":{"kind":"Name","value":"wfaTrainRatio"}},{"kind":"Field","name":{"kind":"Name","value":"wfaWindows"}},{"kind":"Field","name":{"kind":"Name","value":"wfaMinConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessSteps"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessMinScore"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<ValidationPipelineInfoFragment, unknown>;
-export const ValidationCandidateInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationCandidateInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationCandidate"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"pipelineId"}},{"kind":"Field","name":{"kind":"Name","value":"resultId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdPassed"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdDetails"}},{"kind":"Field","name":{"kind":"Name","value":"paretoRank"}},{"kind":"Field","name":{"kind":"Name","value":"dominatedBy"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"wfaPassed"}},{"kind":"Field","name":{"kind":"Name","value":"userSelectedAt"}},{"kind":"Field","name":{"kind":"Name","value":"userNotes"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessScore"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessPassed"}},{"kind":"Field","name":{"kind":"Name","value":"finalApprovedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finalNotes"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]} as unknown as DocumentNode<ValidationCandidateInfoFragment, unknown>;
-export const BacktestResultSummaryFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestResultSummary"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestResult"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"totalTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winningTrades"}},{"kind":"Field","name":{"kind":"Name","value":"losingTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winRate"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlUsdt"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlPercent"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdownPercent"}},{"kind":"Field","name":{"kind":"Name","value":"sharpeRatio"}},{"kind":"Field","name":{"kind":"Name","value":"profitFactor"}},{"kind":"Field","name":{"kind":"Name","value":"strategyConfig"}}]}}]} as unknown as DocumentNode<BacktestResultSummaryFragment, unknown>;
-export const WalkForwardResultInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"WalkForwardResultInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"WalkForwardResult"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"candidateId"}},{"kind":"Field","name":{"kind":"Name","value":"windowIndex"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"trainStart"}},{"kind":"Field","name":{"kind":"Name","value":"trainEnd"}},{"kind":"Field","name":{"kind":"Name","value":"trainMetrics"}},{"kind":"Field","name":{"kind":"Name","value":"testStart"}},{"kind":"Field","name":{"kind":"Name","value":"testEnd"}},{"kind":"Field","name":{"kind":"Name","value":"testMetrics"}},{"kind":"Field","name":{"kind":"Name","value":"consistency"}},{"kind":"Field","name":{"kind":"Name","value":"degradation"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<WalkForwardResultInfoFragment, unknown>;
-export const RobustnessTestInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"RobustnessTestInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"RobustnessTest"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"candidateId"}},{"kind":"Field","name":{"kind":"Name","value":"stepIndex"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"startDate"}},{"kind":"Field","name":{"kind":"Name","value":"endDate"}},{"kind":"Field","name":{"kind":"Name","value":"metrics"}},{"kind":"Field","name":{"kind":"Name","value":"sharpeRatio"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnl"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdown"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<RobustnessTestInfoFragment, unknown>;
+export const ValidationPipelineInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<ValidationPipelineInfoFragment, unknown>;
+export const ValidationCandidateInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationCandidateInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationCandidate"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"pipelineId"}},{"kind":"Field","name":{"kind":"Name","value":"resultId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdPassed"}},{"kind":"Field","name":{"kind":"Name","value":"paretoRank"}},{"kind":"Field","name":{"kind":"Name","value":"dominatedBy"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"wfaPassed"}},{"kind":"Field","name":{"kind":"Name","value":"wfaWindowResults"}},{"kind":"Field","name":{"kind":"Name","value":"userSelectedAt"}},{"kind":"Field","name":{"kind":"Name","value":"userNotes"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessScore"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessPassed"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessStepResults"}},{"kind":"Field","name":{"kind":"Name","value":"finalApprovedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finalNotes"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]} as unknown as DocumentNode<ValidationCandidateInfoFragment, unknown>;
+export const BacktestResultSummaryFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestResultSummary"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestResult"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"taskId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"runDate"}},{"kind":"Field","name":{"kind":"Name","value":"totalTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winningTrades"}},{"kind":"Field","name":{"kind":"Name","value":"losingTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winRate"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlUsdt"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlPercent"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdownUsdt"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdownPercent"}},{"kind":"Field","name":{"kind":"Name","value":"sharpeRatio"}},{"kind":"Field","name":{"kind":"Name","value":"profitFactor"}},{"kind":"Field","name":{"kind":"Name","value":"strategyConfig"}}]}}]} as unknown as DocumentNode<BacktestResultSummaryFragment, unknown>;
 export const TagInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TagInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Tag"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"tag"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"categoryId"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}}]}}]} as unknown as DocumentNode<TagInfoFragment, unknown>;
 export const WalletAccountInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"WalletAccountInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"WalletAccount"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"tags"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TagInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TagInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Tag"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"tag"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"categoryId"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}}]}}]} as unknown as DocumentNode<WalletAccountInfoFragment, unknown>;
 export const GetBotsByStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getBotsByStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"status"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"BotStatus"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"first"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"after"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getBotsByStatus"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"status"},"value":{"kind":"Variable","name":{"kind":"Name","value":"status"}}},{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"Variable","name":{"kind":"Name","value":"first"}}},{"kind":"Argument","name":{"kind":"Name","value":"after"},"value":{"kind":"Variable","name":{"kind":"Name","value":"after"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cursor"}},{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BotForwardDetailsInfo"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endCursor"}},{"kind":"Field","name":{"kind":"Name","value":"hasNextPage"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ContractInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Contract"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"backendUrl"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"isTestnet"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"fromBlock"}},{"kind":"Field","name":{"kind":"Name","value":"lastBlockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"lastLeaderboardBlockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"toBlock"}},{"kind":"Field","name":{"kind":"Name","value":"version"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Follower"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"accountIndex"}},{"kind":"Field","name":{"kind":"Name","value":"publicKey"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StrategyInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Strategy"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"lifeTime"}},{"kind":"Field","name":{"kind":"Name","value":"maxCollateral"}},{"kind":"Field","name":{"kind":"Name","value":"minCollateral"}},{"kind":"Field","name":{"kind":"Name","value":"maxLeverage"}},{"kind":"Field","name":{"kind":"Name","value":"minLeverage"}},{"kind":"Field","name":{"kind":"Name","value":"collateralBaseline"}},{"kind":"Field","name":{"kind":"Name","value":"params"}},{"kind":"Field","name":{"kind":"Name","value":"ratio"}},{"kind":"Field","name":{"kind":"Name","value":"strategyKey"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ActionInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Action"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"positionKey"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"args"}},{"kind":"Field","name":{"kind":"Name","value":"blockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"orderInBlock"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FollowerActionDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"FollowerActionDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"taskId"}},{"kind":"Field","name":{"kind":"Name","value":"actionId"}},{"kind":"Field","name":{"kind":"Name","value":"action"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ActionInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TaskForwardDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TaskForwardDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"missionId"}},{"kind":"Field","name":{"kind":"Name","value":"actionId"}},{"kind":"Field","name":{"kind":"Name","value":"logs"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"action"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ActionInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"followerActions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FollowerActionDetailsInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"MissionForwardDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"MissionForwardDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"botId"}},{"kind":"Field","name":{"kind":"Name","value":"targetPositionKey"}},{"kind":"Field","name":{"kind":"Name","value":"targetPositionBlockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"targetPositionLogIndex"}},{"kind":"Field","name":{"kind":"Name","value":"achievePositionKey"}},{"kind":"Field","name":{"kind":"Name","value":"achievePositionBlockNumber"}},{"kind":"Field","name":{"kind":"Name","value":"achievePositionLogIndex"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}},{"kind":"Field","name":{"kind":"Name","value":"tasks"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TaskForwardDetailsInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BotForwardDetailsInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BotForwardDetails"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"leaderAddress"}},{"kind":"Field","name":{"kind":"Name","value":"followerAddress"}},{"kind":"Field","name":{"kind":"Name","value":"strategyId"}},{"kind":"Field","name":{"kind":"Name","value":"planId"}},{"kind":"Field","name":{"kind":"Name","value":"leaderContractId"}},{"kind":"Field","name":{"kind":"Name","value":"leaderCollateralBaseline"}},{"kind":"Field","name":{"kind":"Name","value":"leaderStartedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"leaderEndedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"followerContractId"}},{"kind":"Field","name":{"kind":"Name","value":"followerStartedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"followerEndedBlock"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"endedAt"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"followerContract"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ContractInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"leaderContract"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ContractInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"follower"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"FollowerInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"strategy"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"StrategyInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"missions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"MissionForwardDetailsInfo"}}]}}]}}]} as unknown as DocumentNode<GetBotsByStatusQuery, GetBotsByStatusQueryVariables>;
@@ -4268,20 +4519,36 @@ export const GetAllUsersDocument = {"kind":"Document","definitions":[{"kind":"Op
 export const GetTokenDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"getToken"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"singature"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"timestamp"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"walletAddress"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getToken"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"signature"},"value":{"kind":"Variable","name":{"kind":"Name","value":"singature"}}},{"kind":"Argument","name":{"kind":"Name","value":"timestamp"},"value":{"kind":"Variable","name":{"kind":"Name","value":"timestamp"}}},{"kind":"Argument","name":{"kind":"Name","value":"walletAddress"},"value":{"kind":"Variable","name":{"kind":"Name","value":"walletAddress"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accessToken"}}]}}]}}]} as unknown as DocumentNode<GetTokenMutation, GetTokenMutationVariables>;
 export const ChangeUserPermissionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"changeUserPermission"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"address"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"permission"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"changeUserPermission"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"address"},"value":{"kind":"Variable","name":{"kind":"Name","value":"address"}}},{"kind":"Argument","name":{"kind":"Name","value":"permission"},"value":{"kind":"Variable","name":{"kind":"Name","value":"permission"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"permission"}},{"kind":"Field","name":{"kind":"Name","value":"allowAuto"}},{"kind":"Field","name":{"kind":"Name","value":"budget"}},{"kind":"Field","name":{"kind":"Name","value":"ratio"}},{"kind":"Field","name":{"kind":"Name","value":"followerContractId"}}]}}]}}]} as unknown as DocumentNode<ChangeUserPermissionMutation, ChangeUserPermissionMutationVariables>;
 export const AllowAutoDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"allowAuto"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"address"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"allowAuto"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"budget"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"ratio"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"followerContractId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"allowAuto"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"address"},"value":{"kind":"Variable","name":{"kind":"Name","value":"address"}}},{"kind":"Argument","name":{"kind":"Name","value":"allowAuto"},"value":{"kind":"Variable","name":{"kind":"Name","value":"allowAuto"}}},{"kind":"Argument","name":{"kind":"Name","value":"budget"},"value":{"kind":"Variable","name":{"kind":"Name","value":"budget"}}},{"kind":"Argument","name":{"kind":"Name","value":"ratio"},"value":{"kind":"Variable","name":{"kind":"Name","value":"ratio"}}},{"kind":"Argument","name":{"kind":"Name","value":"followerContractId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"followerContractId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"permission"}},{"kind":"Field","name":{"kind":"Name","value":"allowAuto"}},{"kind":"Field","name":{"kind":"Name","value":"budget"}},{"kind":"Field","name":{"kind":"Name","value":"ratio"}},{"kind":"Field","name":{"kind":"Name","value":"followerContractId"}}]}}]}}]} as unknown as DocumentNode<AllowAutoMutation, AllowAutoMutationVariables>;
-export const ValidationPipelinesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ValidationPipelines"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filter"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipelineFilterInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"validationPipelines"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filter"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"templateSearchId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdConfig"}},{"kind":"Field","name":{"kind":"Name","value":"paretoMetrics"}},{"kind":"Field","name":{"kind":"Name","value":"wfaTrainRatio"}},{"kind":"Field","name":{"kind":"Name","value":"wfaWindows"}},{"kind":"Field","name":{"kind":"Name","value":"wfaMinConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessSteps"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessMinScore"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<ValidationPipelinesQuery, ValidationPipelinesQueryVariables>;
-export const ValidationPipelineDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ValidationPipeline"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"validationPipeline"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"templateSearchId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdConfig"}},{"kind":"Field","name":{"kind":"Name","value":"paretoMetrics"}},{"kind":"Field","name":{"kind":"Name","value":"wfaTrainRatio"}},{"kind":"Field","name":{"kind":"Name","value":"wfaWindows"}},{"kind":"Field","name":{"kind":"Name","value":"wfaMinConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessSteps"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessMinScore"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<ValidationPipelineQuery, ValidationPipelineQueryVariables>;
-export const ValidationPipelineWithCandidatesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ValidationPipelineWithCandidates"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"validationPipelineWithCandidates"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"templateSearchId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdConfig"}},{"kind":"Field","name":{"kind":"Name","value":"paretoMetrics"}},{"kind":"Field","name":{"kind":"Name","value":"wfaTrainRatio"}},{"kind":"Field","name":{"kind":"Name","value":"wfaWindows"}},{"kind":"Field","name":{"kind":"Name","value":"wfaMinConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessSteps"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessMinScore"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}},{"kind":"Field","name":{"kind":"Name","value":"candidates"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationCandidateInfo"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationCandidateInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationCandidate"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"pipelineId"}},{"kind":"Field","name":{"kind":"Name","value":"resultId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdPassed"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdDetails"}},{"kind":"Field","name":{"kind":"Name","value":"paretoRank"}},{"kind":"Field","name":{"kind":"Name","value":"dominatedBy"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"wfaPassed"}},{"kind":"Field","name":{"kind":"Name","value":"userSelectedAt"}},{"kind":"Field","name":{"kind":"Name","value":"userNotes"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessScore"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessPassed"}},{"kind":"Field","name":{"kind":"Name","value":"finalApprovedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finalNotes"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]} as unknown as DocumentNode<ValidationPipelineWithCandidatesQuery, ValidationPipelineWithCandidatesQueryVariables>;
-export const ValidationCandidatesByStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ValidationCandidatesByStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filter"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationCandidateFilterInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"validationCandidatesByStatus"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filter"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"pipelineId"}},{"kind":"Field","name":{"kind":"Name","value":"resultId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdPassed"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdDetails"}},{"kind":"Field","name":{"kind":"Name","value":"paretoRank"}},{"kind":"Field","name":{"kind":"Name","value":"dominatedBy"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"wfaPassed"}},{"kind":"Field","name":{"kind":"Name","value":"userSelectedAt"}},{"kind":"Field","name":{"kind":"Name","value":"userNotes"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessScore"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessPassed"}},{"kind":"Field","name":{"kind":"Name","value":"finalApprovedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finalNotes"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"result"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BacktestResultSummary"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestResultSummary"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestResult"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"totalTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winningTrades"}},{"kind":"Field","name":{"kind":"Name","value":"losingTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winRate"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlUsdt"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlPercent"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdownPercent"}},{"kind":"Field","name":{"kind":"Name","value":"sharpeRatio"}},{"kind":"Field","name":{"kind":"Name","value":"profitFactor"}},{"kind":"Field","name":{"kind":"Name","value":"strategyConfig"}}]}}]} as unknown as DocumentNode<ValidationCandidatesByStatusQuery, ValidationCandidatesByStatusQueryVariables>;
-export const ValidationCandidateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ValidationCandidate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"validationCandidate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"pipelineId"}},{"kind":"Field","name":{"kind":"Name","value":"resultId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdPassed"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdDetails"}},{"kind":"Field","name":{"kind":"Name","value":"paretoRank"}},{"kind":"Field","name":{"kind":"Name","value":"dominatedBy"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"wfaPassed"}},{"kind":"Field","name":{"kind":"Name","value":"userSelectedAt"}},{"kind":"Field","name":{"kind":"Name","value":"userNotes"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessScore"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessPassed"}},{"kind":"Field","name":{"kind":"Name","value":"finalApprovedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finalNotes"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"result"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BacktestResultSummary"}}]}},{"kind":"Field","name":{"kind":"Name","value":"walkForwardResults"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"WalkForwardResultInfo"}}]}},{"kind":"Field","name":{"kind":"Name","value":"robustnessTests"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"RobustnessTestInfo"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestResultSummary"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestResult"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"totalTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winningTrades"}},{"kind":"Field","name":{"kind":"Name","value":"losingTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winRate"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlUsdt"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlPercent"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdownPercent"}},{"kind":"Field","name":{"kind":"Name","value":"sharpeRatio"}},{"kind":"Field","name":{"kind":"Name","value":"profitFactor"}},{"kind":"Field","name":{"kind":"Name","value":"strategyConfig"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"WalkForwardResultInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"WalkForwardResult"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"candidateId"}},{"kind":"Field","name":{"kind":"Name","value":"windowIndex"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"trainStart"}},{"kind":"Field","name":{"kind":"Name","value":"trainEnd"}},{"kind":"Field","name":{"kind":"Name","value":"trainMetrics"}},{"kind":"Field","name":{"kind":"Name","value":"testStart"}},{"kind":"Field","name":{"kind":"Name","value":"testEnd"}},{"kind":"Field","name":{"kind":"Name","value":"testMetrics"}},{"kind":"Field","name":{"kind":"Name","value":"consistency"}},{"kind":"Field","name":{"kind":"Name","value":"degradation"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"RobustnessTestInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"RobustnessTest"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"candidateId"}},{"kind":"Field","name":{"kind":"Name","value":"stepIndex"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"startDate"}},{"kind":"Field","name":{"kind":"Name","value":"endDate"}},{"kind":"Field","name":{"kind":"Name","value":"metrics"}},{"kind":"Field","name":{"kind":"Name","value":"sharpeRatio"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnl"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdown"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]} as unknown as DocumentNode<ValidationCandidateQuery, ValidationCandidateQueryVariables>;
-export const ValidationPipelineStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ValidationPipelineStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"validationPipelineStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"running"}},{"kind":"Field","name":{"kind":"Name","value":"awaitingUser"}},{"kind":"Field","name":{"kind":"Name","value":"completed"}},{"kind":"Field","name":{"kind":"Name","value":"failed"}},{"kind":"Field","name":{"kind":"Name","value":"cancelled"}}]}}]}}]} as unknown as DocumentNode<ValidationPipelineStatsQuery, ValidationPipelineStatsQueryVariables>;
-export const CreateValidationPipelineDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateValidationPipeline"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateValidationPipelineInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createValidationPipeline"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"templateSearchId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdConfig"}},{"kind":"Field","name":{"kind":"Name","value":"paretoMetrics"}},{"kind":"Field","name":{"kind":"Name","value":"wfaTrainRatio"}},{"kind":"Field","name":{"kind":"Name","value":"wfaWindows"}},{"kind":"Field","name":{"kind":"Name","value":"wfaMinConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessSteps"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessMinScore"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<CreateValidationPipelineMutation, CreateValidationPipelineMutationVariables>;
-export const StartValidationPipelineDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StartValidationPipeline"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startValidationPipeline"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"templateSearchId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdConfig"}},{"kind":"Field","name":{"kind":"Name","value":"paretoMetrics"}},{"kind":"Field","name":{"kind":"Name","value":"wfaTrainRatio"}},{"kind":"Field","name":{"kind":"Name","value":"wfaWindows"}},{"kind":"Field","name":{"kind":"Name","value":"wfaMinConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessSteps"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessMinScore"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<StartValidationPipelineMutation, StartValidationPipelineMutationVariables>;
-export const SubmitUserSelectionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SubmitUserSelection"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UserSelectionInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"submitUserSelection"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pipelineId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"templateSearchId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdConfig"}},{"kind":"Field","name":{"kind":"Name","value":"paretoMetrics"}},{"kind":"Field","name":{"kind":"Name","value":"wfaTrainRatio"}},{"kind":"Field","name":{"kind":"Name","value":"wfaWindows"}},{"kind":"Field","name":{"kind":"Name","value":"wfaMinConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessSteps"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessMinScore"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<SubmitUserSelectionMutation, SubmitUserSelectionMutationVariables>;
-export const SubmitFinalApprovalDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SubmitFinalApproval"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"FinalApprovalInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"submitFinalApproval"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pipelineId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"templateSearchId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdConfig"}},{"kind":"Field","name":{"kind":"Name","value":"paretoMetrics"}},{"kind":"Field","name":{"kind":"Name","value":"wfaTrainRatio"}},{"kind":"Field","name":{"kind":"Name","value":"wfaWindows"}},{"kind":"Field","name":{"kind":"Name","value":"wfaMinConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessSteps"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessMinScore"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<SubmitFinalApprovalMutation, SubmitFinalApprovalMutationVariables>;
-export const CancelValidationPipelineDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CancelValidationPipeline"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cancelValidationPipeline"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"templateSearchId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdConfig"}},{"kind":"Field","name":{"kind":"Name","value":"paretoMetrics"}},{"kind":"Field","name":{"kind":"Name","value":"wfaTrainRatio"}},{"kind":"Field","name":{"kind":"Name","value":"wfaWindows"}},{"kind":"Field","name":{"kind":"Name","value":"wfaMinConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessSteps"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessMinScore"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<CancelValidationPipelineMutation, CancelValidationPipelineMutationVariables>;
+export const ValidationPipelinesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ValidationPipelines"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filter"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipelineFilterInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"validationPipelines"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filter"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<ValidationPipelinesQuery, ValidationPipelinesQueryVariables>;
+export const ValidationPipelineDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ValidationPipeline"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"validationPipeline"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<ValidationPipelineQuery, ValidationPipelineQueryVariables>;
+export const ValidationPipelineWithCandidatesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ValidationPipelineWithCandidates"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"validationPipelineWithCandidates"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}},{"kind":"Field","name":{"kind":"Name","value":"candidates"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationCandidateInfo"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationCandidateInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationCandidate"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"pipelineId"}},{"kind":"Field","name":{"kind":"Name","value":"resultId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdPassed"}},{"kind":"Field","name":{"kind":"Name","value":"paretoRank"}},{"kind":"Field","name":{"kind":"Name","value":"dominatedBy"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"wfaPassed"}},{"kind":"Field","name":{"kind":"Name","value":"wfaWindowResults"}},{"kind":"Field","name":{"kind":"Name","value":"userSelectedAt"}},{"kind":"Field","name":{"kind":"Name","value":"userNotes"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessScore"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessPassed"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessStepResults"}},{"kind":"Field","name":{"kind":"Name","value":"finalApprovedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finalNotes"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]} as unknown as DocumentNode<ValidationPipelineWithCandidatesQuery, ValidationPipelineWithCandidatesQueryVariables>;
+export const ValidationCandidatesByStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ValidationCandidatesByStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filter"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationCandidateFilterInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"validationCandidatesByStatus"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filter"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}},{"kind":"Field","name":{"kind":"Name","value":"candidates"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"pipelineId"}},{"kind":"Field","name":{"kind":"Name","value":"resultId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdPassed"}},{"kind":"Field","name":{"kind":"Name","value":"paretoRank"}},{"kind":"Field","name":{"kind":"Name","value":"dominatedBy"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"wfaPassed"}},{"kind":"Field","name":{"kind":"Name","value":"wfaWindowResults"}},{"kind":"Field","name":{"kind":"Name","value":"userSelectedAt"}},{"kind":"Field","name":{"kind":"Name","value":"userNotes"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessScore"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessPassed"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessStepResults"}},{"kind":"Field","name":{"kind":"Name","value":"finalApprovedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finalNotes"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"result"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BacktestResultSummary"}}]}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestResultSummary"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestResult"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"taskId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"runDate"}},{"kind":"Field","name":{"kind":"Name","value":"totalTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winningTrades"}},{"kind":"Field","name":{"kind":"Name","value":"losingTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winRate"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlUsdt"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlPercent"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdownUsdt"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdownPercent"}},{"kind":"Field","name":{"kind":"Name","value":"sharpeRatio"}},{"kind":"Field","name":{"kind":"Name","value":"profitFactor"}},{"kind":"Field","name":{"kind":"Name","value":"strategyConfig"}}]}}]} as unknown as DocumentNode<ValidationCandidatesByStatusQuery, ValidationCandidatesByStatusQueryVariables>;
+export const ValidationCandidateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ValidationCandidate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"validationCandidate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"pipelineId"}},{"kind":"Field","name":{"kind":"Name","value":"resultId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdPassed"}},{"kind":"Field","name":{"kind":"Name","value":"paretoRank"}},{"kind":"Field","name":{"kind":"Name","value":"dominatedBy"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"wfaPassed"}},{"kind":"Field","name":{"kind":"Name","value":"wfaWindowResults"}},{"kind":"Field","name":{"kind":"Name","value":"userSelectedAt"}},{"kind":"Field","name":{"kind":"Name","value":"userNotes"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessScore"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessPassed"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessStepResults"}},{"kind":"Field","name":{"kind":"Name","value":"finalApprovedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finalNotes"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"result"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BacktestResultSummary"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BacktestResultSummary"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"BacktestResult"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"taskId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"runDate"}},{"kind":"Field","name":{"kind":"Name","value":"totalTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winningTrades"}},{"kind":"Field","name":{"kind":"Name","value":"losingTrades"}},{"kind":"Field","name":{"kind":"Name","value":"winRate"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlUsdt"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnlPercent"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdownUsdt"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdownPercent"}},{"kind":"Field","name":{"kind":"Name","value":"sharpeRatio"}},{"kind":"Field","name":{"kind":"Name","value":"profitFactor"}},{"kind":"Field","name":{"kind":"Name","value":"strategyConfig"}}]}}]} as unknown as DocumentNode<ValidationCandidateQuery, ValidationCandidateQueryVariables>;
+export const ValidationPipelineStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ValidationPipelineStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"validationPipelineStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"inProgress"}},{"kind":"Field","name":{"kind":"Name","value":"awaitingUser"}},{"kind":"Field","name":{"kind":"Name","value":"completed"}},{"kind":"Field","name":{"kind":"Name","value":"failed"}},{"kind":"Field","name":{"kind":"Name","value":"cancelled"}}]}}]}}]} as unknown as DocumentNode<ValidationPipelineStatsQuery, ValidationPipelineStatsQueryVariables>;
+export const ThresholdStepsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ThresholdSteps"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"thresholdSteps"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pipelineId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"pipelineId"}},{"kind":"Field","name":{"kind":"Name","value":"stepOrder"}},{"kind":"Field","name":{"kind":"Name","value":"metricName"}},{"kind":"Field","name":{"kind":"Name","value":"operator"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"candidatesBefore"}},{"kind":"Field","name":{"kind":"Name","value":"candidatesAfter"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]} as unknown as DocumentNode<ThresholdStepsQuery, ThresholdStepsQueryVariables>;
+export const ParetoStepsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ParetoSteps"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"paretoSteps"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pipelineId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"pipelineId"}},{"kind":"Field","name":{"kind":"Name","value":"stepOrder"}},{"kind":"Field","name":{"kind":"Name","value":"metrics"}},{"kind":"Field","name":{"kind":"Name","value":"candidatesBefore"}},{"kind":"Field","name":{"kind":"Name","value":"candidatesAfter"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]} as unknown as DocumentNode<ParetoStepsQuery, ParetoStepsQueryVariables>;
+export const CreateValidationPipelineDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateValidationPipeline"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateValidationPipelineInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createValidationPipeline"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<CreateValidationPipelineMutation, CreateValidationPipelineMutationVariables>;
+export const ApplyThresholdStepDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ApplyThresholdStep"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ApplyThresholdStepInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"applyThresholdStep"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<ApplyThresholdStepMutation, ApplyThresholdStepMutationVariables>;
+export const PreviewThresholdStepDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"PreviewThresholdStep"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PreviewThresholdStepInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"previewThresholdStep"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currentCount"}},{"kind":"Field","name":{"kind":"Name","value":"survivingCount"}},{"kind":"Field","name":{"kind":"Name","value":"eliminatedCount"}}]}}]}}]} as unknown as DocumentNode<PreviewThresholdStepMutation, PreviewThresholdStepMutationVariables>;
+export const RemoveThresholdStepDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RemoveThresholdStep"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"stepId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"removeThresholdStep"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pipelineId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}}},{"kind":"Argument","name":{"kind":"Name","value":"stepId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"stepId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<RemoveThresholdStepMutation, RemoveThresholdStepMutationVariables>;
+export const CompleteThresholdStepDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CompleteThresholdStep"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"completeThresholdStep"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pipelineId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<CompleteThresholdStepMutation, CompleteThresholdStepMutationVariables>;
+export const PreviewParetoStepDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"PreviewParetoStep"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PreviewParetoStepInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"previewParetoStep"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"currentCount"}},{"kind":"Field","name":{"kind":"Name","value":"optimalCount"}},{"kind":"Field","name":{"kind":"Name","value":"dominatedCount"}}]}}]}}]} as unknown as DocumentNode<PreviewParetoStepMutation, PreviewParetoStepMutationVariables>;
+export const ApplyParetoStepDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ApplyParetoStep"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ApplyParetoStepInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"applyParetoStep"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<ApplyParetoStepMutation, ApplyParetoStepMutationVariables>;
+export const RemoveParetoStepDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RemoveParetoStep"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"stepId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"removeParetoStep"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pipelineId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}}},{"kind":"Argument","name":{"kind":"Name","value":"stepId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"stepId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<RemoveParetoStepMutation, RemoveParetoStepMutationVariables>;
+export const CompleteParetoStepDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CompleteParetoStep"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"completeParetoStep"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pipelineId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<CompleteParetoStepMutation, CompleteParetoStepMutationVariables>;
+export const StartWfaDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"StartWfa"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"StartWfaInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startWfa"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<StartWfaMutation, StartWfaMutationVariables>;
+export const PauseWfaDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"PauseWfa"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pauseWfa"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pipelineId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<PauseWfaMutation, PauseWfaMutationVariables>;
+export const ResumeWfaDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ResumeWfa"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resumeWfa"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pipelineId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<ResumeWfaMutation, ResumeWfaMutationVariables>;
+export const CompleteWfaDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CompleteWfa"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"completeWfa"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pipelineId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<CompleteWfaMutation, CompleteWfaMutationVariables>;
+export const SubmitUserSelectionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SubmitUserSelection"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UserSelectionInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"submitUserSelection"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pipelineId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<SubmitUserSelectionMutation, SubmitUserSelectionMutationVariables>;
+export const ConfigureRobustnessDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ConfigureRobustness"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ConfigureRobustnessInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"configureRobustness"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<ConfigureRobustnessMutation, ConfigureRobustnessMutationVariables>;
+export const RunRobustnessStepDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RunRobustnessStep"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"RunRobustnessStepInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"runRobustnessStep"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"candidateId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"stepIndex"}},{"kind":"Field","name":{"kind":"Name","value":"sharpeRatio"}},{"kind":"Field","name":{"kind":"Name","value":"totalPnl"}},{"kind":"Field","name":{"kind":"Name","value":"maxDrawdown"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]}}]} as unknown as DocumentNode<RunRobustnessStepMutation, RunRobustnessStepMutationVariables>;
+export const CompleteRobustnessDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CompleteRobustness"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"completeRobustness"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pipelineId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<CompleteRobustnessMutation, CompleteRobustnessMutationVariables>;
+export const SubmitFinalApprovalDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SubmitFinalApproval"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"FinalApprovalInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"submitFinalApproval"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pipelineId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pipelineId"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<SubmitFinalApprovalMutation, SubmitFinalApprovalMutationVariables>;
+export const CancelValidationPipelineDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CancelValidationPipeline"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cancelValidationPipeline"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<CancelValidationPipelineMutation, CancelValidationPipelineMutationVariables>;
 export const DeleteValidationPipelineDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteValidationPipeline"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteValidationPipeline"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<DeleteValidationPipelineMutation, DeleteValidationPipelineMutationVariables>;
-export const ValidationPipelineUpdatedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"ValidationPipelineUpdated"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"validationPipelineUpdated"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"templateSearchId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdConfig"}},{"kind":"Field","name":{"kind":"Name","value":"paretoMetrics"}},{"kind":"Field","name":{"kind":"Name","value":"wfaTrainRatio"}},{"kind":"Field","name":{"kind":"Name","value":"wfaWindows"}},{"kind":"Field","name":{"kind":"Name","value":"wfaMinConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessSteps"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessMinScore"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<ValidationPipelineUpdatedSubscription, ValidationPipelineUpdatedSubscriptionVariables>;
-export const ValidationCandidateUpdatedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"ValidationCandidateUpdated"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"validationCandidateUpdated"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationCandidateInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationCandidateInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationCandidate"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"pipelineId"}},{"kind":"Field","name":{"kind":"Name","value":"resultId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdPassed"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdDetails"}},{"kind":"Field","name":{"kind":"Name","value":"paretoRank"}},{"kind":"Field","name":{"kind":"Name","value":"dominatedBy"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"wfaPassed"}},{"kind":"Field","name":{"kind":"Name","value":"userSelectedAt"}},{"kind":"Field","name":{"kind":"Name","value":"userNotes"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessScore"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessPassed"}},{"kind":"Field","name":{"kind":"Name","value":"finalApprovedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finalNotes"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]} as unknown as DocumentNode<ValidationCandidateUpdatedSubscription, ValidationCandidateUpdatedSubscriptionVariables>;
+export const ValidationPipelineUpdatedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"ValidationPipelineUpdated"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"validationPipelineUpdated"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationPipelineInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationPipelineInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationPipeline"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"backtestTaskId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currentStep"}},{"kind":"Field","name":{"kind":"Name","value":"paretoConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConfig"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessConfig"}},{"kind":"Field","name":{"kind":"Name","value":"wfaCompletedWindows"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessCompletedSteps"}},{"kind":"Field","name":{"kind":"Name","value":"totalCandidates"}},{"kind":"Field","name":{"kind":"Name","value":"passedThreshold"}},{"kind":"Field","name":{"kind":"Name","value":"paretoOptimal"}},{"kind":"Field","name":{"kind":"Name","value":"passedWfa"}},{"kind":"Field","name":{"kind":"Name","value":"userSelected"}},{"kind":"Field","name":{"kind":"Name","value":"passedRobustness"}},{"kind":"Field","name":{"kind":"Name","value":"finalApproved"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"errorMessage"}}]}}]} as unknown as DocumentNode<ValidationPipelineUpdatedSubscription, ValidationPipelineUpdatedSubscriptionVariables>;
+export const ValidationCandidateUpdatedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"ValidationCandidateUpdated"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"validationCandidateUpdated"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ValidationCandidateInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ValidationCandidateInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationCandidate"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"pipelineId"}},{"kind":"Field","name":{"kind":"Name","value":"resultId"}},{"kind":"Field","name":{"kind":"Name","value":"configId"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"thresholdPassed"}},{"kind":"Field","name":{"kind":"Name","value":"paretoRank"}},{"kind":"Field","name":{"kind":"Name","value":"dominatedBy"}},{"kind":"Field","name":{"kind":"Name","value":"wfaConsistency"}},{"kind":"Field","name":{"kind":"Name","value":"wfaPassed"}},{"kind":"Field","name":{"kind":"Name","value":"wfaWindowResults"}},{"kind":"Field","name":{"kind":"Name","value":"userSelectedAt"}},{"kind":"Field","name":{"kind":"Name","value":"userNotes"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessScore"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessPassed"}},{"kind":"Field","name":{"kind":"Name","value":"robustnessStepResults"}},{"kind":"Field","name":{"kind":"Name","value":"finalApprovedAt"}},{"kind":"Field","name":{"kind":"Name","value":"finalNotes"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}}]} as unknown as DocumentNode<ValidationCandidateUpdatedSubscription, ValidationCandidateUpdatedSubscriptionVariables>;
 export const GetAllWalletAccountsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getAllWalletAccounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getAllWalletAccounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"WalletAccountInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TagInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Tag"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"tag"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"categoryId"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"WalletAccountInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"WalletAccount"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"tags"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TagInfo"}}]}}]}}]} as unknown as DocumentNode<GetAllWalletAccountsQuery, GetAllWalletAccountsQueryVariables>;
 export const AddWalletAccountDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"addWalletAccount"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"AddUserInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addWalletAccount"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"WalletAccountInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TagInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Tag"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"tag"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"categoryId"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"WalletAccountInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"WalletAccount"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"tags"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TagInfo"}}]}}]}}]} as unknown as DocumentNode<AddWalletAccountMutation, AddWalletAccountMutationVariables>;
 export const AddTagToWalletAccountDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"addTagToWalletAccount"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ChangeUserTagInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addTagToWalletAccount"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"WalletAccountInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TagInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Tag"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"tag"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"color"}},{"kind":"Field","name":{"kind":"Name","value":"categoryId"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"WalletAccountInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"WalletAccount"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"tags"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"TagInfo"}}]}}]}}]} as unknown as DocumentNode<AddTagToWalletAccountMutation, AddTagToWalletAccountMutationVariables>;
