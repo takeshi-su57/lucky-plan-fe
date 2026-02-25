@@ -19,6 +19,7 @@ import { DecreasePositionButton } from "./DecreasePositionButton";
 import { SLTPEditorButton } from "./SLTPEditorButton";
 import { SLTPCard } from "./SLTPCard";
 import { getGnsPositionKey } from "@/web3/gns/utils";
+import { getCollateral } from "@/web3/gns/v10/configs";
 
 export type PositionDetailsProps = {
   address: string;
@@ -26,6 +27,8 @@ export type PositionDetailsProps = {
   contractId: number;
   params: string;
   mission: MissionForwardDetails | null;
+  chainId: number | null;
+  diamondAddress: string;
 };
 
 export function PositionDetails({
@@ -34,6 +37,8 @@ export function PositionDetails({
   contractId,
   params,
   mission,
+  chainId,
+  diamondAddress,
 }: PositionDetailsProps) {
   const { isOpen, onOpenChange, onOpen } = useDisclosure();
 
@@ -44,8 +49,17 @@ export function PositionDetails({
   const trade = JSON.parse(params);
 
   const openPrice = trade?.openPrice ? Number(trade.openPrice) / 1e10 : 0;
+
+  const tradeCollateral =
+    chainId && trade?.collateralIndex
+      ? getCollateral(chainId, trade.collateralIndex)
+      : null;
+  const tradePrecision = tradeCollateral
+    ? Number(tradeCollateral.precision)
+    : 1e6;
+
   const collateralAmount = trade?.collateralAmount
-    ? Number(trade.collateralAmount) / 1e6
+    ? Number(trade.collateralAmount) / tradePrecision
     : 0;
 
   const handleClosePosition = () => {
@@ -100,6 +114,10 @@ export function PositionDetails({
               contractId={contractId}
               index={index}
               pairIndex={+trade.pairIndex}
+              precision={tradePrecision}
+              chainId={chainId}
+              diamondAddress={diamondAddress}
+              collateralIndex={trade.collateralIndex}
             />
 
             <DecreasePositionButton
@@ -107,6 +125,10 @@ export function PositionDetails({
               contractId={contractId}
               index={index}
               pairIndex={+trade.pairIndex}
+              precision={tradePrecision}
+              chainId={chainId}
+              diamondAddress={diamondAddress}
+              collateralIndex={trade.collateralIndex}
             />
 
             <UpdateLeverageButton
@@ -119,12 +141,16 @@ export function PositionDetails({
               address={address}
               contractId={contractId}
               index={index}
+              pairIndex={+trade.pairIndex}
+              long={Boolean(trade.long)}
             />
 
             <TpUpdateButton
               address={address}
               contractId={contractId}
               index={index}
+              pairIndex={+trade.pairIndex}
+              long={Boolean(trade.long)}
             />
 
             <WithdrawPositivePnlButton

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Button, useDisclosure } from "@heroui/react";
+import { useMemo, useState } from "react";
+import { Button, ButtonGroup, Chip, useDisclosure } from "@heroui/react";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 
@@ -9,27 +9,51 @@ import { useUpdateSl } from "@/app/_hooks/useFollower";
 
 import { NumericInput } from "@/components/inputs/NumericInput";
 
+import { useGetPrices } from "@/app/_hooks/useGetPrices";
+import { getPriceStr } from "@/utils/price";
+
+type SlMode = "price" | "percent";
+
 export type SlUpdateButtonProps = {
   address: string;
   contractId: number;
   index: number;
+  pairIndex: number;
+  long: boolean;
 };
 
 export function SlUpdateButton({
   address,
   contractId,
   index,
+  pairIndex,
+  long,
 }: SlUpdateButtonProps) {
   const { isOpen, onOpenChange, onOpen, onClose } = useDisclosure();
 
   const { updateSl, loading } = useUpdateSl();
+  const pairPrices = useGetPrices();
 
   const [slPrice, setSlPrice] = useState("0");
+  const [slPercent, setSlPercent] = useState("0");
+  const [slMode, setSlMode] = useState<SlMode>("price");
+
+  const currentPairPrice = pairPrices?.[pairIndex];
+
+  const rawSl = useMemo(() => {
+    if (slMode === "price") return slPrice;
+    if (!currentPairPrice) return "0";
+    const pct = Number(slPercent);
+    if (Number.isNaN(pct)) return "0";
+    const slVal = long
+      ? currentPairPrice * (1 - pct / 100)
+      : currentPairPrice * (1 + pct / 100);
+    return Math.floor(slVal * 1e10).toString();
+  }, [slMode, slPrice, slPercent, currentPairPrice, long]);
 
   const handleUpdate = () => {
-    if (slPrice.trim() === "") {
-      return;
-    }
+    const value = slMode === "price" ? slPrice : slPercent;
+    if (value.trim() === "") return;
 
     updateSl({
       variables: {
@@ -37,17 +61,24 @@ export function SlUpdateButton({
           address,
           contractId,
           index,
-          newSl: slPrice,
+          newSl: rawSl,
         },
       },
       onCompleted: () => {
         setSlPrice("0");
+        setSlPercent("0");
         onClose();
       },
     });
   };
 
-  const isDisabledUpdate = slPrice.trim() === "";
+  const handleFillCurrentPrice = () => {
+    if (!currentPairPrice) return;
+    setSlPrice(Math.floor(currentPairPrice * 1e10).toString());
+  };
+
+  const isDisabledUpdate =
+    slMode === "price" ? slPrice.trim() === "" : slPercent.trim() === "";
 
   return (
     <>
@@ -66,12 +97,67 @@ export function SlUpdateButton({
             Update SL
           </h1>
 
-          <div className="flex flex-row items-center gap-4">
-            <NumericInput
-              amount={slPrice}
-              onChange={setSlPrice}
-              label="SL Price (BigInt)"
-            />
+          <div className="flex flex-col gap-4">
+            {currentPairPrice !== undefined && (
+              <Chip variant="flat" size="sm">
+                Current Price: {getPriceStr(currentPairPrice)}
+              </Chip>
+            )}
+
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center justify-between">
+                <ButtonGroup size="sm" variant="flat">
+                  <Button
+                    color={slMode === "price" ? "primary" : "default"}
+                    onPress={() => setSlMode("price")}
+                  >
+                    Price
+                  </Button>
+                  <Button
+                    color={slMode === "percent" ? "primary" : "default"}
+                    onPress={() => setSlMode("percent")}
+                  >
+                    %
+                  </Button>
+                </ButtonGroup>
+
+                {slMode === "price" && currentPairPrice !== undefined && (
+                  <Button
+                    size="sm"
+                    variant="light"
+                    onPress={handleFillCurrentPrice}
+                    className="text-xs"
+                  >
+                    Current Price
+                  </Button>
+                )}
+              </div>
+
+              {slMode === "price" ? (
+                <NumericInput
+                  amount={slPrice}
+                  onChange={setSlPrice}
+                  label="SL Price (1e10)"
+                />
+              ) : (
+                <NumericInput
+                  amount={slPercent}
+                  onChange={setSlPercent}
+                  label={`SL % (${long ? "below" : "above"} current price)`}
+                />
+              )}
+
+              {slMode === "percent" && currentPairPrice !== undefined && Number(slPercent) > 0 && (
+                <span className="text-xs text-neutral-500">
+                  = {getPriceStr(
+                    long
+                      ? currentPairPrice * (1 - Number(slPercent) / 100)
+                      : currentPairPrice * (1 + Number(slPercent) / 100),
+                  )}{" "}
+                  USD
+                </span>
+              )}
+            </div>
 
             <Button
               onClick={handleUpdate}

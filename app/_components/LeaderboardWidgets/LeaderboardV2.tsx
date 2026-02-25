@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Spinner } from "@heroui/react";
+import { useMemo } from "react";
+import { Card, CardBody, Spinner } from "@heroui/react";
+import { Virtuoso } from "react-virtuoso";
 import { Address } from "viem";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client/react";
@@ -9,12 +10,11 @@ import { useQuery } from "@apollo/client/react";
 import { Platform, PnlSnapshotKind } from "@/graphql/gql/graphql";
 
 import {
-  useGetPnlSnapshotsV2ForPagination,
+  useGetPnlSnapshotsV2,
   useIsPnlSnapshotV2Initialized,
 } from "@/app-hooks/useHistory";
 
 import { PerpEventLogPnlChart } from "./PerpEventLogPnlChart/PerpEventLogPnlChart";
-import { PaginatedViews } from "@/components/views/PaginatedViews";
 import { useGetTradingSignalLogs } from "@/app/_hooks/useTradingSignals";
 import { useGetActiveBots } from "@/app/_hooks/useAutomation";
 import { GET_BLACKLIST_DOCUMENT } from "@/app/_hooks/usePlan";
@@ -38,6 +38,8 @@ export type LeaderboardV2Props = {
   platform: Platform;
   date: Date;
   hideTags: boolean;
+  minSlope: number;
+  minR2: number;
 };
 
 export function LeaderboardV2({
@@ -45,17 +47,17 @@ export function LeaderboardV2({
   platform,
   date,
   hideTags,
+  minSlope,
+  minR2,
 }: LeaderboardV2Props) {
-  const [page, setPage] = useState(1);
-
-  const { pnlSnapshots, totalPages, loading } =
-    useGetPnlSnapshotsV2ForPagination(
-      dayjs(date).format("YYYY-MM-DD"),
-      kind,
-      platform,
-      Math.max(0, page - 1),
-      5,
-    );
+  const { pnlSnapshots, hasMore, fetchMore, loading } = useGetPnlSnapshotsV2(
+    dayjs(date).format("YYYY-MM-DD"),
+    kind,
+    platform,
+    20,
+    minSlope,
+    minR2,
+  );
   const {
     data: isPnlSnapshotInitialized,
     loading: isPnlSnapshotInitializedLoading,
@@ -137,63 +139,85 @@ export function LeaderboardV2({
           </div>
         </div>
       ) : (
-        <PaginatedViews
-          currentPage={page}
-          totalPages={totalPages}
-          onChangePage={setPage}
-          loading={loading}
-        >
-          <div className="flex h-[700px] w-full flex-col gap-6 overflow-y-auto">
-            {pnlSnapshots.map((item) => (
-              <div key={item.id} className="flex w-full flex-col gap-6">
-                <span
-                  className={twMerge(
-                    activeAddresses[item.address.toLowerCase()]
-                      ? "text-green-400"
-                      : whitelistedAddresses[item.address.toLowerCase()]
-                        ? "text-yellow-400"
-                        : blacklistedAddresses[item.address.toLowerCase()]
-                          ? "text-red-400"
-                          : "text-white",
-                  )}
-                >
-                  {activeAddresses[item.address.toLowerCase()] && (
-                    <span className="rounded-md bg-green-400/10 p-1 text-green-400">
-                      Active
-                    </span>
-                  )}
-                  {tradingSignalAddresses[getKey(item.address, platform)] && (
-                    <span className="ml-2 rounded-md bg-blue-400/10 p-1 text-blue-400">
-                      Trading Signal
-                    </span>
-                  )}
-                  {whitelistedAddresses[item.address.toLowerCase()] && (
-                    <span className="ml-2 rounded-md bg-yellow-400/10 p-1 text-yellow-400">
-                      Whitelisted
-                    </span>
-                  )}
-                  {blacklistedAddresses[item.address.toLowerCase()] && (
-                    <span className="ml-2 rounded-md bg-red-400/10 p-1 text-red-400">
-                      Blacklisted
-                    </span>
-                  )}
-                </span>
-                <PerpEventLogPnlChart
-                  address={item.address as Address}
-                  platform={platform}
-                  perpTradingEventLogs={item.perpTradingEventLogs}
-                  hideTags={hideTags}
-                  range={{
-                    from: dayjs(date)
-                      .subtract(timestampGapByPnlSnapshotKind[kind], "ms")
-                      .toDate(),
-                    to: date,
-                  }}
-                />
+        <Card className="w-full">
+          <CardBody className="flex min-h-[300px] w-full flex-col gap-6">
+            {loading && pnlSnapshots.length === 0 ? (
+              <div className="flex w-full items-center justify-center">
+                <Spinner color="warning" size="lg" />
               </div>
-            ))}
-          </div>
-        </PaginatedViews>
+            ) : (
+              <Virtuoso
+                style={{ height: 700 }}
+                data={pnlSnapshots}
+                endReached={() => {
+                  if (hasMore && !loading) fetchMore();
+                }}
+                overscan={200}
+                itemContent={(_index, item) => (
+                  <div className="flex w-full flex-col gap-6 pb-6">
+                    <span
+                      className={twMerge(
+                        activeAddresses[item.address.toLowerCase()]
+                          ? "text-green-400"
+                          : whitelistedAddresses[item.address.toLowerCase()]
+                            ? "text-yellow-400"
+                            : blacklistedAddresses[item.address.toLowerCase()]
+                              ? "text-red-400"
+                              : "text-white",
+                      )}
+                    >
+                      {activeAddresses[item.address.toLowerCase()] && (
+                        <span className="rounded-md bg-green-400/10 p-1 text-green-400">
+                          Active
+                        </span>
+                      )}
+                      {tradingSignalAddresses[
+                        getKey(item.address, platform)
+                      ] && (
+                        <span className="ml-2 rounded-md bg-blue-400/10 p-1 text-blue-400">
+                          Trading Signal
+                        </span>
+                      )}
+                      {whitelistedAddresses[item.address.toLowerCase()] && (
+                        <span className="ml-2 rounded-md bg-yellow-400/10 p-1 text-yellow-400">
+                          Whitelisted
+                        </span>
+                      )}
+                      {blacklistedAddresses[item.address.toLowerCase()] && (
+                        <span className="ml-2 rounded-md bg-red-400/10 p-1 text-red-400">
+                          Blacklisted
+                        </span>
+                      )}
+                    </span>
+                    <PerpEventLogPnlChart
+                      address={item.address as Address}
+                      platform={platform}
+                      perpTradingEventLogs={item.perpTradingEventLogs}
+                      hideTags={hideTags}
+                      range={{
+                        from: dayjs(date)
+                          .subtract(
+                            timestampGapByPnlSnapshotKind[kind],
+                            "ms",
+                          )
+                          .toDate(),
+                        to: date,
+                      }}
+                    />
+                  </div>
+                )}
+                components={{
+                  Footer: () =>
+                    loading ? (
+                      <div className="flex w-full items-center justify-center py-4">
+                        <Spinner color="warning" size="sm" />
+                      </div>
+                    ) : null,
+                }}
+              />
+            )}
+          </CardBody>
+        </Card>
       )}
     </div>
   );

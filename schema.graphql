@@ -48,6 +48,7 @@ input ApplyThresholdStepInput {
 input AssetInput {
   address: String!
   amount: String!
+  collateralIndex: Int!
   contractId: Int!
   kind: String!
 }
@@ -247,6 +248,12 @@ input CloseTradeInput {
   contractId: Int!
   index: Int!
   pairIndex: Int!
+}
+
+type CollateralBalance {
+  allowance: String
+  balance: String
+  collateralIndex: Int!
 }
 
 type ComponentInfo {
@@ -450,14 +457,13 @@ type FollowerConnection {
 type FollowerDetail {
   accountIndex: Int!
   address: String!
+  collateralBalances: [CollateralBalance!]
   contractId: Int!
   ethBalance: String
   pendingOrders: [FollowerPendingOrder!]!
   pnlSnapshots: [PnlSnapshotV2!]!
   publicKey: String!
   trades: [FollowerTrade!]!
-  usdcAllowance: String
-  usdcBalance: String
   userId: String!
 }
 
@@ -654,6 +660,7 @@ type Mutation {
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
   checkLog(id: Int!): Log!
+  cleanDB: Boolean!
   cloneMission(id: Int!, manualParams: ManualParams): Boolean!
   closeMission(id: Int!, isForce: Boolean!): Boolean!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
@@ -683,7 +690,7 @@ type Mutation {
   createTemplateSearch(input: CreateTemplateSearchInput!): TemplateSearchWithTemplate!
   """Create a new validation pipeline from a completed backtest task"""
   createValidationPipeline(input: CreateValidationPipelineInput!): ValidationPipeline!
-  decreaseAllowanceToZero(contractId: Int!, followerAddress: String!, password: String!): Boolean!
+  decreaseAllowanceToZero(collateralIndex: Int!, contractId: Int!, followerAddress: String!, password: String!): Boolean!
   decreasePositionSize(input: DecreasePositionSizeInput!): ContractExecutionResult!
   """Delete a single backtest result"""
   deleteBacktestResult(resultId: ID!): Boolean!
@@ -707,7 +714,7 @@ type Mutation {
   generateNewFollower: Follower!
   getToken(signature: String!, timestamp: String!, walletAddress: String!): AccessToken!
   ignoreMission(id: Int!): Boolean!
-  increaseAllowanceToMax(contractId: Int!, followerAddress: String!, password: String!): Boolean!
+  increaseAllowanceToMax(collateralIndex: Int!, contractId: Int!, followerAddress: String!, password: String!): Boolean!
   increasePositionSize(input: IncreasePositionSizeInput!): ContractExecutionResult!
   initializePnlSnapshotV2(beginingDate: Date!, isForceBuild: Boolean!, platform: Platform!): Boolean!
   killSubService(service: String!): Boolean!
@@ -774,19 +781,21 @@ type Mutation {
   upsertCategory(input: TagCategoryInput!): TagCategory!
   upsertTag(input: TagInput!): Tag!
   withdrawAllETH(input: WithdrawAllInput!): Boolean!
-  withdrawAllUSDC(input: WithdrawAllInput!): Boolean!
+  withdrawAllErc20(input: WithdrawAllInput!): Boolean!
   withdrawAsset(input: AssetInput!): Boolean!
   withdrawETHToUser(amount: Float!, contractId: Int!, password: String!): Boolean!
+  withdrawErc20ToUser(amount: Float!, collateralIndex: Int!, contractId: Int!, password: String!): Boolean!
   withdrawPositivePnl(input: WithdrawPositivePnlInput!): ContractExecutionResult!
-  withdrawUSDCToUser(amount: Float!, contractId: Int!, password: String!): Boolean!
 }
 
 input OpenTradeInput {
   address: String!
   collateralAmount: String!
+  collateralIndex: Int!
   contractId: Int!
   leverage: Int!
   long: Boolean!
+  maxSlippageP: Int!
   pairIndex: Int!
   sl: String!
   tp: String!
@@ -958,11 +967,6 @@ type PnlSnapshotV2DetailsEdge {
   node: PnlSnapshotV2Details!
 }
 
-type PnlSnapshotV2DetailsForPagination {
-  data: [PnlSnapshotV2Details!]!
-  pageInfo: PnlSnapshotV2DetailsForPaginationAPIPageInfo!
-}
-
 type PnlSnapshotV2DetailsForPaginationAPIPageInfo {
   page: Int!
   total: Int!
@@ -1038,8 +1042,7 @@ type Query {
   getPlanById(id: Int!): PlanForwardDetails
   getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
   getPnlSnapshotV2InitializedFlag(platform: Platform!): [PnlSnapshotV2InitializedFlag!]!
-  getPnlSnapshotsV2(after: Int, dateStr: String!, first: Int!, kind: PnlSnapshotKind!, platform: Platform!): PnlSnapshotV2DetailsConnection!
-  getPnlsnpashotsV2ByPagination(dateStr: String!, kind: PnlSnapshotKind!, limit: Int!, page: Int!, platform: Platform!): PnlSnapshotV2DetailsForPagination!
+  getPnlSnapshotsV2(after: Int, dateStr: String!, first: Int!, kind: PnlSnapshotKind!, minR2: Float!, minSlope: Float!, platform: Platform!): PnlSnapshotV2DetailsConnection!
   getServerTime: ServerTime!
   getTradingSignalLogs: [TradingSignalLog!]!
   getWalletAccountByAddress(input: GetUserByAddressInput!): WalletAccount!
@@ -1727,6 +1730,7 @@ type WholeCompressedHistoriesV2 {
 
 input WithdrawAllInput {
   address: String!
+  collateralIndex: Int!
   contractId: Int!
 }
 

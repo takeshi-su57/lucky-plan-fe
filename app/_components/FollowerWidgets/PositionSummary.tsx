@@ -8,6 +8,7 @@ import { MissionStatus, MissionForwardDetails } from "@/graphql/gql/graphql";
 import { PairChip } from "../LeaderboardWidgets/PairChip";
 import { PositionTradeStatus } from "./PositionTradeStatus";
 import { getPairName } from "@/web3/gns/v10/configs";
+import { getCollateral } from "@/web3/gns/v10/configs";
 
 const colorsByMissionStatus: Record<
   MissionStatus,
@@ -25,22 +26,33 @@ export type PositionSummaryProps = {
   index: number;
   mission: MissionForwardDetails | null;
   params: string;
+  chainId: number | null;
 };
 
 export function PositionSummary({
   index,
   mission,
   params,
+  chainId,
 }: PositionSummaryProps) {
   const data = JSON.parse(params);
 
   const openPrice = data?.openPrice ? Number(data.openPrice) / 1e10 : 0;
+
+  const tradeCollateral =
+    chainId && data?.collateralIndex
+      ? getCollateral(chainId, data.collateralIndex)
+      : null;
+  const tradePrecision = tradeCollateral
+    ? Number(tradeCollateral.precision)
+    : 1e6;
+
   const collateralAmount = data?.collateralAmount
-    ? Number(data.collateralAmount) / 1e6
+    ? Number(data.collateralAmount) / tradePrecision
     : 0;
   const leverage = data?.leverage ? Number(data.leverage) / 1e3 : 0;
 
-  const pairName = getPairName(42161, data.pairIndex);
+  const pairName = chainId ? getPairName(chainId, data.pairIndex) : null;
 
   return (
     <div className={twMerge("flex w-full items-center justify-between gap-6")}>

@@ -47,8 +47,11 @@ export const FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     publicKey
     userId
     ethBalance
-    usdcBalance
-    usdcAllowance
+    collateralBalances {
+      collateralIndex
+      balance
+      allowance
+    }
     contractId
     pnlSnapshots {
       ...PnlSnapshotV2Info
@@ -231,9 +234,9 @@ export const GENERATE_NEW_FOLLOWER_DOCUMENT = graphql(`
   }
 `);
 
-export const WITHDRAW_ALL_USDC_DOCUMENT = graphql(`
-  mutation withdrawAllUSDC($input: WithdrawAllInput!) {
-    withdrawAllUSDC(input: $input)
+export const WITHDRAW_ALL_ERC20_DOCUMENT = graphql(`
+  mutation withdrawAllErc20($input: WithdrawAllInput!) {
+    withdrawAllErc20(input: $input)
   }
 `);
 
@@ -254,11 +257,13 @@ export const DECREASE_ALLOWANCE_TO_ZERO_DOCUMENT = graphql(`
     $contractId: Int!
     $followerAddress: String!
     $password: String!
+    $collateralIndex: Int!
   ) {
     decreaseAllowanceToZero(
       contractId: $contractId
       followerAddress: $followerAddress
       password: $password
+      collateralIndex: $collateralIndex
     )
   }
 `);
@@ -268,11 +273,13 @@ export const INCREASE_ALLOWANCE_TO_MAX_DOCUMENT = graphql(`
     $contractId: Int!
     $followerAddress: String!
     $password: String!
+    $collateralIndex: Int!
   ) {
     increaseAllowanceToMax(
       contractId: $contractId
       followerAddress: $followerAddress
       password: $password
+      collateralIndex: $collateralIndex
     )
   }
 `);
@@ -296,14 +303,16 @@ export const WITHDRAW_ETH_TO_USER_DOCUMENT = graphql(`
   }
 `);
 
-export const WITHDRAW_USDC_TO_USER_DOCUMENT = graphql(`
-  mutation withdrawUSDCToUser(
+export const WITHDRAW_ERC20_TO_USER_DOCUMENT = graphql(`
+  mutation withdrawErc20ToUser(
     $amount: Float!
+    $collateralIndex: Int!
     $contractId: Int!
     $password: String!
   ) {
-    withdrawUSDCToUser(
+    withdrawErc20ToUser(
       amount: $amount
+      collateralIndex: $collateralIndex
       contractId: $contractId
       password: $password
     )
@@ -846,22 +855,22 @@ export function useWithdrawPositivePnl() {
   return { withdrawPositivePnl, loading };
 }
 
-export function useWithdrawAllUSDC() {
-  const [withdrawAllUSDC, { data, error }] = useMutation(
-    WITHDRAW_ALL_USDC_DOCUMENT,
+export function useWithdrawAllErc20() {
+  const [withdrawAllErc20, { data, error }] = useMutation(
+    WITHDRAW_ALL_ERC20_DOCUMENT,
   );
   const client = useApolloClient();
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     if (data && !error) {
-      enqueueSnackbar("Success at withdraw USDC!", {
+      enqueueSnackbar("Success at withdraw ERC20!", {
         variant: "success",
       });
     }
   }, [client.cache, error, enqueueSnackbar, data]);
 
-  return withdrawAllUSDC;
+  return withdrawAllErc20;
 }
 
 export function useWithdrawAllETH() {
@@ -900,22 +909,22 @@ export function useWithdrawETHToUser() {
   return { withdrawETHToUser, loading };
 }
 
-export function useWithdrawUSDCToUser() {
-  const [withdrawUSDCToUser, { data, error, loading }] = useMutation(
-    WITHDRAW_USDC_TO_USER_DOCUMENT,
+export function useWithdrawErc20ToUser() {
+  const [withdrawErc20ToUser, { data, error, loading }] = useMutation(
+    WITHDRAW_ERC20_TO_USER_DOCUMENT,
   );
   const client = useApolloClient();
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     if (data && !error) {
-      enqueueSnackbar("Success at withdraw USDC to User Wallet!", {
+      enqueueSnackbar("Success at withdraw ERC20 to User Wallet!", {
         variant: "success",
       });
     }
   }, [client.cache, error, enqueueSnackbar, data]);
 
-  return { withdrawUSDCToUser, loading };
+  return { withdrawErc20ToUser, loading };
 }
 
 export function useWithdrawAssets() {

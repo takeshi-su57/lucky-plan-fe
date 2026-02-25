@@ -90,7 +90,7 @@ export function AutomationSummary({ bot, simple }: AutomationSummaryProps) {
   const additionalParams = getAdditionalParams(strategy.params);
 
   return (
-    <div className="flex items-center justify-between gap-6 text-neutral-400">
+    <div className={`flex items-center justify-between gap-6 text-neutral-400 ${!additionalParams.mode ? "bg-green-100/20 rounded-lg p-2" : ""}`}>
       <div className="flex items-center gap-6">
         <Chip>{bot.id}</Chip>
 
