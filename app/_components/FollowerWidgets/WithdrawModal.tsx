@@ -8,26 +8,36 @@ import { StandardModal } from "@/components/modals/StandardModal";
 
 import {
   useWithdrawETHToUser,
-  useWithdrawUSDCToUser,
+  useWithdrawErc20ToUser,
 } from "@/app/_hooks/useFollower";
 import { NumericInput } from "@/components/inputs/NumericInput";
+import { useCollateralSymbols } from "@/app/_hooks/useCollateralSymbols";
+import { getCollaterals } from "@/web3/gns/v10/configs";
 
 export type WithdrawModalProps = {
   isOpen: boolean;
   contractId: number;
+  chainId: number;
   onOpenChange: (value: boolean) => void;
 };
 
 export function WithdrawModal({
   isOpen,
   contractId,
+  chainId,
   onOpenChange,
 }: WithdrawModalProps) {
   const { withdrawETHToUser, loading: ethLoading } = useWithdrawETHToUser();
-  const { withdrawUSDCToUser, loading: usdcLoading } = useWithdrawUSDCToUser();
+  const { withdrawErc20ToUser, loading: erc20Loading } =
+    useWithdrawErc20ToUser();
+  const collateralSymbols = useCollateralSymbols(chainId);
+
+  const collaterals = getCollaterals(chainId);
 
   const [ethAmount, setEthAmount] = useState("0");
-  const [usdcAmount, setUSDCAmount] = useState("0");
+  const [collateralAmounts, setCollateralAmounts] = useState<
+    Record<number, string>
+  >({});
 
   const [password, setPassword] = useState("");
   const [isVisible, setIsVisible] = useState(false);
@@ -35,15 +45,9 @@ export function WithdrawModal({
   const toggleVisibility = () => setIsVisible(!isVisible);
 
   const handleWithdrawETH = () => {
-    if (ethAmount.trim() === "") {
-      return;
-    }
-
+    if (ethAmount.trim() === "") return;
     const ethAmountNum = +ethAmount;
-
-    if (Number.isNaN(ethAmountNum)) {
-      return;
-    }
+    if (Number.isNaN(ethAmountNum)) return;
 
     withdrawETHToUser({
       variables: {
@@ -57,21 +61,17 @@ export function WithdrawModal({
     });
   };
 
-  const handleWithdrawUSDC = () => {
-    if (usdcAmount.trim() === "") {
-      return;
-    }
+  const handleWithdrawCollateral = (collateralIndex: number) => {
+    const amount = collateralAmounts[collateralIndex] || "0";
+    if (amount.trim() === "") return;
+    const amountNum = +amount;
+    if (Number.isNaN(amountNum)) return;
 
-    const usdcAmountNum = +usdcAmount;
-
-    if (Number.isNaN(usdcAmountNum)) {
-      return;
-    }
-
-    withdrawUSDCToUser({
+    withdrawErc20ToUser({
       variables: {
         contractId,
-        amount: usdcAmountNum,
+        collateralIndex,
+        amount: amountNum,
         password: password.trim(),
       },
       onCompleted: () => {
@@ -82,8 +82,6 @@ export function WithdrawModal({
 
   const isDisabledETHWithdraw =
     ethAmount.trim() === "" || Number.isNaN(+ethAmount);
-  const isDisabledUSDCWithdraw =
-    usdcAmount.trim() === "" || Number.isNaN(+usdcAmount);
 
   return (
     <StandardModal
@@ -111,8 +109,8 @@ export function WithdrawModal({
           }
           value={password}
           onValueChange={setPassword}
-          label="New Password"
-          placeholder="Enter new password"
+          label="Password"
+          placeholder="Enter password"
           type={isVisible ? "text" : "password"}
           variant="bordered"
         />
@@ -134,22 +132,43 @@ export function WithdrawModal({
           </Button>
         </div>
 
-        <div className="flex flex-row items-center gap-4">
-          <NumericInput
-            amount={usdcAmount}
-            onChange={setUSDCAmount}
-            label="USDC Amount"
-          />
+        {collaterals.map((collateral) => {
+          const symbol =
+            collateralSymbols[collateral.collateralIndex] ||
+            `C${collateral.collateralIndex}`;
+          const amount =
+            collateralAmounts[collateral.collateralIndex] || "0";
+          const isDisabled = amount.trim() === "" || Number.isNaN(+amount);
 
-          <Button
-            onPress={handleWithdrawUSDC}
-            isDisabled={isDisabledUSDCWithdraw}
-            isLoading={usdcLoading}
-            className="w-[180px]"
-          >
-            Withdraw USDC
-          </Button>
-        </div>
+          return (
+            <div
+              key={collateral.collateralIndex}
+              className="flex flex-row items-center gap-4"
+            >
+              <NumericInput
+                amount={amount}
+                onChange={(val) =>
+                  setCollateralAmounts((prev) => ({
+                    ...prev,
+                    [collateral.collateralIndex]: val,
+                  }))
+                }
+                label={`${symbol} Amount`}
+              />
+
+              <Button
+                onPress={() =>
+                  handleWithdrawCollateral(collateral.collateralIndex)
+                }
+                isDisabled={isDisabled}
+                isLoading={erc20Loading}
+                className="w-[180px]"
+              >
+                Withdraw {symbol}
+              </Button>
+            </div>
+          );
+        })}
       </div>
     </StandardModal>
   );

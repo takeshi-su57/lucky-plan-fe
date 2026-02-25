@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { Button, Card, CardBody, Switch } from "@heroui/react";
 import {
+  useCleanDB,
   useGetMicroserviceStatus,
   useGetSystemStatus,
   useIsSafeApp,
@@ -48,6 +49,7 @@ export function ControlPanel() {
     useKillSubService();
   const { startSubService, loading: startSubServiceLoading } =
     useStartSubService();
+  const { cleanDB, loading: cleanDBLoading } = useCleanDB();
 
   const handleToggleDevMode = (isSelected: boolean) => {
     changeAppSettings.mutate({ isDevMode: isSelected });
@@ -136,6 +138,14 @@ export function ControlPanel() {
                       Pause System
                     </Button>
                   )}
+
+                  <Button
+                    onClick={() => cleanDB()}
+                    color="warning"
+                    isLoading={cleanDBLoading}
+                  >
+                    Clean DB
+                  </Button>
                 </div>
               </>
             ) : null}

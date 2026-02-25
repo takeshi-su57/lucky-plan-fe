@@ -8,6 +8,8 @@ import { useGetAlertTasks } from "@/app-hooks/useTask";
 import { TradeButton } from "../FollowerWidgets/TradeButton";
 import { CalculatorButton } from "../FollowerWidgets/CalculatorButton";
 import { ChartButton } from "../FollowerWidgets/ChartButton";
+import { BatchOpenButton } from "../FollowerWidgets/BatchOpenButton";
+import { BatchCloseButton } from "../FollowerWidgets/BatchCloseButton";
 import WalletConnectButton from "./WalletConnectButton";
 
 export function Topbar() {
@@ -37,6 +39,10 @@ export function Topbar() {
         <CalculatorButton />
 
         <ChartButton />
+
+        <BatchOpenButton />
+
+        <BatchCloseButton />
 
         {createdCount > 0 ? (
           <Badge color="secondary" content={createdCount}>

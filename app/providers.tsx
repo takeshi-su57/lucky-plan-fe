@@ -30,6 +30,10 @@ import { createClient } from "graphql-ws";
 import "@rainbow-me/rainbowkit/styles.css";
 import { useSubscribeTask } from "@/app-hooks/useTask";
 import { useSubscribeMission } from "@/app-hooks/useMission";
+import {
+  useSubscribeBacktestTask,
+  useSubscribeBacktestResults,
+} from "@/app-hooks/useBacktest";
 
 import {
   SuccessSnackbar,
@@ -244,6 +248,12 @@ const cache = new InMemoryCache({
     TradingSignalLog: {
       keyFields: ["id"],
     },
+    BacktestTask: {
+      keyFields: ["id"],
+    },
+    BacktestResult: {
+      keyFields: ["id"],
+    },
   },
 });
 
@@ -331,6 +341,8 @@ export function SubscriptionWrapper({ children }: { children: ReactNode }) {
   useSubscribeMission();
   useSubscribeBot();
   useSubscribeTradingSignalLogs();
+  useSubscribeBacktestTask();
+  useSubscribeBacktestResults();
 
   useEffect(() => {
     requestNotificationPermission();

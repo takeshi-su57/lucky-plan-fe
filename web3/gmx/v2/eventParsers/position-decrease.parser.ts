@@ -89,7 +89,7 @@ export function eventToPerpTradeHistory(
 
   const pair = marketInfo
     ? `${marketInfo.indexToken.baseSymbol || marketInfo.indexToken.symbol}/usd`.toLowerCase()
-    : "";
+    : "unknown_pair/usd";
 
   return {
     positionKey: event.args.positionKey,

@@ -171,6 +171,8 @@ export const GET_PNL_SNAPSHOT_V2_DOCUMENT = graphql(`
     $first: Int!
     $after: Int
     $kind: PnlSnapshotKind!
+    $minR2: Float!
+    $minSlope: Float!
   ) {
     getPnlSnapshotsV2(
       dateStr: $dateStr
@@ -178,6 +180,8 @@ export const GET_PNL_SNAPSHOT_V2_DOCUMENT = graphql(`
       first: $first
       after: $after
       kind: $kind
+      minR2: $minR2
+      minSlope: $minSlope
     ) {
       edges {
         cursor
@@ -193,32 +197,10 @@ export const GET_PNL_SNAPSHOT_V2_DOCUMENT = graphql(`
   }
 `);
 
-export const GET_PNL_SNAPSHOT_V2_BY_PAGINATION = graphql(`
-  query getPnlsnpashotsV2ByPagination(
-    $dateStr: String!
-    $kind: PnlSnapshotKind!
-    $limit: Int!
-    $page: Int!
-    $platform: Platform!
-  ) {
-    getPnlsnpashotsV2ByPagination(
-      dateStr: $dateStr
-      platform: $platform
-      kind: $kind
-      limit: $limit
-      page: $page
-    ) {
-      data {
-        ...PnlSnapshotV2DetailsInfo
-      }
-      pageInfo {
-        total
-        page
-        totalPages
-      }
-    }
-  }
-`);
+// TODO: getPnlsnpashotsV2ByPagination was removed from the schema - needs backend update
+// export const GET_PNL_SNAPSHOT_V2_BY_PAGINATION = graphql(`
+//   query getPnlsnpashotsV2ByPagination(...) { ... }
+// `);
 
 export const IS_PNL_SNAPSHOT_V2_INITIALIZED_DOCUMENT = graphql(`
   query isPnlSnapshotV2Initialized($dateStr: String!, $platform: Platform!) {
@@ -421,6 +403,9 @@ export function useGetPnlSnapshotsV2(
   dateStr: string,
   kind: PnlSnapshotKind,
   platform: Platform,
+  first: number,
+  minSlope: number,
+  minR2: number,
 ) {
   const [query, { data, fetchMore, loading, error }] = useLazyQuery(
     GET_PNL_SNAPSHOT_V2_DOCUMENT,
@@ -431,11 +416,13 @@ export function useGetPnlSnapshotsV2(
       variables: {
         dateStr,
         kind,
-        first: 20,
+        first,
         platform,
+        minR2,
+        minSlope,
       },
     });
-  }, [dateStr, kind, query, platform]);
+  }, [dateStr, kind, query, platform, first, minR2, minSlope]);
 
   const pnlSnapshots = useMemo(() => {
     if (!data) {
@@ -450,51 +437,22 @@ export function useGetPnlSnapshotsV2(
     if (data && !error) {
       fetchMore({
         variables: {
+          dateStr,
           kind,
-          first: 20,
+          first,
           after: data.getPnlSnapshotsV2.pageInfo.endCursor,
           platform,
+          minR2,
+          minSlope,
         },
       });
     }
-  }, [data, error, fetchMore, kind, platform]);
+  }, [data, error, fetchMore, dateStr, kind, first, platform, minR2, minSlope]);
 
   return {
     hasMore: data?.getPnlSnapshotsV2.pageInfo.hasNextPage,
     pnlSnapshots,
     fetchMore: handleFetchMore,
-    loading,
-  };
-}
-
-export function useGetPnlSnapshotsV2ForPagination(
-  dateStr: string,
-  kind: PnlSnapshotKind,
-  platform: Platform,
-  page: number,
-  limit: number,
-) {
-  const { data, loading } = useQuery(GET_PNL_SNAPSHOT_V2_BY_PAGINATION, {
-    variables: {
-      dateStr,
-      kind,
-      platform,
-      page,
-      limit,
-    },
-  });
-
-  const pnlSnapshots = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-    return data.getPnlsnpashotsV2ByPagination.data.map(getPnlSnapshotV2Info);
-  }, [data]);
-
-  return {
-    totalPages: data?.getPnlsnpashotsV2ByPagination.pageInfo.totalPages || 0,
-    total: data?.getPnlsnpashotsV2ByPagination.pageInfo.total || 0,
-    pnlSnapshots,
     loading,
   };
 }
