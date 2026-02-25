@@ -13,10 +13,13 @@
       "Bash(wc:*)",
       "Bash(npm run lint)",
       "Bash(npx graphql-codegen:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "WebFetch(domain:v3.heroui.com)",
+      "Bash(npm install)"
     ],
     "additionalDirectories": [
-      "e:\\New folder\\research\\newwork\\plan\\prod\\fe"
+      "e:\\New folder\\research\\newwork\\plan\\prod\\fe",
+      "/home/work/Documents/plans/staging/test/f"
     ]
   }
 }

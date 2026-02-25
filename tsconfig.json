@@ -33,16 +33,10 @@
       "@/components/*": [
         "./components/*"
       ],
-      "@/app-components/*": [
-        "./app/_components/*"
+      "@/lib/*": [
+        "./lib/*"
       ],
-      "@/app-hooks/*": [
-        "./app/_hooks/*"
-      ],
-      "@/app-actions/*": [
-        "./app/_actions/*"
-      ],
-      "@/gql/*": [
+"@/gql/*": [
         "./graphql/gql/*"
       ]
     }
