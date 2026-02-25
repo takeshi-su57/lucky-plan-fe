@@ -26,6 +26,28 @@ type Documents = {
     "\n  mutation stopBot($id: Int!) {\n    stopBot(id: $id)\n  }\n": typeof types.StopBotDocument,
     "\n  subscription botCreated($userId: String!) {\n    botCreated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": typeof types.BotCreatedDocument,
     "\n  subscription botUpdated($userId: String!) {\n    botUpdated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": typeof types.BotUpdatedDocument,
+    "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    searchStrategy\n    optimizationMetrics\n    trials\n    bestConfigIds\n    optimizerPid\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    templateId\n    templateSearchId\n  }\n": typeof types.BacktestTaskInfoFragmentDoc,
+    "\n  fragment BacktestResultInfo on BacktestResult {\n    id\n    taskId\n    configId\n    runDate\n    strategyConfig\n    totalTrades\n    winningTrades\n    losingTrades\n    winRate\n    totalPnlUsdt\n    totalPnlPercent\n    maxDrawdownUsdt\n    maxDrawdownPercent\n    sharpeRatio\n    profitFactor\n    resultFolder\n    createdAt\n  }\n": typeof types.BacktestResultInfoFragmentDoc,
+    "\n  query BacktestComponents {\n    backtestComponents {\n      signals {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      filters {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      risk {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      exits {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      platforms {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n    }\n  }\n": typeof types.BacktestComponentsDocument,
+    "\n  query BacktestTask($id: ID!) {\n    backtestTask(id: $id) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.BacktestTaskDocument,
+    "\n  query BacktestTasks(\n    $status: BacktestTaskStatus\n    $symbol: String\n    $limit: Int\n    $offset: Int\n  ) {\n    backtestTasks(\n      status: $status\n      symbol: $symbol\n      limit: $limit\n      offset: $offset\n    ) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.BacktestTasksDocument,
+    "\n  query BacktestTaskStats {\n    backtestTaskStats {\n      await\n      processing\n      done\n      failed\n    }\n  }\n": typeof types.BacktestTaskStatsDocument,
+    "\n  query BacktestResults(\n    $taskId: ID!\n    $sortBy: String\n    $sortOrder: String\n    $limit: Int\n    $offset: Int\n  ) {\n    backtestResults(\n      taskId: $taskId\n      sortBy: $sortBy\n      sortOrder: $sortOrder\n      limit: $limit\n      offset: $offset\n    ) {\n      ...BacktestResultInfo\n    }\n  }\n": typeof types.BacktestResultsDocument,
+    "\n  query BacktestResultDates($taskId: ID!) {\n    backtestResultDates(taskId: $taskId)\n  }\n": typeof types.BacktestResultDatesDocument,
+    "\n  query BacktestResultFolders($taskId: ID!, $date: String!) {\n    backtestResultFolders(taskId: $taskId, date: $date) {\n      taskId\n      date\n      configId\n      files\n    }\n  }\n": typeof types.BacktestResultFoldersDocument,
+    "\n  query BacktestResultFile(\n    $taskId: ID!\n    $date: String!\n    $configId: String!\n    $fileName: String!\n  ) {\n    backtestResultFile(\n      taskId: $taskId\n      date: $date\n      configId: $configId\n      fileName: $fileName\n    ) {\n      name\n      content\n      contentType\n      size\n      originalSize\n      isCompressed\n    }\n  }\n": typeof types.BacktestResultFileDocument,
+    "\n  query TopBacktestResults($taskId: ID!, $metric: String, $limit: Int) {\n    topBacktestResults(taskId: $taskId, metric: $metric, limit: $limit) {\n      ...BacktestResultInfo\n    }\n  }\n": typeof types.TopBacktestResultsDocument,
+    "\n  query OptunaDashboardStatus {\n    optunaDashboardStatus {\n      running\n      url\n    }\n  }\n": typeof types.OptunaDashboardStatusDocument,
+    "\n  mutation CreateBacktestTask($input: CreateBacktestTaskInput!) {\n    createBacktestTask(input: $input) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.CreateBacktestTaskDocument,
+    "\n  mutation CancelBacktestTask($taskId: ID!) {\n    cancelBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.CancelBacktestTaskDocument,
+    "\n  mutation DeleteBacktestTask($taskId: ID!) {\n    deleteBacktestTask(taskId: $taskId)\n  }\n": typeof types.DeleteBacktestTaskDocument,
+    "\n  mutation DeleteBacktestResult($resultId: ID!) {\n    deleteBacktestResult(resultId: $resultId)\n  }\n": typeof types.DeleteBacktestResultDocument,
+    "\n  mutation RetryBacktestTask($taskId: ID!) {\n    retryBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.RetryBacktestTaskDocument,
+    "\n  mutation StartOptunaDashboard($port: Int) {\n    startOptunaDashboard(port: $port) {\n      running\n      url\n    }\n  }\n": typeof types.StartOptunaDashboardDocument,
+    "\n  mutation ResumeBacktestTask($taskId: ID!, $additionalTrials: Int) {\n    resumeBacktestTask(taskId: $taskId, additionalTrials: $additionalTrials) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.ResumeBacktestTaskDocument,
+    "\n  mutation StopOptunaDashboard {\n    stopOptunaDashboard\n  }\n": typeof types.StopOptunaDashboardDocument,
+    "\n  subscription BacktestTaskUpdated {\n    backtestTaskUpdated {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.BacktestTaskUpdatedDocument,
+    "\n  subscription BacktestResultCreated {\n    backtestResultCreated {\n      ...BacktestResultInfo\n    }\n  }\n": typeof types.BacktestResultCreatedDocument,
     "\n  fragment ContractInfo on Contract {\n    id\n    chainId\n    address\n    backendUrl\n    description\n    isTestnet\n    status\n    fromBlock\n    lastBlockNumber\n    lastLeaderboardBlockNumber\n    platform\n    toBlock\n    version\n  }\n": typeof types.ContractInfoFragmentDoc,
     "\n  query getAllContracts {\n    getAllContracts {\n      ...ContractInfo\n    }\n  }\n": typeof types.GetAllContractsDocument,
     "\n  query getAdaptionStatus {\n    getAdaptionStatus\n  }\n": typeof types.GetAdaptionStatusDocument,
@@ -110,6 +132,14 @@ type Documents = {
     "\n  query getAllStrategyMetadata {\n    getAllStrategyMetadata {\n      ...StrategyMetadataInfo\n    }\n  }\n": typeof types.GetAllStrategyMetadataDocument,
     "\n  query getAllStrategy {\n    getAllStrategy {\n      ...StrategyInfo\n    }\n  }\n": typeof types.GetAllStrategyDocument,
     "\n  mutation updateStrategy($id: Int!, $input: UpdateStrategyInput!) {\n    updateStrategy(id: $id, input: $input) {\n      ...StrategyInfo\n    }\n  }\n": typeof types.UpdateStrategyDocument,
+    "\n  fragment StrategyTemplateInfo on StrategyTemplate {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n  }\n": typeof types.StrategyTemplateInfoFragmentDoc,
+    "\n  fragment StrategyTemplateWithStatsInfo on StrategyTemplateWithStats {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n    totalSearches\n    totalTasks\n  }\n": typeof types.StrategyTemplateWithStatsInfoFragmentDoc,
+    "\n  query StrategyTemplate($id: ID!) {\n    strategyTemplate(id: $id) {\n      ...StrategyTemplateInfo\n    }\n  }\n": typeof types.StrategyTemplateDocument,
+    "\n  query StrategyTemplates(\n    $category: StrategyCategory\n    $isActive: Boolean\n    $limit: Int\n    $offset: Int\n  ) {\n    strategyTemplates(\n      category: $category\n      isActive: $isActive\n      limit: $limit\n      offset: $offset\n    ) {\n      ...StrategyTemplateInfo\n    }\n  }\n": typeof types.StrategyTemplatesDocument,
+    "\n  query StrategyTemplateWithStats($id: ID!) {\n    strategyTemplateWithStats(id: $id) {\n      ...StrategyTemplateWithStatsInfo\n    }\n  }\n": typeof types.StrategyTemplateWithStatsDocument,
+    "\n  mutation CreateStrategyTemplate($input: CreateStrategyTemplateInput!) {\n    createStrategyTemplate(input: $input) {\n      ...StrategyTemplateInfo\n    }\n  }\n": typeof types.CreateStrategyTemplateDocument,
+    "\n  mutation UpdateStrategyTemplate($input: UpdateStrategyTemplateInput!) {\n    updateStrategyTemplate(input: $input) {\n      ...StrategyTemplateInfo\n    }\n  }\n": typeof types.UpdateStrategyTemplateDocument,
+    "\n  mutation DeleteStrategyTemplate($id: ID!) {\n    deleteStrategyTemplate(id: $id)\n  }\n": typeof types.DeleteStrategyTemplateDocument,
     "\n  mutation pauseSystem {\n    pauseSystem\n  }\n": typeof types.PauseSystemDocument,
     "\n  mutation resumeSystem($password: String) {\n    resumeSystem(password: $password)\n  }\n": typeof types.ResumeSystemDocument,
     "\n  mutation killSubService($service: String!) {\n    killSubService(service: $service)\n  }\n": typeof types.KillSubServiceDocument,
@@ -138,6 +168,18 @@ type Documents = {
     "\n  mutation stopTask($id: Int!) {\n    stopTask(id: $id)\n  }\n": typeof types.StopTaskDocument,
     "\n  subscription taskCreated($userId: String!) {\n    taskCreated(userId: $userId) {\n      ...TaskBackwardDetailsInfo\n    }\n  }\n": typeof types.TaskCreatedDocument,
     "\n  subscription taskUpdated($userId: String!) {\n    taskUpdated(userId: $userId) {\n      ...TaskBackwardDetailsInfo\n    }\n  }\n": typeof types.TaskUpdatedDocument,
+    "\n  fragment TemplateSearchInfo on TemplateSearch {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n": typeof types.TemplateSearchInfoFragmentDoc,
+    "\n  fragment TemplateSearchWithTemplateInfo on TemplateSearchWithTemplate {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    template {\n      ...StrategyTemplateInfo\n    }\n  }\n": typeof types.TemplateSearchWithTemplateInfoFragmentDoc,
+    "\n  fragment TemplateSearchWithTaskInfo on TemplateSearchWithTask {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    template {\n      ...StrategyTemplateInfo\n    }\n    task {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.TemplateSearchWithTaskInfoFragmentDoc,
+    "\n  query TemplateSearch($id: ID!) {\n    templateSearch(id: $id) {\n      ...TemplateSearchInfo\n    }\n  }\n": typeof types.TemplateSearchDocument,
+    "\n  query TemplateSearchWithTask($id: ID!) {\n    templateSearchWithTask(id: $id) {\n      ...TemplateSearchWithTaskInfo\n    }\n  }\n": typeof types.TemplateSearchWithTaskDocument,
+    "\n  query TemplateSearches($filter: TemplateSearchFilterInput) {\n    templateSearches(filter: $filter) {\n      ...TemplateSearchWithTemplateInfo\n    }\n  }\n": typeof types.TemplateSearchesDocument,
+    "\n  query TemplateSearchStats {\n    templateSearchStats {\n      await\n      processing\n      done\n      failed\n      cancelled\n    }\n  }\n": typeof types.TemplateSearchStatsDocument,
+    "\n  query TaskByTemplateSearch($searchId: ID!) {\n    taskByTemplateSearch(searchId: $searchId) {\n      ...BacktestTaskInfo\n    }\n  }\n": typeof types.TaskByTemplateSearchDocument,
+    "\n  mutation CreateTemplateSearch($input: CreateTemplateSearchInput!) {\n    createTemplateSearch(input: $input) {\n      ...TemplateSearchWithTemplateInfo\n    }\n  }\n": typeof types.CreateTemplateSearchDocument,
+    "\n  mutation CancelTemplateSearch($id: ID!) {\n    cancelTemplateSearch(id: $id) {\n      ...TemplateSearchInfo\n    }\n  }\n": typeof types.CancelTemplateSearchDocument,
+    "\n  mutation DeleteTemplateSearch($id: ID!) {\n    deleteTemplateSearch(id: $id)\n  }\n": typeof types.DeleteTemplateSearchDocument,
+    "\n  subscription TemplateSearchUpdated {\n    templateSearchUpdated {\n      ...TemplateSearchInfo\n    }\n  }\n": typeof types.TemplateSearchUpdatedDocument,
     "\n  fragment TradingSignalLogInfo on TradingSignalLog {\n    id\n    address\n    platform\n    eventLogs {\n      ...PerpTradingEventLogInfo\n    }\n  }\n": typeof types.TradingSignalLogInfoFragmentDoc,
     "\n  query getTradingSignalLogs {\n    getTradingSignalLogs {\n      ...TradingSignalLogInfo\n    }\n  }\n": typeof types.GetTradingSignalLogsDocument,
     "\n  mutation registerTradingSignalLog($address: String!, $platform: Platform!) {\n    registerTradingSignalLog(address: $address, platform: $platform) {\n      ...TradingSignalLogInfo\n    }\n  }\n": typeof types.RegisterTradingSignalLogDocument,
@@ -148,6 +190,39 @@ type Documents = {
     "\n  mutation getToken(\n    $singature: String!\n    $timestamp: String!\n    $walletAddress: String!\n  ) {\n    getToken(\n      signature: $singature\n      timestamp: $timestamp\n      walletAddress: $walletAddress\n    ) {\n      accessToken\n    }\n  }\n": typeof types.GetTokenDocument,
     "\n  mutation changeUserPermission($address: String!, $permission: String!) {\n    changeUserPermission(address: $address, permission: $permission) {\n      address\n      permission\n      allowAuto\n      budget\n      ratio\n      followerContractId\n    }\n  }\n": typeof types.ChangeUserPermissionDocument,
     "\n  mutation allowAuto(\n    $address: String!\n    $allowAuto: Boolean!\n    $budget: Float!\n    $ratio: Float!\n    $followerContractId: Int!\n  ) {\n    allowAuto(\n      address: $address\n      allowAuto: $allowAuto\n      budget: $budget\n      ratio: $ratio\n      followerContractId: $followerContractId\n    ) {\n      address\n      permission\n      allowAuto\n      budget\n      ratio\n      followerContractId\n    }\n  }\n": typeof types.AllowAutoDocument,
+    "\n  fragment ValidationPipelineInfo on ValidationPipeline {\n    id\n    name\n    backtestTaskId\n    status\n    currentStep\n    paretoConfig\n    wfaConfig\n    robustnessConfig\n    wfaCompletedWindows\n    robustnessCompletedSteps\n    totalCandidates\n    passedThreshold\n    paretoOptimal\n    passedWfa\n    userSelected\n    passedRobustness\n    finalApproved\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n": typeof types.ValidationPipelineInfoFragmentDoc,
+    "\n  fragment ValidationCandidateInfo on ValidationCandidate {\n    id\n    pipelineId\n    resultId\n    configId\n    status\n    thresholdPassed\n    paretoRank\n    dominatedBy\n    wfaConsistency\n    wfaPassed\n    wfaWindowResults\n    userSelectedAt\n    userNotes\n    robustnessScore\n    robustnessPassed\n    robustnessStepResults\n    finalApprovedAt\n    finalNotes\n    createdAt\n    updatedAt\n  }\n": typeof types.ValidationCandidateInfoFragmentDoc,
+    "\n  fragment BacktestResultSummary on BacktestResult {\n    id\n    taskId\n    configId\n    runDate\n    totalTrades\n    winningTrades\n    losingTrades\n    winRate\n    totalPnlUsdt\n    totalPnlPercent\n    maxDrawdownUsdt\n    maxDrawdownPercent\n    sharpeRatio\n    profitFactor\n    strategyConfig\n  }\n": typeof types.BacktestResultSummaryFragmentDoc,
+    "\n  query ValidationPipelines($filter: ValidationPipelineFilterInput) {\n    validationPipelines(filter: $filter) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.ValidationPipelinesDocument,
+    "\n  query ValidationPipeline($id: ID!) {\n    validationPipeline(id: $id) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.ValidationPipelineDocument,
+    "\n  query ValidationPipelineWithCandidates($id: ID!) {\n    validationPipelineWithCandidates(id: $id) {\n      id\n      name\n      backtestTaskId\n      status\n      currentStep\n      paretoConfig\n      wfaConfig\n      robustnessConfig\n      wfaCompletedWindows\n      robustnessCompletedSteps\n      totalCandidates\n      passedThreshold\n      paretoOptimal\n      passedWfa\n      userSelected\n      passedRobustness\n      finalApproved\n      createdAt\n      startedAt\n      completedAt\n      errorMessage\n      candidates {\n        ...ValidationCandidateInfo\n      }\n    }\n  }\n": typeof types.ValidationPipelineWithCandidatesDocument,
+    "\n  query ValidationCandidatesByStatus($filter: ValidationCandidateFilterInput!) {\n    validationCandidatesByStatus(filter: $filter) {\n      totalCount\n      candidates {\n        id\n        pipelineId\n        resultId\n        configId\n        status\n        thresholdPassed\n        paretoRank\n        dominatedBy\n        wfaConsistency\n        wfaPassed\n        wfaWindowResults\n        userSelectedAt\n        userNotes\n        robustnessScore\n        robustnessPassed\n        robustnessStepResults\n        finalApprovedAt\n        finalNotes\n        createdAt\n        updatedAt\n        result {\n          ...BacktestResultSummary\n        }\n      }\n    }\n  }\n": typeof types.ValidationCandidatesByStatusDocument,
+    "\n  query ValidationCandidate($id: ID!) {\n    validationCandidate(id: $id) {\n      id\n      pipelineId\n      resultId\n      configId\n      status\n      thresholdPassed\n      paretoRank\n      dominatedBy\n      wfaConsistency\n      wfaPassed\n      wfaWindowResults\n      userSelectedAt\n      userNotes\n      robustnessScore\n      robustnessPassed\n      robustnessStepResults\n      finalApprovedAt\n      finalNotes\n      createdAt\n      updatedAt\n      result {\n        ...BacktestResultSummary\n      }\n    }\n  }\n": typeof types.ValidationCandidateDocument,
+    "\n  query ValidationPipelineStats {\n    validationPipelineStats {\n      created\n      inProgress\n      awaitingUser\n      completed\n      failed\n      cancelled\n    }\n  }\n": typeof types.ValidationPipelineStatsDocument,
+    "\n  query ThresholdSteps($pipelineId: ID!) {\n    thresholdSteps(pipelineId: $pipelineId) {\n      id\n      pipelineId\n      stepOrder\n      metricName\n      operator\n      value\n      candidatesBefore\n      candidatesAfter\n      createdAt\n    }\n  }\n": typeof types.ThresholdStepsDocument,
+    "\n  query ParetoSteps($pipelineId: ID!) {\n    paretoSteps(pipelineId: $pipelineId) {\n      id\n      pipelineId\n      stepOrder\n      metrics\n      candidatesBefore\n      candidatesAfter\n      createdAt\n    }\n  }\n": typeof types.ParetoStepsDocument,
+    "\n  mutation CreateValidationPipeline($input: CreateValidationPipelineInput!) {\n    createValidationPipeline(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.CreateValidationPipelineDocument,
+    "\n  mutation ApplyThresholdStep($input: ApplyThresholdStepInput!) {\n    applyThresholdStep(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.ApplyThresholdStepDocument,
+    "\n  mutation PreviewThresholdStep($input: PreviewThresholdStepInput!) {\n    previewThresholdStep(input: $input) {\n      currentCount\n      survivingCount\n      eliminatedCount\n    }\n  }\n": typeof types.PreviewThresholdStepDocument,
+    "\n  mutation RemoveThresholdStep($pipelineId: ID!, $stepId: ID!) {\n    removeThresholdStep(pipelineId: $pipelineId, stepId: $stepId) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.RemoveThresholdStepDocument,
+    "\n  mutation CompleteThresholdStep($pipelineId: ID!) {\n    completeThresholdStep(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.CompleteThresholdStepDocument,
+    "\n  mutation PreviewParetoStep($input: PreviewParetoStepInput!) {\n    previewParetoStep(input: $input) {\n      currentCount\n      optimalCount\n      dominatedCount\n    }\n  }\n": typeof types.PreviewParetoStepDocument,
+    "\n  mutation ApplyParetoStep($input: ApplyParetoStepInput!) {\n    applyParetoStep(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.ApplyParetoStepDocument,
+    "\n  mutation RemoveParetoStep($pipelineId: ID!, $stepId: ID!) {\n    removeParetoStep(pipelineId: $pipelineId, stepId: $stepId) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.RemoveParetoStepDocument,
+    "\n  mutation CompleteParetoStep($pipelineId: ID!) {\n    completeParetoStep(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.CompleteParetoStepDocument,
+    "\n  mutation StartWfa($input: StartWfaInput!) {\n    startWfa(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.StartWfaDocument,
+    "\n  mutation PauseWfa($pipelineId: ID!) {\n    pauseWfa(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.PauseWfaDocument,
+    "\n  mutation ResumeWfa($pipelineId: ID!) {\n    resumeWfa(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.ResumeWfaDocument,
+    "\n  mutation CompleteWfa($pipelineId: ID!) {\n    completeWfa(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.CompleteWfaDocument,
+    "\n  mutation SubmitUserSelection($pipelineId: ID!, $input: UserSelectionInput!) {\n    submitUserSelection(pipelineId: $pipelineId, input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.SubmitUserSelectionDocument,
+    "\n  mutation ConfigureRobustness($input: ConfigureRobustnessInput!) {\n    configureRobustness(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.ConfigureRobustnessDocument,
+    "\n  mutation RunRobustnessStep($input: RunRobustnessStepInput!) {\n    runRobustnessStep(input: $input) {\n      candidateId\n      configId\n      stepIndex\n      sharpeRatio\n      totalPnl\n      maxDrawdown\n      status\n      errorMessage\n    }\n  }\n": typeof types.RunRobustnessStepDocument,
+    "\n  mutation CompleteRobustness($pipelineId: ID!) {\n    completeRobustness(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.CompleteRobustnessDocument,
+    "\n  mutation SubmitFinalApproval($pipelineId: ID!, $input: FinalApprovalInput!) {\n    submitFinalApproval(pipelineId: $pipelineId, input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.SubmitFinalApprovalDocument,
+    "\n  mutation CancelValidationPipeline($id: ID!) {\n    cancelValidationPipeline(id: $id) {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.CancelValidationPipelineDocument,
+    "\n  mutation DeleteValidationPipeline($id: ID!) {\n    deleteValidationPipeline(id: $id)\n  }\n": typeof types.DeleteValidationPipelineDocument,
+    "\n  subscription ValidationPipelineUpdated {\n    validationPipelineUpdated {\n      ...ValidationPipelineInfo\n    }\n  }\n": typeof types.ValidationPipelineUpdatedDocument,
+    "\n  subscription ValidationCandidateUpdated {\n    validationCandidateUpdated {\n      ...ValidationCandidateInfo\n    }\n  }\n": typeof types.ValidationCandidateUpdatedDocument,
     "\n  fragment WalletAccountInfo on WalletAccount {\n    id\n    userId\n    address\n    tags {\n      ...TagInfo\n    }\n  }\n": typeof types.WalletAccountInfoFragmentDoc,
     "\n  query getAllWalletAccounts {\n    getAllWalletAccounts {\n      ...WalletAccountInfo\n    }\n  }\n": typeof types.GetAllWalletAccountsDocument,
     "\n  mutation addWalletAccount($input: AddUserInput!) {\n    addWalletAccount(input: $input) {\n      ...WalletAccountInfo\n    }\n  }\n": typeof types.AddWalletAccountDocument,
@@ -167,6 +242,28 @@ const documents: Documents = {
     "\n  mutation stopBot($id: Int!) {\n    stopBot(id: $id)\n  }\n": types.StopBotDocument,
     "\n  subscription botCreated($userId: String!) {\n    botCreated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": types.BotCreatedDocument,
     "\n  subscription botUpdated($userId: String!) {\n    botUpdated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": types.BotUpdatedDocument,
+    "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    searchStrategy\n    optimizationMetrics\n    trials\n    bestConfigIds\n    optimizerPid\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    templateId\n    templateSearchId\n  }\n": types.BacktestTaskInfoFragmentDoc,
+    "\n  fragment BacktestResultInfo on BacktestResult {\n    id\n    taskId\n    configId\n    runDate\n    strategyConfig\n    totalTrades\n    winningTrades\n    losingTrades\n    winRate\n    totalPnlUsdt\n    totalPnlPercent\n    maxDrawdownUsdt\n    maxDrawdownPercent\n    sharpeRatio\n    profitFactor\n    resultFolder\n    createdAt\n  }\n": types.BacktestResultInfoFragmentDoc,
+    "\n  query BacktestComponents {\n    backtestComponents {\n      signals {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      filters {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      risk {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      exits {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      platforms {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n    }\n  }\n": types.BacktestComponentsDocument,
+    "\n  query BacktestTask($id: ID!) {\n    backtestTask(id: $id) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.BacktestTaskDocument,
+    "\n  query BacktestTasks(\n    $status: BacktestTaskStatus\n    $symbol: String\n    $limit: Int\n    $offset: Int\n  ) {\n    backtestTasks(\n      status: $status\n      symbol: $symbol\n      limit: $limit\n      offset: $offset\n    ) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.BacktestTasksDocument,
+    "\n  query BacktestTaskStats {\n    backtestTaskStats {\n      await\n      processing\n      done\n      failed\n    }\n  }\n": types.BacktestTaskStatsDocument,
+    "\n  query BacktestResults(\n    $taskId: ID!\n    $sortBy: String\n    $sortOrder: String\n    $limit: Int\n    $offset: Int\n  ) {\n    backtestResults(\n      taskId: $taskId\n      sortBy: $sortBy\n      sortOrder: $sortOrder\n      limit: $limit\n      offset: $offset\n    ) {\n      ...BacktestResultInfo\n    }\n  }\n": types.BacktestResultsDocument,
+    "\n  query BacktestResultDates($taskId: ID!) {\n    backtestResultDates(taskId: $taskId)\n  }\n": types.BacktestResultDatesDocument,
+    "\n  query BacktestResultFolders($taskId: ID!, $date: String!) {\n    backtestResultFolders(taskId: $taskId, date: $date) {\n      taskId\n      date\n      configId\n      files\n    }\n  }\n": types.BacktestResultFoldersDocument,
+    "\n  query BacktestResultFile(\n    $taskId: ID!\n    $date: String!\n    $configId: String!\n    $fileName: String!\n  ) {\n    backtestResultFile(\n      taskId: $taskId\n      date: $date\n      configId: $configId\n      fileName: $fileName\n    ) {\n      name\n      content\n      contentType\n      size\n      originalSize\n      isCompressed\n    }\n  }\n": types.BacktestResultFileDocument,
+    "\n  query TopBacktestResults($taskId: ID!, $metric: String, $limit: Int) {\n    topBacktestResults(taskId: $taskId, metric: $metric, limit: $limit) {\n      ...BacktestResultInfo\n    }\n  }\n": types.TopBacktestResultsDocument,
+    "\n  query OptunaDashboardStatus {\n    optunaDashboardStatus {\n      running\n      url\n    }\n  }\n": types.OptunaDashboardStatusDocument,
+    "\n  mutation CreateBacktestTask($input: CreateBacktestTaskInput!) {\n    createBacktestTask(input: $input) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.CreateBacktestTaskDocument,
+    "\n  mutation CancelBacktestTask($taskId: ID!) {\n    cancelBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.CancelBacktestTaskDocument,
+    "\n  mutation DeleteBacktestTask($taskId: ID!) {\n    deleteBacktestTask(taskId: $taskId)\n  }\n": types.DeleteBacktestTaskDocument,
+    "\n  mutation DeleteBacktestResult($resultId: ID!) {\n    deleteBacktestResult(resultId: $resultId)\n  }\n": types.DeleteBacktestResultDocument,
+    "\n  mutation RetryBacktestTask($taskId: ID!) {\n    retryBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.RetryBacktestTaskDocument,
+    "\n  mutation StartOptunaDashboard($port: Int) {\n    startOptunaDashboard(port: $port) {\n      running\n      url\n    }\n  }\n": types.StartOptunaDashboardDocument,
+    "\n  mutation ResumeBacktestTask($taskId: ID!, $additionalTrials: Int) {\n    resumeBacktestTask(taskId: $taskId, additionalTrials: $additionalTrials) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.ResumeBacktestTaskDocument,
+    "\n  mutation StopOptunaDashboard {\n    stopOptunaDashboard\n  }\n": types.StopOptunaDashboardDocument,
+    "\n  subscription BacktestTaskUpdated {\n    backtestTaskUpdated {\n      ...BacktestTaskInfo\n    }\n  }\n": types.BacktestTaskUpdatedDocument,
+    "\n  subscription BacktestResultCreated {\n    backtestResultCreated {\n      ...BacktestResultInfo\n    }\n  }\n": types.BacktestResultCreatedDocument,
     "\n  fragment ContractInfo on Contract {\n    id\n    chainId\n    address\n    backendUrl\n    description\n    isTestnet\n    status\n    fromBlock\n    lastBlockNumber\n    lastLeaderboardBlockNumber\n    platform\n    toBlock\n    version\n  }\n": types.ContractInfoFragmentDoc,
     "\n  query getAllContracts {\n    getAllContracts {\n      ...ContractInfo\n    }\n  }\n": types.GetAllContractsDocument,
     "\n  query getAdaptionStatus {\n    getAdaptionStatus\n  }\n": types.GetAdaptionStatusDocument,
@@ -251,6 +348,14 @@ const documents: Documents = {
     "\n  query getAllStrategyMetadata {\n    getAllStrategyMetadata {\n      ...StrategyMetadataInfo\n    }\n  }\n": types.GetAllStrategyMetadataDocument,
     "\n  query getAllStrategy {\n    getAllStrategy {\n      ...StrategyInfo\n    }\n  }\n": types.GetAllStrategyDocument,
     "\n  mutation updateStrategy($id: Int!, $input: UpdateStrategyInput!) {\n    updateStrategy(id: $id, input: $input) {\n      ...StrategyInfo\n    }\n  }\n": types.UpdateStrategyDocument,
+    "\n  fragment StrategyTemplateInfo on StrategyTemplate {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n  }\n": types.StrategyTemplateInfoFragmentDoc,
+    "\n  fragment StrategyTemplateWithStatsInfo on StrategyTemplateWithStats {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n    totalSearches\n    totalTasks\n  }\n": types.StrategyTemplateWithStatsInfoFragmentDoc,
+    "\n  query StrategyTemplate($id: ID!) {\n    strategyTemplate(id: $id) {\n      ...StrategyTemplateInfo\n    }\n  }\n": types.StrategyTemplateDocument,
+    "\n  query StrategyTemplates(\n    $category: StrategyCategory\n    $isActive: Boolean\n    $limit: Int\n    $offset: Int\n  ) {\n    strategyTemplates(\n      category: $category\n      isActive: $isActive\n      limit: $limit\n      offset: $offset\n    ) {\n      ...StrategyTemplateInfo\n    }\n  }\n": types.StrategyTemplatesDocument,
+    "\n  query StrategyTemplateWithStats($id: ID!) {\n    strategyTemplateWithStats(id: $id) {\n      ...StrategyTemplateWithStatsInfo\n    }\n  }\n": types.StrategyTemplateWithStatsDocument,
+    "\n  mutation CreateStrategyTemplate($input: CreateStrategyTemplateInput!) {\n    createStrategyTemplate(input: $input) {\n      ...StrategyTemplateInfo\n    }\n  }\n": types.CreateStrategyTemplateDocument,
+    "\n  mutation UpdateStrategyTemplate($input: UpdateStrategyTemplateInput!) {\n    updateStrategyTemplate(input: $input) {\n      ...StrategyTemplateInfo\n    }\n  }\n": types.UpdateStrategyTemplateDocument,
+    "\n  mutation DeleteStrategyTemplate($id: ID!) {\n    deleteStrategyTemplate(id: $id)\n  }\n": types.DeleteStrategyTemplateDocument,
     "\n  mutation pauseSystem {\n    pauseSystem\n  }\n": types.PauseSystemDocument,
     "\n  mutation resumeSystem($password: String) {\n    resumeSystem(password: $password)\n  }\n": types.ResumeSystemDocument,
     "\n  mutation killSubService($service: String!) {\n    killSubService(service: $service)\n  }\n": types.KillSubServiceDocument,
@@ -279,6 +384,18 @@ const documents: Documents = {
     "\n  mutation stopTask($id: Int!) {\n    stopTask(id: $id)\n  }\n": types.StopTaskDocument,
     "\n  subscription taskCreated($userId: String!) {\n    taskCreated(userId: $userId) {\n      ...TaskBackwardDetailsInfo\n    }\n  }\n": types.TaskCreatedDocument,
     "\n  subscription taskUpdated($userId: String!) {\n    taskUpdated(userId: $userId) {\n      ...TaskBackwardDetailsInfo\n    }\n  }\n": types.TaskUpdatedDocument,
+    "\n  fragment TemplateSearchInfo on TemplateSearch {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n": types.TemplateSearchInfoFragmentDoc,
+    "\n  fragment TemplateSearchWithTemplateInfo on TemplateSearchWithTemplate {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    template {\n      ...StrategyTemplateInfo\n    }\n  }\n": types.TemplateSearchWithTemplateInfoFragmentDoc,
+    "\n  fragment TemplateSearchWithTaskInfo on TemplateSearchWithTask {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    template {\n      ...StrategyTemplateInfo\n    }\n    task {\n      ...BacktestTaskInfo\n    }\n  }\n": types.TemplateSearchWithTaskInfoFragmentDoc,
+    "\n  query TemplateSearch($id: ID!) {\n    templateSearch(id: $id) {\n      ...TemplateSearchInfo\n    }\n  }\n": types.TemplateSearchDocument,
+    "\n  query TemplateSearchWithTask($id: ID!) {\n    templateSearchWithTask(id: $id) {\n      ...TemplateSearchWithTaskInfo\n    }\n  }\n": types.TemplateSearchWithTaskDocument,
+    "\n  query TemplateSearches($filter: TemplateSearchFilterInput) {\n    templateSearches(filter: $filter) {\n      ...TemplateSearchWithTemplateInfo\n    }\n  }\n": types.TemplateSearchesDocument,
+    "\n  query TemplateSearchStats {\n    templateSearchStats {\n      await\n      processing\n      done\n      failed\n      cancelled\n    }\n  }\n": types.TemplateSearchStatsDocument,
+    "\n  query TaskByTemplateSearch($searchId: ID!) {\n    taskByTemplateSearch(searchId: $searchId) {\n      ...BacktestTaskInfo\n    }\n  }\n": types.TaskByTemplateSearchDocument,
+    "\n  mutation CreateTemplateSearch($input: CreateTemplateSearchInput!) {\n    createTemplateSearch(input: $input) {\n      ...TemplateSearchWithTemplateInfo\n    }\n  }\n": types.CreateTemplateSearchDocument,
+    "\n  mutation CancelTemplateSearch($id: ID!) {\n    cancelTemplateSearch(id: $id) {\n      ...TemplateSearchInfo\n    }\n  }\n": types.CancelTemplateSearchDocument,
+    "\n  mutation DeleteTemplateSearch($id: ID!) {\n    deleteTemplateSearch(id: $id)\n  }\n": types.DeleteTemplateSearchDocument,
+    "\n  subscription TemplateSearchUpdated {\n    templateSearchUpdated {\n      ...TemplateSearchInfo\n    }\n  }\n": types.TemplateSearchUpdatedDocument,
     "\n  fragment TradingSignalLogInfo on TradingSignalLog {\n    id\n    address\n    platform\n    eventLogs {\n      ...PerpTradingEventLogInfo\n    }\n  }\n": types.TradingSignalLogInfoFragmentDoc,
     "\n  query getTradingSignalLogs {\n    getTradingSignalLogs {\n      ...TradingSignalLogInfo\n    }\n  }\n": types.GetTradingSignalLogsDocument,
     "\n  mutation registerTradingSignalLog($address: String!, $platform: Platform!) {\n    registerTradingSignalLog(address: $address, platform: $platform) {\n      ...TradingSignalLogInfo\n    }\n  }\n": types.RegisterTradingSignalLogDocument,
@@ -289,6 +406,39 @@ const documents: Documents = {
     "\n  mutation getToken(\n    $singature: String!\n    $timestamp: String!\n    $walletAddress: String!\n  ) {\n    getToken(\n      signature: $singature\n      timestamp: $timestamp\n      walletAddress: $walletAddress\n    ) {\n      accessToken\n    }\n  }\n": types.GetTokenDocument,
     "\n  mutation changeUserPermission($address: String!, $permission: String!) {\n    changeUserPermission(address: $address, permission: $permission) {\n      address\n      permission\n      allowAuto\n      budget\n      ratio\n      followerContractId\n    }\n  }\n": types.ChangeUserPermissionDocument,
     "\n  mutation allowAuto(\n    $address: String!\n    $allowAuto: Boolean!\n    $budget: Float!\n    $ratio: Float!\n    $followerContractId: Int!\n  ) {\n    allowAuto(\n      address: $address\n      allowAuto: $allowAuto\n      budget: $budget\n      ratio: $ratio\n      followerContractId: $followerContractId\n    ) {\n      address\n      permission\n      allowAuto\n      budget\n      ratio\n      followerContractId\n    }\n  }\n": types.AllowAutoDocument,
+    "\n  fragment ValidationPipelineInfo on ValidationPipeline {\n    id\n    name\n    backtestTaskId\n    status\n    currentStep\n    paretoConfig\n    wfaConfig\n    robustnessConfig\n    wfaCompletedWindows\n    robustnessCompletedSteps\n    totalCandidates\n    passedThreshold\n    paretoOptimal\n    passedWfa\n    userSelected\n    passedRobustness\n    finalApproved\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n": types.ValidationPipelineInfoFragmentDoc,
+    "\n  fragment ValidationCandidateInfo on ValidationCandidate {\n    id\n    pipelineId\n    resultId\n    configId\n    status\n    thresholdPassed\n    paretoRank\n    dominatedBy\n    wfaConsistency\n    wfaPassed\n    wfaWindowResults\n    userSelectedAt\n    userNotes\n    robustnessScore\n    robustnessPassed\n    robustnessStepResults\n    finalApprovedAt\n    finalNotes\n    createdAt\n    updatedAt\n  }\n": types.ValidationCandidateInfoFragmentDoc,
+    "\n  fragment BacktestResultSummary on BacktestResult {\n    id\n    taskId\n    configId\n    runDate\n    totalTrades\n    winningTrades\n    losingTrades\n    winRate\n    totalPnlUsdt\n    totalPnlPercent\n    maxDrawdownUsdt\n    maxDrawdownPercent\n    sharpeRatio\n    profitFactor\n    strategyConfig\n  }\n": types.BacktestResultSummaryFragmentDoc,
+    "\n  query ValidationPipelines($filter: ValidationPipelineFilterInput) {\n    validationPipelines(filter: $filter) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.ValidationPipelinesDocument,
+    "\n  query ValidationPipeline($id: ID!) {\n    validationPipeline(id: $id) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.ValidationPipelineDocument,
+    "\n  query ValidationPipelineWithCandidates($id: ID!) {\n    validationPipelineWithCandidates(id: $id) {\n      id\n      name\n      backtestTaskId\n      status\n      currentStep\n      paretoConfig\n      wfaConfig\n      robustnessConfig\n      wfaCompletedWindows\n      robustnessCompletedSteps\n      totalCandidates\n      passedThreshold\n      paretoOptimal\n      passedWfa\n      userSelected\n      passedRobustness\n      finalApproved\n      createdAt\n      startedAt\n      completedAt\n      errorMessage\n      candidates {\n        ...ValidationCandidateInfo\n      }\n    }\n  }\n": types.ValidationPipelineWithCandidatesDocument,
+    "\n  query ValidationCandidatesByStatus($filter: ValidationCandidateFilterInput!) {\n    validationCandidatesByStatus(filter: $filter) {\n      totalCount\n      candidates {\n        id\n        pipelineId\n        resultId\n        configId\n        status\n        thresholdPassed\n        paretoRank\n        dominatedBy\n        wfaConsistency\n        wfaPassed\n        wfaWindowResults\n        userSelectedAt\n        userNotes\n        robustnessScore\n        robustnessPassed\n        robustnessStepResults\n        finalApprovedAt\n        finalNotes\n        createdAt\n        updatedAt\n        result {\n          ...BacktestResultSummary\n        }\n      }\n    }\n  }\n": types.ValidationCandidatesByStatusDocument,
+    "\n  query ValidationCandidate($id: ID!) {\n    validationCandidate(id: $id) {\n      id\n      pipelineId\n      resultId\n      configId\n      status\n      thresholdPassed\n      paretoRank\n      dominatedBy\n      wfaConsistency\n      wfaPassed\n      wfaWindowResults\n      userSelectedAt\n      userNotes\n      robustnessScore\n      robustnessPassed\n      robustnessStepResults\n      finalApprovedAt\n      finalNotes\n      createdAt\n      updatedAt\n      result {\n        ...BacktestResultSummary\n      }\n    }\n  }\n": types.ValidationCandidateDocument,
+    "\n  query ValidationPipelineStats {\n    validationPipelineStats {\n      created\n      inProgress\n      awaitingUser\n      completed\n      failed\n      cancelled\n    }\n  }\n": types.ValidationPipelineStatsDocument,
+    "\n  query ThresholdSteps($pipelineId: ID!) {\n    thresholdSteps(pipelineId: $pipelineId) {\n      id\n      pipelineId\n      stepOrder\n      metricName\n      operator\n      value\n      candidatesBefore\n      candidatesAfter\n      createdAt\n    }\n  }\n": types.ThresholdStepsDocument,
+    "\n  query ParetoSteps($pipelineId: ID!) {\n    paretoSteps(pipelineId: $pipelineId) {\n      id\n      pipelineId\n      stepOrder\n      metrics\n      candidatesBefore\n      candidatesAfter\n      createdAt\n    }\n  }\n": types.ParetoStepsDocument,
+    "\n  mutation CreateValidationPipeline($input: CreateValidationPipelineInput!) {\n    createValidationPipeline(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.CreateValidationPipelineDocument,
+    "\n  mutation ApplyThresholdStep($input: ApplyThresholdStepInput!) {\n    applyThresholdStep(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.ApplyThresholdStepDocument,
+    "\n  mutation PreviewThresholdStep($input: PreviewThresholdStepInput!) {\n    previewThresholdStep(input: $input) {\n      currentCount\n      survivingCount\n      eliminatedCount\n    }\n  }\n": types.PreviewThresholdStepDocument,
+    "\n  mutation RemoveThresholdStep($pipelineId: ID!, $stepId: ID!) {\n    removeThresholdStep(pipelineId: $pipelineId, stepId: $stepId) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.RemoveThresholdStepDocument,
+    "\n  mutation CompleteThresholdStep($pipelineId: ID!) {\n    completeThresholdStep(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.CompleteThresholdStepDocument,
+    "\n  mutation PreviewParetoStep($input: PreviewParetoStepInput!) {\n    previewParetoStep(input: $input) {\n      currentCount\n      optimalCount\n      dominatedCount\n    }\n  }\n": types.PreviewParetoStepDocument,
+    "\n  mutation ApplyParetoStep($input: ApplyParetoStepInput!) {\n    applyParetoStep(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.ApplyParetoStepDocument,
+    "\n  mutation RemoveParetoStep($pipelineId: ID!, $stepId: ID!) {\n    removeParetoStep(pipelineId: $pipelineId, stepId: $stepId) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.RemoveParetoStepDocument,
+    "\n  mutation CompleteParetoStep($pipelineId: ID!) {\n    completeParetoStep(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.CompleteParetoStepDocument,
+    "\n  mutation StartWfa($input: StartWfaInput!) {\n    startWfa(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.StartWfaDocument,
+    "\n  mutation PauseWfa($pipelineId: ID!) {\n    pauseWfa(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.PauseWfaDocument,
+    "\n  mutation ResumeWfa($pipelineId: ID!) {\n    resumeWfa(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.ResumeWfaDocument,
+    "\n  mutation CompleteWfa($pipelineId: ID!) {\n    completeWfa(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.CompleteWfaDocument,
+    "\n  mutation SubmitUserSelection($pipelineId: ID!, $input: UserSelectionInput!) {\n    submitUserSelection(pipelineId: $pipelineId, input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.SubmitUserSelectionDocument,
+    "\n  mutation ConfigureRobustness($input: ConfigureRobustnessInput!) {\n    configureRobustness(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.ConfigureRobustnessDocument,
+    "\n  mutation RunRobustnessStep($input: RunRobustnessStepInput!) {\n    runRobustnessStep(input: $input) {\n      candidateId\n      configId\n      stepIndex\n      sharpeRatio\n      totalPnl\n      maxDrawdown\n      status\n      errorMessage\n    }\n  }\n": types.RunRobustnessStepDocument,
+    "\n  mutation CompleteRobustness($pipelineId: ID!) {\n    completeRobustness(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.CompleteRobustnessDocument,
+    "\n  mutation SubmitFinalApproval($pipelineId: ID!, $input: FinalApprovalInput!) {\n    submitFinalApproval(pipelineId: $pipelineId, input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.SubmitFinalApprovalDocument,
+    "\n  mutation CancelValidationPipeline($id: ID!) {\n    cancelValidationPipeline(id: $id) {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.CancelValidationPipelineDocument,
+    "\n  mutation DeleteValidationPipeline($id: ID!) {\n    deleteValidationPipeline(id: $id)\n  }\n": types.DeleteValidationPipelineDocument,
+    "\n  subscription ValidationPipelineUpdated {\n    validationPipelineUpdated {\n      ...ValidationPipelineInfo\n    }\n  }\n": types.ValidationPipelineUpdatedDocument,
+    "\n  subscription ValidationCandidateUpdated {\n    validationCandidateUpdated {\n      ...ValidationCandidateInfo\n    }\n  }\n": types.ValidationCandidateUpdatedDocument,
     "\n  fragment WalletAccountInfo on WalletAccount {\n    id\n    userId\n    address\n    tags {\n      ...TagInfo\n    }\n  }\n": types.WalletAccountInfoFragmentDoc,
     "\n  query getAllWalletAccounts {\n    getAllWalletAccounts {\n      ...WalletAccountInfo\n    }\n  }\n": types.GetAllWalletAccountsDocument,
     "\n  mutation addWalletAccount($input: AddUserInput!) {\n    addWalletAccount(input: $input) {\n      ...WalletAccountInfo\n    }\n  }\n": types.AddWalletAccountDocument,
@@ -358,6 +508,94 @@ export function graphql(source: "\n  subscription botCreated($userId: String!) {
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  subscription botUpdated($userId: String!) {\n    botUpdated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n"): (typeof documents)["\n  subscription botUpdated($userId: String!) {\n    botUpdated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    searchStrategy\n    optimizationMetrics\n    trials\n    bestConfigIds\n    optimizerPid\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    templateId\n    templateSearchId\n  }\n"): (typeof documents)["\n  fragment BacktestTaskInfo on BacktestTask {\n    id\n    name\n    symbol\n    status\n    totalConfigs\n    processedConfigs\n    currentConfig\n    startDate\n    endDate\n    interval\n    optimizationParams\n    searchStrategy\n    optimizationMetrics\n    trials\n    bestConfigIds\n    optimizerPid\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    templateId\n    templateSearchId\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment BacktestResultInfo on BacktestResult {\n    id\n    taskId\n    configId\n    runDate\n    strategyConfig\n    totalTrades\n    winningTrades\n    losingTrades\n    winRate\n    totalPnlUsdt\n    totalPnlPercent\n    maxDrawdownUsdt\n    maxDrawdownPercent\n    sharpeRatio\n    profitFactor\n    resultFolder\n    createdAt\n  }\n"): (typeof documents)["\n  fragment BacktestResultInfo on BacktestResult {\n    id\n    taskId\n    configId\n    runDate\n    strategyConfig\n    totalTrades\n    winningTrades\n    losingTrades\n    winRate\n    totalPnlUsdt\n    totalPnlPercent\n    maxDrawdownUsdt\n    maxDrawdownPercent\n    sharpeRatio\n    profitFactor\n    resultFolder\n    createdAt\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BacktestComponents {\n    backtestComponents {\n      signals {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      filters {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      risk {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      exits {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      platforms {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query BacktestComponents {\n    backtestComponents {\n      signals {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      filters {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      risk {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      exits {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n      platforms {\n        name\n        description\n        params {\n          name\n          type\n          required\n          default\n          description\n          min\n          max\n          options {\n            label\n            value\n          }\n        }\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BacktestTask($id: ID!) {\n    backtestTask(id: $id) {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  query BacktestTask($id: ID!) {\n    backtestTask(id: $id) {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BacktestTasks(\n    $status: BacktestTaskStatus\n    $symbol: String\n    $limit: Int\n    $offset: Int\n  ) {\n    backtestTasks(\n      status: $status\n      symbol: $symbol\n      limit: $limit\n      offset: $offset\n    ) {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  query BacktestTasks(\n    $status: BacktestTaskStatus\n    $symbol: String\n    $limit: Int\n    $offset: Int\n  ) {\n    backtestTasks(\n      status: $status\n      symbol: $symbol\n      limit: $limit\n      offset: $offset\n    ) {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BacktestTaskStats {\n    backtestTaskStats {\n      await\n      processing\n      done\n      failed\n    }\n  }\n"): (typeof documents)["\n  query BacktestTaskStats {\n    backtestTaskStats {\n      await\n      processing\n      done\n      failed\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BacktestResults(\n    $taskId: ID!\n    $sortBy: String\n    $sortOrder: String\n    $limit: Int\n    $offset: Int\n  ) {\n    backtestResults(\n      taskId: $taskId\n      sortBy: $sortBy\n      sortOrder: $sortOrder\n      limit: $limit\n      offset: $offset\n    ) {\n      ...BacktestResultInfo\n    }\n  }\n"): (typeof documents)["\n  query BacktestResults(\n    $taskId: ID!\n    $sortBy: String\n    $sortOrder: String\n    $limit: Int\n    $offset: Int\n  ) {\n    backtestResults(\n      taskId: $taskId\n      sortBy: $sortBy\n      sortOrder: $sortOrder\n      limit: $limit\n      offset: $offset\n    ) {\n      ...BacktestResultInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BacktestResultDates($taskId: ID!) {\n    backtestResultDates(taskId: $taskId)\n  }\n"): (typeof documents)["\n  query BacktestResultDates($taskId: ID!) {\n    backtestResultDates(taskId: $taskId)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BacktestResultFolders($taskId: ID!, $date: String!) {\n    backtestResultFolders(taskId: $taskId, date: $date) {\n      taskId\n      date\n      configId\n      files\n    }\n  }\n"): (typeof documents)["\n  query BacktestResultFolders($taskId: ID!, $date: String!) {\n    backtestResultFolders(taskId: $taskId, date: $date) {\n      taskId\n      date\n      configId\n      files\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query BacktestResultFile(\n    $taskId: ID!\n    $date: String!\n    $configId: String!\n    $fileName: String!\n  ) {\n    backtestResultFile(\n      taskId: $taskId\n      date: $date\n      configId: $configId\n      fileName: $fileName\n    ) {\n      name\n      content\n      contentType\n      size\n      originalSize\n      isCompressed\n    }\n  }\n"): (typeof documents)["\n  query BacktestResultFile(\n    $taskId: ID!\n    $date: String!\n    $configId: String!\n    $fileName: String!\n  ) {\n    backtestResultFile(\n      taskId: $taskId\n      date: $date\n      configId: $configId\n      fileName: $fileName\n    ) {\n      name\n      content\n      contentType\n      size\n      originalSize\n      isCompressed\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query TopBacktestResults($taskId: ID!, $metric: String, $limit: Int) {\n    topBacktestResults(taskId: $taskId, metric: $metric, limit: $limit) {\n      ...BacktestResultInfo\n    }\n  }\n"): (typeof documents)["\n  query TopBacktestResults($taskId: ID!, $metric: String, $limit: Int) {\n    topBacktestResults(taskId: $taskId, metric: $metric, limit: $limit) {\n      ...BacktestResultInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query OptunaDashboardStatus {\n    optunaDashboardStatus {\n      running\n      url\n    }\n  }\n"): (typeof documents)["\n  query OptunaDashboardStatus {\n    optunaDashboardStatus {\n      running\n      url\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateBacktestTask($input: CreateBacktestTaskInput!) {\n    createBacktestTask(input: $input) {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CreateBacktestTask($input: CreateBacktestTaskInput!) {\n    createBacktestTask(input: $input) {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CancelBacktestTask($taskId: ID!) {\n    cancelBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CancelBacktestTask($taskId: ID!) {\n    cancelBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation DeleteBacktestTask($taskId: ID!) {\n    deleteBacktestTask(taskId: $taskId)\n  }\n"): (typeof documents)["\n  mutation DeleteBacktestTask($taskId: ID!) {\n    deleteBacktestTask(taskId: $taskId)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation DeleteBacktestResult($resultId: ID!) {\n    deleteBacktestResult(resultId: $resultId)\n  }\n"): (typeof documents)["\n  mutation DeleteBacktestResult($resultId: ID!) {\n    deleteBacktestResult(resultId: $resultId)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation RetryBacktestTask($taskId: ID!) {\n    retryBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  mutation RetryBacktestTask($taskId: ID!) {\n    retryBacktestTask(taskId: $taskId) {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation StartOptunaDashboard($port: Int) {\n    startOptunaDashboard(port: $port) {\n      running\n      url\n    }\n  }\n"): (typeof documents)["\n  mutation StartOptunaDashboard($port: Int) {\n    startOptunaDashboard(port: $port) {\n      running\n      url\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation ResumeBacktestTask($taskId: ID!, $additionalTrials: Int) {\n    resumeBacktestTask(taskId: $taskId, additionalTrials: $additionalTrials) {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  mutation ResumeBacktestTask($taskId: ID!, $additionalTrials: Int) {\n    resumeBacktestTask(taskId: $taskId, additionalTrials: $additionalTrials) {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation StopOptunaDashboard {\n    stopOptunaDashboard\n  }\n"): (typeof documents)["\n  mutation StopOptunaDashboard {\n    stopOptunaDashboard\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  subscription BacktestTaskUpdated {\n    backtestTaskUpdated {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  subscription BacktestTaskUpdated {\n    backtestTaskUpdated {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  subscription BacktestResultCreated {\n    backtestResultCreated {\n      ...BacktestResultInfo\n    }\n  }\n"): (typeof documents)["\n  subscription BacktestResultCreated {\n    backtestResultCreated {\n      ...BacktestResultInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -697,6 +935,38 @@ export function graphql(source: "\n  mutation updateStrategy($id: Int!, $input: 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  fragment StrategyTemplateInfo on StrategyTemplate {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n  }\n"): (typeof documents)["\n  fragment StrategyTemplateInfo on StrategyTemplate {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment StrategyTemplateWithStatsInfo on StrategyTemplateWithStats {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n    totalSearches\n    totalTasks\n  }\n"): (typeof documents)["\n  fragment StrategyTemplateWithStatsInfo on StrategyTemplateWithStats {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n    totalSearches\n    totalTasks\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query StrategyTemplate($id: ID!) {\n    strategyTemplate(id: $id) {\n      ...StrategyTemplateInfo\n    }\n  }\n"): (typeof documents)["\n  query StrategyTemplate($id: ID!) {\n    strategyTemplate(id: $id) {\n      ...StrategyTemplateInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query StrategyTemplates(\n    $category: StrategyCategory\n    $isActive: Boolean\n    $limit: Int\n    $offset: Int\n  ) {\n    strategyTemplates(\n      category: $category\n      isActive: $isActive\n      limit: $limit\n      offset: $offset\n    ) {\n      ...StrategyTemplateInfo\n    }\n  }\n"): (typeof documents)["\n  query StrategyTemplates(\n    $category: StrategyCategory\n    $isActive: Boolean\n    $limit: Int\n    $offset: Int\n  ) {\n    strategyTemplates(\n      category: $category\n      isActive: $isActive\n      limit: $limit\n      offset: $offset\n    ) {\n      ...StrategyTemplateInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query StrategyTemplateWithStats($id: ID!) {\n    strategyTemplateWithStats(id: $id) {\n      ...StrategyTemplateWithStatsInfo\n    }\n  }\n"): (typeof documents)["\n  query StrategyTemplateWithStats($id: ID!) {\n    strategyTemplateWithStats(id: $id) {\n      ...StrategyTemplateWithStatsInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateStrategyTemplate($input: CreateStrategyTemplateInput!) {\n    createStrategyTemplate(input: $input) {\n      ...StrategyTemplateInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CreateStrategyTemplate($input: CreateStrategyTemplateInput!) {\n    createStrategyTemplate(input: $input) {\n      ...StrategyTemplateInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation UpdateStrategyTemplate($input: UpdateStrategyTemplateInput!) {\n    updateStrategyTemplate(input: $input) {\n      ...StrategyTemplateInfo\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateStrategyTemplate($input: UpdateStrategyTemplateInput!) {\n    updateStrategyTemplate(input: $input) {\n      ...StrategyTemplateInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation DeleteStrategyTemplate($id: ID!) {\n    deleteStrategyTemplate(id: $id)\n  }\n"): (typeof documents)["\n  mutation DeleteStrategyTemplate($id: ID!) {\n    deleteStrategyTemplate(id: $id)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  mutation pauseSystem {\n    pauseSystem\n  }\n"): (typeof documents)["\n  mutation pauseSystem {\n    pauseSystem\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -809,6 +1079,54 @@ export function graphql(source: "\n  subscription taskUpdated($userId: String!) 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  fragment TemplateSearchInfo on TemplateSearch {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n"): (typeof documents)["\n  fragment TemplateSearchInfo on TemplateSearch {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment TemplateSearchWithTemplateInfo on TemplateSearchWithTemplate {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    template {\n      ...StrategyTemplateInfo\n    }\n  }\n"): (typeof documents)["\n  fragment TemplateSearchWithTemplateInfo on TemplateSearchWithTemplate {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    template {\n      ...StrategyTemplateInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment TemplateSearchWithTaskInfo on TemplateSearchWithTask {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    template {\n      ...StrategyTemplateInfo\n    }\n    task {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  fragment TemplateSearchWithTaskInfo on TemplateSearchWithTask {\n    id\n    name\n    templateId\n    symbol\n    startDate\n    endDate\n    interval\n    searchStrategy\n    status\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n    template {\n      ...StrategyTemplateInfo\n    }\n    task {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query TemplateSearch($id: ID!) {\n    templateSearch(id: $id) {\n      ...TemplateSearchInfo\n    }\n  }\n"): (typeof documents)["\n  query TemplateSearch($id: ID!) {\n    templateSearch(id: $id) {\n      ...TemplateSearchInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query TemplateSearchWithTask($id: ID!) {\n    templateSearchWithTask(id: $id) {\n      ...TemplateSearchWithTaskInfo\n    }\n  }\n"): (typeof documents)["\n  query TemplateSearchWithTask($id: ID!) {\n    templateSearchWithTask(id: $id) {\n      ...TemplateSearchWithTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query TemplateSearches($filter: TemplateSearchFilterInput) {\n    templateSearches(filter: $filter) {\n      ...TemplateSearchWithTemplateInfo\n    }\n  }\n"): (typeof documents)["\n  query TemplateSearches($filter: TemplateSearchFilterInput) {\n    templateSearches(filter: $filter) {\n      ...TemplateSearchWithTemplateInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query TemplateSearchStats {\n    templateSearchStats {\n      await\n      processing\n      done\n      failed\n      cancelled\n    }\n  }\n"): (typeof documents)["\n  query TemplateSearchStats {\n    templateSearchStats {\n      await\n      processing\n      done\n      failed\n      cancelled\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query TaskByTemplateSearch($searchId: ID!) {\n    taskByTemplateSearch(searchId: $searchId) {\n      ...BacktestTaskInfo\n    }\n  }\n"): (typeof documents)["\n  query TaskByTemplateSearch($searchId: ID!) {\n    taskByTemplateSearch(searchId: $searchId) {\n      ...BacktestTaskInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateTemplateSearch($input: CreateTemplateSearchInput!) {\n    createTemplateSearch(input: $input) {\n      ...TemplateSearchWithTemplateInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CreateTemplateSearch($input: CreateTemplateSearchInput!) {\n    createTemplateSearch(input: $input) {\n      ...TemplateSearchWithTemplateInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CancelTemplateSearch($id: ID!) {\n    cancelTemplateSearch(id: $id) {\n      ...TemplateSearchInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CancelTemplateSearch($id: ID!) {\n    cancelTemplateSearch(id: $id) {\n      ...TemplateSearchInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation DeleteTemplateSearch($id: ID!) {\n    deleteTemplateSearch(id: $id)\n  }\n"): (typeof documents)["\n  mutation DeleteTemplateSearch($id: ID!) {\n    deleteTemplateSearch(id: $id)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  subscription TemplateSearchUpdated {\n    templateSearchUpdated {\n      ...TemplateSearchInfo\n    }\n  }\n"): (typeof documents)["\n  subscription TemplateSearchUpdated {\n    templateSearchUpdated {\n      ...TemplateSearchInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  fragment TradingSignalLogInfo on TradingSignalLog {\n    id\n    address\n    platform\n    eventLogs {\n      ...PerpTradingEventLogInfo\n    }\n  }\n"): (typeof documents)["\n  fragment TradingSignalLogInfo on TradingSignalLog {\n    id\n    address\n    platform\n    eventLogs {\n      ...PerpTradingEventLogInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -846,6 +1164,138 @@ export function graphql(source: "\n  mutation changeUserPermission($address: Str
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation allowAuto(\n    $address: String!\n    $allowAuto: Boolean!\n    $budget: Float!\n    $ratio: Float!\n    $followerContractId: Int!\n  ) {\n    allowAuto(\n      address: $address\n      allowAuto: $allowAuto\n      budget: $budget\n      ratio: $ratio\n      followerContractId: $followerContractId\n    ) {\n      address\n      permission\n      allowAuto\n      budget\n      ratio\n      followerContractId\n    }\n  }\n"): (typeof documents)["\n  mutation allowAuto(\n    $address: String!\n    $allowAuto: Boolean!\n    $budget: Float!\n    $ratio: Float!\n    $followerContractId: Int!\n  ) {\n    allowAuto(\n      address: $address\n      allowAuto: $allowAuto\n      budget: $budget\n      ratio: $ratio\n      followerContractId: $followerContractId\n    ) {\n      address\n      permission\n      allowAuto\n      budget\n      ratio\n      followerContractId\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment ValidationPipelineInfo on ValidationPipeline {\n    id\n    name\n    backtestTaskId\n    status\n    currentStep\n    paretoConfig\n    wfaConfig\n    robustnessConfig\n    wfaCompletedWindows\n    robustnessCompletedSteps\n    totalCandidates\n    passedThreshold\n    paretoOptimal\n    passedWfa\n    userSelected\n    passedRobustness\n    finalApproved\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n"): (typeof documents)["\n  fragment ValidationPipelineInfo on ValidationPipeline {\n    id\n    name\n    backtestTaskId\n    status\n    currentStep\n    paretoConfig\n    wfaConfig\n    robustnessConfig\n    wfaCompletedWindows\n    robustnessCompletedSteps\n    totalCandidates\n    passedThreshold\n    paretoOptimal\n    passedWfa\n    userSelected\n    passedRobustness\n    finalApproved\n    createdAt\n    startedAt\n    completedAt\n    errorMessage\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment ValidationCandidateInfo on ValidationCandidate {\n    id\n    pipelineId\n    resultId\n    configId\n    status\n    thresholdPassed\n    paretoRank\n    dominatedBy\n    wfaConsistency\n    wfaPassed\n    wfaWindowResults\n    userSelectedAt\n    userNotes\n    robustnessScore\n    robustnessPassed\n    robustnessStepResults\n    finalApprovedAt\n    finalNotes\n    createdAt\n    updatedAt\n  }\n"): (typeof documents)["\n  fragment ValidationCandidateInfo on ValidationCandidate {\n    id\n    pipelineId\n    resultId\n    configId\n    status\n    thresholdPassed\n    paretoRank\n    dominatedBy\n    wfaConsistency\n    wfaPassed\n    wfaWindowResults\n    userSelectedAt\n    userNotes\n    robustnessScore\n    robustnessPassed\n    robustnessStepResults\n    finalApprovedAt\n    finalNotes\n    createdAt\n    updatedAt\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  fragment BacktestResultSummary on BacktestResult {\n    id\n    taskId\n    configId\n    runDate\n    totalTrades\n    winningTrades\n    losingTrades\n    winRate\n    totalPnlUsdt\n    totalPnlPercent\n    maxDrawdownUsdt\n    maxDrawdownPercent\n    sharpeRatio\n    profitFactor\n    strategyConfig\n  }\n"): (typeof documents)["\n  fragment BacktestResultSummary on BacktestResult {\n    id\n    taskId\n    configId\n    runDate\n    totalTrades\n    winningTrades\n    losingTrades\n    winRate\n    totalPnlUsdt\n    totalPnlPercent\n    maxDrawdownUsdt\n    maxDrawdownPercent\n    sharpeRatio\n    profitFactor\n    strategyConfig\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ValidationPipelines($filter: ValidationPipelineFilterInput) {\n    validationPipelines(filter: $filter) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  query ValidationPipelines($filter: ValidationPipelineFilterInput) {\n    validationPipelines(filter: $filter) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ValidationPipeline($id: ID!) {\n    validationPipeline(id: $id) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  query ValidationPipeline($id: ID!) {\n    validationPipeline(id: $id) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ValidationPipelineWithCandidates($id: ID!) {\n    validationPipelineWithCandidates(id: $id) {\n      id\n      name\n      backtestTaskId\n      status\n      currentStep\n      paretoConfig\n      wfaConfig\n      robustnessConfig\n      wfaCompletedWindows\n      robustnessCompletedSteps\n      totalCandidates\n      passedThreshold\n      paretoOptimal\n      passedWfa\n      userSelected\n      passedRobustness\n      finalApproved\n      createdAt\n      startedAt\n      completedAt\n      errorMessage\n      candidates {\n        ...ValidationCandidateInfo\n      }\n    }\n  }\n"): (typeof documents)["\n  query ValidationPipelineWithCandidates($id: ID!) {\n    validationPipelineWithCandidates(id: $id) {\n      id\n      name\n      backtestTaskId\n      status\n      currentStep\n      paretoConfig\n      wfaConfig\n      robustnessConfig\n      wfaCompletedWindows\n      robustnessCompletedSteps\n      totalCandidates\n      passedThreshold\n      paretoOptimal\n      passedWfa\n      userSelected\n      passedRobustness\n      finalApproved\n      createdAt\n      startedAt\n      completedAt\n      errorMessage\n      candidates {\n        ...ValidationCandidateInfo\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ValidationCandidatesByStatus($filter: ValidationCandidateFilterInput!) {\n    validationCandidatesByStatus(filter: $filter) {\n      totalCount\n      candidates {\n        id\n        pipelineId\n        resultId\n        configId\n        status\n        thresholdPassed\n        paretoRank\n        dominatedBy\n        wfaConsistency\n        wfaPassed\n        wfaWindowResults\n        userSelectedAt\n        userNotes\n        robustnessScore\n        robustnessPassed\n        robustnessStepResults\n        finalApprovedAt\n        finalNotes\n        createdAt\n        updatedAt\n        result {\n          ...BacktestResultSummary\n        }\n      }\n    }\n  }\n"): (typeof documents)["\n  query ValidationCandidatesByStatus($filter: ValidationCandidateFilterInput!) {\n    validationCandidatesByStatus(filter: $filter) {\n      totalCount\n      candidates {\n        id\n        pipelineId\n        resultId\n        configId\n        status\n        thresholdPassed\n        paretoRank\n        dominatedBy\n        wfaConsistency\n        wfaPassed\n        wfaWindowResults\n        userSelectedAt\n        userNotes\n        robustnessScore\n        robustnessPassed\n        robustnessStepResults\n        finalApprovedAt\n        finalNotes\n        createdAt\n        updatedAt\n        result {\n          ...BacktestResultSummary\n        }\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ValidationCandidate($id: ID!) {\n    validationCandidate(id: $id) {\n      id\n      pipelineId\n      resultId\n      configId\n      status\n      thresholdPassed\n      paretoRank\n      dominatedBy\n      wfaConsistency\n      wfaPassed\n      wfaWindowResults\n      userSelectedAt\n      userNotes\n      robustnessScore\n      robustnessPassed\n      robustnessStepResults\n      finalApprovedAt\n      finalNotes\n      createdAt\n      updatedAt\n      result {\n        ...BacktestResultSummary\n      }\n    }\n  }\n"): (typeof documents)["\n  query ValidationCandidate($id: ID!) {\n    validationCandidate(id: $id) {\n      id\n      pipelineId\n      resultId\n      configId\n      status\n      thresholdPassed\n      paretoRank\n      dominatedBy\n      wfaConsistency\n      wfaPassed\n      wfaWindowResults\n      userSelectedAt\n      userNotes\n      robustnessScore\n      robustnessPassed\n      robustnessStepResults\n      finalApprovedAt\n      finalNotes\n      createdAt\n      updatedAt\n      result {\n        ...BacktestResultSummary\n      }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ValidationPipelineStats {\n    validationPipelineStats {\n      created\n      inProgress\n      awaitingUser\n      completed\n      failed\n      cancelled\n    }\n  }\n"): (typeof documents)["\n  query ValidationPipelineStats {\n    validationPipelineStats {\n      created\n      inProgress\n      awaitingUser\n      completed\n      failed\n      cancelled\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ThresholdSteps($pipelineId: ID!) {\n    thresholdSteps(pipelineId: $pipelineId) {\n      id\n      pipelineId\n      stepOrder\n      metricName\n      operator\n      value\n      candidatesBefore\n      candidatesAfter\n      createdAt\n    }\n  }\n"): (typeof documents)["\n  query ThresholdSteps($pipelineId: ID!) {\n    thresholdSteps(pipelineId: $pipelineId) {\n      id\n      pipelineId\n      stepOrder\n      metricName\n      operator\n      value\n      candidatesBefore\n      candidatesAfter\n      createdAt\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query ParetoSteps($pipelineId: ID!) {\n    paretoSteps(pipelineId: $pipelineId) {\n      id\n      pipelineId\n      stepOrder\n      metrics\n      candidatesBefore\n      candidatesAfter\n      createdAt\n    }\n  }\n"): (typeof documents)["\n  query ParetoSteps($pipelineId: ID!) {\n    paretoSteps(pipelineId: $pipelineId) {\n      id\n      pipelineId\n      stepOrder\n      metrics\n      candidatesBefore\n      candidatesAfter\n      createdAt\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CreateValidationPipeline($input: CreateValidationPipelineInput!) {\n    createValidationPipeline(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CreateValidationPipeline($input: CreateValidationPipelineInput!) {\n    createValidationPipeline(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation ApplyThresholdStep($input: ApplyThresholdStepInput!) {\n    applyThresholdStep(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  mutation ApplyThresholdStep($input: ApplyThresholdStepInput!) {\n    applyThresholdStep(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation PreviewThresholdStep($input: PreviewThresholdStepInput!) {\n    previewThresholdStep(input: $input) {\n      currentCount\n      survivingCount\n      eliminatedCount\n    }\n  }\n"): (typeof documents)["\n  mutation PreviewThresholdStep($input: PreviewThresholdStepInput!) {\n    previewThresholdStep(input: $input) {\n      currentCount\n      survivingCount\n      eliminatedCount\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation RemoveThresholdStep($pipelineId: ID!, $stepId: ID!) {\n    removeThresholdStep(pipelineId: $pipelineId, stepId: $stepId) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  mutation RemoveThresholdStep($pipelineId: ID!, $stepId: ID!) {\n    removeThresholdStep(pipelineId: $pipelineId, stepId: $stepId) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CompleteThresholdStep($pipelineId: ID!) {\n    completeThresholdStep(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CompleteThresholdStep($pipelineId: ID!) {\n    completeThresholdStep(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation PreviewParetoStep($input: PreviewParetoStepInput!) {\n    previewParetoStep(input: $input) {\n      currentCount\n      optimalCount\n      dominatedCount\n    }\n  }\n"): (typeof documents)["\n  mutation PreviewParetoStep($input: PreviewParetoStepInput!) {\n    previewParetoStep(input: $input) {\n      currentCount\n      optimalCount\n      dominatedCount\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation ApplyParetoStep($input: ApplyParetoStepInput!) {\n    applyParetoStep(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  mutation ApplyParetoStep($input: ApplyParetoStepInput!) {\n    applyParetoStep(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation RemoveParetoStep($pipelineId: ID!, $stepId: ID!) {\n    removeParetoStep(pipelineId: $pipelineId, stepId: $stepId) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  mutation RemoveParetoStep($pipelineId: ID!, $stepId: ID!) {\n    removeParetoStep(pipelineId: $pipelineId, stepId: $stepId) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CompleteParetoStep($pipelineId: ID!) {\n    completeParetoStep(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CompleteParetoStep($pipelineId: ID!) {\n    completeParetoStep(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation StartWfa($input: StartWfaInput!) {\n    startWfa(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  mutation StartWfa($input: StartWfaInput!) {\n    startWfa(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation PauseWfa($pipelineId: ID!) {\n    pauseWfa(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  mutation PauseWfa($pipelineId: ID!) {\n    pauseWfa(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation ResumeWfa($pipelineId: ID!) {\n    resumeWfa(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  mutation ResumeWfa($pipelineId: ID!) {\n    resumeWfa(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CompleteWfa($pipelineId: ID!) {\n    completeWfa(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CompleteWfa($pipelineId: ID!) {\n    completeWfa(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation SubmitUserSelection($pipelineId: ID!, $input: UserSelectionInput!) {\n    submitUserSelection(pipelineId: $pipelineId, input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  mutation SubmitUserSelection($pipelineId: ID!, $input: UserSelectionInput!) {\n    submitUserSelection(pipelineId: $pipelineId, input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation ConfigureRobustness($input: ConfigureRobustnessInput!) {\n    configureRobustness(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  mutation ConfigureRobustness($input: ConfigureRobustnessInput!) {\n    configureRobustness(input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation RunRobustnessStep($input: RunRobustnessStepInput!) {\n    runRobustnessStep(input: $input) {\n      candidateId\n      configId\n      stepIndex\n      sharpeRatio\n      totalPnl\n      maxDrawdown\n      status\n      errorMessage\n    }\n  }\n"): (typeof documents)["\n  mutation RunRobustnessStep($input: RunRobustnessStepInput!) {\n    runRobustnessStep(input: $input) {\n      candidateId\n      configId\n      stepIndex\n      sharpeRatio\n      totalPnl\n      maxDrawdown\n      status\n      errorMessage\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CompleteRobustness($pipelineId: ID!) {\n    completeRobustness(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CompleteRobustness($pipelineId: ID!) {\n    completeRobustness(pipelineId: $pipelineId) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation SubmitFinalApproval($pipelineId: ID!, $input: FinalApprovalInput!) {\n    submitFinalApproval(pipelineId: $pipelineId, input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  mutation SubmitFinalApproval($pipelineId: ID!, $input: FinalApprovalInput!) {\n    submitFinalApproval(pipelineId: $pipelineId, input: $input) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation CancelValidationPipeline($id: ID!) {\n    cancelValidationPipeline(id: $id) {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  mutation CancelValidationPipeline($id: ID!) {\n    cancelValidationPipeline(id: $id) {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation DeleteValidationPipeline($id: ID!) {\n    deleteValidationPipeline(id: $id)\n  }\n"): (typeof documents)["\n  mutation DeleteValidationPipeline($id: ID!) {\n    deleteValidationPipeline(id: $id)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  subscription ValidationPipelineUpdated {\n    validationPipelineUpdated {\n      ...ValidationPipelineInfo\n    }\n  }\n"): (typeof documents)["\n  subscription ValidationPipelineUpdated {\n    validationPipelineUpdated {\n      ...ValidationPipelineInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  subscription ValidationCandidateUpdated {\n    validationCandidateUpdated {\n      ...ValidationCandidateInfo\n    }\n  }\n"): (typeof documents)["\n  subscription ValidationCandidateUpdated {\n    validationCandidateUpdated {\n      ...ValidationCandidateInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
