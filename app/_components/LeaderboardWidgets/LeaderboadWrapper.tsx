@@ -1,8 +1,14 @@
 "use client";
 
-import { ChangeEventHandler, useState } from "react";
+import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DatePicker, Select, SelectItem, Input } from "@heroui/react";
+import {
+  Button,
+  DatePicker,
+  Select,
+  SelectItem,
+  Input,
+} from "@heroui/react";
 import { parseDate, now } from "@internationalized/date";
 import dayjs from "dayjs";
 import { getServerTimezone } from "@/utils";
@@ -15,30 +21,57 @@ import { EventLogsModalButton } from "./EventLogsModalButton";
 
 const availableKind = [PnlSnapshotKind.Month, PnlSnapshotKind.AllTime];
 
+type LeaderboardParams = {
+  kind: PnlSnapshotKind;
+  platform: Platform;
+  date: Date;
+  minSlope: number;
+  minR2: number;
+};
+
+const defaultParams: LeaderboardParams = {
+  kind: PnlSnapshotKind.Month,
+  platform: Platform.Gns,
+  date: now(getServerTimezone()).toDate(),
+  minSlope: 0.5,
+  minR2: 0.85,
+};
+
 export function LeaderboadWrapper() {
   const router = useRouter();
 
-  const [kind, setKind] = useState<PnlSnapshotKind>(PnlSnapshotKind.Month);
-  const [platform, setPlatform] = useState<Platform>(Platform.Gns);
-  const [date, setDate] = useState<Date>(now(getServerTimezone()).toDate());
+  const [draft, setDraft] = useState<LeaderboardParams>(defaultParams);
+  const [applied, setApplied] = useState<LeaderboardParams>(defaultParams);
   const [searchAddress, setSearchAddress] = useState<string>("");
 
-  const handleChangeParams = (kind: PnlSnapshotKind, platform: Platform) => {
-    const kindQuery = kind ? `kind=${kind}` : null;
-    const platformQuery = platform ? `platform=${platform}` : null;
+  const hasChanges = useMemo(() => {
+    return (
+      draft.kind !== applied.kind ||
+      draft.platform !== applied.platform ||
+      dayjs(draft.date).format("YYYY-MM-DD") !==
+        dayjs(applied.date).format("YYYY-MM-DD") ||
+      draft.minSlope !== applied.minSlope ||
+      draft.minR2 !== applied.minR2
+    );
+  }, [draft, applied]);
+
+  const handleApply = useCallback(() => {
+    setApplied(draft);
+
+    const kindQuery = draft.kind ? `kind=${draft.kind}` : null;
+    const platformQuery = draft.platform
+      ? `platform=${draft.platform}`
+      : null;
 
     router.push(
-      `/leaderboards?${kindQuery || ""}${kindQuery && platformQuery && "&"}${platformQuery || ""}`,
+      `/leaderboards?${kindQuery || ""}${kindQuery && platformQuery ? "&" : ""}${platformQuery || ""}`,
     );
-  };
+  }, [draft, router]);
 
   const handleChangeKind: ChangeEventHandler<HTMLSelectElement> = (event) => {
     const value = event.target.value;
-
     if (value.trim() !== "") {
-      setKind(value as PnlSnapshotKind);
-
-      handleChangeParams(value as PnlSnapshotKind, platform);
+      setDraft((prev) => ({ ...prev, kind: value as PnlSnapshotKind }));
     }
   };
 
@@ -46,11 +79,8 @@ export function LeaderboadWrapper() {
     event,
   ) => {
     const value = event.target.value;
-
     if (value.trim() !== "") {
-      setPlatform(value as Platform);
-
-      handleChangeParams(kind, value as Platform);
+      setDraft((prev) => ({ ...prev, platform: value as Platform }));
     }
   };
 
@@ -61,7 +91,7 @@ export function LeaderboadWrapper() {
           <Select
             variant="underlined"
             label="Platform"
-            selectedKeys={platform ? [platform] : undefined}
+            selectedKeys={draft.platform ? [draft.platform] : undefined}
             onChange={handleChangePlatform}
             selectionMode="single"
             className="w-[200px] font-mono"
@@ -74,7 +104,7 @@ export function LeaderboadWrapper() {
           <Select
             variant="underlined"
             label="Before"
-            selectedKeys={kind ? [kind] : undefined}
+            selectedKeys={draft.kind ? [draft.kind] : undefined}
             onChange={handleChangeKind}
             selectionMode="single"
             className="w-[200px] font-mono"
@@ -87,9 +117,15 @@ export function LeaderboadWrapper() {
           <DatePicker
             className="max-w-[284px]"
             label="Pick a past date"
-            value={parseDate(dayjs(date).format("YYYY-MM-DD")) as any}
+            value={
+              parseDate(dayjs(draft.date).format("YYYY-MM-DD")) as any
+            }
             onChange={(date) =>
-              date && (setDate(date.toDate(getServerTimezone())) as any)
+              date &&
+              setDraft((prev) => ({
+                ...prev,
+                date: date.toDate(getServerTimezone()),
+              }))
             }
             minValue={parseDate("2024-11-01")}
             maxValue={parseDate(dayjs().format("YYYY-MM-DD"))}
@@ -98,20 +134,57 @@ export function LeaderboadWrapper() {
 
         <div className="flex items-center gap-4">
           <Input
+            className="w-fit"
+            variant="underlined"
+            label="Min Slope"
+            type="number"
+            value={`${draft.minSlope}`}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value);
+              if (!Number.isNaN(v))
+                setDraft((prev) => ({ ...prev, minSlope: v }));
+            }}
+          />
+
+          <Input
+            className="w-fit"
+            variant="underlined"
+            label="Min R2"
+            type="number"
+            value={`${draft.minR2}`}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value);
+              if (!Number.isNaN(v))
+                setDraft((prev) => ({ ...prev, minR2: v }));
+            }}
+          />
+
+          <Input
             placeholder="Search by address"
             value={searchAddress}
             onChange={(e) => setSearchAddress(e.target.value)}
           />
 
-          <EventLogsModalButton address={searchAddress} platform={platform} />
+          <EventLogsModalButton
+            address={searchAddress}
+            platform={draft.platform}
+          />
+
+          {hasChanges && (
+            <Button color="primary" onClick={handleApply}>
+              Apply
+            </Button>
+          )}
         </div>
       </div>
 
       <LeaderboardV2
-        date={date}
-        kind={kind}
-        platform={platform}
+        date={applied.date}
+        kind={applied.kind}
+        platform={applied.platform}
         hideTags={false}
+        minSlope={applied.minSlope}
+        minR2={applied.minR2}
       />
     </div>
   );

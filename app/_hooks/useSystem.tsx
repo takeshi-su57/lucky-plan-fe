@@ -64,6 +64,12 @@ export const GET_IS_SAFE_APP_DOCUMENT = graphql(`
   }
 `);
 
+export const CLEAN_DB_DOCUMENT = graphql(`
+  mutation cleanDB {
+    cleanDB
+  }
+`);
+
 export const GET_SERVER_TIME_DOCUMENT = graphql(`
   query getServerTime {
     getServerTime {
@@ -291,4 +297,24 @@ export function useStartSubService() {
   }, [data, error, enqueueSnackbar]);
 
   return { startSubService, loading };
+}
+
+export function useCleanDB() {
+  const [cleanDB, { data, error, loading }] = useMutation(CLEAN_DB_DOCUMENT);
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (data?.cleanDB && !error) {
+      enqueueSnackbar("Success at cleaning DB!", {
+        variant: "success",
+      });
+    } else if (error) {
+      enqueueSnackbar("Failed at cleaning DB!", {
+        variant: "error",
+      });
+    }
+  }, [data, error, enqueueSnackbar]);
+
+  return { cleanDB, loading };
 }

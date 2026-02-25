@@ -110,11 +110,11 @@ export function PositionItem({
           <b>{`$${getPriceStr(collateral, 0)}`}</b> x <b>{`${leverage}x`}</b>
         </span>
 
-        <span className="text-xs italic text-neutral-400/60">
+        <span className="text-xs text-neutral-400/60 italic">
           {convertMillisToReadableTime(dayjs().diff(dayjs(date)))} ago
         </span>
 
-        <span className="text-xs italic text-neutral-400/60">
+        <span className="text-xs text-neutral-400/60 italic">
           Date: {dayjs(date).format("MMM DD HH:mm")}
         </span>
 

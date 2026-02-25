@@ -12,17 +12,24 @@ import { LabeledChip } from "@/components/chips/LabeledChip";
 import { WithdrawModal } from "./WithdrawModal";
 import { FollowerDetail, PnlSnapshotKind } from "@/graphql/gql/graphql";
 import { useGetPrices } from "@/app/_hooks/useGetPrices";
+import { useCollateralUsdPrices } from "@/app/_hooks/useCollateralUsdPrices";
+import { getCollateral } from "@/web3/gns/v10/configs";
 
 export type FollowerSummaryProps = {
   contractId: number;
+  chainId: number;
+  diamondAddress: string;
   followers: FollowerDetail[];
 };
 
 export function FollowerSummary({
   contractId,
+  chainId,
+  diamondAddress,
   followers,
 }: FollowerSummaryProps) {
   const prices = useGetPrices();
+  const collateralUsdPrices = useCollateralUsdPrices(chainId, diamondAddress);
 
   const generateFollower = useGenerateFollower();
 
@@ -34,59 +41,88 @@ export function FollowerSummary({
     });
   };
 
-  const summary = followers
-    .flatMap((follower) => follower.trades)
-    .map((trade) => {
-      const data = JSON.parse(trade.params);
+  const summary = useMemo(() => {
+    return followers
+      .flatMap((follower) => follower.trades)
+      .map((trade) => {
+        const data = JSON.parse(trade.params);
 
-      const currentPrice = prices?.[data?.pairIndex || 0];
-      const openPrice = data?.openPrice ? Number(data.openPrice) / 1e10 : 0;
-      const collateralAmount = data?.collateralAmount
-        ? Number(data.collateralAmount) / 1e6
-        : 0;
+        const currentPrice = prices?.[data?.pairIndex || 0];
+        const openPrice = data?.openPrice
+          ? Number(data.openPrice) / 1e10
+          : 0;
 
-      const pnlPercentage = currentPrice
-        ? getPNLPercentage({
-            closePrice: currentPrice,
-            openPrice,
-            leverage: data.leverage / 1000,
-            long: data.long,
-          })
-        : 0;
+        const tradeCollateral =
+          chainId && data?.collateralIndex
+            ? getCollateral(chainId, data.collateralIndex)
+            : null;
+        const tradePrecision = tradeCollateral
+          ? Number(tradeCollateral.precision)
+          : 1e6;
 
-      return {
-        pnls: (collateralAmount * pnlPercentage) / 100,
-        size: collateralAmount,
-      };
-    })
-    .reduce(
-      (acc, item) => {
-        return {
-          pnls: acc.pnls + item.pnls,
-          size: acc.size + item.size,
-        };
-      },
-      { pnls: 0, size: 0 },
-    );
+        const collateralAmount = data?.collateralAmount
+          ? Number(data.collateralAmount) / tradePrecision
+          : 0;
 
-  const { totalEarned, totalLost, totalEth, totalUsdc } = useMemo(() => {
-    return followers.reduce(
-      (acc, item) => {
-        const accUSDPnl =
-          item.pnlSnapshots.find(
-            (item) => item.kind === PnlSnapshotKind.AllTime,
-          )?.accUSDPnl || 0;
+        const usdPrice = collateralUsdPrices[data?.collateralIndex] || 0;
+
+        const pnlPercentage = currentPrice
+          ? getPNLPercentage({
+              closePrice: currentPrice,
+              openPrice,
+              leverage: data.leverage / 1000,
+              long: data.long,
+            })
+          : 0;
 
         return {
-          totalEarned: acc.totalEarned + (accUSDPnl > 0 ? accUSDPnl : 0),
-          totalLost: acc.totalLost + (accUSDPnl < 0 ? accUSDPnl : 0),
-          totalEth: acc.totalEth + Number(item.ethBalance || 0) / 1e18,
-          totalUsdc: acc.totalUsdc + Number(item.usdcBalance || 0) / 1e6,
+          pnls: ((collateralAmount * pnlPercentage) / 100) * usdPrice,
+          size: collateralAmount * usdPrice,
         };
-      },
-      { totalEarned: 0, totalLost: 0, totalEth: 0, totalUsdc: 0 },
-    );
-  }, [followers]);
+      })
+      .reduce(
+        (acc, item) => {
+          return {
+            pnls: acc.pnls + item.pnls,
+            size: acc.size + item.size,
+          };
+        },
+        { pnls: 0, size: 0 },
+      );
+  }, [followers, prices, chainId, collateralUsdPrices]);
+
+  const { totalEarned, totalLost, totalEth, totalCollateralUsd } =
+    useMemo(() => {
+      const result = followers.reduce(
+        (acc, item) => {
+          const accUSDPnl =
+            item.pnlSnapshots.find(
+              (snap) => snap.kind === PnlSnapshotKind.AllTime,
+            )?.accUSDPnl || 0;
+
+          let collateralUsd = 0;
+          for (const cb of item.collateralBalances || []) {
+            const collateral = getCollateral(chainId, cb.collateralIndex);
+            const precision = collateral
+              ? Number(collateral.precision)
+              : 1e6;
+            const amount = Number(cb.balance || 0) / precision;
+            const usdPrice = collateralUsdPrices[cb.collateralIndex] || 0;
+            collateralUsd += amount * usdPrice;
+          }
+
+          return {
+            totalEarned: acc.totalEarned + (accUSDPnl > 0 ? accUSDPnl : 0),
+            totalLost: acc.totalLost + (accUSDPnl < 0 ? accUSDPnl : 0),
+            totalEth: acc.totalEth + Number(item.ethBalance || 0) / 1e18,
+            totalCollateralUsd: acc.totalCollateralUsd + collateralUsd,
+          };
+        },
+        { totalEarned: 0, totalLost: 0, totalEth: 0, totalCollateralUsd: 0 },
+      );
+
+      return result;
+    }, [followers, chainId, collateralUsdPrices]);
 
   return (
     <div>
@@ -113,36 +149,36 @@ export function FollowerSummary({
 
         <LabeledChip
           label="Collateral"
-          value={totalUsdc.toFixed(2)}
-          unit="USDC"
+          value={getPriceStr(totalCollateralUsd)}
+          unit="USD"
           color="default"
         />
 
         <LabeledChip
           label="Earned"
           value={getPriceStr(totalEarned)}
-          unit="USDC"
+          unit="USD"
           color="warning"
         />
 
         <LabeledChip
           label="Lost"
           value={getPriceStr(totalLost)}
-          unit="USDC"
+          unit="USD"
           color="danger"
         />
 
         <LabeledChip
           label="Unrealized PNL"
-          value={summary.pnls.toFixed(1)}
-          unit="USDC"
+          value={getPriceStr(summary.pnls)}
+          unit="USD"
           color={summary.pnls >= 0 ? "warning" : "danger"}
         />
 
         <LabeledChip
           label="Locked at Gains"
           value={getPriceStr(summary.size)}
-          unit="USDC"
+          unit="USD"
           color="default"
         />
 
@@ -165,6 +201,7 @@ export function FollowerSummary({
 
       <WithdrawModal
         contractId={+contractId}
+        chainId={chainId}
         isOpen={isOpen}
         onOpenChange={onOpenChange}
       />

@@ -6,6 +6,7 @@ import {
   avalanche,
   base,
   polygon,
+  megaeth,
 } from "viem/chains";
 
 const availableChains = [
@@ -15,6 +16,7 @@ const availableChains = [
   arbitrumSepolia,
   apeChain,
   avalanche,
+  megaeth,
 ];
 
 export const publicClients = Object.fromEntries(

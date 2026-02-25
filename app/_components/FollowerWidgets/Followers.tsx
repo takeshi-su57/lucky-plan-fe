@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Address } from "viem";
 import {
   Autocomplete,
@@ -26,6 +26,11 @@ export function Followers() {
 
   const [contractId, setContractId] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+
+  const selectedContract = useMemo(
+    () => allContracts.find((c) => c.id === +(contractId || 0)) || null,
+    [allContracts, contractId],
+  );
 
   const {
     details: followerDetails,
@@ -75,9 +80,11 @@ export function Followers() {
           <Button onPress={() => refetch()}>Refetch</Button>
         </div>
 
-        {contractId ? (
+        {contractId && selectedContract?.chainId ? (
           <FollowerSummary
             contractId={+contractId}
+            chainId={selectedContract?.chainId}
+            diamondAddress={selectedContract?.address}
             followers={followerDetails}
           />
         ) : null}
@@ -92,15 +99,27 @@ export function Followers() {
           <Spinner label="Loading..." size="lg" className="mt-[100px]" />
         ) : (
           <div className="flex w-full flex-col gap-2">
-            {followerDetails.map((follower) => (
-              <Accordion key={follower.address} isCompact variant="splitted">
-                <AccordionItem
-                  title={<FollowerInfoWidget follower={follower} />}
-                >
-                  <FollowerDetails follower={follower} isChatFirst={false} />
-                </AccordionItem>
-              </Accordion>
-            ))}
+            {selectedContract?.chainId &&
+              followerDetails.map((follower) => (
+                <Accordion key={follower.address} isCompact variant="splitted">
+                  <AccordionItem
+                    title={
+                      <FollowerInfoWidget
+                        follower={follower}
+                        chainId={selectedContract?.chainId}
+                        diamondAddress={selectedContract?.address}
+                      />
+                    }
+                  >
+                    <FollowerDetails
+                      follower={follower}
+                      chainId={selectedContract?.chainId}
+                      diamondAddress={selectedContract?.address}
+                      isChatFirst={false}
+                    />
+                  </AccordionItem>
+                </Accordion>
+              ))}
           </div>
         )}
       </div>

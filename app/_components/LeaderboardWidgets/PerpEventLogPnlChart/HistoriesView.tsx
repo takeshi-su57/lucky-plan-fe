@@ -62,11 +62,11 @@ export function HistoriesView({ platform, histories }: HistoriesViewProps) {
         isDismissable={false}
         onOpenChange={onOpenChange}
         backdrop="blur"
-        classNames={{ base: "max-w-[1024px]" }}
+        classNames={{ base: "max-w-5xl" }}
       >
         <div className="flex w-full flex-col gap-4">
           <div className="flex flex-row items-center gap-2">
-            <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+            <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
               Position Activities
             </h1>
 

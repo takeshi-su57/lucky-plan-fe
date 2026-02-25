@@ -34,6 +34,7 @@ input AddUserInput {
 input AssetInput {
   address: String!
   amount: String!
+  collateralIndex: Int!
   contractId: Int!
   kind: String!
 }
@@ -506,6 +507,7 @@ type Mutation {
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
   checkLog(id: Int!): Log!
+  cleanDB: Boolean!
   cloneMission(id: Int!, manualParams: ManualParams): Boolean!
   closeMission(id: Int!, isForce: Boolean!): Boolean!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
@@ -514,6 +516,7 @@ type Mutation {
   createPlan(createPlanInput: CreatePlanInput!): Plan!
   createSLTP(input: SLTPRequestInput!): SLTPRequest!
   decreaseAllowanceToZero(
+    collateralIndex: Int!
     contractId: Int!
     followerAddress: String!
     password: String!
@@ -538,6 +541,7 @@ type Mutation {
   ): AccessToken!
   ignoreMission(id: Int!): Boolean!
   increaseAllowanceToMax(
+    collateralIndex: Int!
     contractId: Int!
     followerAddress: String!
     password: String!
@@ -584,21 +588,22 @@ type Mutation {
   upsertCategory(input: TagCategoryInput!): TagCategory!
   upsertTag(input: TagInput!): Tag!
   withdrawAllETH(input: WithdrawAllInput!): Boolean!
-  withdrawAllUSDC(input: WithdrawAllInput!): Boolean!
+  withdrawAllErc20(input: WithdrawAllInput!): Boolean!
   withdrawAsset(input: AssetInput!): Boolean!
   withdrawETHToUser(
     amount: Float!
     contractId: Int!
     password: String!
   ): Boolean!
-  withdrawPositivePnl(
-    input: WithdrawPositivePnlInput!
-  ): ContractExecutionResult!
-  withdrawUSDCToUser(
+  withdrawErc20ToUser(
     amount: Float!
+    collateralIndex: Int!
     contractId: Int!
     password: String!
   ): Boolean!
+  withdrawPositivePnl(
+    input: WithdrawPositivePnlInput!
+  ): ContractExecutionResult!
 }
 
 input OpenTradeInput {
@@ -742,11 +747,6 @@ type PnlSnapshotV2DetailsEdge {
   node: PnlSnapshotV2Details!
 }
 
-type PnlSnapshotV2DetailsForPagination {
-  data: [PnlSnapshotV2Details!]!
-  pageInfo: PnlSnapshotV2DetailsForPaginationAPIPageInfo!
-}
-
 type PnlSnapshotV2DetailsForPaginationAPIPageInfo {
   page: Int!
   total: Int!
@@ -825,15 +825,10 @@ type Query {
     dateStr: String!
     first: Int!
     kind: PnlSnapshotKind!
+    minR2: Float!
+    minSlope: Float!
     platform: Platform!
   ): PnlSnapshotV2DetailsConnection!
-  getPnlsnpashotsV2ByPagination(
-    dateStr: String!
-    kind: PnlSnapshotKind!
-    limit: Int!
-    page: Int!
-    platform: Platform!
-  ): PnlSnapshotV2DetailsForPagination!
   getServerTime: ServerTime!
   getTradingSignalLogs: [TradingSignalLog!]!
   getWalletAccountByAddress(input: GetUserByAddressInput!): WalletAccount!
@@ -1111,6 +1106,7 @@ type WholeCompressedHistoriesV2 {
 
 input WithdrawAllInput {
   address: String!
+  collateralIndex: Int!
   contractId: Int!
 }
 
