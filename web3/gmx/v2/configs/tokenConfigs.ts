@@ -13,7 +13,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/1/standard/bitcoin.png?1696501400",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/bitcoin",
       baseSymbol: "BTC",
       wrappedAddress: "0x0D2437F93Fed6EA64Ef01cCde385FB1263910C56",
     },
@@ -27,7 +26,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/1/standard/bitcoin.png?1696501400",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/bitcoin",
       baseSymbol: "BTC",
       isWrapped: true,
     },
@@ -41,7 +39,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/1/standard/bitcoin.png?1696501400",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/bitcoin",
       baseSymbol: "BTC",
       isStaking: true,
     },
@@ -54,7 +51,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/1/standard/bitcoin.png?1696501400",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/bitcoin",
       isSynthetic: true,
     },
     "0x29ee6138dd4c9815f46d34a4a1ed48f46758a402": {
@@ -66,7 +62,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isStable: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/bridged-usdc-arbitrum",
       isPermitSupported: true,
     },
     "": {
@@ -108,7 +103,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/ethereum",
       isV1Available: true,
       wrappedAddress: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
     },
@@ -121,7 +115,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       baseSymbol: "ETH",
       imageUrl:
         "https://assets.coingecko.com/coins/images/2518/thumb/weth.png?1628852295",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/ethereum",
       isV1Available: true,
       isPermitSupported: true,
       contractVersion: "1",
@@ -137,7 +130,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/26115/thumb/btcb.png?1655921693",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/wrapped-bitcoin",
       explorerUrl:
         "https://arbiscan.io/address/0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f",
       isV1Available: true,
@@ -153,7 +145,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer2", "defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/16547/small/photo_2023-03-29_21.47.00.jpeg?1680097630",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/arbitrum",
       explorerUrl:
         "https://arbiscan.io/token/0x912ce59144191c1204e64559fe8253a0e49e6548",
       isPermitSupported: true,
@@ -169,8 +160,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/4128/small/solana.png?1640133422",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/solana",
-      coingeckoSymbol: "SOL",
       explorerUrl:
         "https://arbiscan.io/token/0x2bCc6D6CdBbDC0a4071e48bb3B969b06B3330c07",
       explorerSymbol: "SOL",
@@ -189,7 +178,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/877/thumb/chainlink-new-logo.png?1547034700",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/chainlink",
       explorerUrl:
         "https://arbiscan.io/token/0xf97f4df75117a78c1a5a0dbb814af92458539fb4",
       isV1Available: true,
@@ -207,7 +195,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer2", "defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/12504/thumb/uniswap-uni.png?1600306604",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/uniswap",
       explorerUrl:
         "https://arbiscan.io/token/0xfa7f8980b0f1e64a2062791cc3b0871572f1f7f0",
       isV1Available: true,
@@ -222,7 +209,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isStable: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/bridged-usdc-arbitrum",
       explorerUrl:
         "https://arbiscan.io/token/0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
       isV1Available: true,
@@ -238,7 +224,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isV1Available: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/usd-coin",
       explorerUrl:
         "https://arbiscan.io/address/0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
       isPermitSupported: true,
@@ -253,7 +238,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
         "https://assets.coingecko.com/coins/images/325/thumb/Tether-logo.png?1598003707",
       explorerUrl:
         "https://arbiscan.io/address/0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/tether",
       isV1Available: true,
       isPermitSupported: true,
       contractVersion: "1",
@@ -266,7 +250,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isStable: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/9956/thumb/4943.png?1636636734",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/dai",
       explorerUrl:
         "https://arbiscan.io/token/0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1",
       isV1Available: true,
@@ -280,7 +263,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isStable: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/13422/small/frax_logo.png?1608476506",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/frax",
       explorerUrl:
         "https://arbiscan.io/token/0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F",
       isV1Available: true,
@@ -308,7 +290,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/1/small/bitcoin.png?1547033579",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/bitcoin",
       isPermitSupported: false,
       isPermitDisabled: true,
     },
@@ -322,7 +303,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/5/small/dogecoin.png?1547792256",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/dogecoin",
     },
     "0xb46a094bc4b0adbd801e14b9db95e05e28962764": {
       name: "Litecoin",
@@ -334,7 +314,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/2/small/litecoin.png?1547033580",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/litecoin",
     },
     "0xc14e065b0067de91534e032868f5ac6ecf2c6868": {
       name: "XRP",
@@ -345,7 +324,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png?1605778731",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/xrp",
       isSynthetic: true,
     },
     "0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a": {
@@ -358,7 +336,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/18323/small/arbit.png?1631532468",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/gmx",
       explorerUrl:
         "https://arbiscan.io/address/0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a",
     },
@@ -378,8 +355,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/825/standard/bnb-icon2_2x.png?1696501970",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/bnb",
-      coingeckoSymbol: "BNB",
       metamaskSymbol: "WBNB",
       explorerUrl:
         "https://arbiscan.io/token/0xa9004A5421372E1D83fB1f85b0fc986c912f91f3",
@@ -395,8 +370,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/1481/standard/cosmos_hub.png?1696502525",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/cosmos-hub",
-      coingeckoSymbol: "ATOM",
       isSynthetic: true,
     },
     "0x1ff7f3efbb9481cbd7db4f932cbcd4467144237c": {
@@ -409,8 +382,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/10365/standard/near.jpg?1696510367",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/near",
-      coingeckoSymbol: "NEAR",
       isSynthetic: true,
     },
     "0xba5ddd1f9d7f570dc94a51479a000e3bce967196": {
@@ -423,8 +394,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/12645/standard/AAVE.png?1696512452",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/aave",
-      coingeckoSymbol: "AAVE",
       isPermitSupported: true,
       contractVersion: "1",
     },
@@ -438,8 +407,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/12559/small/coin-round-red.png?1604021818",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/avalanche",
-      coingeckoSymbol: "AVAX",
       explorerSymbol: "WAVAX",
       isPermitSupported: true,
       isPermitDisabled: true,
@@ -454,7 +421,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer2"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/25244/standard/Optimism.png?1696524385",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/optimism",
     },
     "0x25d887ce7a35172c62febfd67a1856f20faebb00": {
       name: "Pepe",
@@ -465,7 +431,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/29850/standard/pepe-token.jpeg?1696528776",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/pepe",
       visualMultiplier: 1000,
       visualPrefix: "k",
     },
@@ -474,10 +439,10 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       symbol: "WIF",
       address: "0xA1b91fe9FD52141Ff8cac388Ce3F10BFDc1dE79d",
       decimals: 6,
+      priceDecimals: 5,
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/33566/standard/dogwifhat.jpg?1702499428",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/dogwifhat",
       isPermitSupported: true,
       isPermitDisabled: true,
       contractVersion: "1",
@@ -490,7 +455,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/30162/standard/ordi.png?1696529082",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/ordi",
       isSynthetic: true,
     },
     "0xbaf07cf91d413c0acb2b7444b9bf13b4e03c9d71": {
@@ -501,7 +465,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer2"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/2069/standard/Stacks_Logo_png.png?1709979332",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/stacks",
       isSynthetic: true,
     },
     "0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34": {
@@ -511,7 +474,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       decimals: 18,
       imageUrl:
         "https://assets.coingecko.com/coins/images/33613/standard/USDE.png?1716355685",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/ethena-usde",
       isStable: true,
     },
     "0x5979d7b546e38e414f7e9822514be443a4800529": {
@@ -521,7 +483,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       decimals: 18,
       imageUrl:
         "https://assets.coingecko.com/coins/images/18834/standard/wstETH.png?1696518295",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/wrapped-steth",
     },
     "0x3e57d02f9d196873e55727382974b02edebe6bfd": {
       name: "Shiba Inu",
@@ -533,7 +494,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/11939/standard/shiba.png?1696511800",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/shiba-inu",
       isSynthetic: true,
       visualMultiplier: 1000,
       visualPrefix: "k",
@@ -545,7 +505,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       decimals: 18,
       imageUrl:
         "https://assets.coingecko.com/coins/images/11224/standard/0x18084fba666a33d37592fa2633fd49a74dd93a88.png?1696511155",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/tbtc",
       isPermitSupported: false,
       contractVersion: "1",
     },
@@ -557,7 +516,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer2"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/37441/standard/eigen.jpg?1728023974",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/eigenlayer",
       isPermitSupported: false,
       contractVersion: "1",
     },
@@ -570,7 +528,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/30666/standard/_dD8qr3M_400x400.png?1702913020",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/sats-ordinals",
       isSynthetic: true,
       visualMultiplier: 1000000,
       visualPrefix: "m",
@@ -584,7 +541,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1", "layer2"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/32440/standard/polygon.png?1698233684",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/polygon",
       isSynthetic: true,
     },
     "0x7f9fbf9bdd3f4105c478b996b648fe6e828a1e98": {
@@ -595,7 +551,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 4,
       imageUrl:
         "https://assets.coingecko.com/coins/images/24383/standard/apecoin.jpg?1696523566",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/apecoin",
     },
     "0x197aa2de1313c7ad50184234490e12409b2a1f95": {
       name: "SUI",
@@ -606,7 +561,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/26375/standard/sui-ocean-square.png?1727791290",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/sui",
       isSynthetic: true,
     },
     "0x55e85a147a1029b985384822c0b2262df8023452": {
@@ -618,7 +572,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/28205/standard/Sei_Logo_-_Transparent.png?1696527207",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/sei",
       isSynthetic: true,
     },
     "0x3f8f0dce4dce4d0d1d0871941e79cda82ca50d0b": {
@@ -630,7 +583,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/26455/standard/aptos_round.png?1696525528",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/aptos",
       isSynthetic: true,
     },
     "0x38676f62d166f5ce7de8433f51c6b3d6d9d66c19": {
@@ -642,7 +594,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/31967/standard/tia.jpg?1696530772",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/celestia",
       isSynthetic: true,
     },
     "0xb06aa7e4af937c130ddade66f6ed7642716fe07a": {
@@ -654,7 +605,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/1094/standard/tron-logo.png?1696502193",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/tron",
       isSynthetic: true,
     },
     "0xb2f7cefaeeb08aa347705ac829a7b8be2fb560f3": {
@@ -666,7 +616,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/17980/standard/photo_2024-09-10_17.09.00.jpeg?1725963446",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/toncoin",
       isSynthetic: true,
     },
     "0x75b9add873641b253718810e6c65db6d72311fd0": {
@@ -677,7 +626,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 4,
       imageUrl:
         "https://assets.coingecko.com/coins/images/31069/standard/worldcoin.jpeg?1696529903",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/worldcoin",
       isSynthetic: true,
     },
     "0x1fd10e767187a92f0ab2abdeef4505e319ca06b2": {
@@ -689,7 +637,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/28600/standard/bonk.jpg?1696527587",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/bonk",
       isSynthetic: true,
       visualMultiplier: 1000,
       visualPrefix: "k",
@@ -702,7 +649,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 3,
       imageUrl:
         "https://assets.coingecko.com/coins/images/28452/standard/ARUsPeNQ_400x400.jpeg?1696527447",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/bittensor",
       isSynthetic: true,
     },
     "0x3eea56a1cccdbfb70a26ad381c71ee17e4c8a15f": {
@@ -714,7 +660,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/36071/standard/bome.png?1710407255",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/book-of-meme",
       isSynthetic: true,
     },
     "0x6792c5b8962ffbdd020c6b6fd0be7b182e0e33a3": {
@@ -726,7 +671,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/16746/standard/PNG_image.png?1696516318",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/floki",
       isSynthetic: true,
       visualMultiplier: 1000,
       visualPrefix: "k",
@@ -739,7 +683,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 6,
       imageUrl:
         "https://assets.coingecko.com/coins/images/32528/standard/memecoin_%282%29.png?1698912168",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/meme",
       isSynthetic: true,
     },
     "0x5503cf72f54b6d692d36bbcd391516a7de068687": {
@@ -751,7 +694,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/36440/standard/MEW.png?1711442286",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/mew",
       isSynthetic: true,
     },
     "0x0c880f6761f1af8d9aa9c466984b80dab9a8c9e8": {
@@ -763,7 +705,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/15069/standard/Pendle_Logo_Normal-03.png?1696514728",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/pendle",
       isPermitSupported: true,
       isPermitDisabled: true,
       contractVersion: "1",
@@ -777,7 +718,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/975/standard/cardano.png?1696502090",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/cardano",
       isSynthetic: true,
     },
     "0xc33d9c096e74aa4f571e9417b69a19c4a1e72ef2": {
@@ -789,7 +729,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/780/standard/bitcoin-cash-circle.png?1696501932",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/bitcoin-cash",
       isSynthetic: true,
     },
     "0xe958f107b467d5172573f761d26931d658c1b436": {
@@ -801,7 +740,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://static.coingecko.com/s/polkadot-73b0c058cae10a2f076a82dcade5cbe38601fad05d5e6211188f09eb96fa4617.gif",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/polkadot",
       isSynthetic: true,
     },
     "0xdaf0a71608938f762e37ec5f72f670cc44703454": {
@@ -813,7 +751,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/14495/standard/Internet_Computer_logo.png?1696514180",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/internet-computer",
       isSynthetic: true,
     },
     "0xc5dbd52ae5a927cf585b884011d0c7631c9974c6": {
@@ -824,7 +761,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 5,
       imageUrl:
         "https://assets.coingecko.com/coins/images/100/standard/Stellar_symbol_black_RGB.png?1696501482",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/stellar",
       isSynthetic: true,
     },
     "0x82bb89fcc64c5d4016c5ed1ab016bb0d1c20d6c3": {
@@ -835,7 +771,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 4,
       imageUrl:
         "https://assets.coingecko.com/coins/images/11636/standard/rndr.png?1696511529",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/render",
       isSynthetic: true,
     },
     "0x3aebb98f57081dcbeb0b8ea823cf84900a31e5d8": {
@@ -847,7 +782,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 4,
       imageUrl:
         "https://assets.coingecko.com/coins/images/12817/standard/filecoin.png?1696512609",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/filecoin",
       isSynthetic: true,
     },
     "0x0739ad7aea69ad36edeb91b0e55cac140427c632": {
@@ -859,7 +793,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1", "defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/32594/standard/dydx.png?1698673495",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/dydx-chain",
       isSynthetic: true,
     },
     "0xfde73eddbe6c5712a12b72c470f8fe5c77a7ff17": {
@@ -871,7 +804,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/12882/standard/Secondary_Symbol.png?1696512670",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/injective",
       isSynthetic: true,
     },
     "0x30021afa4767ad66aa52a06df8a5ab3aca9371fd": {
@@ -883,7 +815,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/53746/standard/trump.png?1737171561",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/official-trump",
       isSynthetic: true,
     },
     "0xfa4f8e582214ebce1a08eb2a65e08082053e441f": {
@@ -895,7 +826,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/53775/standard/melania-meme.png?1737329885",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/melania-meme",
       isSynthetic: true,
     },
     "0xfe1aac2cd9c5cc77b58eecfe75981866ed0c8b7a": {
@@ -907,7 +837,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/36530/standard/ethena.png?1711701436",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/ethena",
       isSynthetic: true,
     },
     "0xbb69bd9dc152c2c0f083507641a46193d2b61ebb": {
@@ -919,7 +848,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/51090/standard/AI16Z.jpg?1730027175",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/ai16z",
       isSynthetic: true,
     },
     "0x37a645648df29205c6261289983fb04ecd70b4b3": {
@@ -931,7 +859,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/53575/standard/anime.jpg?1736748703",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/anime",
       isSynthetic: false,
     },
     "0xaca341e61ab6177b0b0df46a612e4311f8a7605f": {
@@ -943,7 +870,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/50891/standard/fart.jpg?1729503972",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/fartcoin",
       isSynthetic: true,
     },
     "0x67adabbad211ea9b3b4e2fd0fd165e593de1e983": {
@@ -955,7 +881,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1", "defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/25235/standard/BERA.png?1738822008",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/berachain",
       isSynthetic: true,
     },
     "0x9d678b4dd38a6e01df8090aeb7974ad71142b05f": {
@@ -967,7 +892,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/13573/standard/Lido_DAO.png?1696513326",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/lido-dao",
       isSynthetic: true,
     },
     "0xb6672496214c90134a9223894e709f26a5eed362": {
@@ -978,7 +902,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 4,
       imageUrl:
         "https://assets.coingecko.com/coins/images/34057/standard/LOGOMARK.png?1708356054",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/virtual-protocol",
       isSynthetic: true,
     },
     "0x4c1dac9b6eaf122fe3de824c1c2220413f3ac197": {
@@ -990,7 +913,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/52622/standard/PUDGY_PENGUINS_PENGU_PFP.png?1733809110",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/pudgy-penguins",
       isSynthetic: true,
     },
     "0x83d5944e7f5ef1d8432002d3cb062e1012f6f8e6": {
@@ -1001,8 +923,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 5,
       imageUrl:
         "https://assets.coingecko.com/coins/images/5681/standard/ASI.png?1719827289",
-      coingeckoUrl:
-        "https://www.coingecko.com/en/coins/artificial-superintelligence-alliance",
       isSynthetic: true,
     },
     "0xecfb4718ad19b626a77491895a2f99ea0ceded08": {
@@ -1014,7 +934,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/26580/standard/ONDO.png?1696525656",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/ondo",
       isSynthetic: true,
     },
     "0xca543cb8bcc76e4e0a034f56eb40a1029bdfd70e": {
@@ -1026,7 +945,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/51784/standard/3.png?1731981138",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/ondo",
       isSynthetic: true,
     },
     "0x8f6ccb99d4fd0b4095915147b5ae3bbdb8075394": {
@@ -1038,7 +956,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/38108/standard/200x200_Sonic_Logo.png?1734679256",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/sonic",
       isSynthetic: true,
     },
     "0x580b373ac16803bb0133356f470f3c7eef54151b": {
@@ -1050,7 +967,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/12632/standard/pancakeswap-cake-logo_%281%29.png?1696512440",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/pancakeswap",
       isSynthetic: true,
     },
     "0xfdfa0a749da3bccee20ae0b4ad50e39b26f58f7c": {
@@ -1062,7 +978,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/50882/standard/hyperliquid.jpg?1729431300",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/hyperliquid",
       isSynthetic: true,
     },
     "0xfed500df379427fbc48bdaf3b511b519c7eccd26": {
@@ -1074,7 +989,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/34188/standard/jup.png?1704266489",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/jupiter",
       isSynthetic: true,
     },
     "0x8904de84c3bb3b7d2383f934af40fcb3ef82f28b": {
@@ -1086,7 +1000,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/1364/standard/Mark_Maker.png?1696502423",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/maker",
       isSynthetic: true,
     },
     "0x1f3407ea067dfbdf6deb6bbfda4869215fb0ab77": {
@@ -1098,7 +1011,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1", "defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/12151/standard/OM_Token.png?1696511991",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/mantra",
       isSynthetic: true,
     },
     "0x97ce1f309b949f7fbc4f58c5cb6aa417a5ff8964": {
@@ -1110,7 +1022,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/54710/standard/DOLO-small.png?1745398535",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/dolomite",
       isSynthetic: true,
     },
     "0xa8193c55c34ed22e1dbe73fd5adc668e51578a67": {
@@ -1122,7 +1033,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/28206/standard/ftxG9_TJ_400x400.jpeg?1696527208",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/layerzero",
       isSynthetic: true,
     },
     "0xd3898c6570974aeca38a8acf22fd60739e528a99": {
@@ -1131,7 +1041,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       address: "0xd3898c6570974AEca38a8ACf22fd60739e528A99",
       decimals: 6,
       isSynthetic: true,
-      coingeckoUrl: "https://www.coingecko.com/en/coins/moo-deng",
       imageUrl:
         "https://assets.coingecko.com/coins/images/50264/standard/MOODENG.jpg?1726726975",
       categories: ["meme"],
@@ -1142,7 +1051,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       address: "0x13674172E6E44D31d4bE489d5184f3457c40153A",
       decimals: 12,
       isSynthetic: true,
-      coingeckoUrl: "https://www.coingecko.com/en/coins/monero",
       imageUrl:
         "https://assets.coingecko.com/coins/images/69/standard/monero_logo.png?1696501460",
       categories: ["layer1", "defi"],
@@ -1153,7 +1061,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       address: "0xd1738d37401a0A71f7E382d2cFeCD3ab69687017",
       decimals: 18,
       isSynthetic: true,
-      coingeckoUrl: "https://www.coingecko.com/en/coins/pi-network",
       imageUrl:
         "https://assets.coingecko.com/coins/images/54342/standard/pi_network.jpg?1739347576",
       categories: ["layer1"],
@@ -1164,7 +1071,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       address: "0xe5f01aeAcc8288E9838A60016AB00d7b6675900b",
       decimals: 18,
       isSynthetic: true,
-      coingeckoUrl: "https://www.coingecko.com/en/coins/curve-dao-token",
       imageUrl:
         "https://assets.coingecko.com/coins/images/12124/standard/Curve.png?1696511967",
       categories: ["defi"],
@@ -1177,7 +1083,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 6,
       imageUrl:
         "https://assets.coingecko.com/coins/images/67164/standard/pump.jpg?1751949376",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/pump-fun",
       isSynthetic: true,
       categories: ["meme"],
     },
@@ -1189,7 +1094,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 4,
       imageUrl:
         "https://assets.coingecko.com/coins/images/31401/standard/centeredcoin_%281%29.png?1737048493",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/spx6900",
       isSynthetic: true,
       categories: ["meme"],
     },
@@ -1201,7 +1105,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 5,
       imageUrl:
         "https://assets.coingecko.com/coins/images/30980/standard/token-logo.png?1696529819",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/mantle",
       isSynthetic: true,
       categories: ["layer2", "defi"],
     },
@@ -1243,7 +1146,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1", "defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/4380/standard/download.png?1696504978",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/algorand",
     },
     "0xb7efe7c7f059e84ab87a83a169c583fb4a54fac3": {
       name: "Cronos",
@@ -1255,7 +1157,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/7310/standard/cro_token_logo.png?1696507599",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/cronos",
     },
     "0xeb2a83b973f4dbb9511d92dd40d2ba4c683f0971": {
       name: "Hedera",
@@ -1267,7 +1168,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1", "defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/3688/standard/hbar.png?1696504364",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/hedera-hashgraph",
     },
     "0x3b6f801c0052dfe0ac80287d611f31b7c47b9a6b": {
       name: "Convex Finance",
@@ -1279,7 +1179,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/15585/standard/convex.png?1696515221",
-      coingeckoUrl: "https://www.coingecko.com/nl/coins/convex-finance",
     },
     "0x91c6a8f6afac036f4abf1ba55f4e76892e865e4a": {
       name: "Kaspa",
@@ -1291,7 +1190,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/25751/standard/kaspa-icon-exchanges.png?1696524837",
-      coingeckoUrl: "https://www.coingecko.com/nl/coins/kaspa",
     },
     "0xecc5eb985ddbb8335b175b0a2a1144e4c978f1f6": {
       name: "Aero",
@@ -1301,7 +1199,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 4,
       isSynthetic: true,
       categories: ["defi"],
-      coingeckoUrl: "https://www.coingecko.com/en/coins/aerodrome-finance",
       imageUrl:
         "https://assets.coingecko.com/coins/images/31745/standard/token.png?1696530564",
     },
@@ -1315,7 +1212,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/54317/standard/AERO.png?1728309870",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/brett-2",
     },
     "0xc5799ab6e2818fd8d0788db8d156b0c5db1bf97b": {
       name: "World Liberty Financial",
@@ -1327,8 +1223,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/50767/standard/wlfi.png?1756438915",
-      coingeckoUrl:
-        "https://www.coingecko.com/en/coins/world-liberty-financial",
     },
     "0xd37f01a3379f052fef70f63c0be27931891aa2b9": {
       name: "OKB",
@@ -1340,7 +1234,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer2"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/4463/standard/WeChat_Image_20220118095654.png?1696505053",
-      coingeckoUrl: "https://www.coingecko.com/nl/coins/okb",
     },
     "0xf67b2a901d674b443fa9f6db2a689b37c07fd4fe": {
       name: "Morpho",
@@ -1352,7 +1245,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/29837/standard/Morpho-token-icon.png?1726771230",
-      coingeckoUrl: "https://www.coingecko.com/nl/coins/morpho",
     },
     "0xb79eb5ba64a167676694bb41bc1640f95d309a2f": {
       name: "Venice Token",
@@ -1364,7 +1256,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/54023/standard/VVV_Token_Transparent.png?1741856877",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/venice-token",
     },
     "0x465a31e5ba29b8eacc860d499d714a6f07e56e85": {
       name: "Moonwell",
@@ -1376,7 +1267,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/26133/standard/WELL.png?1696525221",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/moonwell",
     },
     "0x96ee343e36e8642627faea235d57a9fec8a6e34f": {
       name: "KTA",
@@ -1388,7 +1278,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/54693/standard/zora.jpg?1741094751",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/zora",
     },
     "0xc5ff0eb026db972f95df3dff04e697d8b660092a": {
       name: "Zora",
@@ -1400,7 +1289,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer2"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/54723/standard/2025-03-05_22.53.06.jpg?1741234207",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/keeta",
     },
     "0x2e73bdbee83d91623736d514b0bb41f2afd9c7fd": {
       name: "Plasma",
@@ -1411,7 +1299,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1", "defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/66489/standard/Plasma-symbol-green-1.png?1755142558",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/plasma",
       isSynthetic: true,
     },
     "0x2aab60e62f05d17e58dec982870bfadc7f4e7adf": {
@@ -1423,7 +1310,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/69040/standard/_ASTER.png?1757326782",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/aster-2",
       isSynthetic: true,
     },
     "0x95c317066cf214b2e6588b2685d949384504f51e": {
@@ -1435,7 +1321,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/69096/standard/0G_1024x1024_Circular_Outlined.png?1758637574",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/0g",
       isSynthetic: true,
     },
     "0xdb58eb7f408eba2176ecb44a4696292605cceb39": {
@@ -1447,7 +1332,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/68972/standard/avnt-token.png?1757134448",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/avantis",
       isSynthetic: true,
     },
     "0xc4017cfe7d7eabde63d3252cabf26a286fe2b1e0": {
@@ -1459,7 +1343,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer2"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/68507/standard/linea-logo.jpeg?1756025484",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/linea",
       isSynthetic: true,
     },
     "0xb96e60ca3a7677b29f1e10dd109e952b275038be": {
@@ -1471,7 +1354,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1", "defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/38927/standard/mon.png?1766029057",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/monad",
       isSynthetic: true,
     },
     "0xeea41cea2204d1156de1bdf2cf4ab6184d17f90b": {
@@ -1483,7 +1365,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/39925/standard/sky.jpg?1724827980",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/sky",
       isSynthetic: true,
     },
     "0x6eabbaa3278556dc5b19c034dc26c0eab60d65b5": {
@@ -1495,8 +1376,95 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/486/standard/circle-zcash-color.png?1696501740",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/zcash",
       isSynthetic: true,
+    },
+    "0x4b9a2b862e1a30e6e844c991d31dc6387c9d65d5": {
+      name: "Arweave",
+      symbol: "AR",
+      address: "0x4b9a2b862E1a30e6E844c991D31Dc6387c9d65D5",
+      isSynthetic: true,
+      decimals: 12,
+      categories: ["layer1"],
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/4343/standard/oRt6SiEN_400x400.jpg?1696504946",
+    },
+    "0x426fe015a5f4e6ad4e6497ad79265d07ea9f121e": {
+      name: "Dash",
+      symbol: "DASH",
+      address: "0x426FE015a5F4E6Ad4E6497ad79265D07EA9F121e",
+      isSynthetic: true,
+      decimals: 8,
+      categories: ["layer1"],
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/19/standard/dash-logo.png?1696501423",
+    },
+    "0x9759c297fb6c91e252c7292ceca30a509558e5de": {
+      name: "Syrup",
+      symbol: "SYRUP",
+      address: "0x9759C297fb6C91e252c7292cECa30a509558E5De",
+      isSynthetic: true,
+      decimals: 18,
+      priceDecimals: 4,
+      categories: ["defi"],
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/51232/standard/_syrup_token_logo.png?1747292046",
+    },
+    "0xf01d2aa2f3f903a93d57c4bf672c8096de485fa7": {
+      name: "Jito",
+      symbol: "JTO",
+      address: "0xF01D2AA2f3f903A93D57c4Bf672C8096DE485FA7",
+      isSynthetic: true,
+      decimals: 9,
+      priceDecimals: 4,
+      categories: ["defi"],
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/33228/standard/jto.png?1701137022",
+    },
+    "0x5db4692926c8ceebf6da0995358bbc438f3fd80c": {
+      name: "Chiliz",
+      symbol: "CHZ",
+      address: "0x5dB4692926C8ceebF6Da0995358Bbc438F3fd80C",
+      isSynthetic: true,
+      decimals: 18,
+      priceDecimals: 4,
+      categories: ["layer1"],
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/8834/standard/CHZ_Token_updated.png?1696508986",
+    },
+    "0x7624ccccc59361d583f28bec40d37e7771d2ef5d": {
+      name: "Tether Gold",
+      symbol: "XAUT",
+      assetSymbol: "XAUT",
+      baseSymbol: "XAUT",
+      address: "0x7624cccCc59361D583F28BEC40D37e7771d2ef5D",
+      isSynthetic: true,
+      decimals: 18,
+      priceDecimals: 2,
+      categories: ["rwa"],
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/10481/standard/Tether_Gold.png?1696510471",
+    },
+    "0xe6172eecbb07f197f52bb73d74daa0e19c31c4db": {
+      name: "Lighter",
+      symbol: "LIT",
+      address: "0xE6172EecBB07F197F52bb73d74daa0e19C31c4Db",
+      isSynthetic: true,
+      decimals: 18,
+      priceDecimals: 4,
+      categories: ["defi"],
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/71121/standard/lighter.png?1765888098",
+    },
+    "0xe7304e9f4ca383bd6312a5179cdc7b40b96a6f5a": {
+      name: "Story",
+      symbol: "IP",
+      address: "0xe7304E9F4ca383BD6312a5179cdC7B40B96A6F5a",
+      isSynthetic: true,
+      decimals: 18,
+      priceDecimals: 4,
+      categories: ["layer1"],
+      imageUrl:
+        "https://assets.coingecko.com/coins/images/54035/standard/Transparent_bg.png?1738075331",
     },
   },
   "43113": {
@@ -1524,7 +1492,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/12559/small/coin-round-red.png?1604021818",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/avalanche",
       explorerUrl:
         "https://testnet.snowtrace.io/address/0x1D308089a2D1Ced3f1Ce36B1FcaF815b07217be3",
       isPermitSupported: true,
@@ -1539,8 +1506,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/weth",
-      coingeckoSymbol: "WETH",
       explorerUrl:
         "https://testnet.snowtrace.io/address/0x82F0b3695Ed2324e55bbD9A9554cB4192EC3a514",
     },
@@ -1552,7 +1517,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isStable: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/usd-coin",
       explorerUrl:
         "https://testnet.snowtrace.io/address/0x3eBDeaA0DB3FfDe96E7a0DBBAFEC961FC50F725F",
     },
@@ -1564,7 +1528,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isStable: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/325/small/Tether-logo.png",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/dai",
       explorerUrl:
         "https://testnet.snowtrace.io/address/0x50df4892Bd13f01E4e1Cd077ff394A8fa1A3fD7c",
     },
@@ -1576,7 +1539,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isStable: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/9956/thumb/4943.png?1636636734",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/dai",
       explorerUrl:
         "https://testnet.snowtrace.io/address/0x51290cb93bE5062A6497f16D9cd3376Adf54F920",
     },
@@ -1588,7 +1550,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/7598/thumb/wrapped_bitcoin_wbtc.png?1548822744",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/wrapped-bitcoin",
       explorerUrl:
         "https://testnet.snowtrace.io/address/0x3Bd8e00c25B12E6E60fc8B6f1E1E2236102073Ca",
     },
@@ -1602,7 +1563,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isSynthetic: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/4128/small/solana.png?1640133422",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/solana",
     },
     "0x42dd131e1086ffcc59bae9498d71e20e0c889b14": {
       name: "Test token",
@@ -1610,7 +1570,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       decimals: 18,
       address: "0x42DD131E1086FFCc59bAE9498D71E20E0C889B14",
       isSynthetic: true,
-      coingeckoUrl: "https://www.coingecko.com/en/coins/tether",
     },
     "0x110892dd5fa73be430c0ade694febd9a4cac68be": {
       name: "BNB",
@@ -1619,7 +1578,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 3,
       address: "0x110892Dd5fa73bE430c0ade694febD9a4CAc68Be",
       isSynthetic: true,
-      coingeckoUrl: "https://www.coingecko.com/en/coins/binancecoin",
     },
     "0xe64dfff37fa6fe969b792b4146cee2774ef6e1a1": {
       name: "Cardano",
@@ -1629,7 +1587,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       address: "0xE64dfFF37Fa6Fe969b792B4146cEe2774Ef6e1a1",
       categories: ["layer1"],
       isSynthetic: true,
-      coingeckoUrl: "https://www.coingecko.com/en/coins/cardano",
     },
     "0x0d1495527c255068f2f6fee31c85d326d0a76fe8": {
       name: "TRON",
@@ -1638,7 +1595,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 5,
       address: "0x0D1495527C255068F2f6feE31C85d326D0A76FE8",
       isSynthetic: true,
-      coingeckoUrl: "https://www.coingecko.com/en/coins/tron",
     },
     "0xadc4698b257f78187fd675fbf591a09f4c975240": {
       name: "Polygon",
@@ -1648,7 +1604,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       address: "0xadc4698B257F78187Fd675FBf591a09f4c975240",
       categories: ["layer1"],
       isSynthetic: true,
-      coingeckoUrl: "https://www.coingecko.com/en/coins/polygon",
     },
     "0x65ffb5664a7b3377a5a27d9e59c72fb1a5e94962": {
       name: "Polkadot",
@@ -1658,7 +1613,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 4,
       isSynthetic: true,
       categories: ["layer1"],
-      coingeckoUrl: "https://www.coingecko.com/en/coins/polkadot",
     },
     "0xf62dc1d2452d0893735d22945af53c290b158eaf": {
       name: "Uniswap",
@@ -1668,7 +1622,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       address: "0xF62dC1d2452d0893735D22945Af53C290b158eAF",
       isSynthetic: true,
       categories: ["layer2", "defi"],
-      coingeckoUrl: "https://www.coingecko.com/en/coins/uniswap",
     },
     "0x2265f317ea5f47a684e5b26c50948617c945d986": {
       name: "Dogecoin",
@@ -1679,7 +1632,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isSynthetic: true,
       isShortable: true,
       categories: ["meme"],
-      coingeckoUrl: "https://www.coingecko.com/en/coins/dogecoin",
     },
     "0x6bd09e8d65ad5cc761df62454452d4ec1545e647": {
       name: "Chainlink",
@@ -1690,7 +1642,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isSynthetic: true,
       isShortable: true,
       categories: ["defi"],
-      coingeckoUrl: "https://www.coingecko.com/en/coins/chainlink",
     },
     "0xf1c2093383453831e8c90ecf809691123116daac": {
       name: "XRP",
@@ -1702,7 +1653,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png?1605778731",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/xrp",
     },
     "": {
       name: "GMX LP",
@@ -1743,7 +1693,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/12559/small/coin-round-red.png?1604021818",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/avalanche",
       isV1Available: true,
       wrappedAddress: "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
     },
@@ -1757,7 +1706,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/12559/small/coin-round-red.png?1604021818",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/avalanche",
       explorerUrl:
         "https://snowtrace.io/address/0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
       isV1Available: true,
@@ -1772,8 +1720,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/weth",
-      coingeckoSymbol: "WETH",
       explorerUrl:
         "https://snowtrace.io/address/0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB",
       isV1Available: true,
@@ -1788,8 +1734,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/26115/thumb/btcb.png?1655921693",
-      coingeckoUrl:
-        "https://www.coingecko.com/en/coins/bitcoin-avalanche-bridged-btc-b",
       explorerUrl:
         "https://snowtrace.io/address/0x152b9d0FdC40C096757F570A51E494bd4b943E50",
       isV1Available: true,
@@ -1804,8 +1748,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/7598/thumb/wrapped_bitcoin_wbtc.png?1548822744",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/wrapped-bitcoin",
-      coingeckoSymbol: "WBTC",
       explorerUrl:
         "https://snowtrace.io/address/0x50b7545627a5162F82A992c33b87aDc75187B218",
       isV1Available: true,
@@ -1818,7 +1760,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isStable: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/usd-coin",
       explorerUrl:
         "https://snowtrace.io/address/0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
       isV1Available: true,
@@ -1832,8 +1773,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isStable: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389",
-      coingeckoUrl:
-        "https://www.coingecko.com/en/coins/bridged-usdc-avalanche-bridge",
       explorerUrl:
         "https://snowtrace.io/address/0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664",
       isV1Available: true,
@@ -1846,7 +1785,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isStable: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/325/small/Tether-logo.png",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/tether",
       explorerUrl:
         "https://snowtrace.io/address/0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
       isPermitSupported: true,
@@ -1860,7 +1798,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isStable: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/325/small/Tether-logo.png",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/tether",
       explorerUrl:
         "https://snowtrace.io/address/0xc7198437980c041c805A1EDcbA50c1Ce5db95118",
     },
@@ -1872,7 +1809,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isStable: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/9956/thumb/4943.png?1636636734",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/dai",
       explorerUrl:
         "https://snowtrace.io/address/0xd586E7F844cEa2F87f50152665BCbc2C279D8d70",
     },
@@ -1885,7 +1821,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isTempHidden: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/16786/small/mimlogopng.png",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/magic-internet-money",
       explorerUrl:
         "https://snowtrace.io/address/0x130966628846BFd36ff31a822705796e8cb8C18D",
       isV1Available: true,
@@ -1902,7 +1837,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/877/thumb/chainlink-new-logo.png?1547034700",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/chainlink",
       explorerUrl:
         "https://snowtrace.io/address/0x5947BB275c521040051D82396192181b413227A3",
     },
@@ -1916,7 +1850,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/5/small/dogecoin.png?1547792256",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/dogecoin",
     },
     "0x8e9c35235c38c44b5a53b56a41eaf6db9a430cd6": {
       name: "Litecoin",
@@ -1928,7 +1861,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/2/small/litecoin.png?1547033580",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/litecoin",
     },
     "0xfe6b19286885a4f7f55adad09c3cd1f906d2478f": {
       name: "Wrapped SOL (Wormhole)",
@@ -1940,8 +1872,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/4128/small/solana.png?1640133422",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/solana",
-      coingeckoSymbol: "SOL",
       explorerUrl:
         "https://snowtrace.io/address/0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F",
       isPermitSupported: true,
@@ -1957,7 +1887,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png?1605778731",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/xrp",
       isSynthetic: true,
     },
     "0x2775d5105276781b4b85ba6ea6a6653beed1dd32": {
@@ -1968,7 +1897,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 2,
       imageUrl:
         "https://assets.coingecko.com/coins/images/10481/standard/Tether_Gold.png?1696510471",
-      coingeckoUrl: "https://www.coingecko.com/nl/coins/tether-gold",
       explorerUrl:
         "https://snowtrace.io/address/0x2775d5105276781B4b85bA6eA6a6653bEeD1dd32",
       isPermitSupported: true,
@@ -1984,7 +1912,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
         "https://assets.coingecko.com/coins/images/18323/small/arbit.png?1631532468",
       isPlatformToken: true,
       categories: ["defi"],
-      coingeckoUrl: "https://www.coingecko.com/en/coins/gmx",
       explorerUrl:
         "https://snowtrace.io/address/0x62edc0692bd897d2295872a9ffcac5425011c661",
     },
@@ -1997,7 +1924,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/53746/standard/trump.png?1737171561",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/official-trump",
       isSynthetic: true,
     },
     "0xd42c991a4fab293c57a7bf25c2e2ec5ae1db1714": {
@@ -2009,7 +1935,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["meme"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/53775/standard/melania-meme.png?1737329885",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/melania-meme",
       isSynthetic: true,
     },
     "0xda598795dfe56388ca3d35e2ccfa96eff83ec306": {
@@ -2020,7 +1945,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       priceDecimals: 6,
       imageUrl:
         "https://assets.coingecko.com/coins/images/67164/standard/pump.jpg?1751949376",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/pump-fun",
       isSynthetic: true,
       categories: ["meme"],
     },
@@ -2034,8 +1958,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["defi"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/50767/standard/wlfi.png?1756438915",
-      coingeckoUrl:
-        "https://www.coingecko.com/en/coins/world-liberty-financial",
     },
     "0xff1489227bbaac61a9209a08929e4c2a526ddd17": {
       name: "Escrowed GMX",
@@ -2087,7 +2009,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/ethereum",
     },
     "0x980b62da83eff3d4576c647993b0c1d7faf17c73": {
       name: "Wrapped ETH",
@@ -2099,7 +2020,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       categories: ["layer1"],
       imageUrl:
         "https://assets.coingecko.com/coins/images/279/small/ethereum.png?1595348880",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/ethereum",
     },
     "0xf79ce1cf38a09d572b021b4c5548b75a14082f12": {
       name: "Bitcoin",
@@ -2108,7 +2028,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       decimals: 8,
       imageUrl:
         "https://assets.coingecko.com/coins/images/1/small/bitcoin.png?1746042828",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/bitcoin",
     },
     "0x3321fd36aeab0d5cdfd26f4a3a93e2d2aaccb99f": {
       name: "USD Coin GMX",
@@ -2118,7 +2037,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isStable: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/usd-coin",
     },
     "0x3253a335e7bffb4790aa4c25c4250d206e9b9773": {
       name: "USD Coin Stargate",
@@ -2128,7 +2046,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isStable: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/usd-coin",
     },
     "0xd5ddaed48b09fa1d7944bd662cb05265fcd7077c": {
       name: "CRV",
@@ -2139,7 +2056,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       imageUrl:
         "https://assets.coingecko.com/coins/images/12134/small/curve.png?1596358786",
       isSynthetic: true,
-      coingeckoUrl: "https://www.coingecko.com/en/coins/curve-dao-token",
     },
     "0x095f40616fa98ff75d1a7d0c68685c5ef806f110": {
       name: "USDT",
@@ -2149,7 +2065,6 @@ export const gmxTokenConfigs: Record<string, Record<string, Token>> = {
       isStable: true,
       imageUrl:
         "https://assets.coingecko.com/coins/images/325/small/Tether-logo.png",
-      coingeckoUrl: "https://www.coingecko.com/en/coins/tether",
     },
     "<gmx-address>": {
       name: "GMX",
