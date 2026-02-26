@@ -1,2 +1,15 @@
 @import "tailwindcss";
 @import "@heroui/styles";
+
+@theme inline {
+  --font-sans: var(--font-inter);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background-color: rgba(22, 163, 74, 0.2);
+  color: #171717;
+}

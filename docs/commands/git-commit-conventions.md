@@ -69,6 +69,7 @@ git commit -m "revert: revert feat(auth): add JWT token refresh"
 3. **Lowercase** first letter after the type
 4. **Body** (optional): wrap at 72 chars, explain _what_ and _why_, not _how_
 5. **Footer** (optional): reference issues like `Closes #123` or note `BREAKING CHANGE:`
+6. **No AI attribution**: never include "Co-Authored-By: Claude", "written by AI", or any similar AI/LLM credit in commit messages, footers, or anywhere in the codebase
 
 ## Reference
 
