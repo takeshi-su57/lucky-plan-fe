@@ -2392,6 +2392,7 @@ export type UpdateSlInput = {
 };
 
 export type UpdateStrategyInput = {
+  lifeTime: Scalars['Float']['input'];
   maxCollateral: Scalars['Int']['input'];
   maxLeverage: Scalars['Int']['input'];
   minCollateral: Scalars['Int']['input'];

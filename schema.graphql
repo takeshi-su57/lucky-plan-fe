@@ -1496,6 +1496,7 @@ input UpdateSlInput {
 }
 
 input UpdateStrategyInput {
+  lifeTime: Float!
   maxCollateral: Int!
   maxLeverage: Int!
   minCollateral: Int!
