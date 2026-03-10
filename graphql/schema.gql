@@ -1351,7 +1351,7 @@ type Query {
     pageSize: Int! = 10
     planId: Int!
   ): BotGroupPaginatedResponse!
-  getPlanById(id: Int!): PlanForwardDetails
+  getPlanById(id: Int!): Plan
   getPlanSummariesByStatus(
     after: Int
     first: Int!

@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useMemo, useState } from "react";
-import { Button, Pagination, Spinner, Switch } from "@heroui/react";
+import { Spinner, Switch } from "@heroui/react";
 
 import {
   BotForwardDetails,
@@ -20,6 +20,7 @@ import LineChart from "@/components/charts/LineChart";
 import dayjs from "dayjs";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { Address } from "viem";
+import { PaginatedViews } from "@/components/views/PaginatedViews";
 
 const CHART_INITIAL_SELECTED = ["x", "y"];
 const PAGE_SIZE = 10;
@@ -64,11 +65,12 @@ export function PlanAutomations({ planId }: PlanAutomationsProps) {
         </Switch>
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-10">
-          <Spinner />
-        </div>
-      ) : (
+      <PaginatedViews
+        currentPage={page}
+        totalPages={totalPages}
+        onChangePage={setPage}
+        loading={loading}
+      >
         <div className="flex flex-col gap-6">
           {botGroups.map((item) => (
             <GroupedAutomations
@@ -81,18 +83,7 @@ export function PlanAutomations({ planId }: PlanAutomationsProps) {
             />
           ))}
         </div>
-      )}
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center pt-4">
-          <Pagination
-            total={totalPages}
-            page={page}
-            onChange={setPage}
-            showControls
-          />
-        </div>
-      )}
+      </PaginatedViews>
     </div>
   );
 }

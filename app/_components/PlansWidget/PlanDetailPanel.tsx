@@ -59,10 +59,6 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
                 ? dayjs(plan.endedAt).format("MMM D, H:m:s")
                 : null,
             },
-            {
-              label: "Bots",
-              value: plan.bots.length,
-            },
           ]
         : [],
     [plan],

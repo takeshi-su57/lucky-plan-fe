@@ -1095,7 +1095,7 @@ type Query {
   getMicroserviceStatus: [MicroserviceStatus!]!
   getPerpEventLogs(addresses: [String!]!, limit: Int, platform: Platform!): [[PerpTradingEventLog!]!]!
   getPlanBotGroups(hideDead: Boolean! = true, page: Int! = 1, pageSize: Int! = 10, planId: Int!): BotGroupPaginatedResponse!
-  getPlanById(id: Int!): PlanForwardDetails
+  getPlanById(id: Int!): Plan
   getPlanSummariesByStatus(after: Int, first: Int!, status: PlanStatus!): PlanSummaryConnection!
   getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
   getPnlSnapshotV2InitializedFlag(platform: Platform!): [PnlSnapshotV2InitializedFlag!]!
