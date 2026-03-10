@@ -577,7 +577,6 @@ export function useSubscribePlan() {
 
           // Move plan summary between status caches
           const oldStatus = oldPlanForwardDetails.status;
-          const newStatus = updatedPlanForwardDetails.status;
 
           // Remove from old summary status cache
           client.cache.updateQuery(
@@ -599,14 +598,6 @@ export function useSubscribePlan() {
             },
           );
 
-          // Refetch only the new status to get fresh summary data
-          client.refetchQueries({
-            include: [GET_PLAN_SUMMARIES_BY_STATUS_DOCUMENT],
-            onQueryUpdated(observableQuery) {
-              const vars = observableQuery.options.variables as any;
-              return vars?.status === newStatus;
-            },
-          });
         }
       }
     }
@@ -682,14 +673,6 @@ export function useSubscribePlan() {
           },
         );
 
-        // Refetch only Created status summary
-        client.refetchQueries({
-          include: [GET_PLAN_SUMMARIES_BY_STATUS_DOCUMENT],
-          onQueryUpdated(observableQuery) {
-            const vars = observableQuery.options.variables as any;
-            return vars?.status === PlanStatus.Created;
-          },
-        });
       }
     }
   }, [client.cache, enqueueSnackbar, error1, newData]);
