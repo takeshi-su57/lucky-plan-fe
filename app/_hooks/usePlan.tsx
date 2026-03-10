@@ -136,7 +136,7 @@ export const GET_PLAN_SUMMARIES_BY_STATUS_DOCUMENT = graphql(`
 export const GET_PLAN_BY_ID_DOCUMENT = graphql(`
   query getPlanById($id: Int!) {
     getPlanById(id: $id) {
-      ...PlanForwardDetailsInfo
+      ...PlanInfo
     }
   }
 `);
@@ -682,7 +682,8 @@ export function useGetPlanById(id: number) {
     if (!data?.getPlanById) {
       return null;
     }
-    return getPlanForwardDetails(data.getPlanById);
+    const planInfo = getFragmentData(PLAN_INFO_FRAGMENT_DOCUMENT, data.getPlanById);
+    return { ...planInfo };
   }, [data]);
 }
 
@@ -706,6 +707,7 @@ export function useGetPlanBotGroups(
       pageSize,
       hideDead,
     },
+    fetchPolicy: "network-only",
   });
 
   const botGroups = useMemo((): BotGroupData[] => {
