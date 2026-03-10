@@ -10,18 +10,12 @@ import {
   Link,
 } from "@heroui/react";
 import dayjs from "dayjs";
-import {
-  MissionStatus,
-  PlanForwardDetails,
-  PlanStatus,
-  TaskStatus,
-} from "@/graphql/gql/graphql";
+import { PlanSummary, PlanStatus, TaskStatus } from "@/graphql/gql/graphql";
 
 import { useGetAlertTasks } from "@/app-hooks/useTask";
 import { useDeletePlan } from "@/app-hooks/usePlan";
-import { useGetAllGnsContracts } from "@/app-hooks/useContract";
 
-import { ContractPnl } from "@/app-components/MissionWidgets/ContractPnl";
+import { ContractPnlSummary } from "@/app-components/MissionWidgets/ContractPnlSummary";
 
 export const chipColorsByPlanStatus: Record<PlanStatus, ChipProps["color"]> = {
   [PlanStatus.Created]: "primary",
@@ -31,14 +25,12 @@ export const chipColorsByPlanStatus: Record<PlanStatus, ChipProps["color"]> = {
 };
 
 export type PlanRowProps = {
-  plan: PlanForwardDetails;
+  plan: PlanSummary;
 };
 
 export function PlanRow({ plan }: PlanRowProps) {
   const { deletePlan, loading } = useDeletePlan();
   const alertTasks = useGetAlertTasks();
-
-  const gnsContracts = useGetAllGnsContracts();
 
   const handleDelete = () => {
     deletePlan({
@@ -83,13 +75,17 @@ export function PlanRow({ plan }: PlanRowProps) {
     plan.endedAt
       ? {
           label: "Ended At",
-          value: plan.endedAt ? dayjs(plan.endedAt).format("MMM D, H:m") : null,
+          value: plan.endedAt
+            ? dayjs(plan.endedAt).format("MMM D, H:m")
+            : null,
         }
       : {
           label: "End At",
           value: dayjs(plan.scheduledEnd).format("MMM D, H:m"),
         },
   ];
+
+  const finished = plan.status === PlanStatus.Finished;
 
   return (
     <div className="select-none pb-3">
@@ -107,7 +103,7 @@ export function PlanRow({ plan }: PlanRowProps) {
                     {plan.description}
                   </span>
                   <Chip variant="flat" size="sm" color="primary">
-                    Bot {plan.bots.length}
+                    Bot {plan.botCount}
                   </Chip>
                 </div>
               </div>
@@ -134,39 +130,14 @@ export function PlanRow({ plan }: PlanRowProps) {
                 </span>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  {(gnsContracts || []).map((contract) => (
-                    <ContractPnl
-                      key={contract.id}
-                      label={`Chain (${contract.chainId})`}
-                      contractId={contract.id}
-                      finished={plan.status === PlanStatus.Finished}
-                      finishedMissionActions={plan.bots
-                        .filter((bot) => bot.leaderContractId === contract.id)
-                        .flatMap((bot) =>
-                          bot.missions
-                            .filter(
-                              (mission) =>
-                                !!mission.achievePositionKey &&
-                                mission.status === MissionStatus.Closed,
-                            )
-                            .map((mission) =>
-                              mission.tasks.map((task) => task.action),
-                            ),
-                        )}
-                      openedMissionActions={plan.bots
-                        .filter((bot) => bot.leaderContractId === contract.id)
-                        .flatMap((bot) =>
-                          bot.missions
-                            .filter(
-                              (mission) =>
-                                !!mission.achievePositionKey &&
-                                mission.status !== MissionStatus.Ignored &&
-                                mission.status !== MissionStatus.Closed,
-                            )
-                            .map((mission) =>
-                              mission.tasks.map((task) => task.action),
-                            ),
-                        )}
+                  {plan.leaderPnl.map((summary) => (
+                    <ContractPnlSummary
+                      key={summary.contractId}
+                      label={`Chain (${summary.chainId})`}
+                      realizedPnl={summary.realizedPnl}
+                      realizedCount={summary.realizedCount}
+                      openPositions={summary.openPositions}
+                      finished={finished}
                     />
                   ))}
                 </div>
@@ -178,73 +149,14 @@ export function PlanRow({ plan }: PlanRowProps) {
                 </span>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  {(gnsContracts || []).map((contract) => (
-                    <ContractPnl
-                      key={contract.id}
-                      label={`Chain (${contract.chainId})`}
-                      contractId={contract.id}
-                      finished={plan.status === PlanStatus.Finished}
-                      finishedMissionActions={plan.bots
-                        .filter((bot) => bot.followerContractId === contract.id)
-                        .flatMap((bot) =>
-                          bot.missions
-                            .filter(
-                              (mission) =>
-                                mission.status === MissionStatus.Closed &&
-                                !!mission.achievePositionKey,
-                            )
-                            .map((mission) =>
-                              mission.tasks
-                                .map((task) => {
-                                  if (task.followerActions.length === 0) {
-                                    return null;
-                                  }
-
-                                  const followerAction =
-                                    task.followerActions[
-                                      task.followerActions.length - 1
-                                    ];
-
-                                  if (!followerAction) {
-                                    return null;
-                                  }
-
-                                  return followerAction.action;
-                                })
-                                .filter((action) => action !== null),
-                            ),
-                        )}
-                      openedMissionActions={plan.bots
-                        .filter((bot) => bot.followerContractId === contract.id)
-                        .flatMap((bot) =>
-                          bot.missions
-                            .filter(
-                              (mission) =>
-                                mission.status !== MissionStatus.Closed &&
-                                mission.status !== MissionStatus.Ignored &&
-                                !!mission.achievePositionKey,
-                            )
-                            .map((mission) =>
-                              mission.tasks
-                                .map((task) => {
-                                  if (task.followerActions.length === 0) {
-                                    return null;
-                                  }
-
-                                  const followerAction =
-                                    task.followerActions[
-                                      task.followerActions.length - 1
-                                    ];
-
-                                  if (!followerAction) {
-                                    return null;
-                                  }
-
-                                  return followerAction.action;
-                                })
-                                .filter((action) => action !== null),
-                            ),
-                        )}
+                  {plan.followerPnl.map((summary) => (
+                    <ContractPnlSummary
+                      key={summary.contractId}
+                      label={`Chain (${summary.chainId})`}
+                      realizedPnl={summary.realizedPnl}
+                      realizedCount={summary.realizedCount}
+                      openPositions={summary.openPositions}
+                      finished={finished}
                     />
                   ))}
                 </div>

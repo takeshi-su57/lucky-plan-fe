@@ -7,9 +7,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FaPlus } from "react-icons/fa";
 import { GroupedVirtuoso } from "react-virtuoso";
 
-import { PlanForwardDetails, PlanStatus } from "@/graphql/gql/graphql";
+import { PlanSummary, PlanStatus } from "@/graphql/gql/graphql";
 
-import { useGetPlansByStatus, useLivePlans } from "@/app-hooks/usePlan";
+import {
+  useGetPlanSummariesByStatus,
+  useLivePlanSummaries,
+} from "@/app-hooks/usePlan";
 import { PlanRow } from "./PlanRow";
 import { getWeekDateStr } from "@/utils";
 
@@ -28,16 +31,16 @@ export function Plans() {
     hasMore: hasMoreLives,
     loading: loadingLives,
     fetchMore: fetchMoreLives,
-  } = useLivePlans();
+  } = useLivePlanSummaries();
   const {
     plans: planHistories,
     hasMore: hasMoreHistories,
     loading: loadingHistories,
     fetchMore: fetchMoreHistories,
-  } = useGetPlansByStatus(PlanStatus.Finished);
+  } = useGetPlanSummariesByStatus(PlanStatus.Finished);
 
   const { groupCounts, groupContent, plans } = useMemo(() => {
-    const weekPlans: Record<string, PlanForwardDetails[]> = {};
+    const weekPlans: Record<string, PlanSummary[]> = {};
 
     (selected === "live" ? livePlans : planHistories)
       .sort(
@@ -59,7 +62,7 @@ export function Plans() {
 
     const groupCounts: number[] = [];
     const groupContent: string[] = [];
-    const plans: PlanForwardDetails[] = [];
+    const plans: PlanSummary[] = [];
 
     Object.entries(weekPlans).forEach(([week, weekPlans]) => {
       groupCounts.push(weekPlans.length);

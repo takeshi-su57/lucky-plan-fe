@@ -15,6 +15,7 @@ import {
   BotForwardDetails,
   PlanForwardDetailsInfoFragment,
   PlanForwardDetails,
+  PlanSummary,
   PlanStatus,
   Platform,
 } from "@/graphql/gql/graphql";
@@ -60,6 +61,68 @@ export const GET_PLANS_BY_STATUS_DOCUMENT = graphql(`
         cursor
         node {
           ...PlanForwardDetailsInfo
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+`);
+
+export const PLAN_SUMMARY_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment PlanSummaryInfo on PlanSummary {
+    id
+    title
+    description
+    status
+    scheduledStart
+    scheduledEnd
+    startedAt
+    endedAt
+    userId
+    botCount
+    leaderPnl {
+      contractId
+      chainId
+      realizedPnl
+      realizedCount
+      openPositions {
+        openPrice
+        long
+        size
+        leverage
+        pairIndex
+      }
+    }
+    followerPnl {
+      contractId
+      chainId
+      realizedPnl
+      realizedCount
+      openPositions {
+        openPrice
+        long
+        size
+        leverage
+        pairIndex
+      }
+    }
+  }
+`);
+
+export const GET_PLAN_SUMMARIES_BY_STATUS_DOCUMENT = graphql(`
+  query getPlanSummariesByStatus(
+    $status: PlanStatus!
+    $after: Int
+    $first: Int!
+  ) {
+    getPlanSummariesByStatus(status: $status, after: $after, first: $first) {
+      edges {
+        cursor
+        node {
+          ...PlanSummaryInfo
         }
       }
       pageInfo {
@@ -319,6 +382,78 @@ export function useLivePlans() {
   };
 }
 
+export function useGetPlanSummariesByStatus(status: PlanStatus) {
+  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
+    GET_PLAN_SUMMARIES_BY_STATUS_DOCUMENT,
+  );
+
+  useEffect(() => {
+    query({
+      variables: {
+        status,
+        first: 20,
+      },
+    });
+  }, [query, status]);
+
+  const plans = useMemo((): PlanSummary[] => {
+    if (!data) {
+      return [];
+    }
+    return data.getPlanSummariesByStatus.edges.map((edge) => {
+      const info = getFragmentData(
+        PLAN_SUMMARY_INFO_FRAGMENT_DOCUMENT,
+        edge.node,
+      );
+      return { ...info };
+    });
+  }, [data]);
+
+  const handleFetchMore = useCallback(() => {
+    if (data && !error) {
+      fetchMore({
+        variables: {
+          status,
+          first: 20,
+          after: data.getPlanSummariesByStatus.pageInfo.endCursor,
+        },
+      });
+    }
+  }, [data, error, fetchMore, status]);
+
+  return {
+    plans,
+    loading,
+    fetchMore: handleFetchMore,
+    hasMore: data?.getPlanSummariesByStatus.pageInfo.hasNextPage,
+  };
+}
+
+export function useLivePlanSummaries() {
+  const createdPlans = useGetPlanSummariesByStatus(PlanStatus.Created);
+  const startedPlans = useGetPlanSummariesByStatus(PlanStatus.Started);
+  const stoppedPlans = useGetPlanSummariesByStatus(PlanStatus.Stopped);
+
+  const handleFetchMore = useCallback(() => {
+    createdPlans.fetchMore();
+    startedPlans.fetchMore();
+    stoppedPlans.fetchMore();
+  }, [createdPlans, startedPlans, stoppedPlans]);
+
+  return {
+    plans: [
+      ...createdPlans.plans,
+      ...startedPlans.plans,
+      ...stoppedPlans.plans,
+    ],
+    loading:
+      createdPlans.loading || startedPlans.loading || stoppedPlans.loading,
+    fetchMore: handleFetchMore,
+    hasMore:
+      createdPlans.hasMore || startedPlans.hasMore || stoppedPlans.hasMore,
+  };
+}
+
 export function useSubscribePlan() {
   const { address } = useAccount();
 
@@ -439,6 +574,11 @@ export function useSubscribePlan() {
               }
             },
           );
+
+          // Refetch summary queries for affected statuses
+          client.refetchQueries({
+            include: [GET_PLAN_SUMMARIES_BY_STATUS_DOCUMENT],
+          });
         }
       }
     }
@@ -513,6 +653,11 @@ export function useSubscribePlan() {
             }
           },
         );
+
+        // Refetch summary queries for Created status
+        client.refetchQueries({
+          include: [GET_PLAN_SUMMARIES_BY_STATUS_DOCUMENT],
+        });
       }
     }
   }, [client.cache, enqueueSnackbar, error1, newData]);
@@ -649,6 +794,11 @@ export function useDeletePlan() {
           }
         },
       );
+
+      // Refetch summary queries
+      client.refetchQueries({
+        include: [GET_PLAN_SUMMARIES_BY_STATUS_DOCUMENT],
+      });
     }
 
     if (newData && error) {

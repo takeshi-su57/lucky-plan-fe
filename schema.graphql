@@ -315,6 +315,14 @@ type ContractExecutionResult {
   success: Boolean!
 }
 
+type ContractPnlSummary {
+  chainId: Int!
+  contractId: Int!
+  openPositions: [OpenPosition!]!
+  realizedCount: Int!
+  realizedPnl: Float!
+}
+
 enum ContractStatus {
   Dead
   Live
@@ -811,6 +819,14 @@ type Mutation {
   withdrawPositivePnl(input: WithdrawPositivePnlInput!): ContractExecutionResult!
 }
 
+type OpenPosition {
+  leverage: Float!
+  long: Boolean!
+  openPrice: Float!
+  pairIndex: Int!
+  size: Float!
+}
+
 input OpenTradeInput {
   address: String!
   collateralAmount: String!
@@ -947,6 +963,31 @@ enum PlanStatus {
   Stopped
 }
 
+type PlanSummary {
+  botCount: Int!
+  description: String!
+  endedAt: Date
+  followerPnl: [ContractPnlSummary!]!
+  id: Int!
+  leaderPnl: [ContractPnlSummary!]!
+  scheduledEnd: Date!
+  scheduledStart: Date!
+  startedAt: Date
+  status: PlanStatus!
+  title: String!
+  userId: String!
+}
+
+type PlanSummaryConnection {
+  edges: [PlanSummaryEdge!]!
+  pageInfo: PlanPageInfo!
+}
+
+type PlanSummaryEdge {
+  cursor: Int!
+  node: PlanSummary!
+}
+
 enum Platform {
   AVNT
   GMX
@@ -1064,6 +1105,7 @@ type Query {
   getPerpEventLogs(addresses: [String!]!, limit: Int, platform: Platform!): [[PerpTradingEventLog!]!]!
   getPlanBotGroups(after: Int, first: Int!, hideDead: Boolean! = true, planId: Int!): BotGroupConnection!
   getPlanById(id: Int!): PlanForwardDetails
+  getPlanSummariesByStatus(after: Int, first: Int!, status: PlanStatus!): PlanSummaryConnection!
   getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
   getPnlSnapshotV2InitializedFlag(platform: Platform!): [PnlSnapshotV2InitializedFlag!]!
   getPnlSnapshotsV2(after: Int, dateStr: String!, first: Int!, kind: PnlSnapshotKind!, minR2: Float!, minSlope: Float!, platform: Platform!): PnlSnapshotV2DetailsConnection!

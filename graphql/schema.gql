@@ -336,6 +336,14 @@ type ContractExecutionResult {
   success: Boolean!
 }
 
+type ContractPnlSummary {
+  chainId: Int!
+  contractId: Int!
+  openPositions: [OpenPosition!]!
+  realizedCount: Int!
+  realizedPnl: Float!
+}
+
 enum ContractStatus {
   Dead
   Live
@@ -1000,6 +1008,14 @@ type Mutation {
   ): ContractExecutionResult!
 }
 
+type OpenPosition {
+  leverage: Float!
+  long: Boolean!
+  openPrice: Float!
+  pairIndex: Int!
+  size: Float!
+}
+
 input OpenTradeInput {
   address: String!
   collateralAmount: String!
@@ -1136,6 +1152,31 @@ enum PlanStatus {
   Finished
   Started
   Stopped
+}
+
+type PlanSummary {
+  botCount: Int!
+  description: String!
+  endedAt: Date
+  followerPnl: [ContractPnlSummary!]!
+  id: Int!
+  leaderPnl: [ContractPnlSummary!]!
+  scheduledEnd: Date!
+  scheduledStart: Date!
+  startedAt: Date
+  status: PlanStatus!
+  title: String!
+  userId: String!
+}
+
+type PlanSummaryConnection {
+  edges: [PlanSummaryEdge!]!
+  pageInfo: PlanPageInfo!
+}
+
+type PlanSummaryEdge {
+  cursor: Int!
+  node: PlanSummary!
 }
 
 enum Platform {
@@ -1320,6 +1361,11 @@ type Query {
     planId: Int!
   ): BotGroupConnection!
   getPlanById(id: Int!): PlanForwardDetails
+  getPlanSummariesByStatus(
+    after: Int
+    first: Int!
+    status: PlanStatus!
+  ): PlanSummaryConnection!
   getPlansByStatus(
     after: Int
     first: Int!
