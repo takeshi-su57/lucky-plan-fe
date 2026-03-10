@@ -144,32 +144,27 @@ export const GET_PLAN_BY_ID_DOCUMENT = graphql(`
 export const GET_PLAN_BOT_GROUPS_DOCUMENT = graphql(`
   query getPlanBotGroups(
     $planId: Int!
-    $first: Int!
-    $after: Int
+    $page: Int!
+    $pageSize: Int!
     $hideDead: Boolean!
   ) {
     getPlanBotGroups(
       planId: $planId
-      first: $first
-      after: $after
+      page: $page
+      pageSize: $pageSize
       hideDead: $hideDead
     ) {
-      edges {
-        cursor
-        node {
-          leaderAddress
-          platform
-          hasDefault
-          bots {
-            ...BotForwardDetailsInfo
-          }
+      items {
+        leaderAddress
+        platform
+        hasDefault
+        bots {
+          ...BotForwardDetailsInfo
         }
       }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
       totalGroups
+      totalPages
+      currentPage
     }
   }
 `);
@@ -698,52 +693,39 @@ export type BotGroupData = {
   bots: BotForwardDetails[];
 };
 
-export function useGetPlanBotGroups(planId: number, hideDead: boolean) {
-  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
-    GET_PLAN_BOT_GROUPS_DOCUMENT,
-  );
-
-  useEffect(() => {
-    query({
-      variables: {
-        planId,
-        first: 10,
-        hideDead,
-      },
-    });
-  }, [query, planId, hideDead]);
+export function useGetPlanBotGroups(
+  planId: number,
+  hideDead: boolean,
+  page: number,
+  pageSize: number = 10,
+) {
+  const { data, loading } = useQuery(GET_PLAN_BOT_GROUPS_DOCUMENT, {
+    variables: {
+      planId,
+      page,
+      pageSize,
+      hideDead,
+    },
+  });
 
   const botGroups = useMemo((): BotGroupData[] => {
     if (!data) {
       return [];
     }
-    return data.getPlanBotGroups.edges.map((edge) => ({
-      leaderAddress: edge.node.leaderAddress,
-      platform: edge.node.platform,
-      hasDefault: edge.node.hasDefault,
-      bots: edge.node.bots.map((bot) => getBotForwardDetails(bot)),
+    return data.getPlanBotGroups.items.map((item) => ({
+      leaderAddress: item.leaderAddress,
+      platform: item.platform,
+      hasDefault: item.hasDefault,
+      bots: item.bots.map((bot) => getBotForwardDetails(bot)),
     }));
   }, [data]);
-
-  const handleFetchMore = useCallback(() => {
-    if (data && !error && data.getPlanBotGroups.pageInfo.hasNextPage) {
-      fetchMore({
-        variables: {
-          planId,
-          first: 10,
-          hideDead,
-          after: data.getPlanBotGroups.pageInfo.endCursor,
-        },
-      });
-    }
-  }, [data, error, fetchMore, planId, hideDead]);
 
   return {
     botGroups,
     loading,
-    fetchMore: handleFetchMore,
-    hasMore: data?.getPlanBotGroups.pageInfo.hasNextPage ?? false,
     totalGroups: data?.getPlanBotGroups.totalGroups ?? 0,
+    totalPages: data?.getPlanBotGroups.totalPages ?? 0,
+    currentPage: data?.getPlanBotGroups.currentPage ?? 1,
   };
 }
 

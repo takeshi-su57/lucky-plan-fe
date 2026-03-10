@@ -1,8 +1,7 @@
 "use client";
 
 import { memo, useMemo, useState } from "react";
-import { Spinner, Switch } from "@heroui/react";
-import { Virtuoso } from "react-virtuoso";
+import { Button, Pagination, Spinner, Switch } from "@heroui/react";
 
 import {
   BotForwardDetails,
@@ -23,6 +22,7 @@ import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { Address } from "viem";
 
 const CHART_INITIAL_SELECTED = ["x", "y"];
+const PAGE_SIZE = 10;
 
 export type PlanAutomationsProps = {
   planId: number;
@@ -32,10 +32,13 @@ export function PlanAutomations({ planId }: PlanAutomationsProps) {
   const allContracts = useGetAllContracts();
   const [isChartFirst, setIsChartFirst] = useState(false);
   const [showDeadBots, setShowDeadBots] = useState(false);
+  const [page, setPage] = useState(1);
 
-  const { botGroups, fetchMore, hasMore } = useGetPlanBotGroups(
+  const { botGroups, loading, totalPages } = useGetPlanBotGroups(
     planId,
     !showDeadBots,
+    page,
+    PAGE_SIZE,
   );
 
   return (
@@ -51,31 +54,45 @@ export function PlanAutomations({ planId }: PlanAutomationsProps) {
 
         <Switch
           isSelected={showDeadBots}
-          onValueChange={setShowDeadBots}
+          onValueChange={(value) => {
+            setShowDeadBots(value);
+            setPage(1);
+          }}
           size="sm"
         >
           Show Dead Automations
         </Switch>
       </div>
 
-      <Virtuoso
-        style={{ height: 700 }}
-        data={botGroups}
-        endReached={() => {
-          if (hasMore) fetchMore();
-        }}
-        itemContent={(_index, item) => (
-          <div className="pb-6">
+      {loading ? (
+        <div className="flex items-center justify-center py-10">
+          <Spinner />
+        </div>
+      ) : (
+        <div className="flex flex-col gap-6">
+          {botGroups.map((item) => (
             <GroupedAutomations
+              key={`${item.leaderAddress}-${item.platform}`}
               bots={item.bots}
               leaderAddress={item.leaderAddress}
               platform={item.platform}
               isChartFirst={isChartFirst}
               allContracts={allContracts}
             />
-          </div>
-        )}
-      />
+          ))}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center pt-4">
+          <Pagination
+            total={totalPages}
+            page={page}
+            onChange={setPage}
+            showControls
+          />
+        </div>
+      )}
     </div>
   );
 }
