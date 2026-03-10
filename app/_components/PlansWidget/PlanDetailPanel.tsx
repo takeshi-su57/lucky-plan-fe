@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useMemo } from "react";
 import { Button, Chip, useDisclosure } from "@heroui/react";
 import dayjs from "dayjs";
 import { PlanStatus } from "@/graphql/gql/graphql";
@@ -14,53 +15,58 @@ import { CreateAutomationModal } from "../AutomationWidgets/CreateAutomationModa
 import { FaPlus } from "react-icons/fa";
 
 export function PlanDetailPanel({ planId }: { planId: string }) {
+  const numericPlanId = useMemo(() => +planId, [planId]);
   const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
 
   const { startPlan, loading: startPlanLoading } = useStartPlan();
   const { endPlan, loading: endPlanLoading } = useEndPlan();
 
-  const plan = useGetPlanById(+planId);
+  const plan = useGetPlanById(numericPlanId);
 
-  const handleStartPlan = () => {
+  const handleStartPlan = useCallback(() => {
     if (plan?.status === PlanStatus.Created) {
-      startPlan({ variables: { id: +planId } });
+      startPlan({ variables: { id: numericPlanId } });
     }
-  };
+  }, [plan?.status, startPlan, numericPlanId]);
 
-  const handleEndPlan = () => {
+  const handleEndPlan = useCallback(() => {
     if (plan?.status === PlanStatus.Started) {
-      endPlan({ variables: { id: +planId } });
+      endPlan({ variables: { id: numericPlanId } });
     }
-  };
+  }, [plan?.status, endPlan, numericPlanId]);
 
-  const items = plan
-    ? [
-        {
-          label: "Scheduled Start At",
-          value: dayjs(plan.scheduledStart).format("MMM D, H:m:s"),
-        },
-        {
-          label: "Scheduled End At",
-          value: dayjs(plan.scheduledEnd).format("MMM D, H:m:s"),
-        },
-        {
-          label: "Started At",
-          value: plan.startedAt
-            ? dayjs(plan.startedAt).format("MMM D, H:m:s")
-            : null,
-        },
-        {
-          label: "Ended At",
-          value: plan.endedAt
-            ? dayjs(plan.endedAt).format("MMM D, H:m:s")
-            : null,
-        },
-        {
-          label: "Bots",
-          value: plan.bots.length,
-        },
-      ]
-    : [];
+  const items = useMemo(
+    () =>
+      plan
+        ? [
+            {
+              label: "Scheduled Start At",
+              value: dayjs(plan.scheduledStart).format("MMM D, H:m:s"),
+            },
+            {
+              label: "Scheduled End At",
+              value: dayjs(plan.scheduledEnd).format("MMM D, H:m:s"),
+            },
+            {
+              label: "Started At",
+              value: plan.startedAt
+                ? dayjs(plan.startedAt).format("MMM D, H:m:s")
+                : null,
+            },
+            {
+              label: "Ended At",
+              value: plan.endedAt
+                ? dayjs(plan.endedAt).format("MMM D, H:m:s")
+                : null,
+            },
+            {
+              label: "Bots",
+              value: plan.bots.length,
+            },
+          ]
+        : [],
+    [plan],
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -131,14 +137,16 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
         </div>
       </div>
 
-      <PlanAutomations bots={(plan?.bots || []).sort((a, b) => a.id - b.id)} />
+      <PlanAutomations planId={numericPlanId} />
 
-      <CreateAutomationModal
-        planId={+planId}
-        isOpen={isOpen}
-        onClose={onClose}
-        onOpenChange={onOpenChange}
-      />
+      {isOpen && (
+        <CreateAutomationModal
+          planId={numericPlanId}
+          isOpen={isOpen}
+          onClose={onClose}
+          onOpenChange={onOpenChange}
+        />
+      )}
     </div>
   );
 }

@@ -75,6 +75,7 @@ export function CreateAutomationModal({
   const [slPercentage, setSlPercentage] = useState("10");
   const [maxOpenMissions, setMaxOpenMissions] = useState("1");
   const [mode, setMode] = useState<"signal" | "hook" | "default">("default");
+  const [lifeTime, setLifeTime] = useState("0");
 
   const { eventLogs: originalEventLogs } = useGetPerpEventLogs(
     isAddress(leaderAddress) ? [leaderAddress] : [],
@@ -207,7 +208,7 @@ export function CreateAutomationModal({
           strategy: {
             strategyKey: "ratioCopy",
             ratio: +ratio,
-            lifeTime: 365 * 24 * 60,
+            lifeTime: +lifeTime,
             maxCollateral: +maxCollateral,
             minCollateral: +minCollateral,
             collateralBaseline: 0,
@@ -433,6 +434,12 @@ export function CreateAutomationModal({
                 amount={maxOpenMissions}
                 onChange={setMaxOpenMissions}
                 label="Max Open Missions"
+              />
+
+              <NumericInput
+                amount={lifeTime}
+                onChange={setLifeTime}
+                label="LifeTime"
               />
             </div>
 

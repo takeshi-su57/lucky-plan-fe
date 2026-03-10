@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback, useState } from "react";
+import { memo, useRef, useEffect, useCallback, useState } from "react";
 import Chart from "chart.js/auto";
 import { twMerge } from "tailwind-merge";
 import { Button, Checkbox, useDisclosure } from "@heroui/react";
@@ -17,7 +17,12 @@ export type LineChartProps = {
   initialSelected?: string[];
 };
 
-export default function LineChart({
+const EMPTY_CHART_DATA = [
+  { value: 0, label: "" },
+  { value: 0, label: "" },
+];
+
+const LineChart = memo(function LineChart({
   title,
   data,
   className,
@@ -39,31 +44,18 @@ export default function LineChart({
       ref.current.destroy();
     }
 
-    if (data.length === 0) {
-      data.push(
-        ...[
-          {
-            value: 0,
-            label: "",
-          },
-          {
-            value: 0,
-            label: "",
-          },
-        ],
-      );
-    }
+    const chartData = data.length === 0 ? EMPTY_CHART_DATA : data;
 
     const chartContainer = chartRef.current!;
 
     ref.current = new Chart(chartContainer, {
       type: "line",
       data: {
-        labels: data.map((item) => item.label),
+        labels: chartData.map((item) => item.label),
         datasets: [
           {
             label: "Amount",
-            data: data.map((item) => item.value),
+            data: chartData.map((item) => item.value),
             pointRadius: 0,
             fill: {
               target: "origin",
@@ -118,31 +110,18 @@ export default function LineChart({
       modalRef.current.destroy();
     }
 
-    if (data.length === 0) {
-      data.push(
-        ...[
-          {
-            value: 0,
-            label: "",
-          },
-          {
-            value: 0,
-            label: "",
-          },
-        ],
-      );
-    }
+    const chartData = data.length === 0 ? EMPTY_CHART_DATA : data;
 
     const chartContainer = modalChartRef.current!;
 
     modalRef.current = new Chart(chartContainer, {
       type: "line",
       data: {
-        labels: data.map((item) => item.label),
+        labels: chartData.map((item) => item.label),
         datasets: [
           {
             label: "Amount",
-            data: data.map((item) => item.value),
+            data: chartData.map((item) => item.value),
             pointRadius: 0,
             fill: {
               target: "origin",
@@ -244,4 +223,6 @@ export default function LineChart({
       </StandardModal>
     </div>
   );
-}
+});
+
+export default LineChart;

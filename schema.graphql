@@ -220,6 +220,29 @@ type BotForwardDetails {
   strategyId: Int!
 }
 
+type BotGroup {
+  bots: [BotForwardDetails!]!
+  hasDefault: Boolean!
+  leaderAddress: String!
+  platform: Platform!
+}
+
+type BotGroupConnection {
+  edges: [BotGroupEdge!]!
+  pageInfo: BotGroupPageInfo!
+  totalGroups: Int!
+}
+
+type BotGroupEdge {
+  cursor: Int!
+  node: BotGroup!
+}
+
+type BotGroupPageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
 type BotPageInfo {
   endCursor: Int
   hasNextPage: Boolean!
@@ -1039,6 +1062,7 @@ type Query {
   getMaxOpenMissions: Int!
   getMicroserviceStatus: [MicroserviceStatus!]!
   getPerpEventLogs(addresses: [String!]!, limit: Int, platform: Platform!): [[PerpTradingEventLog!]!]!
+  getPlanBotGroups(after: Int, first: Int!, hideDead: Boolean! = true, planId: Int!): BotGroupConnection!
   getPlanById(id: Int!): PlanForwardDetails
   getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
   getPnlSnapshotV2InitializedFlag(platform: Platform!): [PnlSnapshotV2InitializedFlag!]!
@@ -1496,6 +1520,7 @@ input UpdateSlInput {
 }
 
 input UpdateStrategyInput {
+  lifeTime: Float!
   maxCollateral: Int!
   maxLeverage: Int!
   minCollateral: Int!

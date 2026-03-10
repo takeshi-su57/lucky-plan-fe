@@ -94,6 +94,7 @@ export function EditStrategyModal({
   const [tpPercentage, setTpPercentage] = useState("10");
   const [slPercentage, setSlPercentage] = useState("10");
   const [maxOpenMissions, setMaxOpenMissions] = useState("1");
+  const [lifeTime, setLifeTime] = useState(strategy.lifeTime.toString());
 
   const [mode, setMode] = useState<"signal" | "hook" | "default">("default");
   const [selectedPair, setSelectedPair] = useState<Selection>(
@@ -213,6 +214,7 @@ export function EditStrategyModal({
           minCollateral: +minCollateral,
           maxLeverage: Math.floor(+maxLeverage * 1000),
           minLeverage: Math.floor(+minLeverage * 1000),
+          lifeTime: +lifeTime,
           params: JSON.stringify({
             maxOpenMissions: +maxOpenMissions,
             tpPercentage: +tpPercentage,
@@ -318,6 +320,12 @@ export function EditStrategyModal({
             amount={maxOpenMissions}
             onChange={setMaxOpenMissions}
             label="Max Open Missions"
+          />
+
+          <NumericInput
+            amount={lifeTime}
+            onChange={setLifeTime}
+            label="LifeTime"
           />
 
           <Select
