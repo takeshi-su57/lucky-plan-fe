@@ -6,7 +6,6 @@ import { Virtuoso } from "react-virtuoso";
 
 import {
   BotForwardDetails,
-  BotStatus,
   Contract,
   Platform,
 } from "@/graphql/gql/graphql";
@@ -16,61 +15,28 @@ import { AutomationDetails } from "@/app-components/AutomationWidgets/Automation
 import { ModaledItems } from "@/components/modals/ModaledItems";
 import { useGetPerpEventLogs } from "@/app/_hooks/useHistory";
 import { useGetAllContracts } from "@/app/_hooks/useContract";
+import { useGetPlanBotGroups } from "@/app/_hooks/usePlan";
 import { convertPerpTradingEventLogToHistory } from "@/utils/historiesV2Chart";
 import LineChart from "@/components/charts/LineChart";
 import dayjs from "dayjs";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { Address } from "viem";
-import { getAdditionalParams } from "../AutomationWidgets/EditAutomationModal";
 
 const CHART_INITIAL_SELECTED = ["x", "y"];
 
 export type PlanAutomationsProps = {
-  bots: BotForwardDetails[];
+  planId: number;
 };
 
-export function PlanAutomations({ bots }: PlanAutomationsProps) {
+export function PlanAutomations({ planId }: PlanAutomationsProps) {
   const allContracts = useGetAllContracts();
   const [isChartFirst, setIsChartFirst] = useState(false);
   const [showDeadBots, setShowDeadBots] = useState(false);
 
-  const groupedBots = useMemo(() => {
-    const botMap: Record<
-      string,
-      {
-        leaderAddress: string;
-        platform: Platform;
-        hasDefault: boolean;
-        bots: BotForwardDetails[];
-      }
-    > = {};
-
-    bots
-      .filter((bot) => (showDeadBots ? true : bot.status !== BotStatus.Dead))
-      .forEach((bot) => {
-        const key = `${bot.leaderAddress.toLowerCase()}-${bot.leaderContract.platform}`;
-
-        const obj = botMap[key] || {
-          leaderAddress: bot.leaderAddress,
-          platform: bot.leaderContract.platform,
-          bots: [],
-          hasDefault: false,
-        };
-        obj.bots.push(bot);
-
-        const additionalParams = getAdditionalParams(bot.strategy.params);
-
-        if (!additionalParams.mode) {
-          obj.hasDefault = true;
-        }
-
-        botMap[key] = obj;
-      });
-
-    return Object.values(botMap).sort((a, b) =>
-      a.hasDefault ? -1 : b.hasDefault ? 1 : -1,
-    );
-  }, [bots, showDeadBots]);
+  const { botGroups, fetchMore, hasMore } = useGetPlanBotGroups(
+    planId,
+    !showDeadBots,
+  );
 
   return (
     <div className="flex flex-col gap-2">
@@ -94,7 +60,10 @@ export function PlanAutomations({ bots }: PlanAutomationsProps) {
 
       <Virtuoso
         style={{ height: 700 }}
-        data={groupedBots}
+        data={botGroups}
+        endReached={() => {
+          if (hasMore) fetchMore();
+        }}
         itemContent={(_index, item) => (
           <div className="pb-6">
             <GroupedAutomations

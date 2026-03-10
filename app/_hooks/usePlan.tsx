@@ -12,6 +12,7 @@ import { getFragmentData, graphql } from "@/gql/index";
 import { useCallback, useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
 import {
+  BotForwardDetails,
   PlanForwardDetailsInfoFragment,
   PlanForwardDetails,
   PlanStatus,
@@ -73,6 +74,39 @@ export const GET_PLAN_BY_ID_DOCUMENT = graphql(`
   query getPlanById($id: Int!) {
     getPlanById(id: $id) {
       ...PlanForwardDetailsInfo
+    }
+  }
+`);
+
+export const GET_PLAN_BOT_GROUPS_DOCUMENT = graphql(`
+  query getPlanBotGroups(
+    $planId: Int!
+    $first: Int!
+    $after: Int
+    $hideDead: Boolean!
+  ) {
+    getPlanBotGroups(
+      planId: $planId
+      first: $first
+      after: $after
+      hideDead: $hideDead
+    ) {
+      edges {
+        cursor
+        node {
+          leaderAddress
+          platform
+          hasDefault
+          bots {
+            ...BotForwardDetailsInfo
+          }
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+      totalGroups
     }
   }
 `);
@@ -495,6 +529,62 @@ export function useGetPlanById(id: number) {
     }
     return getPlanForwardDetails(data.getPlanById);
   }, [data]);
+}
+
+export type BotGroupData = {
+  leaderAddress: string;
+  platform: Platform;
+  hasDefault: boolean;
+  bots: BotForwardDetails[];
+};
+
+export function useGetPlanBotGroups(planId: number, hideDead: boolean) {
+  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
+    GET_PLAN_BOT_GROUPS_DOCUMENT,
+  );
+
+  useEffect(() => {
+    query({
+      variables: {
+        planId,
+        first: 10,
+        hideDead,
+      },
+    });
+  }, [query, planId, hideDead]);
+
+  const botGroups = useMemo((): BotGroupData[] => {
+    if (!data) {
+      return [];
+    }
+    return data.getPlanBotGroups.edges.map((edge) => ({
+      leaderAddress: edge.node.leaderAddress,
+      platform: edge.node.platform,
+      hasDefault: edge.node.hasDefault,
+      bots: edge.node.bots.map((bot) => getBotForwardDetails(bot)),
+    }));
+  }, [data]);
+
+  const handleFetchMore = useCallback(() => {
+    if (data && !error && data.getPlanBotGroups.pageInfo.hasNextPage) {
+      fetchMore({
+        variables: {
+          planId,
+          first: 10,
+          hideDead,
+          after: data.getPlanBotGroups.pageInfo.endCursor,
+        },
+      });
+    }
+  }, [data, error, fetchMore, planId, hideDead]);
+
+  return {
+    botGroups,
+    loading,
+    fetchMore: handleFetchMore,
+    hasMore: data?.getPlanBotGroups.pageInfo.hasNextPage ?? false,
+    totalGroups: data?.getPlanBotGroups.totalGroups ?? 0,
+  };
 }
 
 export function useCreatePlan() {

@@ -68,11 +68,6 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
     [plan],
   );
 
-  const sortedBots = useMemo(
-    () => (plan?.bots ? [...plan.bots].sort((a, b) => a.id - b.id) : []),
-    [plan?.bots],
-  );
-
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
@@ -142,7 +137,7 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
         </div>
       </div>
 
-      <PlanAutomations bots={sortedBots} />
+      <PlanAutomations planId={numericPlanId} />
 
       {isOpen && (
         <CreateAutomationModal
