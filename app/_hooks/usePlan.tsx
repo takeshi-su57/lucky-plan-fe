@@ -575,9 +575,37 @@ export function useSubscribePlan() {
             },
           );
 
-          // Refetch summary queries for affected statuses
+          // Move plan summary between status caches
+          const oldStatus = oldPlanForwardDetails.status;
+          const newStatus = updatedPlanForwardDetails.status;
+
+          // Remove from old summary status cache
+          client.cache.updateQuery(
+            {
+              query: GET_PLAN_SUMMARIES_BY_STATUS_DOCUMENT,
+              variables: { status: oldStatus, first: 20 },
+            },
+            (oldData: any) => {
+              if (!oldData) return oldData;
+              return {
+                ...oldData,
+                getPlanSummariesByStatus: {
+                  ...oldData.getPlanSummariesByStatus,
+                  edges: oldData.getPlanSummariesByStatus.edges.filter(
+                    (edge: any) => edge.cursor !== planInfo.id,
+                  ),
+                },
+              };
+            },
+          );
+
+          // Refetch only the new status to get fresh summary data
           client.refetchQueries({
             include: [GET_PLAN_SUMMARIES_BY_STATUS_DOCUMENT],
+            onQueryUpdated(observableQuery) {
+              const vars = observableQuery.options.variables as any;
+              return vars?.status === newStatus;
+            },
           });
         }
       }
@@ -654,9 +682,13 @@ export function useSubscribePlan() {
           },
         );
 
-        // Refetch summary queries for Created status
+        // Refetch only Created status summary
         client.refetchQueries({
           include: [GET_PLAN_SUMMARIES_BY_STATUS_DOCUMENT],
+          onQueryUpdated(observableQuery) {
+            const vars = observableQuery.options.variables as any;
+            return vars?.status === PlanStatus.Created;
+          },
         });
       }
     }
@@ -795,10 +827,25 @@ export function useDeletePlan() {
         },
       );
 
-      // Refetch summary queries
-      client.refetchQueries({
-        include: [GET_PLAN_SUMMARIES_BY_STATUS_DOCUMENT],
-      });
+      // Remove from Created status summary cache
+      client.cache.updateQuery(
+        {
+          query: GET_PLAN_SUMMARIES_BY_STATUS_DOCUMENT,
+          variables: { status: PlanStatus.Created, first: 20 },
+        },
+        (oldData: any) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            getPlanSummariesByStatus: {
+              ...oldData.getPlanSummariesByStatus,
+              edges: oldData.getPlanSummariesByStatus.edges.filter(
+                (edge: any) => edge.cursor !== newData.deletePlan,
+              ),
+            },
+          };
+        },
+      );
     }
 
     if (newData && error) {
