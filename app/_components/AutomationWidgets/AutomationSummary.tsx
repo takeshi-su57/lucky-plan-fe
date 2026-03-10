@@ -1,5 +1,6 @@
 "use client";
 
+import { memo, useMemo } from "react";
 import {
   Badge,
   Button,
@@ -40,7 +41,10 @@ export type AutomationSummaryProps = {
   simple?: boolean;
 };
 
-export function AutomationSummary({ bot, simple }: AutomationSummaryProps) {
+export const AutomationSummary = memo(function AutomationSummary({
+  bot,
+  simple,
+}: AutomationSummaryProps) {
   const alertTasks = useGetAlertTasks();
 
   const {
@@ -51,43 +55,56 @@ export function AutomationSummary({ bot, simple }: AutomationSummaryProps) {
     followerAddress,
   } = bot;
 
-  const botTasks = alertTasks.filter((task) => task.mission.botId === bot.id);
+  const { botTasks, createdCount, awaitedCount, initiatedCount, failedCount } =
+    useMemo(() => {
+      const botTasks = alertTasks.filter(
+        (task) => task.mission.botId === bot.id,
+      );
+      return {
+        botTasks,
+        createdCount: botTasks.filter(
+          (task) => task.status === TaskStatus.Created,
+        ).length,
+        awaitedCount: botTasks.filter(
+          (task) => task.status === TaskStatus.Await,
+        ).length,
+        initiatedCount: botTasks.filter(
+          (task) => task.status === TaskStatus.Initiated,
+        ).length,
+        failedCount: botTasks.filter(
+          (task) => task.status === TaskStatus.Failed,
+        ).length,
+      };
+    }, [alertTasks, bot.id]);
 
-  const createdCount = botTasks.filter(
-    (task) => task.status === TaskStatus.Created,
-  ).length;
+  const {
+    validBotMisions,
+    createdMissions,
+    openedMissions,
+    closedMissions,
+  } = useMemo(() => {
+    return {
+      validBotMisions: bot.missions.filter(
+        (mission) => mission.achievePositionKey,
+      ),
+      createdMissions: bot.missions.filter(
+        (mission) => mission.status === MissionStatus.Created,
+      ),
+      openedMissions: bot.missions.filter(
+        (mission) => mission.status === MissionStatus.Opened,
+      ),
+      closedMissions: bot.missions.filter(
+        (mission) =>
+          mission.status === MissionStatus.Closed ||
+          mission.status === MissionStatus.Ignored,
+      ),
+    };
+  }, [bot.missions]);
 
-  const awaitedCount = botTasks.filter(
-    (task) => task.status === TaskStatus.Await,
-  ).length;
-
-  const initiatedCount = botTasks.filter(
-    (task) => task.status === TaskStatus.Initiated,
-  ).length;
-
-  const failedCount = botTasks.filter(
-    (task) => task.status === TaskStatus.Failed,
-  ).length;
-
-  const validBotMisions = bot.missions.filter(
-    (mission) => mission.achievePositionKey,
+  const additionalParams = useMemo(
+    () => getAdditionalParams(strategy.params),
+    [strategy.params],
   );
-
-  const createdMissions = bot.missions.filter(
-    (mission) => mission.status === MissionStatus.Created,
-  );
-
-  const openedMissions = bot.missions.filter(
-    (mission) => mission.status === MissionStatus.Opened,
-  );
-
-  const closedMissions = bot.missions.filter(
-    (mission) =>
-      mission.status === MissionStatus.Closed ||
-      mission.status === MissionStatus.Ignored,
-  );
-
-  const additionalParams = getAdditionalParams(strategy.params);
 
   return (
     <div className={`flex items-center justify-between gap-6 text-neutral-400 ${!additionalParams.mode ? "bg-green-100/20 rounded-lg p-2" : ""}`}>
@@ -318,4 +335,4 @@ export function AutomationSummary({ bot, simple }: AutomationSummaryProps) {
       </div>
     </div>
   );
-}
+});
