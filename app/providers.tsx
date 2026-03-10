@@ -116,6 +116,7 @@ const cache = new InMemoryCache({
         getTestingReportV5: relayStylePagination(),
         getAllFollowerDetails: relayStylePagination(["contractId"]),
         getExpertPnlSnapshotsV2: relayStylePagination(["platform"]),
+        getPlanBotGroups: relayStylePagination(["planId", "hideDead"]),
       },
     },
     TagCategory: { keyFields: ["id"] },
