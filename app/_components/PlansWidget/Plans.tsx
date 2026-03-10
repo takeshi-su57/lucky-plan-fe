@@ -117,16 +117,22 @@ export function Plans() {
             </h2>
           )}
           itemContent={(index) => <PlanRow plan={plans[index]} />}
-          endReached={() => hasMore && !loading && fetchMore()}
           components={{
             Footer: () => (
-              <div className="flex w-full items-center justify-center">
+              <div className="flex w-full items-center justify-center py-4">
                 {hasMore === false ? (
                   <span className="font-sans text-neutral-400/40">
                     No More Results Available
                   </span>
-                ) : loading ? (
-                  <Spinner color="warning" size="lg" />
+                ) : hasMore ? (
+                  <Button
+                    variant="flat"
+                    color="primary"
+                    isLoading={loading}
+                    onClick={() => fetchMore()}
+                  >
+                    Load More
+                  </Button>
                 ) : null}
               </div>
             ),
