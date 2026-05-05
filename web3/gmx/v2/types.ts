@@ -1,4 +1,4 @@
-export type TokenCategory = "meme" | "layer1" | "layer2" | "defi" | "rwa";;
+export type TokenCategory = "meme" | "layer1" | "layer2" | "defi" | "rwa";
 
 export type Token = {
   name: string;
@@ -22,6 +22,7 @@ export type Token = {
   isPermitSupported?: boolean;
   isPermitDisabled?: boolean;
   contractVersion?: string;
+  searchAliases?: string[];
 
   isUsdg?: boolean;
   isNative?: boolean;
