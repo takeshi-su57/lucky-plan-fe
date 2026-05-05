@@ -25,6 +25,7 @@ export type UserJWT = {
   accessToken: string;
   permission: UserPermission;
   address: string;
+  secondAddress: string | null;
   expirationTime: number;
 };
 
@@ -49,6 +50,7 @@ export function useUserJWT() {
         return Promise.resolve({
           accessToken: jwtStr,
           address: parsedJwtObj.address,
+          secondAddress: parsedJwtObj.secondAddress ?? null,
           expirationTime: parsedJwtObj.exp * 1000,
           permission: parsedJwtObj.permission,
         });
@@ -81,6 +83,7 @@ export function useUserJWT() {
         queryClient.setQueriesData({ queryKey: [LOCAL_USER_JWT_KEY] }, () => ({
           accessToken: newJWT,
           address: parsedJwtObj.address,
+          secondAddress: parsedJwtObj.secondAddress ?? null,
           expirationTime: parsedJwtObj.exp * 1000,
           permission: parsedJwtObj.permission,
         }));

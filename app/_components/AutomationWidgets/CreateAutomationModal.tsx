@@ -66,14 +66,14 @@ export function CreateAutomationModal({
   );
   const [leaderContractId, setLeaderContractId] = useState<string | null>(null);
 
-  const [maxCollateral, setMaxCollateral] = useState("");
-  const [minCollateral, setMinCollateral] = useState("");
-  const [ratio, setRatio] = useState("");
+  const [maxCollateral, setMaxCollateral] = useState("100");
+  const [minCollateral, setMinCollateral] = useState("50");
+  const [ratio, setRatio] = useState("0.1");
   const [maxLeverage, setMaxLeverage] = useState("200");
   const [minLeverage, setMinLeverage] = useState("1.1");
-  const [tpPercentage, setTpPercentage] = useState("10");
-  const [slPercentage, setSlPercentage] = useState("10");
-  const [maxOpenMissions, setMaxOpenMissions] = useState("1");
+  const [tpPercentage, setTpPercentage] = useState("0");
+  const [slPercentage, setSlPercentage] = useState("0");
+  const [maxOpenMissions, setMaxOpenMissions] = useState("10");
   const [mode, setMode] = useState<"signal" | "hook" | "default">("default");
   const [lifeTime, setLifeTime] = useState("0");
 

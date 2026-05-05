@@ -1585,6 +1585,7 @@ type User {
   followerContractId: Int!
   permission: UserPermission!
   ratio: Float!
+  secondAddress: String
 }
 
 enum UserPermission {

@@ -1,11 +1,13 @@
 "use client";
 
-import { memo, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { Spinner, Switch } from "@heroui/react";
 
 import {
   BotForwardDetails,
+  BotStatus,
   Contract,
+  MissionStatus,
   Platform,
 } from "@/graphql/gql/graphql";
 
@@ -15,6 +17,9 @@ import { ModaledItems } from "@/components/modals/ModaledItems";
 import { useGetPerpEventLogs } from "@/app/_hooks/useHistory";
 import { useGetAllContracts } from "@/app/_hooks/useContract";
 import { useGetPlanBotGroups } from "@/app/_hooks/usePlan";
+import { useLiveBot, useStopBot } from "@/app-hooks/useAutomation";
+import { useCloseMission } from "@/app/_hooks/useMission";
+import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import { convertPerpTradingEventLogToHistory } from "@/utils/historiesV2Chart";
 import LineChart from "@/components/charts/LineChart";
 import dayjs from "dayjs";
@@ -102,6 +107,74 @@ export const GroupedAutomations = memo(function GroupedAutomations({
   platform,
   allContracts,
 }: GroupedAutomationsProps) {
+  const liveBot = useLiveBot();
+  const stopBot = useStopBot();
+  const closeMission = useCloseMission();
+
+  const [liveAllLoading, setLiveAllLoading] = useState(false);
+  const [stopAllLoading, setStopAllLoading] = useState(false);
+  const [closeAllMissionsLoading, setCloseAllMissionsLoading] = useState(false);
+
+  const createdBots = useMemo(
+    () => bots.filter((bot) => bot.status === BotStatus.Created),
+    [bots],
+  );
+
+  const liveBots = useMemo(
+    () => bots.filter((bot) => bot.status === BotStatus.Live),
+    [bots],
+  );
+
+  const allOpenMissions = useMemo(
+    () =>
+      bots.flatMap((bot) =>
+        (bot.missions || []).filter(
+          (mission) =>
+            mission.status !== MissionStatus.Closed &&
+            mission.status !== MissionStatus.Ignored,
+        ).map((mission) => mission),
+      ),
+    [bots],
+  );
+
+  const handleLiveAll = useCallback(async () => {
+    if (createdBots.length === 0) return;
+    setLiveAllLoading(true);
+    try {
+      await Promise.all(
+        createdBots.map((bot) => liveBot({ variables: { id: bot.id } })),
+      );
+    } finally {
+      setLiveAllLoading(false);
+    }
+  }, [createdBots, liveBot]);
+
+  const handleStopAll = useCallback(async () => {
+    if (liveBots.length === 0) return;
+    setStopAllLoading(true);
+    try {
+      await Promise.all(
+        liveBots.map((bot) => stopBot({ variables: { id: bot.id } })),
+      );
+    } finally {
+      setStopAllLoading(false);
+    }
+  }, [liveBots, stopBot]);
+
+  const handleCloseAllMissions = useCallback(async () => {
+    if (allOpenMissions.length === 0) return;
+    setCloseAllMissionsLoading(true);
+    try {
+      await Promise.all(
+        allOpenMissions.map((mission) =>
+          closeMission({ variables: { id: mission.id, isForce: false } }),
+        ),
+      );
+    } finally {
+      setCloseAllMissionsLoading(false);
+    }
+  }, [allOpenMissions, closeMission]);
+
   const { eventLogs, loading } = useGetPerpEventLogs(
     [leaderAddress],
     platform,
@@ -158,8 +231,8 @@ export const GroupedAutomations = memo(function GroupedAutomations({
   );
 
   return (
-    <div className="flex w-full gap-2 rounded-lg border border-neutral-700 p-4">
-      <div className="flex h-[300px] w-1/3 flex-col gap-4">
+    <div className="flex w-full flex-col gap-2 rounded-lg border border-neutral-700 p-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <AddressWidget
             address={leaderAddress as Address}
@@ -171,21 +244,57 @@ export const GroupedAutomations = memo(function GroupedAutomations({
           </span>
         </div>
 
-        {loading ? (
-          <Spinner />
-        ) : (
-          <LineChart
-            title="PNL ACC"
-            data={chartData}
-            initialSelected={CHART_INITIAL_SELECTED}
-            className="h-[250px] rounded-2xl border border-neutral-800 bg-amber-950/5"
-          />
-        )}
+        <div className="flex items-center gap-2">
+          <ButtonWithConfirm
+            onPress={handleLiveAll}
+            isDisabled={createdBots.length === 0}
+            isLoading={liveAllLoading}
+            color="success"
+            size="sm"
+          >
+            {`Live All (${createdBots.length})`}
+          </ButtonWithConfirm>
+
+          <ButtonWithConfirm
+            onPress={handleStopAll}
+            isDisabled={liveBots.length === 0}
+            isLoading={stopAllLoading}
+            color="warning"
+            size="sm"
+          >
+            {`Stop All (${liveBots.length})`}
+          </ButtonWithConfirm>
+
+          <ButtonWithConfirm
+            onPress={handleCloseAllMissions}
+            isDisabled={allOpenMissions.length === 0}
+            isLoading={closeAllMissionsLoading}
+            color="danger"
+            size="sm"
+          >
+            {`Close All Missions (${allOpenMissions.length})`}
+          </ButtonWithConfirm>
+        </div>
       </div>
-      <div className="flex flex-1 flex-col gap-2">
-        {bots.map((bot) => (
-          <BotModaledItem key={bot.id} bot={bot} />
-        ))}
+
+      <div className="flex w-full gap-2">
+        <div className="flex h-[300px] w-1/3 flex-col gap-4">
+          {loading ? (
+            <Spinner />
+          ) : (
+            <LineChart
+              title="PNL ACC"
+              data={chartData}
+              initialSelected={CHART_INITIAL_SELECTED}
+              className="h-[250px] rounded-2xl border border-neutral-800 bg-amber-950/5"
+            />
+          )}
+        </div>
+        <div className="flex flex-1 flex-col gap-2">
+          {bots.map((bot) => (
+            <BotModaledItem key={bot.id} bot={bot} />
+          ))}
+        </div>
       </div>
     </div>
   );

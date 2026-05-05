@@ -10,6 +10,7 @@ export const GET_ALL_USERS_DOCUMENT = graphql(`
   query getAllUsers {
     getAllUsers {
       address
+      secondAddress
       permission
       allowAuto
       budget
@@ -39,6 +40,7 @@ export const CHANGE_USER_PERMISSION_DOCUMENT = graphql(`
   mutation changeUserPermission($address: String!, $permission: String!) {
     changeUserPermission(address: $address, permission: $permission) {
       address
+      secondAddress
       permission
       allowAuto
       budget
@@ -64,6 +66,7 @@ export const ALLOW_AUTO_DOCUMENT = graphql(`
       followerContractId: $followerContractId
     ) {
       address
+      secondAddress
       permission
       allowAuto
       budget

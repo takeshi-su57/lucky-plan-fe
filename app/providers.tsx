@@ -66,6 +66,7 @@ const httpLink = new HttpLink({
 const wsLink = new GraphQLWsLink(
   createClient({
     url: process.env.NEXT_PUBLIC_LUCKY_PLAN_GRAPHQL_WSS,
+    keepAlive: 30_000, // send ping every 30s to prevent Nginx timeout
     connectionParams: () => {
       const userJWTStr = localStorage.getItem(LOCAL_USER_JWT_KEY);
       return {

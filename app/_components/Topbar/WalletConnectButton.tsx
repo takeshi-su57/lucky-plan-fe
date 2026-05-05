@@ -40,8 +40,11 @@ export default function WalletConnectButton() {
       account.address &&
       userJwtQuery.isFetched &&
       (!userJwtQuery.data ||
-        userJwtQuery.data.address.toLowerCase() !==
-          account.address.toLowerCase() ||
+        (userJwtQuery.data.address.toLowerCase() !==
+          account.address.toLowerCase() &&
+          (!userJwtQuery.data.secondAddress ||
+            userJwtQuery.data.secondAddress.toLowerCase() !==
+              account.address.toLowerCase())) ||
         userJwtQuery.data.expirationTime < Date.now())
     ) {
       const timestamp = Date.now();
