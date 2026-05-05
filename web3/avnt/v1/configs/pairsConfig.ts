@@ -582,4 +582,16 @@ export const pairConfigs: ConfigPair[] = [
     to: "USD",
     numTiers: "1",
   },
+  {
+    pairIndex: 96,
+    from: "WTI",
+    to: "USD",
+    numTiers: "1",
+  },
+  {
+    pairIndex: 97,
+    from: "BRENT",
+    to: "USD",
+    numTiers: "1",
+  },
 ];
