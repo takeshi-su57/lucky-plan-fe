@@ -14,11 +14,8 @@ export const STRATEGY_INFO_FRAGMENT_DOCUMENT = graphql(`
     minCollateral
     maxLeverage
     minLeverage
-    tpPercentage
-    slPercentage
-    maxOpenMissions
-    selectedPairs
-    mode
+    collateralBaseline
+    params
     ratio
   }
 `);
