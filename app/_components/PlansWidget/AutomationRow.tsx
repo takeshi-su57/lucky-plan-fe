@@ -52,7 +52,7 @@ export function AutomationRow({
           <Divider />
 
           <div className="flex flex-col font-mono text-xs">
-            <span>{`${strategy.strategyKey}(${strategy.id}, ${strategy.ratio}%)`}</span>
+            <span>{`Strategy ${strategy.id} (${strategy.ratio}x)`}</span>
 
             <span>
               Collateral:

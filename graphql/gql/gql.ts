@@ -130,9 +130,7 @@ type Documents = {
     "\n  query getWhitelist {\n    getWhitelist\n  }\n": typeof types.GetWhitelistDocument,
     "\n  mutation addToWhitelist($params: String!) {\n    addToWhitelist(params: $params)\n  }\n": typeof types.AddToWhitelistDocument,
     "\n  mutation removeFromWhitelist($address: String!) {\n    removeFromWhitelist(address: $address)\n  }\n": typeof types.RemoveFromWhitelistDocument,
-    "\n  fragment StrategyMetadataInfo on StrategyMetadata {\n    key\n    title\n    description\n  }\n": typeof types.StrategyMetadataInfoFragmentDoc,
-    "\n  fragment StrategyInfo on Strategy {\n    id\n    lifeTime\n    maxCollateral\n    minCollateral\n    maxLeverage\n    minLeverage\n    collateralBaseline\n    params\n    ratio\n    strategyKey\n  }\n": typeof types.StrategyInfoFragmentDoc,
-    "\n  query getAllStrategyMetadata {\n    getAllStrategyMetadata {\n      ...StrategyMetadataInfo\n    }\n  }\n": typeof types.GetAllStrategyMetadataDocument,
+    "\n  fragment StrategyInfo on Strategy {\n    id\n    lifeTime\n    maxCollateral\n    minCollateral\n    maxLeverage\n    minLeverage\n    collateralBaseline\n    params\n    ratio\n  }\n": typeof types.StrategyInfoFragmentDoc,
     "\n  query getAllStrategy {\n    getAllStrategy {\n      ...StrategyInfo\n    }\n  }\n": typeof types.GetAllStrategyDocument,
     "\n  mutation updateStrategy($id: Int!, $input: UpdateStrategyInput!) {\n    updateStrategy(id: $id, input: $input) {\n      ...StrategyInfo\n    }\n  }\n": typeof types.UpdateStrategyDocument,
     "\n  fragment StrategyTemplateInfo on StrategyTemplate {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n  }\n": typeof types.StrategyTemplateInfoFragmentDoc,
@@ -349,9 +347,7 @@ const documents: Documents = {
     "\n  query getWhitelist {\n    getWhitelist\n  }\n": types.GetWhitelistDocument,
     "\n  mutation addToWhitelist($params: String!) {\n    addToWhitelist(params: $params)\n  }\n": types.AddToWhitelistDocument,
     "\n  mutation removeFromWhitelist($address: String!) {\n    removeFromWhitelist(address: $address)\n  }\n": types.RemoveFromWhitelistDocument,
-    "\n  fragment StrategyMetadataInfo on StrategyMetadata {\n    key\n    title\n    description\n  }\n": types.StrategyMetadataInfoFragmentDoc,
-    "\n  fragment StrategyInfo on Strategy {\n    id\n    lifeTime\n    maxCollateral\n    minCollateral\n    maxLeverage\n    minLeverage\n    collateralBaseline\n    params\n    ratio\n    strategyKey\n  }\n": types.StrategyInfoFragmentDoc,
-    "\n  query getAllStrategyMetadata {\n    getAllStrategyMetadata {\n      ...StrategyMetadataInfo\n    }\n  }\n": types.GetAllStrategyMetadataDocument,
+    "\n  fragment StrategyInfo on Strategy {\n    id\n    lifeTime\n    maxCollateral\n    minCollateral\n    maxLeverage\n    minLeverage\n    collateralBaseline\n    params\n    ratio\n  }\n": types.StrategyInfoFragmentDoc,
     "\n  query getAllStrategy {\n    getAllStrategy {\n      ...StrategyInfo\n    }\n  }\n": types.GetAllStrategyDocument,
     "\n  mutation updateStrategy($id: Int!, $input: UpdateStrategyInput!) {\n    updateStrategy(id: $id, input: $input) {\n      ...StrategyInfo\n    }\n  }\n": types.UpdateStrategyDocument,
     "\n  fragment StrategyTemplateInfo on StrategyTemplate {\n    id\n    name\n    description\n    category\n    factoryConfig\n    isActive\n    createdAt\n    updatedAt\n  }\n": types.StrategyTemplateInfoFragmentDoc,
@@ -933,15 +929,7 @@ export function graphql(source: "\n  mutation removeFromWhitelist($address: Stri
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  fragment StrategyMetadataInfo on StrategyMetadata {\n    key\n    title\n    description\n  }\n"): (typeof documents)["\n  fragment StrategyMetadataInfo on StrategyMetadata {\n    key\n    title\n    description\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  fragment StrategyInfo on Strategy {\n    id\n    lifeTime\n    maxCollateral\n    minCollateral\n    maxLeverage\n    minLeverage\n    collateralBaseline\n    params\n    ratio\n    strategyKey\n  }\n"): (typeof documents)["\n  fragment StrategyInfo on Strategy {\n    id\n    lifeTime\n    maxCollateral\n    minCollateral\n    maxLeverage\n    minLeverage\n    collateralBaseline\n    params\n    ratio\n    strategyKey\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  query getAllStrategyMetadata {\n    getAllStrategyMetadata {\n      ...StrategyMetadataInfo\n    }\n  }\n"): (typeof documents)["\n  query getAllStrategyMetadata {\n    getAllStrategyMetadata {\n      ...StrategyMetadataInfo\n    }\n  }\n"];
+export function graphql(source: "\n  fragment StrategyInfo on Strategy {\n    id\n    lifeTime\n    maxCollateral\n    minCollateral\n    maxLeverage\n    minLeverage\n    collateralBaseline\n    params\n    ratio\n  }\n"): (typeof documents)["\n  fragment StrategyInfo on Strategy {\n    id\n    lifeTime\n    maxCollateral\n    minCollateral\n    maxLeverage\n    minLeverage\n    collateralBaseline\n    params\n    ratio\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

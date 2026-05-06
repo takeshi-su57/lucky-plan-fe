@@ -145,9 +145,6 @@ const cache = new InMemoryCache({
     Strategy: {
       keyFields: ["id"],
     },
-    StrategyMetadata: {
-      keyFields: ["key"],
-    },
     Contract: {
       keyFields: ["id"],
     },

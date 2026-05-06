@@ -206,7 +206,6 @@ export function CreateAutomationModal({
             : undefined,
           leaderCollateralBaseline: 0,
           strategy: {
-            strategyKey: "ratioCopy",
             ratio: +ratio,
             lifeTime: +lifeTime,
             maxCollateral: +maxCollateral,

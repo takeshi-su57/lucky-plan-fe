@@ -601,7 +601,6 @@ export function getHistoriesChartData(
 
 export function getOpenMissionParams(
   strategy: {
-    strategyKey: string;
     ratio: number;
     collateralBaseline: number;
   },
@@ -609,31 +608,12 @@ export function getOpenMissionParams(
     collateralAmount: number;
     collateralPriceUsd: number;
   },
-  leaderCollateralBaseline: number,
+  _leaderCollateralBaseline: number,
 ) {
   const collateralUSDAmount = args.collateralAmount * args.collateralPriceUsd;
 
-  let ratioAmount = collateralUSDAmount;
-
-  if (strategy.strategyKey === "ratioCopy") {
-    const deltaCollateral = collateralUSDAmount - leaderCollateralBaseline;
-
-    const deltaFollower = deltaCollateral * strategy.ratio;
-
-    ratioAmount = strategy.collateralBaseline + deltaFollower;
-  }
-
-  if (strategy.strategyKey === "scaleCopy") {
-    const collateralRatio =
-      leaderCollateralBaseline > 0
-        ? collateralUSDAmount / leaderCollateralBaseline
-        : collateralUSDAmount;
-
-    ratioAmount = strategy.collateralBaseline * collateralRatio;
-  }
-
   return {
-    collateralAmount: ratioAmount,
+    collateralAmount: collateralUSDAmount * strategy.ratio,
   };
 }
 
@@ -641,7 +621,6 @@ export function transformHistories(
   histories: PersonalTradeHistory[],
   collateralBaseline: number,
   strategy: {
-    strategyKey: string;
     ratio: number;
     collateralBaseline: number;
   },

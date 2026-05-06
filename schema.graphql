@@ -368,7 +368,6 @@ input CreateStrategyInput {
   minLeverage: Int!
   params: String!
   ratio: Float!
-  strategyKey: String!
 }
 
 input CreateStrategyTemplateInput {
@@ -1072,7 +1071,6 @@ type Query {
   backtestTasks(limit: Int! = 20, offset: Int! = 0, status: BacktestTaskStatus, symbol: String): [BacktestTask!]!
   findContract(id: Int!): Contract!
   findStrategy(id: Int!): Strategy
-  findStrategyMetadata(key: String!): StrategyMetadata!
   getALLSLTPs: [SLTPRequest!]!
   getActiveBots: [BotForwardDetails!]!
   getAdaptionStatus: String!
@@ -1082,7 +1080,6 @@ type Query {
   getAllFollowerDetails(after: Int, contractId: Int!, first: Int!): FollowerConnection!
   getAllFollowers: [Follower!]!
   getAllStrategy: [Strategy!]!
-  getAllStrategyMetadata: [StrategyMetadata!]!
   getAllTags: [Tag!]!
   getAllUsers: [User!]!
   getAllWalletAccounts: [WalletAccount!]!
@@ -1230,7 +1227,6 @@ type Strategy {
   minLeverage: Int!
   params: String!
   ratio: Float!
-  strategyKey: String!
 }
 
 """Category of trading strategy"""
@@ -1243,12 +1239,6 @@ enum StrategyCategory {
   SWING
   TREND_FOLLOWING
   VOLATILITY
-}
-
-type StrategyMetadata {
-  description: String!
-  key: String!
-  title: String!
 }
 
 type StrategyTemplate {

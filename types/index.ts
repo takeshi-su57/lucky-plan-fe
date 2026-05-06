@@ -58,7 +58,6 @@ export type VirtualStrategy = {
   minCollateral: number;
   minLeverage: number;
   ratio: number;
-  strategyKey: string;
 };
 
 export type ContractItem = {

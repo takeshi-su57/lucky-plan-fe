@@ -77,7 +77,6 @@ export function PlanCreationPanel() {
                   leaderCollateralBaseline: 0,
                   leaderContractId: contract.id,
                   strategy: {
-                    strategyKey: item.strategy!.strategyKey,
                     ratio: item.strategy!.ratio,
                     lifeTime: item.strategy!.lifeTime,
                     maxCollateral: item.strategy!.maxCollateral,

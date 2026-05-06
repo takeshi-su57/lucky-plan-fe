@@ -5,57 +5,72 @@ import { Card, CardBody } from "@heroui/react";
 
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 
-import { useGetAllStrategyMetadata } from "@/app-hooks/useStrategy";
+import { useGetAllStrategy } from "@/app-hooks/useStrategy";
 
-const strategyMetadataColumns: TableColumnProps[] = [
+const strategyColumns: TableColumnProps[] = [
   {
-    id: "key",
-    component: "Key",
+    id: "id",
+    component: "ID",
     allowsSorting: true,
   },
   {
-    id: "title",
-    component: "Title",
+    id: "ratio",
+    component: "Ratio",
     allowsSorting: true,
   },
   {
-    id: "description",
-    component: "Description",
+    id: "collateral",
+    component: "Collateral (USDC)",
+  },
+  {
+    id: "leverage",
+    component: "Leverage",
+  },
+  {
+    id: "lifeTime",
+    component: "Lifetime",
   },
 ];
 
 export function StrategyPanel() {
-  const allStrategyMetadata = useGetAllStrategyMetadata();
+  const allStrategy = useGetAllStrategy();
 
-  const strategyMetadataRows = useMemo(() => {
-    if (allStrategyMetadata.length === 0) {
+  const strategyRows = useMemo(() => {
+    if (allStrategy.length === 0) {
       return [];
     }
-    return allStrategyMetadata.map((metadata) => ({
-      id: metadata.key,
+    return allStrategy.map((strategy) => ({
+      id: `${strategy.id}`,
       className: "group",
       data: {
-        key: {
-          component: metadata.key,
-          sortableAmount: metadata.key,
+        id: {
+          component: `${strategy.id}`,
+          sortableAmount: strategy.id,
         },
-        title: {
-          sortableAmount: metadata.title,
-          component: metadata.title,
+        ratio: {
+          sortableAmount: strategy.ratio,
+          component: `${strategy.ratio}`,
         },
-        description: {
-          component: metadata.description,
+        collateral: {
+          component: `${strategy.minCollateral} ~ ${strategy.maxCollateral}`,
+        },
+        leverage: {
+          component: `${strategy.minLeverage / 1000}x ~ ${strategy.maxLeverage / 1000}x`,
+        },
+        lifeTime: {
+          component: `${strategy.lifeTime}`,
+          sortableAmount: strategy.lifeTime,
         },
       },
     }));
-  }, [allStrategyMetadata]);
+  }, [allStrategy]);
 
   return (
     <Card>
       <CardBody>
         <DataTable
-          columns={strategyMetadataColumns}
-          rows={strategyMetadataRows}
+          columns={strategyColumns}
+          rows={strategyRows}
           classNames={{
             tr: "font-mono cursor-pointer",
             td: "py-3 ",

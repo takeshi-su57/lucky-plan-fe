@@ -6,14 +6,6 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { getFragmentData, graphql } from "@/gql/index";
 import { useSnackbar } from "notistack";
 
-export const STRATEGY_METADATA_INFO_FRAGMENT_DOCUMENT = graphql(`
-  fragment StrategyMetadataInfo on StrategyMetadata {
-    key
-    title
-    description
-  }
-`);
-
 export const STRATEGY_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment StrategyInfo on Strategy {
     id
@@ -25,15 +17,6 @@ export const STRATEGY_INFO_FRAGMENT_DOCUMENT = graphql(`
     collateralBaseline
     params
     ratio
-    strategyKey
-  }
-`);
-
-export const GET_ALL_STRATEGY_METADATA_DOCUMENT = graphql(`
-  query getAllStrategyMetadata {
-    getAllStrategyMetadata {
-      ...StrategyMetadataInfo
-    }
   }
 `);
 
@@ -52,22 +35,6 @@ export const UPDATE_STRATEGY_DOCUMENT = graphql(`
     }
   }
 `);
-
-export function useGetAllStrategyMetadata() {
-  const { data } = useQuery(GET_ALL_STRATEGY_METADATA_DOCUMENT, {
-    variables: {},
-  });
-
-  return useMemo(() => {
-    if (!data) {
-      return [];
-    }
-
-    return data.getAllStrategyMetadata.map((metadata) => ({
-      ...getFragmentData(STRATEGY_METADATA_INFO_FRAGMENT_DOCUMENT, metadata),
-    }));
-  }, [data]);
-}
 
 export function useGetAllStrategy() {
   const { data } = useQuery(GET_ALL_STRATEGY_DOCUMENT, {
