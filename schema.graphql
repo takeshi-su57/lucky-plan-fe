@@ -360,14 +360,17 @@ input CreatePlanInput {
 }
 
 input CreateStrategyInput {
-  collateralBaseline: Int!
-  lifeTime: Float!
-  maxCollateral: Float!
+  lifeTime: Int!
+  maxCollateral: Int!
   maxLeverage: Int!
-  minCollateral: Float!
+  maxOpenMissions: Int! = 0
+  minCollateral: Int!
   minLeverage: Int!
-  params: String!
+  mode: String! = "default"
   ratio: Float!
+  selectedPairs: String! = "[]"
+  slPercentage: Float! = 0
+  tpPercentage: Float! = 0
 }
 
 input CreateStrategyTemplateInput {
@@ -1218,15 +1221,18 @@ input StartWfaInput {
 }
 
 type Strategy {
-  collateralBaseline: Int!
   id: Int!
   lifeTime: Int!
   maxCollateral: Int!
   maxLeverage: Int!
+  maxOpenMissions: Int!
   minCollateral: Int!
   minLeverage: Int!
-  params: String!
+  mode: String!
   ratio: Float!
+  selectedPairs: String!
+  slPercentage: Float!
+  tpPercentage: Float!
 }
 
 """Category of trading strategy"""
@@ -1543,13 +1549,17 @@ input UpdateSlInput {
 }
 
 input UpdateStrategyInput {
-  lifeTime: Float!
+  lifeTime: Int!
   maxCollateral: Int!
   maxLeverage: Int!
+  maxOpenMissions: Int!
   minCollateral: Int!
   minLeverage: Int!
-  params: String!
+  mode: String!
   ratio: Float!
+  selectedPairs: String!
+  slPercentage: Float!
+  tpPercentage: Float!
 }
 
 input UpdateStrategyTemplateInput {

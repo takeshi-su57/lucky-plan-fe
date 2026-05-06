@@ -15,7 +15,22 @@ import {
   parsePairKey,
 } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
 
-export function getAdditionalParams(strParams: string): {
+function normalizeStrategyMode(mode: string): "signal" | "hook" | undefined {
+  const normalizedMode = mode.toLowerCase();
+
+  if (normalizedMode === "signal" || normalizedMode === "hook") {
+    return normalizedMode;
+  }
+
+  return undefined;
+}
+
+export function getAdditionalParams(
+  strategy: Pick<
+    Strategy,
+    "maxOpenMissions" | "tpPercentage" | "slPercentage" | "selectedPairs" | "mode"
+  >,
+): {
   maxOpenMissions: number;
   tpPercentage: number;
   slPercentage: number;
@@ -23,13 +38,23 @@ export function getAdditionalParams(strParams: string): {
   mode: "signal" | "hook" | undefined;
 } {
   try {
-    const params = JSON.parse(strParams);
+    const selectedPairs = JSON.parse(strategy.selectedPairs);
+
+    if (!Array.isArray(selectedPairs)) {
+      return {
+        maxOpenMissions: strategy.maxOpenMissions || 0,
+        tpPercentage: strategy.tpPercentage || 0,
+        slPercentage: strategy.slPercentage || 0,
+        selectedPairs: [],
+        mode: normalizeStrategyMode(strategy.mode),
+      };
+    }
 
     return {
-      maxOpenMissions: params.maxOpenMissions || 0,
-      tpPercentage: params.tpPercentage || 0,
-      slPercentage: params.slPercentage || 0,
-      selectedPairs: (params.selectedPairs || [])
+      maxOpenMissions: strategy.maxOpenMissions || 0,
+      tpPercentage: strategy.tpPercentage || 0,
+      slPercentage: strategy.slPercentage || 0,
+      selectedPairs: selectedPairs
         .map((item: { pair: string; isLong: boolean } | string) =>
           typeof item === "string"
             ? [
@@ -50,15 +75,15 @@ export function getAdditionalParams(strParams: string): {
               ],
         )
         .flat(),
-      mode: params.mode || undefined,
+      mode: normalizeStrategyMode(strategy.mode),
     };
   } catch {
     return {
-      maxOpenMissions: 0,
-      tpPercentage: 0,
-      slPercentage: 0,
+      maxOpenMissions: strategy.maxOpenMissions || 0,
+      tpPercentage: strategy.tpPercentage || 0,
+      slPercentage: strategy.slPercentage || 0,
       selectedPairs: [],
-      mode: undefined,
+      mode: normalizeStrategyMode(strategy.mode),
     };
   }
 }
@@ -102,7 +127,7 @@ export function EditStrategyModal({
   );
 
   useEffect(() => {
-    const additionalParams = getAdditionalParams(strategy.params);
+    const additionalParams = getAdditionalParams(strategy);
     setTpPercentage(additionalParams.tpPercentage.toString());
     setSlPercentage(additionalParams.slPercentage.toString());
     setMaxOpenMissions(additionalParams.maxOpenMissions.toString());
@@ -117,7 +142,13 @@ export function EditStrategyModal({
     setMode(
       (additionalParams.mode ?? "default") as "signal" | "hook" | "default",
     );
-  }, [strategy.params]);
+  }, [
+    strategy.maxOpenMissions,
+    strategy.mode,
+    strategy.selectedPairs,
+    strategy.slPercentage,
+    strategy.tpPercentage,
+  ]);
 
   const handleChangeMode: ChangeEventHandler<HTMLSelectElement> = (event) => {
     const value = event.target.value;
@@ -215,15 +246,13 @@ export function EditStrategyModal({
           maxLeverage: Math.floor(+maxLeverage * 1000),
           minLeverage: Math.floor(+minLeverage * 1000),
           lifeTime: +lifeTime,
-          params: JSON.stringify({
-            maxOpenMissions: +maxOpenMissions,
-            tpPercentage: +tpPercentage,
-            slPercentage: +slPercentage,
-            selectedPairs: Array.from(selectedPair).map((item) =>
-              parsePairKey(item as string),
-            ),
-            mode: mode === "default" ? undefined : mode,
-          }),
+          maxOpenMissions: +maxOpenMissions,
+          tpPercentage: +tpPercentage,
+          slPercentage: +slPercentage,
+          selectedPairs: JSON.stringify(
+            Array.from(selectedPair).map((item) => parsePairKey(item as string)),
+          ),
+          mode,
         },
       },
     });

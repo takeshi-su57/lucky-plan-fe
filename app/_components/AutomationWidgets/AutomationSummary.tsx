@@ -102,8 +102,14 @@ export const AutomationSummary = memo(function AutomationSummary({
   }, [bot.missions]);
 
   const additionalParams = useMemo(
-    () => getAdditionalParams(strategy.params),
-    [strategy.params],
+    () => getAdditionalParams(strategy),
+    [
+      strategy.maxOpenMissions,
+      strategy.mode,
+      strategy.selectedPairs,
+      strategy.slPercentage,
+      strategy.tpPercentage,
+    ],
   );
 
   return (

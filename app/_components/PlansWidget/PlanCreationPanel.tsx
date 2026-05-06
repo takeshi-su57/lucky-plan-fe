@@ -81,10 +81,13 @@ export function PlanCreationPanel() {
                     lifeTime: item.strategy!.lifeTime,
                     maxCollateral: item.strategy!.maxCollateral,
                     minCollateral: item.strategy!.minCollateral,
-                    collateralBaseline: item.strategy!.collateralBaseline,
                     maxLeverage: Math.floor(+item.strategy!.maxLeverage * 1000),
                     minLeverage: Math.floor(+item.strategy!.minLeverage * 1000),
-                    params: "{}",
+                    tpPercentage: 0,
+                    slPercentage: 0,
+                    maxOpenMissions: 0,
+                    selectedPairs: "[]",
+                    mode: "default",
                   },
                 }));
             })
