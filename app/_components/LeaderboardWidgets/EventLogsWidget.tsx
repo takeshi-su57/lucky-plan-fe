@@ -1,10 +1,17 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button, Spinner } from "@heroui/react";
 import { FaCopy } from "react-icons/fa";
 import { Address } from "viem";
-import { PerpTradingEventLog, Platform } from "@/graphql/gql/graphql";
+import {
+  Contract,
+  PerpTradeHistoryOperation,
+  PerpTradingEventLog,
+  Platform,
+} from "@/graphql/gql/graphql";
 
 import { useGetPerpEventLogs } from "@/app/_hooks/useHistory";
+import { useGetAllContracts } from "@/app/_hooks/useContract";
+import { convertPerpTradingEventLogToHistory } from "@/utils/historiesV2Chart";
 import { PerpEventLogPnlChart } from "./PerpEventLogPnlChart/PerpEventLogPnlChart";
 
 export type EventLogsWidgetProps = {
@@ -14,11 +21,31 @@ export type EventLogsWidgetProps = {
   fullHistory?: boolean;
 };
 
-function parseJsonLog(jsonLog: string) {
-  try {
-    return JSON.parse(jsonLog);
-  } catch {
-    return jsonLog;
+function roundTo(value: number, decimals = 2) {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  const factor = 10 ** decimals;
+  return Math.round(value * factor) / factor;
+}
+
+function getOperationLabel(operation: PerpTradeHistoryOperation) {
+  switch (operation) {
+    case PerpTradeHistoryOperation.Open:
+      return "open position";
+    case PerpTradeHistoryOperation.Close:
+      return "close position";
+    case PerpTradeHistoryOperation.IncreaseLeverage:
+      return "increase leverage";
+    case PerpTradeHistoryOperation.DecreaseLeverage:
+      return "decrease leverage";
+    case PerpTradeHistoryOperation.IncreaseSize:
+      return "increase size";
+    case PerpTradeHistoryOperation.DecreaseSize:
+      return "decrease size";
+    default:
+      return "trade update";
   }
 }
 
@@ -26,6 +53,7 @@ function getExportLogsPayload(
   logs: PerpTradingEventLog[],
   address: string,
   platform: Platform,
+  contractsMap: Record<number, Contract>,
 ) {
   const sortedLogs = [...logs].sort((a, b) => {
     const dateDiff = new Date(a.date).getTime() - new Date(b.date).getTime();
@@ -35,23 +63,66 @@ function getExportLogsPayload(
     return a.logIndex - b.logIndex;
   });
 
+  const histories = convertPerpTradingEventLogToHistory(
+    contractsMap,
+    sortedLogs,
+  );
+
+  const timeline = histories.map((history) => {
+    const side = history.isLong ? "long" : "short";
+    const action = getOperationLabel(history.operation);
+
+    return {
+      when: new Date(history.date).toISOString(),
+      action,
+      market: history.pair,
+      side,
+      priceUsd: roundTo(history.price, 6),
+      leverageX: roundTo(history.leverage, 3),
+      sizeUsd: roundTo(history.sizeInUsd),
+      collateralUsd: roundTo(history.collateralInUsd),
+      realizedPnlUsd: roundTo(history.usdPnl),
+      summary: `${action} ${side} ${history.pair} @ ${roundTo(history.price, 6)} | size ${roundTo(history.sizeInUsd)} | collateral ${roundTo(history.collateralInUsd)} | lev ${roundTo(history.leverage, 3)}x | pnl ${roundTo(history.usdPnl)}`,
+    };
+  });
+
+  const actionsByType = timeline.reduce<Record<string, number>>((acc, item) => {
+    acc[item.action] = (acc[item.action] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const realizedPnlTotal = roundTo(
+    timeline.reduce((sum, item) => sum + item.realizedPnlUsd, 0),
+  );
+
+  const uniqueMarkets = Array.from(
+    new Set(timeline.map((item) => `${item.market}:${item.side}`)),
+  );
+
   return {
     meta: {
       address,
       platform,
-      logCount: sortedLogs.length,
+      sourceLogCount: sortedLogs.length,
+      usableHistoryCount: timeline.length,
+      skippedLogCount: sortedLogs.length - timeline.length,
       exportedAt: new Date().toISOString(),
-      format: "lucky-plan-perp-trading-history-v1",
+      format: "lucky-plan-perp-trading-history-v2-readable",
+      range:
+        timeline.length > 0
+          ? {
+              from: timeline[0].when,
+              to: timeline[timeline.length - 1].when,
+            }
+          : null,
     },
-    histories: sortedLogs.map((log) => ({
-      id: log.id,
-      date: new Date(log.date).toISOString(),
-      block: log.block,
-      logIndex: log.logIndex,
-      contractId: log.contractId,
-      usdPnl: log.usdPnl,
-      event: parseJsonLog(log.jsonLog),
-    })),
+    summary: {
+      totalActions: timeline.length,
+      realizedPnlTotalUsd: realizedPnlTotal,
+      actionsByType,
+      markets: uniqueMarkets,
+    },
+    timeline,
   };
 }
 
@@ -64,16 +135,33 @@ export function EventLogsWidget({
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">(
     "idle",
   );
+  const allContracts = useGetAllContracts();
   const { eventLogs, loading } = useGetPerpEventLogs(
     [address],
     platform,
     fullHistory ? null : 2000,
   );
   const logs = eventLogs[0] ?? [];
+  const canExport = !loading && logs.length > 0 && allContracts.length > 0;
+
+  const contractsMap = useMemo(() => {
+    const map: Record<number, Contract> = {};
+
+    allContracts.forEach((contract) => {
+      map[contract.id] = contract;
+    });
+
+    return map;
+  }, [allContracts]);
 
   const copyExportPayload = async () => {
     try {
-      const exportPayload = getExportLogsPayload(logs, address, platform);
+      const exportPayload = getExportLogsPayload(
+        logs,
+        address,
+        platform,
+        contractsMap,
+      );
 
       await navigator.clipboard.writeText(
         JSON.stringify(exportPayload, null, 2),
@@ -93,7 +181,7 @@ export function EventLogsWidget({
           size="sm"
           variant="flat"
           color={copyState === "failed" ? "danger" : "primary"}
-          isDisabled={loading || logs.length === 0}
+          isDisabled={!canExport}
           onPress={copyExportPayload}
           startContent={<FaCopy size={14} />}
         >

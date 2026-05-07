@@ -59,10 +59,6 @@ export function AutomationRow({
               {`(${Number(strategy.minCollateral)} ~ ${Number(strategy.maxCollateral)}) USDC`}
             </span>
             <span>
-              Baseline:
-              {`${Number(strategy.collateralBaseline)} USDC`}
-            </span>
-            <span>
               Leverage:
               {`(${strategy.minLeverage / 1000} ~ ${strategy.maxLeverage / 1000}) x`}
             </span>

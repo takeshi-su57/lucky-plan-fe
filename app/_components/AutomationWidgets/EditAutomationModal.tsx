@@ -10,58 +10,11 @@ import { NumericInput } from "@/components/inputs/NumericInput";
 import { Strategy } from "@/graphql/gql/graphql";
 import { useUpdateStrategy } from "@/app/_hooks/useStrategy";
 import { getPairs } from "@/web3/gns/v10/configs";
+import { getAdditionalParams } from "./strategy-runtime";
 import {
   getPairKey,
   parsePairKey,
 } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
-
-export function getAdditionalParams(strParams: string): {
-  maxOpenMissions: number;
-  tpPercentage: number;
-  slPercentage: number;
-  selectedPairs: { pair: string; isLong: boolean }[];
-  mode: "signal" | "hook" | undefined;
-} {
-  try {
-    const params = JSON.parse(strParams);
-
-    return {
-      maxOpenMissions: params.maxOpenMissions || 0,
-      tpPercentage: params.tpPercentage || 0,
-      slPercentage: params.slPercentage || 0,
-      selectedPairs: (params.selectedPairs || [])
-        .map((item: { pair: string; isLong: boolean } | string) =>
-          typeof item === "string"
-            ? [
-                {
-                  pair: item.toLowerCase(),
-                  isLong: true,
-                },
-                {
-                  pair: item.toLowerCase(),
-                  isLong: false,
-                },
-              ]
-            : [
-                {
-                  pair: item.pair.toLowerCase(),
-                  isLong: item.isLong,
-                },
-              ],
-        )
-        .flat(),
-      mode: params.mode || undefined,
-    };
-  } catch {
-    return {
-      maxOpenMissions: 0,
-      tpPercentage: 0,
-      slPercentage: 0,
-      selectedPairs: [],
-      mode: undefined,
-    };
-  }
-}
 
 const modes = ["default", "signal", "hook"];
 
@@ -102,22 +55,20 @@ export function EditStrategyModal({
   );
 
   useEffect(() => {
-    const additionalParams = getAdditionalParams(strategy.params);
-    setTpPercentage(additionalParams.tpPercentage.toString());
-    setSlPercentage(additionalParams.slPercentage.toString());
-    setMaxOpenMissions(additionalParams.maxOpenMissions.toString());
+    const runtimeConfig = getAdditionalParams(strategy);
+    setTpPercentage(runtimeConfig.tpPercentage.toString());
+    setSlPercentage(runtimeConfig.slPercentage.toString());
+    setMaxOpenMissions(runtimeConfig.maxOpenMissions.toString());
     setSelectedPair(
       new Set<string>(
-        additionalParams.selectedPairs.map((item) =>
+        runtimeConfig.selectedPairs.map((item) =>
           getPairKey(item.pair, item.isLong),
         ),
       ),
     );
 
-    setMode(
-      (additionalParams.mode ?? "default") as "signal" | "hook" | "default",
-    );
-  }, [strategy.params]);
+    setMode((runtimeConfig.mode ?? "default") as "signal" | "hook" | "default");
+  }, [strategy]);
 
   const handleChangeMode: ChangeEventHandler<HTMLSelectElement> = (event) => {
     const value = event.target.value;
@@ -215,15 +166,15 @@ export function EditStrategyModal({
           maxLeverage: Math.floor(+maxLeverage * 1000),
           minLeverage: Math.floor(+minLeverage * 1000),
           lifeTime: +lifeTime,
-          params: JSON.stringify({
-            maxOpenMissions: +maxOpenMissions,
-            tpPercentage: +tpPercentage,
-            slPercentage: +slPercentage,
-            selectedPairs: Array.from(selectedPair).map((item) =>
+          maxOpenMissions: +maxOpenMissions,
+          tpPercentage: +tpPercentage,
+          slPercentage: +slPercentage,
+          selectedPairs: JSON.stringify(
+            Array.from(selectedPair).map((item) =>
               parsePairKey(item as string),
             ),
-            mode: mode === "default" ? undefined : mode,
-          }),
+          ),
+          mode,
         },
       },
     });

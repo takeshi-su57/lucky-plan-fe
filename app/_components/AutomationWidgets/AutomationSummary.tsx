@@ -25,7 +25,7 @@ import { useGetAlertTasks } from "@/app/_hooks/useTask";
 import { LabeledChip } from "@/components/chips/LabeledChip";
 
 import { ContractPnl } from "../MissionWidgets/ContractPnl";
-import { getAdditionalParams } from "./EditAutomationModal";
+import { getAdditionalParams } from "./strategy-runtime";
 import { getPairKey } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
 
 const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
@@ -55,7 +55,7 @@ export const AutomationSummary = memo(function AutomationSummary({
     followerAddress,
   } = bot;
 
-  const { botTasks, createdCount, awaitedCount, initiatedCount, failedCount } =
+  const { createdCount, awaitedCount, initiatedCount, failedCount } =
     useMemo(() => {
       const botTasks = alertTasks.filter(
         (task) => task.mission.botId === bot.id,
@@ -77,37 +77,35 @@ export const AutomationSummary = memo(function AutomationSummary({
       };
     }, [alertTasks, bot.id]);
 
-  const {
-    validBotMisions,
-    createdMissions,
-    openedMissions,
-    closedMissions,
-  } = useMemo(() => {
-    return {
-      validBotMisions: bot.missions.filter(
-        (mission) => mission.achievePositionKey,
-      ),
-      createdMissions: bot.missions.filter(
-        (mission) => mission.status === MissionStatus.Created,
-      ),
-      openedMissions: bot.missions.filter(
-        (mission) => mission.status === MissionStatus.Opened,
-      ),
-      closedMissions: bot.missions.filter(
-        (mission) =>
-          mission.status === MissionStatus.Closed ||
-          mission.status === MissionStatus.Ignored,
-      ),
-    };
-  }, [bot.missions]);
+  const { validBotMisions, createdMissions, openedMissions, closedMissions } =
+    useMemo(() => {
+      return {
+        validBotMisions: bot.missions.filter(
+          (mission) => mission.achievePositionKey,
+        ),
+        createdMissions: bot.missions.filter(
+          (mission) => mission.status === MissionStatus.Created,
+        ),
+        openedMissions: bot.missions.filter(
+          (mission) => mission.status === MissionStatus.Opened,
+        ),
+        closedMissions: bot.missions.filter(
+          (mission) =>
+            mission.status === MissionStatus.Closed ||
+            mission.status === MissionStatus.Ignored,
+        ),
+      };
+    }, [bot.missions]);
 
-  const additionalParams = useMemo(
-    () => getAdditionalParams(strategy.params),
-    [strategy.params],
+  const runtimeConfig = useMemo(
+    () => getAdditionalParams(strategy),
+    [strategy],
   );
 
   return (
-    <div className={`flex items-center justify-between gap-6 text-neutral-400 ${!additionalParams.mode ? "bg-green-100/20 rounded-lg p-2" : ""}`}>
+    <div
+      className={`flex items-center justify-between gap-6 text-neutral-400 ${!runtimeConfig.mode ? "rounded-lg bg-green-100/20 p-2" : ""}`}
+    >
       <div className="flex items-center gap-6">
         <Chip>{bot.id}</Chip>
 
@@ -153,19 +151,19 @@ export const AutomationSummary = memo(function AutomationSummary({
         <div className="flex flex-col font-mono">
           <span className="text-xs">
             Tp:
-            {`${Number(additionalParams.tpPercentage)} %`}
+            {`${Number(runtimeConfig.tpPercentage)} %`}
           </span>
           <span className="text-xs">
             Sl:
-            {`${Number(additionalParams.slPercentage)} %`}
+            {`${Number(runtimeConfig.slPercentage)} %`}
           </span>
           <span className="text-xs">
             Max Open Missions:
-            {`${Number(additionalParams.maxOpenMissions) || 0}`}
+            {`${Number(runtimeConfig.maxOpenMissions) || 0}`}
           </span>
         </div>
 
-        {additionalParams.selectedPairs.length > 0 ? (
+        {runtimeConfig.selectedPairs.length > 0 ? (
           <Dropdown>
             <DropdownTrigger>
               <Button
@@ -179,7 +177,7 @@ export const AutomationSummary = memo(function AutomationSummary({
             <DropdownMenu
               classNames={{ list: "max-h-[250px] overflow-y-auto" }}
             >
-              {additionalParams.selectedPairs.map((pair) => (
+              {runtimeConfig.selectedPairs.map((pair) => (
                 <DropdownItem key={getPairKey(pair.pair, pair.isLong)}>
                   {pair.pair} - {pair.isLong ? "Long" : "Short"}
                 </DropdownItem>
