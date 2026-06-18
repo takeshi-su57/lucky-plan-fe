@@ -491,7 +491,7 @@ export function OpenPositionButton({
               onPress={handleOpen}
               isDisabled={isDisabledOpen}
               isLoading={loading}
-              className="w-[180px]"
+              className="w-45"
             >
               Open Position
             </Button>

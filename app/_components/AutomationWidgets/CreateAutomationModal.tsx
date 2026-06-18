@@ -5,7 +5,6 @@ import {
   Autocomplete,
   AutocompleteItem,
   Button,
-  Switch,
   Input,
   Select,
   SelectItem,
@@ -47,7 +46,6 @@ export function CreateAutomationModal({
 
   const allContracts = useGetAllContracts();
 
-  const [showLatestStats, setShowLatestStats] = useState(false);
   const chartRef = useRef<PerpEventLogPnlChartHandle | null>(null);
 
   const [platform, setPlatform] = useState<Platform>(Platform.Gns);
@@ -375,22 +373,11 @@ export function CreateAutomationModal({
           </div>
 
           <div className="flex flex-1 flex-col gap-6">
-            <div className="flex items-center justify-between">
-              <Switch
-                isSelected={showLatestStats}
-                onValueChange={setShowLatestStats}
-                size="sm"
-              >
-                {showLatestStats ? "Show All Activities" : "Show Latest Stats"}
-              </Switch>
-            </div>
-
             <PerpEventLogPnlChart
               ref={chartRef}
               address={leaderAddress as Address}
               platform={platform}
               perpTradeHistories={originalHistories[0] || []}
-              showLatestStats={showLatestStats}
               cols={1}
             />
           </div>

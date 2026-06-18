@@ -17,10 +17,6 @@ import { PerpEventLogPnlChart } from "./PerpEventLogPnlChart/PerpEventLogPnlChar
 import { useGetActiveBots } from "@/app/_hooks/useAutomation";
 import { twMerge } from "tailwind-merge";
 
-function getKey(address: string, platform: Platform) {
-  return `${address.toLowerCase()}-${platform}`;
-}
-
 export type LeaderboardV2Props = {
   isDesc: boolean;
   platform: Platform;
@@ -40,16 +36,8 @@ export function LeaderboardV2({ isDesc, platform, date }: LeaderboardV2Props) {
   } = useIsPnlSnapshotV2Initialized(dayjs(date).format("YYYY-MM-DD"), platform);
 
   const { bots } = useGetActiveBots();
-  const {
-    activeAddresses,
-    blacklistedAddresses,
-    whitelistedAddresses,
-    tradingSignalAddresses,
-  } = useMemo(() => {
+  const { activeAddresses } = useMemo(() => {
     const activeAddresses: Record<string, boolean> = {};
-    const blacklistedAddresses: Record<string, boolean> = {};
-    const whitelistedAddresses: Record<string, boolean> = {};
-    const tradingSignalAddresses: Record<string, boolean> = {};
 
     bots.forEach((bot) => {
       activeAddresses[bot.leaderAddress.toLowerCase()] = true;
@@ -57,9 +45,6 @@ export function LeaderboardV2({ isDesc, platform, date }: LeaderboardV2Props) {
 
     return {
       activeAddresses,
-      blacklistedAddresses,
-      whitelistedAddresses,
-      tradingSignalAddresses,
     };
   }, [bots]);
 
@@ -111,33 +96,12 @@ export function LeaderboardV2({ isDesc, platform, date }: LeaderboardV2Props) {
                       className={twMerge(
                         activeAddresses[item.address.toLowerCase()]
                           ? "text-green-400"
-                          : whitelistedAddresses[item.address.toLowerCase()]
-                            ? "text-yellow-400"
-                            : blacklistedAddresses[item.address.toLowerCase()]
-                              ? "text-red-400"
-                              : "text-white",
+                          : "text-white",
                       )}
                     >
                       {activeAddresses[item.address.toLowerCase()] && (
                         <span className="rounded-md bg-green-400/10 p-1 text-green-400">
                           Active
-                        </span>
-                      )}
-                      {tradingSignalAddresses[
-                        getKey(item.address, platform)
-                      ] && (
-                        <span className="ml-2 rounded-md bg-blue-400/10 p-1 text-blue-400">
-                          Trading Signal
-                        </span>
-                      )}
-                      {whitelistedAddresses[item.address.toLowerCase()] && (
-                        <span className="ml-2 rounded-md bg-yellow-400/10 p-1 text-yellow-400">
-                          Whitelisted
-                        </span>
-                      )}
-                      {blacklistedAddresses[item.address.toLowerCase()] && (
-                        <span className="ml-2 rounded-md bg-red-400/10 p-1 text-red-400">
-                          Blacklisted
                         </span>
                       )}
                     </span>
@@ -148,6 +112,7 @@ export function LeaderboardV2({ isDesc, platform, date }: LeaderboardV2Props) {
                       range={{
                         to: date,
                       }}
+                      variant="compact"
                     />
                   </div>
                 )}

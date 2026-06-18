@@ -9,8 +9,6 @@ import { useGetAllUsers } from "@/app-hooks/useUser";
 import { FaEdit } from "react-icons/fa";
 import { ChangePermissionModal } from "./ChangePermissionModal";
 import { User } from "@/graphql/gql/graphql";
-import { BlacklistCard } from "./BlacklistCard";
-import { WhitelistCard } from "./WhitelistCard";
 
 const columns: TableColumnProps[] = [
   {
@@ -89,7 +87,7 @@ export function UsersPanel() {
 
   if (loading) {
     return (
-      <div className="flex h-[300px] w-full items-center justify-center">
+      <div className="flex h-75 w-full items-center justify-center">
         <Spinner size="lg" color="warning" />
       </div>
     );
@@ -118,10 +116,6 @@ export function UsersPanel() {
           />
         )}
       </Card>
-
-      <BlacklistCard />
-
-      <WhitelistCard />
     </div>
   );
 }
