@@ -306,7 +306,11 @@ export function SLTPEditorButton({
       const pnlDrop = Number(value) || 0;
       // Convert PnL drop to price drop
       const pnlPercent = pnlUsdcToPercent(pnlDrop, collateralAmount);
-      const priceDrop = pnlPercentToExceptionPrice(pnlPercent, openPrice, leverage);
+      const priceDrop = pnlPercentToExceptionPrice(
+        pnlPercent,
+        openPrice,
+        leverage,
+      );
       const newPercent = priceDropToTrailingPercent(
         priceDrop,
         simulatedMaxNum,
@@ -559,7 +563,9 @@ export function SLTPEditorButton({
                 {/* Simulated Max Price for preview */}
                 <NumberInput
                   value={Number(simulatedMaxPrice)}
-                  onValueChange={(value) => setSimulatedMaxPrice(value.toString())}
+                  onValueChange={(value) =>
+                    setSimulatedMaxPrice(value.toString())
+                  }
                   label="Simulated Max Price (for preview)"
                 />
 
@@ -571,21 +577,31 @@ export function SLTPEditorButton({
                   <ButtonGroup>
                     <Button
                       size="sm"
-                      color={trailingInputMode === "percentage" ? "primary" : "default"}
+                      color={
+                        trailingInputMode === "percentage"
+                          ? "primary"
+                          : "default"
+                      }
                       onPress={() => setTrailingInputMode("percentage")}
                     >
                       Percentage
                     </Button>
                     <Button
                       size="sm"
-                      color={trailingInputMode === "priceDrop" ? "primary" : "default"}
+                      color={
+                        trailingInputMode === "priceDrop"
+                          ? "primary"
+                          : "default"
+                      }
                       onPress={() => setTrailingInputMode("priceDrop")}
                     >
                       Price Drop
                     </Button>
                     <Button
                       size="sm"
-                      color={trailingInputMode === "pnlDrop" ? "primary" : "default"}
+                      color={
+                        trailingInputMode === "pnlDrop" ? "primary" : "default"
+                      }
                       onPress={() => setTrailingInputMode("pnlDrop")}
                     >
                       PnL Drop
@@ -630,21 +646,29 @@ export function SLTPEditorButton({
                   <ButtonGroup>
                     <Button
                       size="sm"
-                      color={exceptionInputMode === "price" ? "primary" : "default"}
+                      color={
+                        exceptionInputMode === "price" ? "primary" : "default"
+                      }
                       onPress={() => setExceptionInputMode("price")}
                     >
                       Price
                     </Button>
                     <Button
                       size="sm"
-                      color={exceptionInputMode === "percentage" ? "primary" : "default"}
+                      color={
+                        exceptionInputMode === "percentage"
+                          ? "primary"
+                          : "default"
+                      }
                       onPress={() => setExceptionInputMode("percentage")}
                     >
                       Percentage
                     </Button>
                     <Button
                       size="sm"
-                      color={exceptionInputMode === "pnl" ? "primary" : "default"}
+                      color={
+                        exceptionInputMode === "pnl" ? "primary" : "default"
+                      }
                       onPress={() => setExceptionInputMode("pnl")}
                     >
                       PnL USDC
@@ -684,7 +708,8 @@ export function SLTPEditorButton({
                 {/* Simulation Preview */}
                 <div className="flex flex-col gap-2 rounded-lg bg-neutral-900 p-3">
                   <span className="text-xs font-semibold text-neutral-400">
-                    Simulation Preview (if max reaches ${getPriceStr(simulatedMaxNum)})
+                    Simulation Preview (if max reaches $
+                    {getPriceStr(simulatedMaxNum)})
                   </span>
                   <div className="flex justify-between text-sm">
                     <span className="text-neutral-400">Trailing %:</span>
@@ -695,7 +720,9 @@ export function SLTPEditorButton({
                     <span>${getPriceStr(trailingCalc.simTriggerPrice)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-neutral-400">Price Drop from Max:</span>
+                    <span className="text-neutral-400">
+                      Price Drop from Max:
+                    </span>
                     <span>${getPriceStr(trailingCalc.priceDrop)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
@@ -731,7 +758,7 @@ export function SLTPEditorButton({
             <Button
               onPress={handleAddSLTP}
               isLoading={loading}
-              className="w-[180px]"
+              className="w-45"
             >
               Add SLTP
             </Button>

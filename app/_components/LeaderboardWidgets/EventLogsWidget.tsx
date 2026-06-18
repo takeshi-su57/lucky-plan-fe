@@ -168,6 +168,7 @@ export function EventLogsWidget({
           platform={platform}
           perpTradeHistories={logs}
           cols={cols}
+          mode="expert"
         />
       )}
     </div>

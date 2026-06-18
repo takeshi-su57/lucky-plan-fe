@@ -1,214 +1,23 @@
 "use client";
 
-import {
-  useState,
-  useMemo,
-  PropsWithRef,
-  useImperativeHandle,
-  Ref,
-} from "react";
-import { Address } from "viem";
-import { Card, CardBody, Select, SelectItem, Tab, Tabs } from "@heroui/react";
-import type { Selection } from "@heroui/react";
-import { twMerge } from "tailwind-merge";
-import { Contract, PerpTradeHistory, Platform } from "@/graphql/gql/graphql";
+import { PerpEventLogPnlChartExpert } from "./PerpEventLogPnlChartExpert";
+import { PerpEventLogPnlChartLightweight } from "./PerpEventLogPnlChartLightweight";
+import { PerpEventLogPnlChartWithRefProps } from "./types";
 
-import { HistoryCharts } from "../HistoryCharts";
-import { HistoriesSummary } from "./HistoriesSummary";
-
-import { useGetAllContracts } from "@/app/_hooks/useContract";
-import { getHistoriesChartData } from "@/utils/historiesV2Chart";
-import { HistoriesPositionList } from "./HistoriesPositionList";
-
-type TabType = "chart" | "positions";
-
-export function getPairKey(pair: string, isLong: boolean) {
-  return JSON.stringify({
-    pair: pair.toLowerCase(),
-    isLong,
-  });
-}
-
-export function parsePairKey(key: string) {
-  return JSON.parse(key) as { pair: string; isLong: boolean };
-}
-
-export type PerpEventLogPnlChartHandle = {
-  getSelectedPairs: () => { pair: string; isLong: boolean }[];
-};
-
-export type PerpEventLogPnlChartProps = {
-  address: Address;
-  platform: Platform;
-  perpTradeHistories: PerpTradeHistory[];
-  range?: {
-    from?: Date;
-    to?: Date;
-  };
-  showLatestStats?: boolean;
-  cols?: 1 | 2 | 4;
-};
+export type {
+  PerpEventLogPnlChartHandle,
+  PerpEventLogPnlChartProps,
+} from "./types";
+export { getPairKey, parsePairKey } from "./utils";
 
 export function PerpEventLogPnlChart({
-  address,
-  platform,
-  perpTradeHistories,
-  range,
-  showLatestStats,
+  mode = "lightweight",
   ref,
-  cols = 2,
-}: PropsWithRef<PerpEventLogPnlChartProps> & {
-  ref?: Ref<PerpEventLogPnlChartHandle>;
-}) {
-  const [selected, setSelected] = useState<TabType>("chart");
-  const [selectedPair, setSelectedPair] = useState<Selection>(
-    new Set<string>([]),
-  );
+  ...props
+}: PerpEventLogPnlChartWithRefProps) {
+  if (mode === "expert") {
+    return <PerpEventLogPnlChartExpert ref={ref} {...props} />;
+  }
 
-  const allContracts = useGetAllContracts();
-
-  useImperativeHandle(
-    ref ?? null,
-    () => ({
-      getSelectedPairs: () =>
-        (Array.from(selectedPair) as string[]).map(parsePairKey),
-    }),
-    [selectedPair],
-  );
-
-  const {
-    missionHistories,
-    pnlChartData,
-    pnlAccChartData,
-    inOutChartData,
-    inOutAccChartData,
-    maxIn,
-    sumIn,
-    countIn,
-    tradePairs,
-    firstActivity,
-    lastActivity,
-    openedPositions,
-    duration,
-    pnl,
-    pnlP,
-    size,
-    collateral,
-    leverage,
-    slope,
-    r2,
-    latestSlope,
-    latestR2,
-  } = useMemo(() => {
-    const contractsMapa: Record<number, Contract> = {};
-
-    allContracts.forEach((contract) => {
-      contractsMapa[contract.id] = contract;
-    });
-
-    const pairs = Array.from(selectedPair) as string[];
-
-    const tradePairsMap = new Map<string, number>();
-
-    perpTradeHistories.forEach((item) => {
-      const key = getPairKey(item.pair, item.isLong);
-      tradePairsMap.set(key, (tradePairsMap.get(key) || 0) + 1);
-    });
-
-    const filtered = perpTradeHistories.filter((item) =>
-      pairs.length > 0
-        ? pairs.includes(getPairKey(item.pair, item.isLong))
-        : true,
-    );
-
-    return {
-      ...getHistoriesChartData(
-        showLatestStats
-          ? filtered.slice(filtered.length - 256, filtered.length)
-          : filtered,
-        {
-          range,
-        },
-      ),
-      tradePairs: Array.from(tradePairsMap.entries()),
-    };
-  }, [allContracts, selectedPair, perpTradeHistories, showLatestStats, range]);
-
-  return (
-    <Card className={twMerge("mb-4 w-full shrink-0")} isBlurred>
-      <CardBody>
-        <div className="flex min-h-[500px] gap-8 p-3">
-          <div className="flex flex-col gap-4">
-            <Select
-              variant="underlined"
-              label="Pairs"
-              placeholder="Select pairs"
-              selectedKeys={selectedPair}
-              onSelectionChange={setSelectedPair}
-              selectionMode="multiple"
-              className="w-50 font-mono"
-            >
-              {tradePairs.map((item) => (
-                <SelectItem key={item[0]}>
-                  {`${parsePairKey(item[0]).pair} - (${item[1]} ${parsePairKey(item[0]).isLong ? "Long" : "Short"})`}
-                </SelectItem>
-              ))}
-            </Select>
-
-            <Tabs
-              selectedKey={selected}
-              onSelectionChange={(value) =>
-                value && setSelected(value as TabType)
-              }
-            >
-              <Tab key="chart" title="Chart" />
-              <Tab key="positions" title="Positions" />
-            </Tabs>
-
-            <HistoriesSummary
-              address={address}
-              actionCounts={{}}
-              maxIn={maxIn}
-              sumIn={sumIn}
-              countIn={countIn}
-              firstActivity={firstActivity}
-              lastActivity={lastActivity}
-              pnlChartData={pnlAccChartData}
-              inOutChartData={inOutChartData}
-              openedPositions={openedPositions}
-              positions={missionHistories.length}
-              showLatest={showLatestStats}
-              duration={duration}
-              pnl={pnl}
-              size={size}
-              collateral={collateral}
-              leverage={leverage}
-              pnlP={pnlP}
-              slope={showLatestStats ? latestSlope : slope}
-              r2={showLatestStats ? latestR2 : r2}
-            />
-          </div>
-
-          <div className="flex h-full w-[calc(100%-200px)] flex-col items-center justify-start gap-6">
-            {selected === "chart" && (
-              <HistoryCharts
-                pnlChartData={pnlChartData}
-                pnlAccChartData={pnlAccChartData}
-                inOutChartData={inOutChartData}
-                inOutAccChartData={inOutAccChartData}
-                cols={cols}
-              />
-            )}
-
-            {selected === "positions" && (
-              <HistoriesPositionList
-                platform={platform}
-                perpTradeHistories={missionHistories}
-              />
-            )}
-          </div>
-        </div>
-      </CardBody>
-    </Card>
-  );
+  return <PerpEventLogPnlChartLightweight {...props} />;
 }

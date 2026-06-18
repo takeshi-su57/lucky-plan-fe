@@ -379,6 +379,7 @@ export function CreateAutomationModal({
               platform={platform}
               perpTradeHistories={originalHistories[0] || []}
               cols={1}
+              mode="expert"
             />
           </div>
         </div>

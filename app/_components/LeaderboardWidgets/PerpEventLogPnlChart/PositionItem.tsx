@@ -58,7 +58,7 @@ export function PositionItem({
   return (
     <div
       className={twMerge(
-        "relative w-[250px] rounded-3xl p-4",
+        "relative w-62 rounded-3xl p-4",
         isLong ? "bg-green-900/30" : "bg-red-950/30",
       )}
     >

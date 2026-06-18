@@ -161,7 +161,7 @@ export function IncreasePositionButton({
               onPress={handleUpdate}
               isDisabled={isDisabledUpdate}
               isLoading={loading}
-              className="w-[180px]"
+              className="w-45"
             >
               Increase Position
             </Button>

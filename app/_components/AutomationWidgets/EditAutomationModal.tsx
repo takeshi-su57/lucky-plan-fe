@@ -192,7 +192,7 @@ export function EditStrategyModal({
         isDismissable={false}
         onOpenChange={onOpenChange}
         backdrop="blur"
-        classNames={{ base: "max-w-[350px]" }}
+        classNames={{ base: "max-w-87" }}
       >
         <div className="flex w-full flex-col gap-8">
           <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">

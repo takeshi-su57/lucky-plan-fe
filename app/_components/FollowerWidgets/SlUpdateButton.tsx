@@ -166,7 +166,7 @@ export function SlUpdateButton({
               onPress={handleUpdate}
               isDisabled={isDisabledUpdate}
               isLoading={loading}
-              className="w-[180px]"
+              className="w-45"
             >
               Update SL
             </Button>

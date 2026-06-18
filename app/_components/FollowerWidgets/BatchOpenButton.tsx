@@ -6,7 +6,10 @@ import { twMerge } from "tailwind-merge";
 import { Address } from "viem";
 
 import { StandardModal } from "@/components/modals/StandardModal";
-import { useBatchOpenStore, BatchOpenAction } from "@/app/_hooks/useBatchOpenStore";
+import {
+  useBatchOpenStore,
+  BatchOpenAction,
+} from "@/app/_hooks/useBatchOpenStore";
 import { useBatchOpenTrade, ContractInfo } from "@/app/_hooks/useBatchTrade";
 import { useCollateralUsdPrices } from "@/app/_hooks/useCollateralUsdPrices";
 import { useGetPrices } from "@/app/_hooks/useGetPrices";
@@ -40,7 +43,9 @@ export function BatchOpenButton() {
   // For collateral USD prices, we need the chainId/diamondAddress of each unique contract used
   // We'll use the first action's contract for now - the execution hook resolves per-action
   const firstAction = actions[0];
-  const firstContract = firstAction ? contractsMap[firstAction.contractId] : null;
+  const firstContract = firstAction
+    ? contractsMap[firstAction.contractId]
+    : null;
   const collateralUsdPrices = useCollateralUsdPrices(
     firstContract?.chainId ?? null,
     firstContract?.address ?? "",
@@ -88,7 +93,9 @@ export function BatchOpenButton() {
   const actionLabels = actions.map((a) => {
     const contract = contractsMap[a.contractId];
     const chainId = contract?.chainId;
-    const pairName = chainId ? getPairName(chainId, a.pairIndex) : `Pair ${a.pairIndex}`;
+    const pairName = chainId
+      ? getPairName(chainId, a.pairIndex)
+      : `Pair ${a.pairIndex}`;
     return `${pairName} ${a.leverage}x`;
   });
 
@@ -109,12 +116,12 @@ export function BatchOpenButton() {
         }}
         backdrop="blur"
         classNames={{
-          base: "max-w-[900px] max-h-[80vh]",
+          base: "max-w-225 max-h-[80vh]",
           body: "overflow-y-auto",
         }}
       >
         <div className="flex flex-col gap-4">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Batch Open Positions
           </h1>
 

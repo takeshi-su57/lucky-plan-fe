@@ -105,7 +105,7 @@ export function WithdrawAssetModal({
             onPress={handleWithdrawETH}
             isDisabled={isDisabledETHWithdraw}
             isLoading={loading}
-            className="w-[180px]"
+            className="w-45"
           >
             Withdraw ETH
           </Button>
@@ -140,7 +140,7 @@ export function WithdrawAssetModal({
                 }
                 isDisabled={isDisabled}
                 isLoading={loading}
-                className="w-[180px]"
+                className="w-45"
               >
                 Withdraw {symbol}
               </Button>

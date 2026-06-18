@@ -187,6 +187,7 @@ export function AnalyzePanel() {
               address={item.address as Address}
               platform={platform}
               perpTradeHistories={item.logs}
+              mode="expert"
             />
           ))}
         </div>

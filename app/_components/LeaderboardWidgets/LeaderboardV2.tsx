@@ -28,7 +28,7 @@ export function LeaderboardV2({ isDesc, platform, date }: LeaderboardV2Props) {
     dayjs(date).format("YYYY-MM-DD"),
     platform,
     isDesc,
-    20,
+    10,
   );
   const {
     data: isPnlSnapshotInitialized,
@@ -112,7 +112,7 @@ export function LeaderboardV2({ isDesc, platform, date }: LeaderboardV2Props) {
                       range={{
                         to: date,
                       }}
-                      variant="compact"
+                      mode="lightweight"
                     />
                   </div>
                 )}

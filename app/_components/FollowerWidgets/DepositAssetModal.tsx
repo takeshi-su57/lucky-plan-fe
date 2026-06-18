@@ -105,7 +105,7 @@ export function DepositAssetModal({
             onPress={handleDepositETH}
             isDisabled={isDisabledETHDeposit}
             isLoading={loading}
-            className="w-[180px]"
+            className="w-45"
           >
             Deposit ETH
           </Button>
@@ -140,7 +140,7 @@ export function DepositAssetModal({
                 }
                 isDisabled={isDisabled}
                 isLoading={loading}
-                className="w-[180px]"
+                className="w-45"
               >
                 Deposit {symbol}
               </Button>

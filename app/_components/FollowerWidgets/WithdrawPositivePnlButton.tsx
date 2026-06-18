@@ -77,7 +77,7 @@ export function WithdrawPositivePnlButton({
               onPress={handleWithdraw}
               isDisabled={isDisabledWithdraw}
               isLoading={loading}
-              className="w-[180px]"
+              className="w-45"
             >
               Withdraw Positive PNL
             </Button>

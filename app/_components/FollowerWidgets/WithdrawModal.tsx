@@ -126,7 +126,7 @@ export function WithdrawModal({
             onPress={handleWithdrawETH}
             isDisabled={isDisabledETHWithdraw}
             isLoading={ethLoading}
-            className="w-[180px]"
+            className="w-45"
           >
             Withdraw ETH
           </Button>
@@ -136,8 +136,7 @@ export function WithdrawModal({
           const symbol =
             collateralSymbols[collateral.collateralIndex] ||
             `C${collateral.collateralIndex}`;
-          const amount =
-            collateralAmounts[collateral.collateralIndex] || "0";
+          const amount = collateralAmounts[collateral.collateralIndex] || "0";
           const isDisabled = amount.trim() === "" || Number.isNaN(+amount);
 
           return (
@@ -162,7 +161,7 @@ export function WithdrawModal({
                 }
                 isDisabled={isDisabled}
                 isLoading={erc20Loading}
-                className="w-[180px]"
+                className="w-45"
               >
                 Withdraw {symbol}
               </Button>

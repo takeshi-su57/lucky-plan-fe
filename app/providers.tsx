@@ -97,6 +97,7 @@ const cache = new InMemoryCache({
           "kind",
           "platform",
           "dateStr",
+          "isDesc",
         ]),
         getBotsByStatus: relayStylePagination(["status"]),
         getPlansByStatus: relayStylePagination(["status"]),

@@ -2,6 +2,7 @@ import BarChart from "@/components/charts/BarChart";
 import LineChart from "@/components/charts/LineChart";
 import { twMerge } from "tailwind-merge";
 import dayjs from "dayjs";
+import { memo, useMemo } from "react";
 
 export type HistoryChartData = {
   value: number;
@@ -16,19 +17,44 @@ export type HistoryChartsProps = {
   cols?: 1 | 2 | 4;
 };
 
-export function HistoryCharts({
+type FormattedHistoryChartData = {
+  value: number;
+  label: string;
+};
+
+function formatChartData(
+  data: HistoryChartData[],
+): FormattedHistoryChartData[] {
+  return data.map((item) => ({
+    value: item.value,
+    label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
+  }));
+}
+
+export const HistoryCharts = memo(function HistoryCharts({
   pnlChartData,
   pnlAccChartData,
   inOutChartData,
   inOutAccChartData,
   cols = 2,
 }: HistoryChartsProps) {
-  const chartDataArr = [
-    { data: pnlAccChartData, title: "ACC PNL", type: "line" },
-    { data: inOutAccChartData, title: "ACC In/Out", type: "line" },
-    { data: pnlChartData, title: "PNL", type: "bar" },
-    { data: inOutChartData, title: "In/Out", type: "bar" },
-  ];
+  const chartDataArr = useMemo(
+    () => [
+      {
+        data: formatChartData(pnlAccChartData),
+        title: "ACC PNL",
+        type: "line",
+      },
+      {
+        data: formatChartData(inOutAccChartData),
+        title: "ACC In/Out",
+        type: "line",
+      },
+      { data: formatChartData(pnlChartData), title: "PNL", type: "bar" },
+      { data: formatChartData(inOutChartData), title: "In/Out", type: "bar" },
+    ],
+    [inOutAccChartData, inOutChartData, pnlAccChartData, pnlChartData],
+  );
 
   return (
     <div
@@ -44,28 +70,22 @@ export function HistoryCharts({
           {item.type === "line" ? (
             <LineChart
               title={item.title}
-              data={item.data.map((item) => ({
-                ...item,
-                label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
-              }))}
+              data={item.data}
               initialSelected={["y"]}
-              className="h-[250px] rounded-2xl border border-neutral-800 bg-amber-950/5"
+              className="h-85 rounded-2xl border border-neutral-800 bg-amber-950/5"
             />
           ) : null}
 
           {item.type === "bar" ? (
             <BarChart
               title={item.title}
-              data={item.data.map((item) => ({
-                ...item,
-                label: dayjs(item.date).format("YYYY/MM/DD hh:mm:ss"),
-              }))}
+              data={item.data}
               initialSelected={["y"]}
-              className="h-[250px] w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+              className="h-85 w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
             />
           ) : null}
         </div>
       ))}
     </div>
   );
-}
+});

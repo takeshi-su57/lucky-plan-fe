@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useCallback, useState } from "react";
+import { memo, useRef, useEffect, useCallback, useState } from "react";
 import Chart from "chart.js/auto";
 import { twMerge } from "tailwind-merge";
 import { Button, Checkbox, CheckboxGroup, useDisclosure } from "@heroui/react";
@@ -16,7 +16,12 @@ export type BarChartProps = {
   initialSelected?: string[];
 };
 
-export default function BarChart({
+const EMPTY_CHART_DATA = [
+  { value: 0, label: "" },
+  { value: 0, label: "" },
+];
+
+const BarChart = memo(function BarChart({
   title,
   data,
   className,
@@ -37,38 +42,25 @@ export default function BarChart({
       ref.current.destroy();
     }
 
-    if (data.length === 0) {
-      data.push(
-        ...[
-          {
-            value: 0,
-            label: "",
-          },
-          {
-            value: 0,
-            label: "",
-          },
-        ],
-      );
-    }
+    const chartData = data.length === 0 ? EMPTY_CHART_DATA : data;
 
     const chartContainer = chartRef.current!;
 
     ref.current = new Chart(chartContainer, {
       type: "bar",
       data: {
-        labels: data.map((item) => item.label),
+        labels: chartData.map((item) => item.label),
         datasets: [
           {
             label: "Amount",
-            data: data.map((item) => item.value),
-            backgroundColor: data.map((item) =>
+            data: chartData.map((item) => item.value),
+            backgroundColor: chartData.map((item) =>
               item.value > 0
                 ? "oklch(0.448 0.119 151.328)"
                 : "oklch(0.505 0.213 27.518)",
             ),
             borderWidth: 0,
-            borderColor: data.map((item) =>
+            borderColor: chartData.map((item) =>
               item.value > 0
                 ? "oklch(0.448 0.119 151.328)"
                 : "oklch(0.505 0.213 27.518)",
@@ -119,31 +111,18 @@ export default function BarChart({
       modalRef.current.destroy();
     }
 
-    if (data.length === 0) {
-      data.push(
-        ...[
-          {
-            value: 0,
-            label: "",
-          },
-          {
-            value: 0,
-            label: "",
-          },
-        ],
-      );
-    }
+    const chartData = data.length === 0 ? EMPTY_CHART_DATA : data;
 
     const chartContainer = modalChartRef.current!;
 
     modalRef.current = new Chart(chartContainer, {
       type: "line",
       data: {
-        labels: data.map((item) => item.label),
+        labels: chartData.map((item) => item.label),
         datasets: [
           {
             label: "Amount",
-            data: data.map((item) => item.value),
+            data: chartData.map((item) => item.value),
             pointRadius: 0,
             fill: {
               target: "origin",
@@ -245,4 +224,6 @@ export default function BarChart({
       </StandardModal>
     </div>
   );
-}
+});
+
+export default BarChart;

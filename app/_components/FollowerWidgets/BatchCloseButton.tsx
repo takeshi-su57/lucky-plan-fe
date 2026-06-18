@@ -231,7 +231,7 @@ export function BatchCloseButton() {
         }}
         backdrop="blur"
         classNames={{
-          base: "max-w-[900px] max-h-[80vh]",
+          base: "max-w-225 max-h-[80vh]",
           body: "overflow-y-auto",
         }}
       >

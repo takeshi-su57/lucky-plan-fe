@@ -11,7 +11,7 @@ export function getSortedPartialHistories(
     range?: { from?: Date; to?: Date };
   },
 ) {
-  const sortedHistories = histories
+  const sortedHistories = [...histories]
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .filter((history) => {
       if (
@@ -508,15 +508,6 @@ export function getHistoriesChartData(
   const regression = new SimpleLinearRegression(xs, pnlArrs);
   const score = regression.score(xs, pnlArrs);
 
-  const latestRegression = new SimpleLinearRegression(
-    xs.slice(Math.max(0, xs.length - 256), xs.length),
-    pnlArrs.slice(Math.max(0, xs.length - 256), xs.length),
-  );
-  const latestScore = latestRegression.score(
-    xs.slice(Math.max(0, xs.length - 256), xs.length),
-    pnlArrs.slice(Math.max(0, xs.length - 256), xs.length),
-  );
-
   return {
     missionHistories,
     pnlChartData,
@@ -542,7 +533,5 @@ export function getHistoriesChartData(
         : null,
     slope: regression.slope,
     r2: score.r2,
-    latestSlope: latestRegression.slope,
-    latestR2: latestScore.r2,
   };
 }
