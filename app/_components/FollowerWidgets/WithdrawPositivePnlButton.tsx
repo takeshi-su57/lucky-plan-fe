@@ -51,7 +51,7 @@ export function WithdrawPositivePnlButton({
 
   return (
     <>
-      <Button color="success" size="sm" onClick={onOpen} isLoading={loading}>
+      <Button color="success" size="sm" onPress={onOpen} isLoading={loading}>
         Withdraw Positive PNL
       </Button>
 
@@ -62,7 +62,7 @@ export function WithdrawPositivePnlButton({
         backdrop="blur"
       >
         <div className="flex flex-col gap-3.5">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Withdraw Positive PNL
           </h1>
 
@@ -74,7 +74,7 @@ export function WithdrawPositivePnlButton({
             />
 
             <Button
-              onClick={handleWithdraw}
+              onPress={handleWithdraw}
               isDisabled={isDisabledWithdraw}
               isLoading={loading}
               className="w-[180px]"

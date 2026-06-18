@@ -114,7 +114,7 @@ export function PlanMetadataForm({
         <Button
           isDisabled={isDisabled}
           variant="solid"
-          onClick={handleConfirm}
+          onPress={handleConfirm}
           color="primary"
           size="sm"
         >

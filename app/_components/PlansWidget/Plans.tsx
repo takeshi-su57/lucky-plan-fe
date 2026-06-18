@@ -129,7 +129,7 @@ export function Plans() {
                     variant="flat"
                     color="primary"
                     isLoading={loading}
-                    onClick={() => fetchMore()}
+                    onPress={() => fetchMore()}
                   >
                     Load More
                   </Button>

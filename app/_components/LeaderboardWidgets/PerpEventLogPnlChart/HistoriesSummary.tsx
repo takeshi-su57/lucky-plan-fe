@@ -7,7 +7,6 @@ import { Checkbox, Switch } from "@heroui/react";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { getPriceStr } from "@/utils/price";
 import { HistoryChartData } from "../HistoryCharts";
-import { TagsWidget } from "../../TagWidgets/TagsWidget";
 
 export type HistoriesSummaryProps = {
   address: Address;
@@ -17,7 +16,6 @@ export type HistoriesSummaryProps = {
   countIn: number;
   firstActivity: Date | null;
   lastActivity: Date | null;
-  hideTags: boolean;
   label?: string;
   isSelected?: boolean;
   onChangeSelection?: (address: string, isSelected: boolean) => void;
@@ -93,7 +91,6 @@ export function HistoriesSummary({
   countIn,
   firstActivity,
   lastActivity,
-  hideTags,
   isSelected,
   onChangeSelection,
   label,
@@ -259,7 +256,7 @@ export function HistoriesSummary({
   ];
 
   return (
-    <div className="flex h-full w-[200px] flex-col justify-between gap-8">
+    <div className="flex h-full w-50 flex-col justify-between gap-8">
       <div className="flex flex-col gap-2">
         {primaryItems.map((item) => (
           <div
@@ -290,8 +287,6 @@ export function HistoriesSummary({
       <Switch isSelected={showMore} onValueChange={setShowMore}>
         Show More
       </Switch>
-
-      {!hideTags ? <TagsWidget address={address} /> : null}
 
       {isSelected !== undefined ? (
         <Checkbox

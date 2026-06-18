@@ -85,7 +85,7 @@ export function DecreasePositionButton({
 
   return (
     <>
-      <Button color="secondary" size="sm" onClick={onOpen} isLoading={loading}>
+      <Button color="secondary" size="sm" onPress={onOpen} isLoading={loading}>
         Decrease Position
       </Button>
 
@@ -96,7 +96,7 @@ export function DecreasePositionButton({
         backdrop="blur"
       >
         <div className="flex flex-col gap-3.5">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Decrease Position
           </h1>
 
@@ -147,15 +147,18 @@ export function DecreasePositionButton({
                 </span>
               )}
 
-              {amountMode === "collateral" && collateralUsdPrice > 0 && Number(collateralDelta) > 0 && (
-                <span className="text-xs text-neutral-500">
-                  = ${getPriceStr(Number(collateralDelta) * collateralUsdPrice)}
-                </span>
-              )}
+              {amountMode === "collateral" &&
+                collateralUsdPrice > 0 &&
+                Number(collateralDelta) > 0 && (
+                  <span className="text-xs text-neutral-500">
+                    = $
+                    {getPriceStr(Number(collateralDelta) * collateralUsdPrice)}
+                  </span>
+                )}
             </div>
 
             <Button
-              onClick={handleUpdate}
+              onPress={handleUpdate}
               isDisabled={isDisabledUpdate}
               isLoading={loading}
               className="w-[180px]"

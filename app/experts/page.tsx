@@ -3,15 +3,12 @@
 import { Suspense, useState } from "react";
 import { Spinner, Tab, Tabs } from "@heroui/react";
 
-import { ExpertPanel } from "../_components/ExpertWidgets/ExpertPanel";
-import { TagsPanel } from "../_components/TagWidgets/TagsPanel";
-import { CategoriesPanel } from "../_components/TagWidgets/CategoriesPanel";
 import { AnalyzePanel } from "../_components/ExpertWidgets/AnalyzePanel";
 
-type TabType = "expert" | "analyze" | "tag" | "category";
+type TabType = "analyze";
 
 export default function Page() {
-  const [selected, setSelected] = useState<TabType>("expert");
+  const [selected, setSelected] = useState<TabType>("analyze");
 
   return (
     <Suspense fallback={<Spinner color="white" size="sm" />}>
@@ -21,16 +18,10 @@ export default function Page() {
           selectedKey={selected}
           onSelectionChange={(value) => value && setSelected(value as TabType)}
         >
-          <Tab key="expert" title="Expert" />
           <Tab key="analyze" title="Analyze" />
-          <Tab key="tag" title="Tag" />
-          <Tab key="category" title="Category" />
         </Tabs>
 
-        {selected === "expert" && <ExpertPanel />}
         {selected === "analyze" && <AnalyzePanel />}
-        {selected === "tag" && <TagsPanel />}
-        {selected === "category" && <CategoriesPanel />}
       </div>
     </Suspense>
   );

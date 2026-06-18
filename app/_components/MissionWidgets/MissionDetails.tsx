@@ -53,7 +53,7 @@ export function MissionDetails({
         <div className="flex flex-row items-center gap-4">
           {mission.status !== MissionStatus.Closed ? (
             <Button
-              onClick={handleCloseMission}
+              onPress={handleCloseMission}
               color="primary"
               className="w-fit"
               size="sm"
@@ -64,7 +64,7 @@ export function MissionDetails({
 
           {mission.status !== MissionStatus.Closed ? (
             <Button
-              onClick={handleCloseForceMission}
+              onPress={handleCloseForceMission}
               color="danger"
               className="w-fit"
               size="sm"
@@ -75,7 +75,7 @@ export function MissionDetails({
 
           {mission.status !== MissionStatus.Closed ? (
             <Button
-              onClick={handleIgnoreMission}
+              onPress={handleIgnoreMission}
               color="warning"
               className="w-fit"
               size="sm"

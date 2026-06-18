@@ -9,7 +9,6 @@ import {
   Input,
   Select,
   SelectItem,
-  Checkbox,
 } from "@heroui/react";
 import { Address, isAddress } from "viem";
 
@@ -21,19 +20,15 @@ import { useBatchCreateBots } from "@/app-hooks/useAutomation";
 import { shrinkAddress } from "@/utils";
 import { NumericInput } from "@/components/inputs/NumericInput";
 
-import { useGetPerpEventLogs } from "@/app/_hooks/useHistory";
+import { useGetPerpTradeHistories } from "@/app/_hooks/useHistory";
 import { ContractStatus, Platform } from "@/graphql/gql/graphql";
 import {
   PerpEventLogPnlChart,
   PerpEventLogPnlChartHandle,
 } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
+import { BotMode } from "@/graphql/gql/graphql";
 
 const modes = ["default", "signal", "hook"];
-
-export enum BotMode {
-  General = "general",
-  BotCap = "botCap",
-}
 
 export type CreateAutomationModalProps = {
   planId: number;
@@ -53,18 +48,15 @@ export function CreateAutomationModal({
   const allContracts = useGetAllContracts();
 
   const [showLatestStats, setShowLatestStats] = useState(false);
-  const chartRef = useRef<PerpEventLogPnlChartHandle>(null);
+  const chartRef = useRef<PerpEventLogPnlChartHandle | null>(null);
 
-  const [botMode, setBotMode] = useState(BotMode.General);
   const [platform, setPlatform] = useState<Platform>(Platform.Gns);
 
   const [leaderAddress, setLeaderAddress] = useState<string>("");
-  const [followerAddress, setFollowerAddress] = useState<string>("");
 
   const [followerContractId, setFollowerContractId] = useState<string | null>(
     null,
   );
-  const [leaderContractId, setLeaderContractId] = useState<string | null>(null);
 
   const [maxCollateral, setMaxCollateral] = useState("100");
   const [minCollateral, setMinCollateral] = useState("50");
@@ -77,10 +69,9 @@ export function CreateAutomationModal({
   const [mode, setMode] = useState<"signal" | "hook" | "default">("default");
   const [lifeTime, setLifeTime] = useState("0");
 
-  const { eventLogs: originalEventLogs } = useGetPerpEventLogs(
+  const { histories: originalHistories } = useGetPerpTradeHistories(
     isAddress(leaderAddress) ? [leaderAddress] : [],
     platform,
-    null,
   );
 
   const handleChangePlatform: ChangeEventHandler<HTMLSelectElement> = (
@@ -161,14 +152,10 @@ export function CreateAutomationModal({
     maxLeverageHelper.trim() !== "" ||
     minLeverageHelper.trim() !== "";
 
-  const isDisabledByBotCapture =
-    botMode === BotMode.BotCap ? !isAddress(followerAddress) : false;
-
   const isDisabled =
     !isAddress(leaderAddress) ||
     !followerContractId ||
     isDisabledStrategy ||
-    isDisabledByBotCapture ||
     createBotsLoading;
 
   const handleConfirm = () => {
@@ -189,9 +176,6 @@ export function CreateAutomationModal({
     const availableContracts = allContracts
       .filter((contract) => contract.status === ContractStatus.Live)
       .filter((contract) => contract.platform === platform)
-      .filter((contract) =>
-        leaderContractId !== null ? contract.id === +leaderContractId : true,
-      )
       .filter((contract) => !contract.isTestnet);
 
     batchCreateBots({
@@ -201,9 +185,6 @@ export function CreateAutomationModal({
           planId,
           leaderContractId: contract.id,
           followerContractId: +followerContractId,
-          followerAddress: isAddress(followerAddress)
-            ? followerAddress.toLowerCase()
-            : undefined,
           leaderCollateralBaseline: 0,
           strategy: {
             ratio: +ratio,
@@ -220,6 +201,7 @@ export function CreateAutomationModal({
             maxOpenMissions: Math.floor(+maxOpenMissions),
             mode,
           },
+          mode: BotMode.Default,
         })),
       },
     });
@@ -242,17 +224,8 @@ export function CreateAutomationModal({
         </h1>
 
         <div className="flex w-full gap-8">
-          <div className="flex w-[200px] flex-col gap-8">
+          <div className="flex w-50 flex-col gap-8">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <Checkbox
-                isSelected={botMode === BotMode.General}
-                onValueChange={(value) =>
-                  setBotMode(value ? BotMode.General : BotMode.BotCap)
-                }
-              >
-                General Bot Mode
-              </Checkbox>
-
               <Select
                 variant="underlined"
                 label="Mode"
@@ -260,7 +233,7 @@ export function CreateAutomationModal({
                 selectedKeys={mode ? [mode] : undefined}
                 onChange={handleChangeMode}
                 selectionMode="single"
-                className="w-[200px] font-mono"
+                className="w-50 font-mono"
               >
                 {modes.map((item) => (
                   <SelectItem key={item}>{item}</SelectItem>
@@ -273,7 +246,7 @@ export function CreateAutomationModal({
                 selectedKeys={platform ? [platform] : undefined}
                 onChange={handleChangePlatform}
                 selectionMode="single"
-                className="w-[200px] font-mono"
+                className="w-50 font-mono"
               >
                 {Object.values(Platform).map((item) => (
                   <SelectItem key={item}>{item}</SelectItem>
@@ -285,56 +258,6 @@ export function CreateAutomationModal({
                 value={leaderAddress || ""}
                 onChange={(e) => setLeaderAddress(e.target.value)}
               />
-
-              {botMode === BotMode.BotCap ? (
-                <Autocomplete
-                  label="Leader Contract"
-                  variant="underlined"
-                  defaultItems={allContracts
-                    .filter(
-                      (contract) => contract.status === ContractStatus.Live,
-                    )
-                    .filter((contract) => contract.platform === platform)}
-                  placeholder="Search contract"
-                  selectedKey={leaderContractId}
-                  onSelectionChange={(key) =>
-                    setLeaderContractId(key as string | null)
-                  }
-                >
-                  {(item) => (
-                    <AutocompleteItem
-                      key={item.id}
-                      className="font-mono"
-                      textValue={`${item.chainId}-${shrinkAddress(item.address as Address)}`}
-                    >
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                          <span className="text-small">
-                            Chain: {item.chainId}
-                          </span>
-                          <span className="text-small">
-                            {item.isTestnet ? "(Testnet)" : ""}
-                          </span>
-                        </div>
-                        <span className="text-small">
-                          Contract: {shrinkAddress(item.address as Address)}
-                        </span>
-                        <span className="text-tiny text-default-400">
-                          {item.description}
-                        </span>
-                      </div>
-                    </AutocompleteItem>
-                  )}
-                </Autocomplete>
-              ) : null}
-
-              {botMode === BotMode.BotCap ? (
-                <Input
-                  placeholder="Enter Follower Address"
-                  value={followerAddress || ""}
-                  onChange={(e) => setFollowerAddress(e.target.value)}
-                />
-              ) : null}
 
               <Autocomplete
                 label="Follower Contract"
@@ -466,8 +389,7 @@ export function CreateAutomationModal({
               ref={chartRef}
               address={leaderAddress as Address}
               platform={platform}
-              perpTradingEventLogs={originalEventLogs[0] || []}
-              hideTags={false}
+              perpTradeHistories={originalHistories[0] || []}
               showLatestStats={showLatestStats}
               cols={1}
             />

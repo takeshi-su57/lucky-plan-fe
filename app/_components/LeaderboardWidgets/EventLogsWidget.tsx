@@ -1,24 +1,21 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Button, Spinner } from "@heroui/react";
 import { FaCopy } from "react-icons/fa";
 import { Address } from "viem";
 import {
-  Contract,
+  PerpTradeHistory,
   PerpTradeHistoryOperation,
-  PerpTradingEventLog,
   Platform,
 } from "@/graphql/gql/graphql";
 
-import { useGetPerpEventLogs } from "@/app/_hooks/useHistory";
+import { useGetPerpTradeHistories } from "@/app/_hooks/useHistory";
 import { useGetAllContracts } from "@/app/_hooks/useContract";
-import { convertPerpTradingEventLogToHistory } from "@/utils/historiesV2Chart";
 import { PerpEventLogPnlChart } from "./PerpEventLogPnlChart/PerpEventLogPnlChart";
 
 export type EventLogsWidgetProps = {
   address: string;
   platform: Platform;
   cols: 1 | 2 | 4;
-  fullHistory?: boolean;
 };
 
 function roundTo(value: number, decimals = 2) {
@@ -50,25 +47,15 @@ function getOperationLabel(operation: PerpTradeHistoryOperation) {
 }
 
 function getExportLogsPayload(
-  logs: PerpTradingEventLog[],
+  perpTradeHistories: PerpTradeHistory[],
   address: string,
   platform: Platform,
-  contractsMap: Record<number, Contract>,
 ) {
-  const sortedLogs = [...logs].sort((a, b) => {
-    const dateDiff = new Date(a.date).getTime() - new Date(b.date).getTime();
-    if (dateDiff !== 0) {
-      return dateDiff;
-    }
-    return a.logIndex - b.logIndex;
+  const sortedLogs = [...perpTradeHistories].sort((a, b) => {
+    return new Date(a.date).getTime() - new Date(b.date).getTime();
   });
 
-  const histories = convertPerpTradingEventLogToHistory(
-    contractsMap,
-    sortedLogs,
-  );
-
-  const timeline = histories.map((history) => {
+  const timeline = perpTradeHistories.map((history) => {
     const side = history.isLong ? "long" : "short";
     const action = getOperationLabel(history.operation);
 
@@ -130,38 +117,18 @@ export function EventLogsWidget({
   address,
   platform,
   cols,
-  fullHistory = true,
 }: EventLogsWidgetProps) {
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">(
     "idle",
   );
   const allContracts = useGetAllContracts();
-  const { eventLogs, loading } = useGetPerpEventLogs(
-    [address],
-    platform,
-    fullHistory ? null : 2000,
-  );
-  const logs = eventLogs[0] ?? [];
+  const { histories, loading } = useGetPerpTradeHistories([address], platform);
+  const logs = histories[0] ?? [];
   const canExport = !loading && logs.length > 0 && allContracts.length > 0;
-
-  const contractsMap = useMemo(() => {
-    const map: Record<number, Contract> = {};
-
-    allContracts.forEach((contract) => {
-      map[contract.id] = contract;
-    });
-
-    return map;
-  }, [allContracts]);
 
   const copyExportPayload = async () => {
     try {
-      const exportPayload = getExportLogsPayload(
-        logs,
-        address,
-        platform,
-        contractsMap,
-      );
+      const exportPayload = getExportLogsPayload(logs, address, platform);
 
       await navigator.clipboard.writeText(
         JSON.stringify(exportPayload, null, 2),
@@ -199,8 +166,7 @@ export function EventLogsWidget({
         <PerpEventLogPnlChart
           address={address as Address}
           platform={platform}
-          perpTradingEventLogs={logs}
-          hideTags={false}
+          perpTradeHistories={logs}
           cols={cols}
         />
       )}

@@ -63,7 +63,7 @@ function generateSnackbar(variant: VariantType) {
             width={18}
             height={18}
             onClick={handleClose}
-            className="absolute right-2 top-2 cursor-pointer text-sm text-stone-200"
+            className="absolute top-2 right-2 cursor-pointer text-sm text-stone-200"
           />
           {icons[variant]}
           <div className="flex flex-col font-sans text-xs leading-[18px]">

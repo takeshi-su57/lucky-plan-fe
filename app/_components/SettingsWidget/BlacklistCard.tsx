@@ -52,7 +52,7 @@ export function BlacklistCard() {
                 isIconOnly
                 color="primary"
                 variant="flat"
-                onClick={() => {
+                onPress={() => {
                   removeFromBlacklist({
                     variables: {
                       address: blacklist,
@@ -85,7 +85,7 @@ export function BlacklistCard() {
         <Button
           isDisabled={!blacklistAddress || blacklistAddress.trim() === ""}
           isLoading={addToBlacklistLoading}
-          onClick={() => {
+          onPress={() => {
             addToBlacklist({
               variables: {
                 address: blacklistAddress.toLowerCase(),

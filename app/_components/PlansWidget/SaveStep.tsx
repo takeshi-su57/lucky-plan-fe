@@ -20,7 +20,7 @@ export function SaveStep({
           variant="solid"
           isLoading={loading}
           isDisabled={loading}
-          onClick={onSave}
+          onPress={onSave}
           color="primary"
           size="sm"
         >
@@ -29,7 +29,7 @@ export function SaveStep({
 
         <Button
           variant="light"
-          onClick={onPrevStep}
+          onPress={onPrevStep}
           isDisabled={loading}
           color="primary"
           size="sm"
@@ -39,7 +39,7 @@ export function SaveStep({
 
         <Button
           variant="solid"
-          onClick={onReset}
+          onPress={onReset}
           className="ml-[200px]"
           color="danger"
           size="sm"

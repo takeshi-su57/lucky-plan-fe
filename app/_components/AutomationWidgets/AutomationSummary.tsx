@@ -18,13 +18,11 @@ import {
   BotForwardDetails,
   BotStatus,
   MissionStatus,
-  Platform,
   TaskStatus,
 } from "@/graphql/gql/graphql";
 import { useGetAlertTasks } from "@/app/_hooks/useTask";
 import { LabeledChip } from "@/components/chips/LabeledChip";
 
-import { ContractPnl } from "../MissionWidgets/ContractPnl";
 import { getAdditionalParams } from "./strategy-runtime";
 import { getPairKey } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
 
@@ -77,25 +75,21 @@ export const AutomationSummary = memo(function AutomationSummary({
       };
     }, [alertTasks, bot.id]);
 
-  const { validBotMisions, createdMissions, openedMissions, closedMissions } =
-    useMemo(() => {
-      return {
-        validBotMisions: bot.missions.filter(
-          (mission) => mission.achievePositionKey,
-        ),
-        createdMissions: bot.missions.filter(
-          (mission) => mission.status === MissionStatus.Created,
-        ),
-        openedMissions: bot.missions.filter(
-          (mission) => mission.status === MissionStatus.Opened,
-        ),
-        closedMissions: bot.missions.filter(
-          (mission) =>
-            mission.status === MissionStatus.Closed ||
-            mission.status === MissionStatus.Ignored,
-        ),
-      };
-    }, [bot.missions]);
+  const { createdMissions, openedMissions, closedMissions } = useMemo(() => {
+    return {
+      createdMissions: bot.missions.filter(
+        (mission) => mission.status === MissionStatus.Created,
+      ),
+      openedMissions: bot.missions.filter(
+        (mission) => mission.status === MissionStatus.Opened,
+      ),
+      closedMissions: bot.missions.filter(
+        (mission) =>
+          mission.status === MissionStatus.Closed ||
+          mission.status === MissionStatus.Ignored,
+      ),
+    };
+  }, [bot.missions]);
 
   const runtimeConfig = useMemo(
     () => getAdditionalParams(strategy),
@@ -213,74 +207,6 @@ export const AutomationSummary = memo(function AutomationSummary({
         ) : null}
 
         <div className="flex flex-row items-center gap-3 font-mono">
-          {bot.leaderContract.platform === Platform.Gns ? (
-            <ContractPnl
-              label="Leader"
-              contractId={bot.leaderContractId}
-              finished={false}
-              finishedMissionActions={validBotMisions
-                .filter((mission) => mission.status === MissionStatus.Closed)
-                .map((mission) => mission.tasks.map((task) => task.action))}
-              openedMissionActions={validBotMisions
-                .filter(
-                  (mission) =>
-                    mission.status !== MissionStatus.Closed &&
-                    mission.status !== MissionStatus.Ignored,
-                )
-                .map((mission) => mission.tasks.map((task) => task.action))}
-            />
-          ) : null}
-
-          <ContractPnl
-            label="Follower"
-            contractId={bot.followerContractId}
-            finished={false}
-            finishedMissionActions={validBotMisions
-              .filter((mission) => mission.status === MissionStatus.Closed)
-              .map((mission) =>
-                mission.tasks
-                  .map((task) => {
-                    if (task.followerActions.length === 0) {
-                      return null;
-                    }
-
-                    const followerAction =
-                      task.followerActions[task.followerActions.length - 1];
-
-                    if (!followerAction) {
-                      return null;
-                    }
-
-                    return followerAction.action;
-                  })
-                  .filter((action) => action !== null),
-              )}
-            openedMissionActions={validBotMisions
-              .filter(
-                (mission) =>
-                  mission.status !== MissionStatus.Closed &&
-                  mission.status !== MissionStatus.Ignored,
-              )
-              .map((mission) =>
-                mission.tasks
-                  .map((task) => {
-                    if (task.followerActions.length === 0) {
-                      return null;
-                    }
-
-                    const followerAction =
-                      task.followerActions[task.followerActions.length - 1];
-
-                    if (!followerAction) {
-                      return null;
-                    }
-
-                    return followerAction.action;
-                  })
-                  .filter((action) => action !== null),
-              )}
-          />
-
           <div className="flex flex-col gap-1">
             {createdMissions.length > 0 && (
               <LabeledChip

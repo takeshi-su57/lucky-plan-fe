@@ -25,31 +25,6 @@ export enum TradeActionType {
   TradePosSizeDecrease = "TradePosSizeDecrease",
 }
 
-export type PersonalTradeHistory = {
-  action: TradeActionType;
-  contractId: number;
-  address: string;
-  block: number;
-  collateralDelta: number | null;
-  collateralIndex: number;
-  collateralPriceUsd: number;
-  date: string;
-  leverage: number;
-  leverageDelta: number | null;
-  long: number;
-  marketPrice: number | null;
-  pair: string;
-  pnl: number;
-  pnl_net: number;
-  price: number;
-  size: number;
-  tradeId: number | null;
-  tradeIndex: number;
-  tx: string;
-  isCounterTrade?: boolean;
-  meta?: object;
-};
-
 export type VirtualStrategy = {
   collateralBaseline: number;
   lifeTime: number;

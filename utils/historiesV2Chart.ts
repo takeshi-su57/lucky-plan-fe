@@ -1,15 +1,12 @@
 import {
-  Contract,
   PerpTradeHistoryOperation,
-  PerpTradingEventLog,
+  PerpTradeHistory,
 } from "@/graphql/gql/graphql";
 import { TradeActionType } from "@/types";
-import { PerpTradeHistory } from "@/web3/types";
-import { getWeb3Info } from "@/web3/utils";
 import { SimpleLinearRegression } from "ml-regression-simple-linear";
 
 export function getSortedPartialHistories(
-  histories: (PerpTradeHistory & { date: Date; id: number })[],
+  histories: PerpTradeHistory[],
   filters: {
     range?: { from?: Date; to?: Date };
   },
@@ -103,13 +100,14 @@ export function getSortedPartialHistories(
         tempHistories.push(nextHistory);
 
         if (nextHistory.operation === PerpTradeHistoryOperation.Close) {
-          totalDuration +=
-            histories[j].date.getTime() - histories[i].date.getTime();
+          const gap =
+            new Date(histories[j].date).getTime() -
+            new Date(histories[i].date).getTime();
+
+          totalDuration += gap;
+
           openedPositions--;
-          maxDuration = Math.max(
-            maxDuration,
-            histories[j].date.getTime() - histories[i].date.getTime(),
-          );
+          maxDuration = Math.max(maxDuration, gap);
           break;
         }
       }
@@ -188,12 +186,13 @@ export function getSortedPartialHistories(
         maxLeverages = Math.max(maxLeverages, +nextHistory.leverage);
 
         if (nextHistory.operation === PerpTradeHistoryOperation.Close) {
-          latestTotalDuration +=
-            histories[j].date.getTime() - histories[i].date.getTime();
-          latestMaxDuration = Math.max(
-            latestMaxDuration,
-            histories[j].date.getTime() - histories[i].date.getTime(),
-          );
+          const gap =
+            new Date(histories[j].date).getTime() -
+            new Date(histories[i].date).getTime();
+
+          latestTotalDuration += gap;
+
+          latestMaxDuration = Math.max(latestMaxDuration, gap);
           break;
         }
       }
@@ -221,7 +220,10 @@ export function getSortedPartialHistories(
         return a.length - b.length;
       }
 
-      return b[b.length - 1].date.getTime() - a[a.length - 1].date.getTime();
+      return (
+        new Date(b[b.length - 1].date).getTime() -
+        new Date(a[a.length - 1].date).getTime()
+      );
     }),
     sortedHistories,
     openedPositions,
@@ -319,38 +321,8 @@ export function getSortedPartialHistories(
   };
 }
 
-export function convertPerpTradingEventLogToHistory(
-  contractsMap: Record<number, Contract>,
-  perpEventLogs: PerpTradingEventLog[],
-) {
-  return perpEventLogs
-    .map((log) => {
-      const contract = contractsMap[log.contractId];
-
-      if (!contract) {
-        return null;
-      }
-
-      const history = getWeb3Info(
-        contract.platform,
-        contract.version,
-      ).eventToPerpTradeHistory(contract.chainId, JSON.parse(log.jsonLog));
-
-      if (!history) {
-        return null;
-      }
-
-      return {
-        ...history,
-        id: log.id,
-        date: new Date(log.date),
-      };
-    })
-    .filter((history) => history !== null);
-}
-
 export function getHistoriesChartData(
-  perpTradeHistories: (PerpTradeHistory & { date: Date; id: number })[],
+  perpTradeHistories: PerpTradeHistory[],
   filters: {
     range?: { from?: Date; to?: Date };
   },

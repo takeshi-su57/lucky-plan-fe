@@ -27,7 +27,7 @@ export function ContractAdaptionButton({ contractId }: { contractId: number }) {
 
   return (
     <>
-      <Button size="sm" onClick={onOpen} color="primary" isLoading={loading}>
+      <Button size="sm" onPress={onOpen} color="primary" isLoading={loading}>
         Start Adaption
       </Button>
 
@@ -38,7 +38,7 @@ export function ContractAdaptionButton({ contractId }: { contractId: number }) {
         backdrop="blur"
       >
         <div className="flex flex-col gap-3.5">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Start Adaption
           </h1>
 
@@ -46,7 +46,7 @@ export function ContractAdaptionButton({ contractId }: { contractId: number }) {
             Restart Adaption
           </Checkbox>
 
-          <Button onClick={handleStartAdaption} color="primary">
+          <Button onPress={handleStartAdaption} color="primary">
             {shouldRestart ? "Restart Adaption" : "Continue Adaption"}
           </Button>
         </div>

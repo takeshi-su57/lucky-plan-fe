@@ -1,10 +1,7 @@
+import { useEffect } from "react";
 import { Chip } from "@heroui/react";
 
 import { TaskBackwardDetails, TaskStatus } from "@/graphql/gql/graphql";
-
-import { ContractPnl } from "../MissionWidgets/ContractPnl";
-import { useGetAllGnsContracts } from "@/app/_hooks/useContract";
-import { useEffect } from "react";
 
 const statusColors: Record<
   TaskStatus,
@@ -18,15 +15,7 @@ const statusColors: Record<
   [TaskStatus.Completed]: "success",
 };
 
-export function TaskMessage({
-  task,
-  contractId,
-}: {
-  task: TaskBackwardDetails;
-  contractId: number;
-}) {
-  const gnsContracts = useGetAllGnsContracts();
-
+export function TaskMessage({ task }: { task: TaskBackwardDetails }) {
   useEffect(() => {
     if (
       document.visibilityState !== "visible" &&
@@ -55,18 +44,6 @@ export function TaskMessage({
 
       <div className="flex items-center gap-2">
         <span className="text-base">{task.action.name}</span>
-        {task.followerActions.length > 0 &&
-        gnsContracts.find((contract) => contract.id === contractId) ? (
-          <ContractPnl
-            label="PnL"
-            contractId={contractId}
-            finishedMissionActions={[
-              [task.followerActions[task.followerActions.length - 1].action],
-            ]}
-            openedMissionActions={[]}
-            finished={false}
-          />
-        ) : null}
       </div>
     </div>
   );

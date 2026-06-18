@@ -22,7 +22,7 @@ export function PricingChart({
 }: PricingChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const chartInstanceRef = useRef<Chart>();
+  const chartInstanceRef = useRef<Chart>(null);
 
   useEffect(() => {
     if (!chartRef.current || !containerRef.current) {
@@ -146,7 +146,7 @@ export function PricingChart({
   }, [priceHistory, speedHistory1, speedHistory2]);
 
   return (
-    <div ref={containerRef} className="h-[600px] w-full">
+    <div ref={containerRef} className="h-150 w-full">
       <canvas ref={chartRef} />
     </div>
   );

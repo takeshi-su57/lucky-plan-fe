@@ -3,13 +3,10 @@
 import { Button, Checkbox, Input, Select, SelectItem } from "@heroui/react";
 import { Address, isAddress } from "viem";
 import { useState, useMemo, ChangeEventHandler } from "react";
-import { useGetPerpEventLogs } from "@/app/_hooks/useHistory";
+import { useGetPerpTradeHistories } from "@/app/_hooks/useHistory";
 import { useGetAllContracts } from "@/app/_hooks/useContract";
 import { Contract, Platform } from "@/graphql/gql/graphql";
-import {
-  getHistoriesChartData,
-  convertPerpTradingEventLogToHistory,
-} from "@/utils/historiesV2Chart";
+import { getHistoriesChartData } from "@/utils/historiesV2Chart";
 import { PaginatedViews } from "@/components/views/PaginatedViews";
 import { PerpEventLogPnlChart } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
 
@@ -35,10 +32,9 @@ export function AnalyzePanel() {
 
   const allContracts = useGetAllContracts();
 
-  const { eventLogs, loading } = useGetPerpEventLogs(
+  const { histories, loading } = useGetPerpTradeHistories(
     filteredAddresses,
     platform,
-    null,
   );
 
   const handleParseFilters = () => {
@@ -76,18 +72,15 @@ export function AnalyzePanel() {
       contractsMapa[contract.id] = contract;
     });
 
-    return eventLogs
+    return histories
       .map((logs) => {
         if (logs.length === 0) {
           return null;
         }
 
-        const calculated = getHistoriesChartData(
-          convertPerpTradingEventLogToHistory(contractsMapa, logs),
-          {
-            range: undefined,
-          },
-        );
+        const calculated = getHistoriesChartData(logs, {
+          range: undefined,
+        });
 
         return {
           address: logs[0].address,
@@ -143,7 +136,7 @@ export function AnalyzePanel() {
           ? b.calculated.latestR2 - a.calculated.latestR2
           : b.calculated.r2 - a.calculated.r2;
       });
-  }, [allContracts, checkByLatest128Trades, eventLogs, sortBy]);
+  }, [allContracts, checkByLatest128Trades, histories, sortBy]);
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -154,7 +147,7 @@ export function AnalyzePanel() {
           selectedKeys={platform ? [platform] : undefined}
           onChange={handleChangePlatform}
           selectionMode="single"
-          className="w-[200px] font-mono"
+          className="w-50 font-mono"
         >
           {Object.values(Platform).map((item) => (
             <SelectItem key={item}>{item}</SelectItem>
@@ -167,7 +160,7 @@ export function AnalyzePanel() {
           selectedKeys={sortBy ? [sortBy] : undefined}
           onChange={handleChangeSortBy}
           selectionMode="single"
-          className="w-[200px] font-mono"
+          className="w-50 font-mono"
         >
           {Object.values(Filters).map((item) => (
             <SelectItem key={item}>{item}</SelectItem>
@@ -193,7 +186,7 @@ export function AnalyzePanel() {
           color="primary"
           size="sm"
           isDisabled={text.trim().length === 0}
-          onClick={handleParseFilters}
+          onPress={handleParseFilters}
         >
           Filter
         </Button>
@@ -205,14 +198,13 @@ export function AnalyzePanel() {
         onChangePage={setPage}
         loading={loading}
       >
-        <div className="flex h-[700px] w-full flex-col gap-6 overflow-y-auto">
+        <div className="flex h-175 w-full flex-col gap-6 overflow-y-auto">
           {data.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((item) => (
             <PerpEventLogPnlChart
               key={item.address}
               address={item.address as Address}
               platform={platform}
-              perpTradingEventLogs={item.logs}
-              hideTags={false}
+              perpTradeHistories={item.logs}
               showLatestStats={checkByLatest128Trades}
             />
           ))}

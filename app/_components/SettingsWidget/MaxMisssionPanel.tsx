@@ -46,7 +46,7 @@ export function MaxMissionPanel() {
         <span>{data?.getMaxOpenMissions || 0}</span>
       </div>
 
-      <Button onClick={onOpen}>Update Max Open Missions</Button>
+      <Button onPress={onOpen}>Update Max Open Missions</Button>
 
       <StandardModal
         isOpen={isOpen}
@@ -56,7 +56,7 @@ export function MaxMissionPanel() {
         classNames={{ base: "max-w-[350px]" }}
       >
         <div className="flex w-full flex-col gap-8">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Update Max Open Missions
           </h1>
 
@@ -69,7 +69,7 @@ export function MaxMissionPanel() {
           />
 
           <Button
-            onClick={handleConfirm}
+            onPress={handleConfirm}
             color="primary"
             isDisabled={maxOpenMissionsHelper.trim() !== "" || loading}
             isLoading={loading}

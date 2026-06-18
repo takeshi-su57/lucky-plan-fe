@@ -67,7 +67,7 @@ export function AutomationRow({
       </Checkbox>
 
       <Button
-        onClick={() => onToggleChart(bot.id)}
+        onPress={() => onToggleChart(bot.id)}
         size="sm"
         className="absolute -top-1 right-2"
         variant="ghost"

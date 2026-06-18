@@ -1,15 +1,5 @@
 import { Address } from "viem";
 
-import { MarketExecutedEvent } from "./eventParsers/market-executed.parser";
-import { LimitExecutedEvent } from "./eventParsers/limit-executed.parser";
-import { TradeMaxClosingSlippagePUpdatedEvent } from "./eventParsers/trade-max-closing-slippage-p-updated.parser";
-import { LeverageUpdateExecutedEvent } from "./eventParsers/leverage-update-executed.parser";
-import { PositionSizeDecreaseExecutedEvent } from "./eventParsers/position-size-decrease-executed.parser";
-import { PositionSizeIncreaseExecutedEvent } from "./eventParsers/position-size-increase-executed.parser";
-import { MarketOrderInitiatedEvent } from "./eventParsers/market-order-initiated.parser";
-import { MarketOpenCanceledEvent } from "./eventParsers/market-open-canceled";
-import { MarketCloseCanceledEvent } from "./eventParsers/market-close-canceled";
-
 export enum TradeType {
   TRADE,
   LIMIT,
@@ -79,8 +69,6 @@ export type Id = {
   index: number;
 };
 
-export type Trade = MarketExecutedEvent["args"]["t"];
-
 export type TradeInfo = {
   createdBlock: number;
   tpLastUpdatedBlock: number;
@@ -97,22 +85,3 @@ export type TradingVariable = {
   pairs: (Pair | undefined)[];
   collaterals: Collateral[];
 };
-
-export type MissionEventType =
-  | MarketExecutedEvent
-  | LimitExecutedEvent
-  | MarketOrderInitiatedEvent;
-export type TaskEventType =
-  | TradeMaxClosingSlippagePUpdatedEvent
-  | LeverageUpdateExecutedEvent
-  | PositionSizeDecreaseExecutedEvent
-  | PositionSizeIncreaseExecutedEvent;
-export type TrackEventType =
-  | MarketOrderInitiatedEvent
-  | MarketOpenCanceledEvent
-  | MarketCloseCanceledEvent;
-
-export type RegisteredEventType =
-  | MissionEventType
-  | TaskEventType
-  | TrackEventType;

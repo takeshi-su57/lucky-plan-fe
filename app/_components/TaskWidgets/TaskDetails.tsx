@@ -46,10 +46,10 @@ export function TaskDetails({ task, missionStatus }: TaskDetailsProps) {
       task.status !== TaskStatus.Stopped &&
       task.status !== TaskStatus.Completed ? (
         <div className="flex items-center gap-2">
-          <Button onClick={handlePerformTask} size="sm" color="primary">
+          <Button onPress={handlePerformTask} size="sm" color="primary">
             Perform
           </Button>
-          <Button onClick={handleStopTask} size="sm" color="danger">
+          <Button onPress={handleStopTask} size="sm" color="danger">
             Stop
           </Button>
         </div>

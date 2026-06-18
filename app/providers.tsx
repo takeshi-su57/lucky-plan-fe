@@ -30,10 +30,6 @@ import { createClient } from "graphql-ws";
 import "@rainbow-me/rainbowkit/styles.css";
 import { useSubscribeTask } from "@/app-hooks/useTask";
 import { useSubscribeMission } from "@/app-hooks/useMission";
-import {
-  useSubscribeBacktestTask,
-  useSubscribeBacktestResults,
-} from "@/app-hooks/useBacktest";
 
 import {
   SuccessSnackbar,
@@ -44,10 +40,6 @@ import {
 } from "@/components/snackbars";
 import { useSubscribeBot } from "@/app-hooks/useAutomation";
 import { LOCAL_USER_JWT_KEY } from "@/app-hooks/useUserJWT";
-import {
-  useGetTradingSignalLogs,
-  useSubscribeTradingSignalLogs,
-} from "./_hooks/useTradingSignals";
 import dynamic from "next/dynamic";
 import { OperationTypeNode } from "graphql";
 
@@ -101,7 +93,6 @@ const cache = new InMemoryCache({
   typePolicies: {
     Query: {
       fields: {
-        getPnlSnapshots: relayStylePagination(["kind", "dateStr"]),
         getPnlSnapshotsV2: relayStylePagination([
           "kind",
           "platform",
@@ -110,19 +101,10 @@ const cache = new InMemoryCache({
         getBotsByStatus: relayStylePagination(["status"]),
         getPlansByStatus: relayStylePagination(["status"]),
         allLogs: relayStylePagination(["checked", "severity"]),
-        getTestingReport: relayStylePagination(),
-        getTestingReportV2: relayStylePagination(),
-        getTestingReportV3: relayStylePagination(),
-        getTestingReportV4: relayStylePagination(),
-        getTestingReportV5: relayStylePagination(),
         getAllFollowerDetails: relayStylePagination(["contractId"]),
         getExpertPnlSnapshotsV2: relayStylePagination(["platform"]),
         getPlanBotGroups: relayStylePagination(["planId", "hideDead"]),
       },
-    },
-    TagCategory: { keyFields: ["id"] },
-    Tag: {
-      keyFields: ["tag"],
     },
     User: {
       keyFields: ["address"],
@@ -205,28 +187,7 @@ const cache = new InMemoryCache({
     PnlSnapshotDetailsEdge: {
       keyFields: ["cursor"],
     },
-    TestingReport: {
-      keyFields: ["id"],
-    },
-    TestingReportEdge: {
-      keyFields: ["cursor"],
-    },
-    TestingReportV2: {
-      keyFields: ["id"],
-    },
-    TestingReportV2Edge: {
-      keyFields: ["cursor"],
-    },
-    TestingReportV3: {
-      keyFields: ["id"],
-    },
-    TestingReportV3Edge: {
-      keyFields: ["cursor"],
-    },
     PnlSnapshotInitializedFlag: {
-      keyFields: ["id"],
-    },
-    TradeHistory: {
       keyFields: ["id"],
     },
     Log: {
@@ -242,15 +203,6 @@ const cache = new InMemoryCache({
       keyFields: ["id"],
     },
     ExpertPnlSnapshotV2Node: {
-      keyFields: ["id"],
-    },
-    TradingSignalLog: {
-      keyFields: ["id"],
-    },
-    BacktestTask: {
-      keyFields: ["id"],
-    },
-    BacktestResult: {
       keyFields: ["id"],
     },
   },
@@ -334,14 +286,9 @@ export async function requestNotificationPermission() {
 }
 
 export function SubscriptionWrapper({ children }: { children: ReactNode }) {
-  useGetTradingSignalLogs();
-
   useSubscribeTask();
   useSubscribeMission();
   useSubscribeBot();
-  useSubscribeTradingSignalLogs();
-  useSubscribeBacktestTask();
-  useSubscribeBacktestResults();
 
   useEffect(() => {
     requestNotificationPermission();

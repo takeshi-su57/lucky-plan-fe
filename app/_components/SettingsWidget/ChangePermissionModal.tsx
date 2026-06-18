@@ -20,7 +20,6 @@ import { useGetAllGnsContracts } from "@/app-hooks/useContract";
 
 import { NumericInput } from "@/components/inputs/NumericInput";
 import { shrinkAddress } from "@/utils";
-import { useCreateAutoPlan } from "@/app/_hooks/usePlan";
 
 export type ChangePermissionModalProps = {
   user: {
@@ -43,7 +42,6 @@ export function ChangePermissionModal({
   const { mutateChangeUserPermission, loading: changeUserPermissionLoading } =
     useChangeUserPermission();
   const { mutateAllowAuto, loading: allowAutoLoading } = useAllowAuto();
-  const { createAutoPlan, loading: autoPlanLoading } = useCreateAutoPlan();
 
   const allContracts = useGetAllGnsContracts();
 
@@ -77,10 +75,6 @@ export function ChangePermissionModal({
         permission,
       },
     });
-  };
-
-  const handleCreateAutoPlan = () => {
-    createAutoPlan({ variables: {} });
   };
 
   const handleAllowAuto = () => {
@@ -155,7 +149,7 @@ export function ChangePermissionModal({
       backdrop="blur"
     >
       <div className="flex flex-col gap-3.5">
-        <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+        <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
           Settings
         </h1>
 
@@ -174,7 +168,7 @@ export function ChangePermissionModal({
             </Select>
 
             <Button
-              onClick={handleChangeUserPermission}
+              onPress={handleChangeUserPermission}
               color="primary"
               isDisabled={!permission}
               isLoading={changeUserPermissionLoading}
@@ -183,18 +177,6 @@ export function ChangePermissionModal({
             </Button>
 
             <br />
-            <br />
-
-            {allowAuto ? (
-              <Button
-                onClick={handleCreateAutoPlan}
-                color="secondary"
-                isDisabled={!permission}
-                isLoading={autoPlanLoading}
-              >
-                Generate Auto Plan
-              </Button>
-            ) : null}
           </div>
 
           <div className="flex flex-1 flex-col gap-3.5">
@@ -265,7 +247,7 @@ export function ChangePermissionModal({
             ) : null}
 
             <Button
-              onClick={handleAllowAuto}
+              onPress={handleAllowAuto}
               color="primary"
               isDisabled={isDisabled}
               isLoading={allowAutoLoading}

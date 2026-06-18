@@ -14,7 +14,6 @@ import {
   BotStatus,
   MissionStatus,
   BotForwardDetails,
-  Platform,
 } from "@/graphql/gql/graphql";
 
 import {
@@ -28,7 +27,6 @@ import { FaCopy } from "react-icons/fa";
 import { useCloseMission } from "@/app/_hooks/useMission";
 
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
-import { ContractPnl } from "../MissionWidgets/ContractPnl";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { EditStrategyModal } from "./EditAutomationModal";
 import { EventLogsWidget } from "../LeaderboardWidgets/EventLogsWidget";
@@ -167,84 +165,6 @@ export function AutomationDetails({ bot }: AutomationDetailsProps) {
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {bot.leaderContract.platform === Platform.Gns ? (
-            <ContractPnl
-              label="Leader"
-              contractId={bot.leaderContractId}
-              finished={false}
-              finishedMissionActions={bot.missions
-                .filter(
-                  (mission) =>
-                    mission.status === MissionStatus.Closed &&
-                    !!mission.achievePositionKey,
-                )
-                .map((mission) => mission.tasks.map((task) => task.action))}
-              openedMissionActions={bot.missions
-                .filter(
-                  (mission) =>
-                    mission.status !== MissionStatus.Closed &&
-                    mission.status !== MissionStatus.Ignored &&
-                    !mission.achievePositionKey,
-                )
-                .map((mission) => mission.tasks.map((task) => task.action))}
-            />
-          ) : null}
-
-          <ContractPnl
-            label="Follower"
-            contractId={bot.followerContractId}
-            finished={false}
-            finishedMissionActions={bot.missions
-              .filter(
-                (mission) =>
-                  mission.status === MissionStatus.Closed &&
-                  !!mission.achievePositionKey,
-              )
-              .map((mission) =>
-                mission.tasks
-                  .map((task) => {
-                    if (task.followerActions.length === 0) {
-                      return null;
-                    }
-
-                    const followerAction =
-                      task.followerActions[task.followerActions.length - 1];
-
-                    if (!followerAction) {
-                      return null;
-                    }
-
-                    return followerAction.action;
-                  })
-                  .filter((action) => action !== null),
-              )}
-            openedMissionActions={bot.missions
-              .filter(
-                (mission) =>
-                  mission.status !== MissionStatus.Closed &&
-                  mission.status !== MissionStatus.Ignored &&
-                  !mission.achievePositionKey,
-              )
-              .map((mission) =>
-                mission.tasks
-                  .map((task) => {
-                    if (task.followerActions.length === 0) {
-                      return null;
-                    }
-
-                    const followerAction =
-                      task.followerActions[task.followerActions.length - 1];
-
-                    if (!followerAction) {
-                      return null;
-                    }
-
-                    return followerAction.action;
-                  })
-                  .filter((action) => action !== null),
-              )}
-          />
-
           {bot.status !== BotStatus.Dead ? (
             <EditStrategyModal
               strategy={bot.strategy}
@@ -298,13 +218,7 @@ export function AutomationDetails({ bot }: AutomationDetailsProps) {
             {openedMissions.map((mission) => (
               <AccordionItem
                 key={mission.id}
-                title={
-                  <MissionSummary
-                    mission={mission}
-                    leaderContract={bot.leaderContract}
-                    followerContractId={bot.followerContractId}
-                  />
-                }
+                title={<MissionSummary mission={mission} />}
               >
                 <MissionDetails
                   mission={mission}
@@ -341,13 +255,7 @@ export function AutomationDetails({ bot }: AutomationDetailsProps) {
                   .map((mission) => (
                     <AccordionItem
                       key={mission.id}
-                      title={
-                        <MissionSummary
-                          mission={mission}
-                          leaderContract={bot.leaderContract}
-                          followerContractId={bot.followerContractId}
-                        />
-                      }
+                      title={<MissionSummary mission={mission} />}
                     >
                       <MissionDetails
                         mission={mission}

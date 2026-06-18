@@ -15,7 +15,10 @@ import { twMerge } from "tailwind-merge";
 import { Address } from "viem";
 
 import { StandardModal } from "@/components/modals/StandardModal";
-import { useBatchCloseTrade, BatchCloseTarget } from "@/app/_hooks/useBatchTrade";
+import {
+  useBatchCloseTrade,
+  BatchCloseTarget,
+} from "@/app/_hooks/useBatchTrade";
 import { useGetAllGnsContracts } from "@/app-hooks/useContract";
 import { useGetAllFollowerDetails } from "@/app/_hooks/useFollower";
 import { getPairName, getCollateral } from "@/web3/gns/v10/configs";
@@ -61,8 +64,7 @@ export function BatchCloseButton() {
   );
 
   const selectedContract = useMemo(
-    () =>
-      contracts.find((c) => c.id === +(selectedContractId || 0)) || null,
+    () => contracts.find((c) => c.id === +(selectedContractId || 0)) || null,
     [contracts, selectedContractId],
   );
 
@@ -81,12 +83,10 @@ export function BatchCloseButton() {
     [followerDetails, followerAddress],
   );
 
-  const trades = selectedFollower?.trades || [];
-
   // Parse trades for the picker
   const parsedTrades = useMemo(
     () =>
-      trades.map((trade) => {
+      (selectedFollower?.trades || []).map((trade) => {
         const data = JSON.parse(trade.params);
         const pairIndex = Number(data.pairIndex);
         const long = Boolean(data.long);
@@ -103,9 +103,7 @@ export function BatchCloseButton() {
         const collateralAmount = data.collateralAmount
           ? Number(data.collateralAmount) / precision
           : 0;
-        const openPrice = data.openPrice
-          ? Number(data.openPrice) / 1e10
-          : 0;
+        const openPrice = data.openPrice ? Number(data.openPrice) / 1e10 : 0;
 
         const pairName = chainId
           ? getPairName(chainId, pairIndex)
@@ -125,7 +123,7 @@ export function BatchCloseButton() {
           pairName,
         };
       }),
-    [trades, chainId],
+    [selectedFollower?.trades, chainId],
   );
 
   // IDs already in close list, so we can dim/disable them in the picker
@@ -162,9 +160,7 @@ export function BatchCloseButton() {
     const followerLabel = shrinkAddress(followerAddress as Address);
 
     const newEntries: CloseEntry[] = parsedTrades
-      .filter(
-        (t) => pickerSelectedIds.has(t.id) && !alreadyAddedIds.has(t.id),
-      )
+      .filter((t) => pickerSelectedIds.has(t.id) && !alreadyAddedIds.has(t.id))
       .map((t) => ({
         id: t.id,
         address: t.address,
@@ -240,7 +236,7 @@ export function BatchCloseButton() {
         }}
       >
         <div className="flex flex-col gap-4">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Batch Close Positions
           </h1>
 
@@ -388,9 +384,7 @@ export function BatchCloseButton() {
                           <AutocompleteItem
                             key={item.address}
                             className="font-mono"
-                            textValue={shrinkAddress(
-                              item.address as Address,
-                            )}
+                            textValue={shrinkAddress(item.address as Address)}
                           >
                             <span className="text-small">
                               #{item.accountIndex}{" "}
@@ -435,7 +429,7 @@ export function BatchCloseButton() {
                             className={twMerge(
                               "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
                               added
-                                ? "opacity-40 cursor-not-allowed"
+                                ? "cursor-not-allowed opacity-40"
                                 : "cursor-pointer",
                               !added && pickerSelectedIds.has(trade.id)
                                 ? "bg-neutral-700/60"
@@ -461,16 +455,12 @@ export function BatchCloseButton() {
                             <span
                               className={twMerge(
                                 "text-xs font-medium",
-                                trade.long
-                                  ? "text-green-500"
-                                  : "text-red-500",
+                                trade.long ? "text-green-500" : "text-red-500",
                               )}
                             >
                               {trade.long ? "Long" : "Short"}
                             </span>
-                            <PairChip
-                              pairName={trade.pairName ?? "Unknown"}
-                            />
+                            <PairChip pairName={trade.pairName ?? "Unknown"} />
                             <PositionTradeStatus
                               collateralAmount={trade.collateralAmount}
                               leverage={trade.leverage}

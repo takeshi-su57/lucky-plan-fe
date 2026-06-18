@@ -9,35 +9,35 @@ import {
 } from "@apollo/client/react";
 import { useSnackbar } from "notistack";
 import { getFragmentData, graphql } from "@/gql/index";
-import {
-  ExportFilter,
-  PnlSnapshotKind,
-  Platform,
-  GetPnlSnapshotsV2Query,
-} from "@/graphql/gql/graphql";
+import { Platform, GetPnlSnapshotsV2Query } from "@/graphql/gql/graphql";
 
 export const PNL_SNAPSHOT_V2_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment PnlSnapshotV2Info on PnlSnapshotV2 {
     accUSDPnl
     address
     dateStr
-    id
     kind
     platform
   }
 `);
 
-export const PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT = graphql(`
-  fragment PerpTradingEventLogInfo on PerpTradingEventLog {
-    address
-    block
-    contractId
-    date
+export const PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment PerpTradeHistoryInfo on PerpTradeHistory {
     id
-    jsonLog
-    logIndex
-    platform
+    address
+    collateralDeltaUsd
+    collateralInUsd
+    isLong
+    leverage
+    leverageDelta
+    operation
+    pair
+    positionKey
+    price
+    sizeDeltaUsd
+    sizeInUsd
     usdPnl
+    date
   }
 `);
 
@@ -46,109 +46,18 @@ export const PNL_SNAPSHOT_V2_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     accUSDPnl
     address
     dateStr
-    id
     kind
-    perpTradingEventLogs {
-      ...PerpTradingEventLogInfo
+    perpTradeHistories {
+      ...PerpTradeHistoryInfo
     }
     platform
   }
 `);
 
-export const GET_WHOLE_COMPRESSED_HISTORIES_DOCUMENT_V2 = graphql(`
-  query getWholeCompressedHistoriesV2(
-    $platform: Platform!
-    $startDate: String!
-    $filterParams: [ExportFilter!]!
-  ) {
-    getWholeCompressedHistoriesV2(
-      platform: $platform
-      startDate: $startDate
-      filterParams: $filterParams
-    ) {
-      accPnls {
-        date
-        in
-        inOut
-        out
-        pnl
-        positionCount
-        taskCount
-      }
-      botCounts {
-        botCount
-        date
-      }
-      maxInvested
-      uniqueTraders
-      totalBots {
-        address
-        platform
-        dateStr
-      }
-    }
-  }
-`);
-
-// export const GET_TESTING_REPORT_DOCUMENT = graphql(`
-//   query getTestingReport($first: Int!, $after: Int) {
-//     getTestingReport(first: $first, after: $after) {
-//       edges {
-//         cursor
-//         node {
-//           maxAvgSize
-//           minAvgSize
-//           maxCount
-//           minCount
-//           avgLoss
-//           monthWeight
-//           threeMonthWeight
-//           weekWeight
-//           allTimeWeight
-//           avgProfit
-//           bottomAccProfit
-//           calculatedR2
-//           calculatedSlope
-//           id
-//           investedUSD
-//           lossCount
-//           m
-//           maxLoss
-//           maxProfit
-//           minR2
-//           minScore
-//           n
-//           peakAccProfit
-//           profitCount
-//           totalPositions
-//           totalTasks
-//           totalTraders
-//           totalUSDPnl
-//           totalUniqueTraders
-//           usdPnls
-//           window
-//         }
-//       }
-//       pageInfo {
-//         endCursor
-//         hasNextPage
-//       }
-//     }
-//   }
-// `);
-
-export const GET_PERP_EVENT_LOGS_DOCUMENT = graphql(`
-  query getPerpEventLogs(
-    $addresses: [String!]!
-    $platform: Platform!
-    $limit: Int
-  ) {
-    getPerpEventLogs(
-      addresses: $addresses
-      platform: $platform
-      limit: $limit
-    ) {
-      ...PerpTradingEventLogInfo
+export const GET_PERP_TRADE_HISTORIES_DOCUMENT = graphql(`
+  query getPerpTradeHistories($addresses: [String!]!, $platform: Platform!) {
+    getPerpTradeHistories(addresses: $addresses, platform: $platform) {
+      ...PerpTradeHistoryInfo
     }
   }
 `);
@@ -168,20 +77,16 @@ export const GET_PNL_SNAPSHOT_V2_DOCUMENT = graphql(`
   query getPnlSnapshotsV2(
     $dateStr: String!
     $platform: Platform!
+    $isDesc: Boolean!
     $first: Int!
-    $after: Int
-    $kind: PnlSnapshotKind!
-    $minR2: Float!
-    $minSlope: Float!
+    $after: String
   ) {
     getPnlSnapshotsV2(
       dateStr: $dateStr
       platform: $platform
+      isDesc: $isDesc
       first: $first
       after: $after
-      kind: $kind
-      minR2: $minR2
-      minSlope: $minSlope
     ) {
       edges {
         cursor
@@ -196,11 +101,6 @@ export const GET_PNL_SNAPSHOT_V2_DOCUMENT = graphql(`
     }
   }
 `);
-
-// TODO: getPnlsnpashotsV2ByPagination was removed from the schema - needs backend update
-// export const GET_PNL_SNAPSHOT_V2_BY_PAGINATION = graphql(`
-//   query getPnlsnpashotsV2ByPagination(...) { ... }
-// `);
 
 export const IS_PNL_SNAPSHOT_V2_INITIALIZED_DOCUMENT = graphql(`
   query isPnlSnapshotV2Initialized($dateStr: String!, $platform: Platform!) {
@@ -257,75 +157,11 @@ function getPnlSnapshotV2Info(
 
   return {
     ...snapshotInfo,
-    perpTradingEventLogs: snapshotInfo.perpTradingEventLogs.map((eventLog) =>
-      getFragmentData(PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT, eventLog),
+    perpTradeHistories: snapshotInfo.perpTradeHistories.map((history) =>
+      getFragmentData(PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT, history),
     ),
   };
 }
-
-export function useGetWholeCompressedHistoriesV2(
-  platform: Platform,
-  startDate: string,
-  filterParams: ExportFilter[],
-) {
-  const { data, loading } = useQuery(
-    GET_WHOLE_COMPRESSED_HISTORIES_DOCUMENT_V2,
-    {
-      variables: {
-        platform,
-        startDate,
-        filterParams,
-      },
-    },
-  );
-
-  return {
-    accPnls: data?.getWholeCompressedHistoriesV2.accPnls || [],
-    botCounts: data?.getWholeCompressedHistoriesV2.botCounts || [],
-    maxInvested: data?.getWholeCompressedHistoriesV2.maxInvested || 0,
-    uniqueTraders: data?.getWholeCompressedHistoriesV2.uniqueTraders || [],
-    totalBots: data?.getWholeCompressedHistoriesV2?.totalBots || [],
-    loading,
-  };
-}
-
-// export function useGetTestingReport() {
-//   const { data, loading, fetchMore, error } = useQuery(
-//     GET_TESTING_REPORT_DOCUMENT,
-//     {
-//       variables: {
-//         first: 20,
-//       },
-//     },
-//   );
-
-//   const reports = useMemo(() => {
-//     if (!data) {
-//       return [];
-//     }
-//     return data.getTestingReport.edges
-//       .map((edge) => edge.node)
-//       .filter((item) => item.usdPnls.length > 0);
-//   }, [data]);
-
-//   const handleFetchMore = useCallback(() => {
-//     if (data && !error) {
-//       fetchMore({
-//         variables: {
-//           first: 20,
-//           after: data.getTestingReport.pageInfo.endCursor,
-//         },
-//       });
-//     }
-//   }, [data, error, fetchMore]);
-
-//   return {
-//     hasMore: data?.getTestingReport.pageInfo.hasNextPage,
-//     reports,
-//     fetchMore: handleFetchMore,
-//     loading,
-//   };
-// }
 
 export function useGetPnlSnapshotV2InitializedFlag(platform: Platform) {
   return useQuery(GET_PNL_SNAPSHOT_V2_INITIALIZED_FLAG_DOCUMENT, {
@@ -401,11 +237,9 @@ export function useInitializePnlSnapshotV2() {
 
 export function useGetPnlSnapshotsV2(
   dateStr: string,
-  kind: PnlSnapshotKind,
   platform: Platform,
+  isDesc: boolean,
   first: number,
-  minSlope: number,
-  minR2: number,
 ) {
   const [query, { data, fetchMore, loading, error }] = useLazyQuery(
     GET_PNL_SNAPSHOT_V2_DOCUMENT,
@@ -415,14 +249,12 @@ export function useGetPnlSnapshotsV2(
     query({
       variables: {
         dateStr,
-        kind,
+        isDesc,
         first,
         platform,
-        minR2,
-        minSlope,
       },
     });
-  }, [dateStr, kind, query, platform, first, minR2, minSlope]);
+  }, [dateStr, isDesc, query, platform, first]);
 
   const pnlSnapshots = useMemo(() => {
     if (!data) {
@@ -438,16 +270,14 @@ export function useGetPnlSnapshotsV2(
       fetchMore({
         variables: {
           dateStr,
-          kind,
+          isDesc,
           first,
           after: data.getPnlSnapshotsV2.pageInfo.endCursor,
           platform,
-          minR2,
-          minSlope,
         },
       });
     }
-  }, [data, error, fetchMore, dateStr, kind, first, platform, minR2, minSlope]);
+  }, [data, error, fetchMore, dateStr, isDesc, first, platform]);
 
   return {
     hasMore: data?.getPnlSnapshotsV2.pageInfo.hasNextPage,
@@ -457,32 +287,30 @@ export function useGetPnlSnapshotsV2(
   };
 }
 
-export function useGetPerpEventLogs(
+export function useGetPerpTradeHistories(
   addresses: string[],
   platform: Platform,
-  limit: number | null,
 ) {
-  const { data, loading } = useQuery(GET_PERP_EVENT_LOGS_DOCUMENT, {
+  const { data, loading } = useQuery(GET_PERP_TRADE_HISTORIES_DOCUMENT, {
     variables: {
       addresses,
       platform,
-      limit,
     },
   });
 
-  const eventLogs = useMemo(() => {
+  const histories = useMemo(() => {
     if (!data) {
       return [];
     }
-    return data.getPerpEventLogs.map((eventLogs) =>
-      eventLogs.map((eventLog) =>
-        getFragmentData(PERP_EVENT_LOGS_INFO_FRAGMENT_DOCUMENT, eventLog),
+    return data.getPerpTradeHistories.map((history) =>
+      history.map((history) =>
+        getFragmentData(PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT, history),
       ),
     );
   }, [data]);
 
   return {
-    eventLogs,
+    histories,
     loading,
   };
 }

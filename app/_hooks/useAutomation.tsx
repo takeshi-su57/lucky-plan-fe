@@ -48,6 +48,7 @@ export const BOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     startedAt
     endedAt
     status
+    mode
     followerContract {
       ...ContractInfo
     }
@@ -80,6 +81,7 @@ export const BOT_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     startedAt
     endedAt
     status
+    mode
     followerContract {
       ...ContractInfo
     }
@@ -115,6 +117,7 @@ export const BOT_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     startedAt
     endedAt
     status
+    mode
     followerContract {
       ...ContractInfo
     }
@@ -536,6 +539,7 @@ export function useSubscribeBot() {
             status: botInfo.status,
             strategy: botInfo.strategy,
             strategyId: botInfo.strategyId,
+            mode: botInfo.mode,
             missions: [],
           },
         });

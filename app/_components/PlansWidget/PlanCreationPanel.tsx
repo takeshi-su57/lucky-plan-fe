@@ -15,7 +15,7 @@ import { useGetAllContracts } from "@/app-hooks/useContract";
 
 import { useBatchCreateBots } from "@/app-hooks/useAutomation";
 import { useCreatePlan } from "@/app-hooks/usePlan";
-import { ContractStatus } from "@/graphql/gql/graphql";
+import { BotMode, ContractStatus } from "@/graphql/gql/graphql";
 
 export function PlanCreationPanel() {
   const { createPlan, loading: createPlanLoading } = useCreatePlan();
@@ -89,6 +89,7 @@ export function PlanCreationPanel() {
                     selectedPairs: "[]",
                     mode: "default",
                   },
+                  mode: BotMode.Default,
                 }));
             })
             .flat(),
@@ -127,7 +128,7 @@ export function PlanCreationPanel() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+      <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
         Create A New Plan
       </h1>
 

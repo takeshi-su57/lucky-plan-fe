@@ -46,7 +46,7 @@ export function ContractLiveButton({ contract }: { contract: Contract }) {
 
   return (
     <>
-      <Button size="sm" variant="solid" color="primary" onClick={onOpen}>
+      <Button size="sm" variant="solid" color="primary" onPress={onOpen}>
         Live
       </Button>
 
@@ -57,7 +57,7 @@ export function ContractLiveButton({ contract }: { contract: Contract }) {
         backdrop="blur"
       >
         <div className="flex flex-col gap-3.5">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Live Contract
           </h1>
 
@@ -79,7 +79,7 @@ export function ContractLiveButton({ contract }: { contract: Contract }) {
           </Checkbox>
 
           <Button
-            onClick={handleLiveContract}
+            onPress={handleLiveContract}
             color="primary"
             isDisabled={isDisabled}
           >

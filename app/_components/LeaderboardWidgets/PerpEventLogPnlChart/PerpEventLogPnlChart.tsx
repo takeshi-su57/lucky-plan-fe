@@ -5,29 +5,19 @@ import {
   useMemo,
   PropsWithRef,
   useImperativeHandle,
-  RefObject,
+  Ref,
 } from "react";
 import { Address } from "viem";
-import {
-  Card,
-  CardBody,
-  Select,
-  SelectItem,
-  Tab,
-  Tabs,
-} from "@heroui/react";
+import { Card, CardBody, Select, SelectItem, Tab, Tabs } from "@heroui/react";
 import type { Selection } from "@heroui/react";
 import { twMerge } from "tailwind-merge";
-import { Contract, PerpTradingEventLog, Platform } from "@/graphql/gql/graphql";
+import { Contract, PerpTradeHistory, Platform } from "@/graphql/gql/graphql";
 
 import { HistoryCharts } from "../HistoryCharts";
 import { HistoriesSummary } from "./HistoriesSummary";
 
 import { useGetAllContracts } from "@/app/_hooks/useContract";
-import {
-  convertPerpTradingEventLogToHistory,
-  getHistoriesChartData,
-} from "@/utils/historiesV2Chart";
+import { getHistoriesChartData } from "@/utils/historiesV2Chart";
 import { HistoriesPositionList } from "./HistoriesPositionList";
 
 type TabType = "chart" | "positions";
@@ -50,12 +40,11 @@ export type PerpEventLogPnlChartHandle = {
 export type PerpEventLogPnlChartProps = {
   address: Address;
   platform: Platform;
-  perpTradingEventLogs: PerpTradingEventLog[];
+  perpTradeHistories: PerpTradeHistory[];
   range?: {
     from?: Date;
     to?: Date;
   };
-  hideTags: boolean;
   showLatestStats?: boolean;
   cols?: 1 | 2 | 4;
 };
@@ -63,14 +52,13 @@ export type PerpEventLogPnlChartProps = {
 export function PerpEventLogPnlChart({
   address,
   platform,
-  perpTradingEventLogs,
+  perpTradeHistories,
   range,
-  hideTags,
   showLatestStats,
   ref,
   cols = 2,
 }: PropsWithRef<PerpEventLogPnlChartProps> & {
-  ref?: RefObject<PerpEventLogPnlChartHandle>;
+  ref?: Ref<PerpEventLogPnlChartHandle>;
 }) {
   const [selected, setSelected] = useState<TabType>("chart");
   const [selectedPair, setSelectedPair] = useState<Selection>(
@@ -122,11 +110,6 @@ export function PerpEventLogPnlChart({
 
     const tradePairsMap = new Map<string, number>();
 
-    const perpTradeHistories = convertPerpTradingEventLogToHistory(
-      contractsMapa,
-      perpTradingEventLogs,
-    );
-
     perpTradeHistories.forEach((item) => {
       const key = getPairKey(item.pair, item.isLong);
       tradePairsMap.set(key, (tradePairsMap.get(key) || 0) + 1);
@@ -149,13 +132,7 @@ export function PerpEventLogPnlChart({
       ),
       tradePairs: Array.from(tradePairsMap.entries()),
     };
-  }, [
-    allContracts,
-    selectedPair,
-    perpTradingEventLogs,
-    showLatestStats,
-    range,
-  ]);
+  }, [allContracts, selectedPair, perpTradeHistories, showLatestStats, range]);
 
   return (
     <Card className={twMerge("mb-4 w-full shrink-0")} isBlurred>
@@ -166,12 +143,10 @@ export function PerpEventLogPnlChart({
               variant="underlined"
               label="Pairs"
               placeholder="Select pairs"
-              // selectedKeys={values}
-              // onSelectionChange={setValues}
               selectedKeys={selectedPair}
               onSelectionChange={setSelectedPair}
               selectionMode="multiple"
-              className="w-[200px] font-mono"
+              className="w-50 font-mono"
             >
               {tradePairs.map((item) => (
                 <SelectItem key={item[0]}>
@@ -198,7 +173,6 @@ export function PerpEventLogPnlChart({
               countIn={countIn}
               firstActivity={firstActivity}
               lastActivity={lastActivity}
-              hideTags={hideTags}
               pnlChartData={pnlAccChartData}
               inOutChartData={inOutChartData}
               openedPositions={openedPositions}

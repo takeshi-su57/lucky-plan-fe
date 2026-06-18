@@ -37,7 +37,7 @@ export function ChangePasswordButton() {
 
   return (
     <>
-      <Button onClick={onOpen} color="warning" isLoading={loading}>
+      <Button onPress={onOpen} color="warning" isLoading={loading}>
         Change Password
       </Button>
 
@@ -48,7 +48,7 @@ export function ChangePasswordButton() {
         backdrop="blur"
       >
         <div className="flex flex-col gap-3.5">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Change Password
           </h1>
 
@@ -115,7 +115,7 @@ export function ChangePasswordButton() {
           />
 
           <Button
-            onClick={handleChangePassword}
+            onPress={handleChangePassword}
             color="primary"
             isDisabled={
               oldPassword.trim() === "" ||

@@ -105,7 +105,7 @@ export function MissionCloneButton({
 
   return (
     <>
-      <Button onClick={onOpen} color="secondary" className="w-fit" size="sm">
+      <Button onPress={onOpen} color="secondary" className="w-fit" size="sm">
         Clone
       </Button>
 
@@ -116,7 +116,7 @@ export function MissionCloneButton({
         backdrop="blur"
       >
         <div className="flex flex-col items-center gap-3.5">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Clone Mission
           </h1>
 
@@ -141,7 +141,7 @@ export function MissionCloneButton({
           </Switch>
 
           <Button
-            onClick={handleCloneMission}
+            onPress={handleCloneMission}
             isDisabled={isDisabled}
             isLoading={cloneMissionLoading}
             color="warning"

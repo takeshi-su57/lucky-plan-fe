@@ -66,6 +66,7 @@ export const START_ADAPTION_DOCUMENT = graphql(`
 export function useGetAdaptionStatus() {
   const client = useApolloClient();
 
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps
   const query = useTanstackQuery({
     queryKey: ["GET_ADAPTION_STATUS_DOCUMENT"],
     queryFn: async () => {

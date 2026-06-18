@@ -1,9 +1,6 @@
 import { Address } from "viem";
 import dayjs from "dayjs";
 import crypto from "crypto";
-import { SimpleLinearRegression } from "ml-regression-simple-linear";
-import { PersonalTradeHistory, TradeActionType } from "@/types";
-import { primaryBestCase } from "@/app/_components/DevWidget/subcase";
 
 export function shrinkAddress(address: Address, onlyFirst?: boolean) {
   if (onlyFirst) {
@@ -499,121 +496,6 @@ export function getDevData(
     data,
     accData,
   };
-}
-
-export function getScore(
-  dateStr: string,
-  histories: PersonalTradeHistory[],
-): number {
-  const endDate = dayjs(dateStr).toDate();
-
-  const rangeHistories = histories.filter((history) => {
-    const historyDate = new Date(history.date);
-
-    return historyDate.getTime() <= endDate.getTime();
-  });
-
-  const openHistoriesMap: Record<number, PersonalTradeHistory[]> = {};
-
-  rangeHistories.forEach((history) => {
-    if (
-      history.action === TradeActionType.TradeOpenedMarket ||
-      history.action === TradeActionType.TradeOpenedLimit
-    ) {
-      const arr = openHistoriesMap[history.tradeIndex];
-
-      if (arr) {
-        arr.push(history);
-      } else {
-        openHistoriesMap[history.tradeIndex] = [history];
-      }
-    }
-  });
-
-  const closeHistories = rangeHistories
-    .filter((history) => {
-      return (
-        history.action === TradeActionType.TradeClosedMarket ||
-        history.action === TradeActionType.TradeClosedLIQ ||
-        history.action === TradeActionType.TradeClosedSL ||
-        history.action === TradeActionType.TradeClosedTP ||
-        history.action === TradeActionType.TradePosSizeDecrease ||
-        history.action === TradeActionType.TradePosSizeIncrease
-      );
-    })
-    .filter((history) => +history.pnl !== 0);
-
-  if (closeHistories.length < 6) {
-    return 0;
-  }
-
-  let traderScore = 0;
-
-  for (let step = 0; step < primaryBestCase[0].window; step++) {
-    let round = 0;
-    let stepScore = 0;
-
-    for (let i = 0; i < closeHistories.length; i += primaryBestCase[0].window) {
-      round++;
-      const chunk = closeHistories.slice(
-        Math.max(
-          closeHistories.length - i - step - primaryBestCase[0].window,
-          0,
-        ),
-        closeHistories.length - i - step,
-      );
-
-      if (chunk.length < 6) {
-        continue;
-      }
-
-      let pnlSum = 0;
-
-      const pnlArrs: number[] = [];
-      const xs: number[] = [];
-
-      for (let j = 0; j < chunk.length; j++) {
-        const history = chunk[j];
-
-        pnlSum += +history.pnl * +history.collateralPriceUsd;
-
-        pnlArrs.push(pnlSum);
-        xs.push(j);
-      }
-
-      const regression = new SimpleLinearRegression(xs, pnlArrs);
-      const score = regression.score(xs, pnlArrs);
-
-      if (Number.isNaN(score.r2)) {
-        score.r2 = 1;
-      }
-
-      if (score.r2 === Infinity) {
-        continue;
-      }
-
-      if (regression.slope > 0) {
-        if (score.r2 > primaryBestCase[0].minR2) {
-          stepScore +=
-            (regression.slope * score.r2) / round / primaryBestCase[0].n;
-        } else {
-          stepScore +=
-            (regression.slope * (score.r2 - 1) * primaryBestCase[0].m) /
-            round /
-            primaryBestCase[0].n;
-        }
-      } else {
-        stepScore +=
-          (regression.slope * (2 - score.r2) * primaryBestCase[0].m) /
-          round /
-          primaryBestCase[0].n;
-      }
-    }
-
-    traderScore += stepScore;
-  }
-
-  return (traderScore * closeHistories.length) / primaryBestCase[0].window;
 }
 
 export function bigIntSafeJsonStringify(obj: unknown) {

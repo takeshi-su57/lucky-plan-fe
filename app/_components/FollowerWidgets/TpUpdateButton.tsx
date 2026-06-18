@@ -82,7 +82,7 @@ export function TpUpdateButton({
 
   return (
     <>
-      <Button color="default" size="sm" onClick={onOpen} isLoading={loading}>
+      <Button color="default" size="sm" onPress={onOpen} isLoading={loading}>
         Update TP
       </Button>
 
@@ -93,7 +93,7 @@ export function TpUpdateButton({
         backdrop="blur"
       >
         <div className="flex flex-col gap-3.5">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Update TP
           </h1>
 
@@ -147,20 +147,23 @@ export function TpUpdateButton({
                 />
               )}
 
-              {tpMode === "percent" && currentPairPrice !== undefined && Number(tpPercent) > 0 && (
-                <span className="text-xs text-neutral-500">
-                  = {getPriceStr(
-                    long
-                      ? currentPairPrice * (1 + Number(tpPercent) / 100)
-                      : currentPairPrice * (1 - Number(tpPercent) / 100),
-                  )}{" "}
-                  USD
-                </span>
-              )}
+              {tpMode === "percent" &&
+                currentPairPrice !== undefined &&
+                Number(tpPercent) > 0 && (
+                  <span className="text-xs text-neutral-500">
+                    ={" "}
+                    {getPriceStr(
+                      long
+                        ? currentPairPrice * (1 + Number(tpPercent) / 100)
+                        : currentPairPrice * (1 - Number(tpPercent) / 100),
+                    )}{" "}
+                    USD
+                  </span>
+                )}
             </div>
 
             <Button
-              onClick={handleUpdate}
+              onPress={handleUpdate}
               isDisabled={isDisabledUpdate}
               isLoading={loading}
               className="w-[180px]"

@@ -153,7 +153,7 @@ export function ContractPanel() {
                     size="sm"
                     variant="solid"
                     color="danger"
-                    onClick={handleDisableContract(contract)}
+                    onPress={handleDisableContract(contract)}
                   >
                     Disable
                   </Button>

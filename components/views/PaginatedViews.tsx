@@ -47,7 +47,7 @@ export function PaginatedViews({
 
             <Button
               color="secondary"
-              onClick={() => onChangePage(tempPage)}
+              onPress={() => onChangePage(tempPage)}
               size="sm"
             >
               Go

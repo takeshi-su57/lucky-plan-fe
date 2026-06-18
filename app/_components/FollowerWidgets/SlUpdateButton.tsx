@@ -82,7 +82,7 @@ export function SlUpdateButton({
 
   return (
     <>
-      <Button color="default" size="sm" onClick={onOpen} isLoading={loading}>
+      <Button color="default" size="sm" onPress={onOpen} isLoading={loading}>
         Update SL
       </Button>
 
@@ -93,7 +93,7 @@ export function SlUpdateButton({
         backdrop="blur"
       >
         <div className="flex flex-col gap-3.5">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Update SL
           </h1>
 
@@ -147,20 +147,23 @@ export function SlUpdateButton({
                 />
               )}
 
-              {slMode === "percent" && currentPairPrice !== undefined && Number(slPercent) > 0 && (
-                <span className="text-xs text-neutral-500">
-                  = {getPriceStr(
-                    long
-                      ? currentPairPrice * (1 - Number(slPercent) / 100)
-                      : currentPairPrice * (1 + Number(slPercent) / 100),
-                  )}{" "}
-                  USD
-                </span>
-              )}
+              {slMode === "percent" &&
+                currentPairPrice !== undefined &&
+                Number(slPercent) > 0 && (
+                  <span className="text-xs text-neutral-500">
+                    ={" "}
+                    {getPriceStr(
+                      long
+                        ? currentPairPrice * (1 - Number(slPercent) / 100)
+                        : currentPairPrice * (1 + Number(slPercent) / 100),
+                    )}{" "}
+                    USD
+                  </span>
+                )}
             </div>
 
             <Button
-              onClick={handleUpdate}
+              onPress={handleUpdate}
               isDisabled={isDisabledUpdate}
               isLoading={loading}
               className="w-[180px]"

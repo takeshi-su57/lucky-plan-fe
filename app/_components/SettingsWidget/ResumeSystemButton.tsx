@@ -44,7 +44,7 @@ export function ResumeSystemButton() {
   return (
     <>
       <Button
-        onClick={handleClickResumeButton}
+        onPress={handleClickResumeButton}
         color="primary"
         isLoading={loading}
       >
@@ -58,7 +58,7 @@ export function ResumeSystemButton() {
         backdrop="blur"
       >
         <div className="flex flex-col gap-3.5">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Password
           </h1>
 
@@ -83,7 +83,7 @@ export function ResumeSystemButton() {
           />
 
           <Button
-            onClick={handleResumeSystem}
+            onPress={handleResumeSystem}
             color="primary"
             isDisabled={password.trim() === ""}
           >

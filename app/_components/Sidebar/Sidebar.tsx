@@ -29,12 +29,6 @@ export const links = [
     showDivider: true,
   },
   {
-    id: "trading-signals",
-    label: "Signals",
-    title: "",
-    limited: UserPermission.Trader,
-  },
-  {
     id: "experts",
     label: "Expert",
     title: "",
@@ -45,19 +39,6 @@ export const links = [
     label: "Leaderboard",
     title: "",
     limited: "Public",
-  },
-  {
-    id: "backtest",
-    label: "Backtest",
-    title: "",
-    limited: UserPermission.Trader,
-  },
-  {
-    id: "validation-pipelines",
-    label: "Validation",
-    title: "",
-    limited: UserPermission.Trader,
-    showDivider: true,
   },
   {
     id: "settings",

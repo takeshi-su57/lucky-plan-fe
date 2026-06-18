@@ -14,13 +14,12 @@ import {
 import { AutomationSummary } from "@/app-components/AutomationWidgets/AutomationSummary";
 import { AutomationDetails } from "@/app-components/AutomationWidgets/AutomationDetails";
 import { ModaledItems } from "@/components/modals/ModaledItems";
-import { useGetPerpEventLogs } from "@/app/_hooks/useHistory";
+import { useGetPerpTradeHistories } from "@/app/_hooks/useHistory";
 import { useGetAllContracts } from "@/app/_hooks/useContract";
 import { useGetPlanBotGroups } from "@/app/_hooks/usePlan";
 import { useLiveBot, useStopBot } from "@/app-hooks/useAutomation";
 import { useCloseMission } from "@/app/_hooks/useMission";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
-import { convertPerpTradingEventLogToHistory } from "@/utils/historiesV2Chart";
 import LineChart from "@/components/charts/LineChart";
 import dayjs from "dayjs";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
@@ -128,11 +127,13 @@ export const GroupedAutomations = memo(function GroupedAutomations({
   const allOpenMissions = useMemo(
     () =>
       bots.flatMap((bot) =>
-        (bot.missions || []).filter(
-          (mission) =>
-            mission.status !== MissionStatus.Closed &&
-            mission.status !== MissionStatus.Ignored,
-        ).map((mission) => mission),
+        (bot.missions || [])
+          .filter(
+            (mission) =>
+              mission.status !== MissionStatus.Closed &&
+              mission.status !== MissionStatus.Ignored,
+          )
+          .map((mission) => mission),
       ),
     [bots],
   );
@@ -175,10 +176,9 @@ export const GroupedAutomations = memo(function GroupedAutomations({
     }
   }, [allOpenMissions, closeMission]);
 
-  const { eventLogs, loading } = useGetPerpEventLogs(
+  const { histories: perpTradeHistories, loading } = useGetPerpTradeHistories(
     [leaderAddress],
     platform,
-    1000,
   );
 
   const pnlAccChartData = useMemo(() => {
@@ -188,11 +188,6 @@ export const GroupedAutomations = memo(function GroupedAutomations({
       contractsMapa[contract.id] = contract;
     });
 
-    const perpTradeHistories = convertPerpTradingEventLogToHistory(
-      contractsMapa,
-      eventLogs.flat(),
-    );
-
     const pnlAccChartData: {
       value: number;
       date: Date;
@@ -200,7 +195,7 @@ export const GroupedAutomations = memo(function GroupedAutomations({
 
     let pnlSum = 0;
 
-    perpTradeHistories
+    (perpTradeHistories[0] || [])
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .forEach((history) => {
         if (pnlAccChartData.length === 0) {
@@ -219,7 +214,7 @@ export const GroupedAutomations = memo(function GroupedAutomations({
       });
 
     return pnlAccChartData;
-  }, [eventLogs, allContracts]);
+  }, [perpTradeHistories, allContracts]);
 
   const chartData = useMemo(
     () =>

@@ -15,8 +15,6 @@ import { PlanSummary, PlanStatus, TaskStatus } from "@/graphql/gql/graphql";
 import { useGetAlertTasks } from "@/app-hooks/useTask";
 import { useDeletePlan } from "@/app-hooks/usePlan";
 
-import { ContractPnlSummary } from "@/app-components/MissionWidgets/ContractPnlSummary";
-
 export const chipColorsByPlanStatus: Record<PlanStatus, ChipProps["color"]> = {
   [PlanStatus.Created]: "primary",
   [PlanStatus.Started]: "success",
@@ -75,9 +73,7 @@ export function PlanRow({ plan }: PlanRowProps) {
     plan.endedAt
       ? {
           label: "Ended At",
-          value: plan.endedAt
-            ? dayjs(plan.endedAt).format("MMM D, H:m")
-            : null,
+          value: plan.endedAt ? dayjs(plan.endedAt).format("MMM D, H:m") : null,
         }
       : {
           label: "End At",
@@ -85,10 +81,8 @@ export function PlanRow({ plan }: PlanRowProps) {
         },
   ];
 
-  const finished = plan.status === PlanStatus.Finished;
-
   return (
-    <div className="select-none pb-3">
+    <div className="pb-3 select-none">
       <Card>
         <CardBody>
           <div className="flex items-start justify-between">
@@ -122,44 +116,6 @@ export function PlanRow({ plan }: PlanRowProps) {
                       </div>
                     ),
                 )}
-              </div>
-
-              <div className="flex h-full flex-col gap-2 border-r border-neutral-800 px-6">
-                <span className="text-xs text-neutral-400">
-                  Leader PnL Overview
-                </span>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  {plan.leaderPnl.map((summary) => (
-                    <ContractPnlSummary
-                      key={summary.contractId}
-                      label={`Chain (${summary.chainId})`}
-                      realizedPnl={summary.realizedPnl}
-                      realizedCount={summary.realizedCount}
-                      openPositions={summary.openPositions}
-                      finished={finished}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2 px-6">
-                <span className="text-xs text-neutral-400">
-                  Follower PnL Overview
-                </span>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  {plan.followerPnl.map((summary) => (
-                    <ContractPnlSummary
-                      key={summary.contractId}
-                      label={`Chain (${summary.chainId})`}
-                      realizedPnl={summary.realizedPnl}
-                      realizedCount={summary.realizedCount}
-                      openPositions={summary.openPositions}
-                      finished={finished}
-                    />
-                  ))}
-                </div>
               </div>
             </div>
 
@@ -201,7 +157,7 @@ export function PlanRow({ plan }: PlanRowProps) {
                   color="danger"
                   isDisabled={loading}
                   isLoading={loading}
-                  onClick={handleDelete}
+                  onPress={handleDelete}
                 >
                   Delete
                 </Button>

@@ -34,7 +34,7 @@ export default function MixedLineChart({
 }: MixedLineChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const ref = useRef<Chart>();
+  const ref = useRef<Chart>(null);
   const [selected, setSelected] = useState<string[]>(initialSelected || []);
 
   const drawChart = useCallback(() => {
@@ -90,11 +90,11 @@ export default function MixedLineChart({
 
   return (
     <div className="relative flex w-full flex-col gap-3">
-      <div className="absolute left-4 top-3 z-[1000] flex flex-row items-center gap-1">
+      <div className="absolute top-3 left-4 z-1000 flex flex-row items-center gap-1">
         <span className="text-sm font-bold">{title || ""}</span>
       </div>
 
-      <div className="absolute bottom-4 right-4 z-[1000] flex flex-row items-center justify-between gap-0">
+      <div className="absolute right-4 bottom-4 z-1000 flex flex-row items-center justify-between gap-0">
         <CheckboxGroup
           color="warning"
           value={selected}

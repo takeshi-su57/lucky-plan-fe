@@ -105,7 +105,7 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
             <Button
               size="sm"
               color="primary"
-              onClick={handleStartPlan}
+              onPress={handleStartPlan}
               isLoading={startPlanLoading}
               isDisabled={startPlanLoading}
             >
@@ -117,7 +117,7 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
             <Button
               size="sm"
               color="warning"
-              onClick={handleEndPlan}
+              onPress={handleEndPlan}
               isLoading={endPlanLoading}
               isDisabled={endPlanLoading}
             >
@@ -127,7 +127,7 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
         </div>
 
         <div className="flex items-center justify-end gap-2">
-          <Button isIconOnly color="primary" variant="flat" onClick={onOpen}>
+          <Button isIconOnly color="primary" variant="flat" onPress={onOpen}>
             <FaPlus />
           </Button>
         </div>

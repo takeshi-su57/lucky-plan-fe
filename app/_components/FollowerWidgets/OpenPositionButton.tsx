@@ -19,7 +19,11 @@ import { useOpenTradeMarket } from "@/app/_hooks/useFollower";
 
 import { NumericInput } from "@/components/inputs/NumericInput";
 
-import { getPairs, getCollaterals, getCollateral } from "@/web3/gns/v10/configs";
+import {
+  getPairs,
+  getCollaterals,
+  getCollateral,
+} from "@/web3/gns/v10/configs";
 import { useCollateralSymbols } from "@/app/_hooks/useCollateralSymbols";
 import { useCollateralUsdPrices } from "@/app/_hooks/useCollateralUsdPrices";
 import { useGetPrices } from "@/app/_hooks/useGetPrices";
@@ -94,7 +98,8 @@ export function OpenPositionButton({
     return { amount, precision };
   }, [selectedCollateral, collateralBalances, chainId]);
 
-  const currentPairPrice = pairIndex !== null ? pairPrices?.[+pairIndex] : undefined;
+  const currentPairPrice =
+    pairIndex !== null ? pairPrices?.[+pairIndex] : undefined;
 
   // Convert collateral input based on mode
   const rawCollateralAmount = useMemo(() => {
@@ -200,7 +205,7 @@ export function OpenPositionButton({
 
   return (
     <>
-      <Button color="secondary" size="sm" onClick={onOpen} isLoading={loading}>
+      <Button color="secondary" size="sm" onPress={onOpen} isLoading={loading}>
         Open Position
       </Button>
 
@@ -211,7 +216,7 @@ export function OpenPositionButton({
         backdrop="blur"
       >
         <div className="flex flex-col gap-3.5">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Open Position
           </h1>
 
@@ -305,12 +310,17 @@ export function OpenPositionButton({
               {selectedBalance && (
                 <div className="flex items-center gap-2 text-xs text-neutral-400">
                   <span>
-                    Balance: {selectedBalance.amount.toFixed(selectedBalance.precision >= 1e18 ? 4 : 2)}{" "}
+                    Balance:{" "}
+                    {selectedBalance.amount.toFixed(
+                      selectedBalance.precision >= 1e18 ? 4 : 2,
+                    )}{" "}
                     {collateralSymbol}
                   </span>
                   {collateralUsdPrice > 0 && (
                     <span>
-                      (${getPriceStr(selectedBalance.amount * collateralUsdPrice)})
+                      ($
+                      {getPriceStr(selectedBalance.amount * collateralUsdPrice)}
+                      )
                     </span>
                   )}
                 </div>
@@ -318,16 +328,25 @@ export function OpenPositionButton({
 
               {amountMode === "usd" && collateralUsdPrice > 0 && (
                 <span className="text-xs text-neutral-500">
-                  = {rawCollateralAmount.toFixed(selectedBalance?.precision && selectedBalance.precision >= 1e18 ? 6 : 2)}{" "}
+                  ={" "}
+                  {rawCollateralAmount.toFixed(
+                    selectedBalance?.precision &&
+                      selectedBalance.precision >= 1e18
+                      ? 6
+                      : 2,
+                  )}{" "}
                   {collateralSymbol}
                 </span>
               )}
 
-              {amountMode === "collateral" && collateralUsdPrice > 0 && Number(collateralAmount) > 0 && (
-                <span className="text-xs text-neutral-500">
-                  = ${getPriceStr(Number(collateralAmount) * collateralUsdPrice)}
-                </span>
-              )}
+              {amountMode === "collateral" &&
+                collateralUsdPrice > 0 &&
+                Number(collateralAmount) > 0 && (
+                  <span className="text-xs text-neutral-500">
+                    = $
+                    {getPriceStr(Number(collateralAmount) * collateralUsdPrice)}
+                  </span>
+                )}
             </div>
 
             <NumericInput
@@ -394,16 +413,19 @@ export function OpenPositionButton({
                 />
               )}
 
-              {slMode === "percent" && currentPairPrice !== undefined && Number(slPercent) > 0 && (
-                <span className="text-xs text-neutral-500">
-                  = {getPriceStr(
-                    long
-                      ? currentPairPrice * (1 - Number(slPercent) / 100)
-                      : currentPairPrice * (1 + Number(slPercent) / 100),
-                  )}{" "}
-                  USD
-                </span>
-              )}
+              {slMode === "percent" &&
+                currentPairPrice !== undefined &&
+                Number(slPercent) > 0 && (
+                  <span className="text-xs text-neutral-500">
+                    ={" "}
+                    {getPriceStr(
+                      long
+                        ? currentPairPrice * (1 - Number(slPercent) / 100)
+                        : currentPairPrice * (1 + Number(slPercent) / 100),
+                    )}{" "}
+                    USD
+                  </span>
+                )}
             </div>
 
             {/* TP Input */}
@@ -450,16 +472,19 @@ export function OpenPositionButton({
                 />
               )}
 
-              {tpMode === "percent" && currentPairPrice !== undefined && Number(tpPercent) > 0 && (
-                <span className="text-xs text-neutral-500">
-                  = {getPriceStr(
-                    long
-                      ? currentPairPrice * (1 + Number(tpPercent) / 100)
-                      : currentPairPrice * (1 - Number(tpPercent) / 100),
-                  )}{" "}
-                  USD
-                </span>
-              )}
+              {tpMode === "percent" &&
+                currentPairPrice !== undefined &&
+                Number(tpPercent) > 0 && (
+                  <span className="text-xs text-neutral-500">
+                    ={" "}
+                    {getPriceStr(
+                      long
+                        ? currentPairPrice * (1 + Number(tpPercent) / 100)
+                        : currentPairPrice * (1 - Number(tpPercent) / 100),
+                    )}{" "}
+                    USD
+                  </span>
+                )}
             </div>
 
             <Button

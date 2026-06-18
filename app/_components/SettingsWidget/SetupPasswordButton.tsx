@@ -33,7 +33,7 @@ export function SetupPasswordButton() {
 
   return (
     <>
-      <Button onClick={onOpen} color="warning" isLoading={loading}>
+      <Button onPress={onOpen} color="warning" isLoading={loading}>
         Setup Password
       </Button>
 
@@ -44,7 +44,7 @@ export function SetupPasswordButton() {
         backdrop="blur"
       >
         <div className="flex flex-col gap-3.5">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Setup Password
           </h1>
 
@@ -89,7 +89,7 @@ export function SetupPasswordButton() {
           />
 
           <Button
-            onClick={handleMakeSafeApp}
+            onPress={handleMakeSafeApp}
             color="primary"
             isDisabled={
               password.trim() === "" ||

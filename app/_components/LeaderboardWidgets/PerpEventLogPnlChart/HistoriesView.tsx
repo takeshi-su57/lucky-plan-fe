@@ -8,11 +8,14 @@ import dayjs from "dayjs";
 
 import { getPriceStr } from "@/utils/price";
 import { convertMillisToReadableTime } from "@/utils";
-import { PerpTradeHistory } from "@/web3/types";
 
 import { StandardModal } from "@/components/modals/StandardModal";
 import { PositionItem } from "./PositionItem";
-import { PerpTradeHistoryOperation, Platform } from "@/graphql/gql/graphql";
+import {
+  PerpTradeHistoryOperation,
+  Platform,
+  PerpTradeHistory,
+} from "@/graphql/gql/graphql";
 import { PairChip } from "../PairChip";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { Address } from "viem";
@@ -20,7 +23,7 @@ import { EventLogsModalButton } from "../EventLogsModalButton";
 
 export type HistoriesViewProps = {
   platform: Platform;
-  histories: (PerpTradeHistory & { date: Date })[];
+  histories: PerpTradeHistory[];
 };
 
 export function HistoriesView({ platform, histories }: HistoriesViewProps) {

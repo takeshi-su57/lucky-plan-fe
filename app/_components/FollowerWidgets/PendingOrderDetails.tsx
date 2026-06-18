@@ -47,7 +47,7 @@ export function PendingOrderDetails({
     <div className="flex flex-col gap-2 border-t border-t-neutral-400/20 py-6">
       <div className="flex flex-row items-center gap-4">
         <Button
-          onClick={handleClosePosition}
+          onPress={handleClosePosition}
           color="danger"
           className="w-fit"
           size="sm"

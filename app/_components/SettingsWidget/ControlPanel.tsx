@@ -77,7 +77,7 @@ export function ControlPanel() {
                 variant="flat"
                 size="sm"
                 isLoading={startSubServiceLoading}
-                onClick={() => {
+                onPress={() => {
                   startSubService({ variables: { service: service.service } });
                 }}
               >
@@ -88,7 +88,7 @@ export function ControlPanel() {
                 variant="flat"
                 size="sm"
                 isLoading={killSubServiceLoading}
-                onClick={() => {
+                onPress={() => {
                   killSubService({ variables: { service: service.service } });
                 }}
               >
@@ -134,13 +134,13 @@ export function ControlPanel() {
                   {systemStatus?.systemStatus === true ? (
                     <ResumeSystemButton />
                   ) : (
-                    <Button onClick={() => pauseSystem()} color="danger">
+                    <Button onPress={() => pauseSystem()} color="danger">
                       Pause System
                     </Button>
                   )}
 
                   <Button
-                    onClick={() => cleanDB()}
+                    onPress={() => cleanDB()}
                     color="warning"
                     isLoading={cleanDBLoading}
                   >

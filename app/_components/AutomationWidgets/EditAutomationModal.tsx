@@ -206,7 +206,7 @@ export function EditStrategyModal({
             selectedKeys={mode ? [mode] : undefined}
             onChange={handleChangeMode}
             selectionMode="single"
-            className="w-[200px] font-mono"
+            className="w-50 font-mono"
           >
             {modes.map((item) => (
               <SelectItem key={item}>{item}</SelectItem>
@@ -288,7 +288,7 @@ export function EditStrategyModal({
             selectedKeys={selectedPair}
             onSelectionChange={setSelectedPair}
             selectionMode="multiple"
-            className="w-[200px] font-mono"
+            className="w-50 font-mono"
           >
             {getPairs(chainId)
               .map((pair) => [

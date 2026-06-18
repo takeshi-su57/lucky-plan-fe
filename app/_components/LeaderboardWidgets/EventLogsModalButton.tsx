@@ -23,7 +23,7 @@ export function EventLogsModalButton({
         isDisabled={(address && !isAddress(address)) || !platform}
         color="primary"
         size="sm"
-        onClick={onOpen}
+        onPress={onOpen}
       >
         {label || "Open"}
       </Button>

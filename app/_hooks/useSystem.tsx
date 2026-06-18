@@ -231,6 +231,7 @@ export function useChangePassword() {
 export function useGetMicroserviceStatus() {
   const client = useApolloClient();
 
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps
   const query = useTanstackQuery({
     queryKey: ["GET_MICROSERVICE_STATUS_DOCUMENT"],
     queryFn: async () => {

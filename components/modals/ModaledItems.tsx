@@ -37,7 +37,7 @@ export function ModaledItems({
       >
         <div className="flex-1">{trigger}</div>
 
-        <Button onClick={onOpen} variant="flat" size="sm" color="primary">
+        <Button onPress={onOpen} variant="flat" size="sm" color="primary">
           Details
         </Button>
       </div>
@@ -54,7 +54,7 @@ export function ModaledItems({
             }}
           >
             <div className="flex w-full flex-col gap-8">
-              <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+              <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
                 {contentTitle || ""}
               </h1>
 
@@ -71,7 +71,7 @@ export function ModaledItems({
             }}
           >
             <div className="flex w-full flex-col gap-8">
-              <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+              <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
                 {contentTitle || ""}
               </h1>
 

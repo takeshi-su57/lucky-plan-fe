@@ -51,7 +51,7 @@ export function UpdateLeverageButton({
 
   return (
     <>
-      <Button color="secondary" size="sm" onClick={onOpen} isLoading={loading}>
+      <Button color="secondary" size="sm" onPress={onOpen} isLoading={loading}>
         Update Leverage
       </Button>
 
@@ -62,7 +62,7 @@ export function UpdateLeverageButton({
         backdrop="blur"
       >
         <div className="flex flex-col gap-3.5">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Update Leverage
           </h1>
 
@@ -73,7 +73,7 @@ export function UpdateLeverageButton({
           />
 
           <Button
-            onClick={handleUpdate}
+            onPress={handleUpdate}
             isDisabled={isDisabledUpdate}
             isLoading={loading}
             className="w-[180px]"

@@ -4,6 +4,7 @@ import { ChangeEventHandler, useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Button,
+  Checkbox,
   DatePicker,
   Select,
   SelectItem,
@@ -13,28 +14,22 @@ import { parseDate, now } from "@internationalized/date";
 import dayjs from "dayjs";
 import { getServerTimezone } from "@/utils";
 
-import { Platform, PnlSnapshotKind } from "@/graphql/gql/graphql";
+import { Platform } from "@/graphql/gql/graphql";
 
 import { LeaderboardV2 } from "./LeaderboardV2";
 
 import { EventLogsModalButton } from "./EventLogsModalButton";
 
-const availableKind = [PnlSnapshotKind.Month, PnlSnapshotKind.AllTime];
-
 type LeaderboardParams = {
-  kind: PnlSnapshotKind;
   platform: Platform;
   date: Date;
-  minSlope: number;
-  minR2: number;
+  isDesc: boolean;
 };
 
 const defaultParams: LeaderboardParams = {
-  kind: PnlSnapshotKind.Month,
   platform: Platform.Gns,
   date: now(getServerTimezone()).toDate(),
-  minSlope: 0.5,
-  minR2: 0.85,
+  isDesc: true,
 };
 
 export function LeaderboadWrapper() {
@@ -46,34 +41,20 @@ export function LeaderboadWrapper() {
 
   const hasChanges = useMemo(() => {
     return (
-      draft.kind !== applied.kind ||
       draft.platform !== applied.platform ||
+      draft.isDesc !== applied.isDesc ||
       dayjs(draft.date).format("YYYY-MM-DD") !==
-        dayjs(applied.date).format("YYYY-MM-DD") ||
-      draft.minSlope !== applied.minSlope ||
-      draft.minR2 !== applied.minR2
+        dayjs(applied.date).format("YYYY-MM-DD")
     );
   }, [draft, applied]);
 
   const handleApply = useCallback(() => {
     setApplied(draft);
 
-    const kindQuery = draft.kind ? `kind=${draft.kind}` : null;
-    const platformQuery = draft.platform
-      ? `platform=${draft.platform}`
-      : null;
+    const platformQuery = draft.platform ? `platform=${draft.platform}` : null;
 
-    router.push(
-      `/leaderboards?${kindQuery || ""}${kindQuery && platformQuery ? "&" : ""}${platformQuery || ""}`,
-    );
+    router.push(`/leaderboards?${platformQuery || ""}`);
   }, [draft, router]);
-
-  const handleChangeKind: ChangeEventHandler<HTMLSelectElement> = (event) => {
-    const value = event.target.value;
-    if (value.trim() !== "") {
-      setDraft((prev) => ({ ...prev, kind: value as PnlSnapshotKind }));
-    }
-  };
 
   const handleChangePlatform: ChangeEventHandler<HTMLSelectElement> = (
     event,
@@ -94,32 +75,17 @@ export function LeaderboadWrapper() {
             selectedKeys={draft.platform ? [draft.platform] : undefined}
             onChange={handleChangePlatform}
             selectionMode="single"
-            className="w-[200px] font-mono"
+            className="w-50 font-mono"
           >
             {Object.values(Platform).map((item) => (
               <SelectItem key={item}>{item}</SelectItem>
             ))}
           </Select>
 
-          <Select
-            variant="underlined"
-            label="Before"
-            selectedKeys={draft.kind ? [draft.kind] : undefined}
-            onChange={handleChangeKind}
-            selectionMode="single"
-            className="w-[200px] font-mono"
-          >
-            {availableKind.map((item) => (
-              <SelectItem key={item}>{item}</SelectItem>
-            ))}
-          </Select>
-
           <DatePicker
-            className="max-w-[284px]"
+            className="max-w-71"
             label="Pick a past date"
-            value={
-              parseDate(dayjs(draft.date).format("YYYY-MM-DD")) as any
-            }
+            value={parseDate(dayjs(draft.date).format("YYYY-MM-DD")) as any}
             onChange={(date) =>
               date &&
               setDraft((prev) => ({
@@ -130,35 +96,18 @@ export function LeaderboadWrapper() {
             minValue={parseDate("2024-11-01")}
             maxValue={parseDate(dayjs().format("YYYY-MM-DD"))}
           />
+
+          <Checkbox
+            isSelected={draft.isDesc}
+            onValueChange={(isDesc) =>
+              setDraft((prev) => ({ ...prev, isDesc }))
+            }
+          >
+            {draft.isDesc ? "Desc" : "Asc"}
+          </Checkbox>
         </div>
 
         <div className="flex items-center gap-4">
-          <Input
-            className="w-fit"
-            variant="underlined"
-            label="Min Slope"
-            type="number"
-            value={`${draft.minSlope}`}
-            onChange={(e) => {
-              const v = parseFloat(e.target.value);
-              if (!Number.isNaN(v))
-                setDraft((prev) => ({ ...prev, minSlope: v }));
-            }}
-          />
-
-          <Input
-            className="w-fit"
-            variant="underlined"
-            label="Min R2"
-            type="number"
-            value={`${draft.minR2}`}
-            onChange={(e) => {
-              const v = parseFloat(e.target.value);
-              if (!Number.isNaN(v))
-                setDraft((prev) => ({ ...prev, minR2: v }));
-            }}
-          />
-
           <Input
             placeholder="Search by address"
             value={searchAddress}
@@ -171,7 +120,7 @@ export function LeaderboadWrapper() {
           />
 
           {hasChanges && (
-            <Button color="primary" onClick={handleApply}>
+            <Button color="primary" onPress={handleApply}>
               Apply
             </Button>
           )}
@@ -180,11 +129,8 @@ export function LeaderboadWrapper() {
 
       <LeaderboardV2
         date={applied.date}
-        kind={applied.kind}
         platform={applied.platform}
-        hideTags={false}
-        minSlope={applied.minSlope}
-        minR2={applied.minR2}
+        isDesc={applied.isDesc}
       />
     </div>
   );

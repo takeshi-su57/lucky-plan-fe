@@ -175,7 +175,7 @@ export function PnlSnapshotPanel() {
             </Select>
 
             <DatePicker
-              className="max-w-[284px]"
+              className="max-w-71"
               label="Pick a date"
               value={selectedDate as any}
               onChange={(date) => date && (setSelectedDate(date as any) as any)}

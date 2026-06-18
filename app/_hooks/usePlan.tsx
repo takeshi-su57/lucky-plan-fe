@@ -83,32 +83,6 @@ export const PLAN_SUMMARY_INFO_FRAGMENT_DOCUMENT = graphql(`
     endedAt
     userId
     botCount
-    leaderPnl {
-      contractId
-      chainId
-      realizedPnl
-      realizedCount
-      openPositions {
-        openPrice
-        long
-        size
-        leverage
-        pairIndex
-      }
-    }
-    followerPnl {
-      contractId
-      chainId
-      realizedPnl
-      realizedCount
-      openPositions {
-        openPrice
-        long
-        size
-        leverage
-        pairIndex
-      }
-    }
   }
 `);
 
@@ -177,12 +151,6 @@ export const CREATE_PLAN_DOCUMENT = graphql(`
   }
 `);
 
-export const CREATE_AUTO_PLAN_DOCUMENT = graphql(`
-  mutation createAutoPlan {
-    createAutoPlan
-  }
-`);
-
 export const UPDATE_PLAN_DOCUMENT = graphql(`
   mutation updatePlan($updatePlanInput: UpdatePlanInput!) {
     updatePlan(updatePlanInput: $updatePlanInput) {
@@ -222,70 +190,6 @@ export const PLAN_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
     planUpdated(userId: $userId) {
       ...PlanInfo
     }
-  }
-`);
-
-export const GET_BLACKLIST_DOCUMENT = graphql(`
-  query getBlacklist {
-    getBlacklist
-  }
-`);
-
-export const ADD_TO_BLACKLIST_DOCUMENT = graphql(`
-  mutation addToBlacklist($address: String!) {
-    addToBlacklist(address: $address)
-  }
-`);
-
-export const REMOVE_FROM_BLACKLIST_DOCUMENT = graphql(`
-  mutation removeFromBlacklist($address: String!) {
-    removeFromBlacklist(address: $address)
-  }
-`);
-
-export const GET_EXPERT_PNLSNAPSHOT_V2_DOCUMENT = graphql(`
-  query getExpertPnlSnapshotsV2($platform: Platform!, $after: Int) {
-    getExpertPnlSnapshotsV2(platform: $platform, after: $after) {
-      edges {
-        cursor
-        node {
-          accUSDPnl
-          address
-          platform
-          dateStr
-          id
-          kind
-          maxSize
-          ratio
-          score
-          openedPositions
-          avgPnlRatio
-          avgDuration
-        }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-    }
-  }
-`);
-
-export const GET_WHITELIST_DOCUMENT = graphql(`
-  query getWhitelist {
-    getWhitelist
-  }
-`);
-
-export const ADD_TO_WHITELIST_DOCUMENT = graphql(`
-  mutation addToWhitelist($params: String!) {
-    addToWhitelist(params: $params)
-  }
-`);
-
-export const REMOVE_FROM_WHITELIST_DOCUMENT = graphql(`
-  mutation removeFromWhitelist($address: String!) {
-    removeFromWhitelist(address: $address)
   }
 `);
 
@@ -592,7 +496,6 @@ export function useSubscribePlan() {
               };
             },
           );
-
         }
       }
     }
@@ -667,7 +570,6 @@ export function useSubscribePlan() {
             }
           },
         );
-
       }
     }
   }, [client.cache, enqueueSnackbar, error1, newData]);
@@ -682,7 +584,10 @@ export function useGetPlanById(id: number) {
     if (!data?.getPlanById) {
       return null;
     }
-    const planInfo = getFragmentData(PLAN_INFO_FRAGMENT_DOCUMENT, data.getPlanById);
+    const planInfo = getFragmentData(
+      PLAN_INFO_FRAGMENT_DOCUMENT,
+      data.getPlanById,
+    );
     return { ...planInfo };
   }, [data]);
 }
@@ -870,84 +775,4 @@ export function useEndPlan() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return { endPlan, loading };
-}
-
-export function useCreateAutoPlan() {
-  const [createAutoPlan, { data: newData, error, loading }] = useMutation(
-    CREATE_AUTO_PLAN_DOCUMENT,
-  );
-  const client = useApolloClient();
-
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (newData && !error) {
-      enqueueSnackbar("Success at creating a new auto plan!", {
-        variant: "success",
-      });
-    }
-
-    if (newData && error) {
-      enqueueSnackbar("Error at creating a new auto plan!", {
-        variant: "error",
-      });
-    }
-  }, [client.cache, newData, error, enqueueSnackbar]);
-
-  return { createAutoPlan, loading };
-}
-
-export function useGetExpertPnlSnapshotsV2(platform: Platform) {
-  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
-    GET_EXPERT_PNLSNAPSHOT_V2_DOCUMENT,
-  );
-
-  // first loading
-  useEffect(() => {
-    query({
-      variables: {
-        platform,
-      },
-    });
-  }, [query, platform]);
-
-  const pnlSnapshots = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-
-    return data.getExpertPnlSnapshotsV2.edges.map((edge) => {
-      return {
-        ...edge.node,
-      };
-    });
-  }, [data]);
-
-  const handleFetchMore = useCallback(() => {
-    if (data && !error && data.getExpertPnlSnapshotsV2?.pageInfo?.hasNextPage) {
-      fetchMore({
-        variables: {
-          platform,
-          after: data.getExpertPnlSnapshotsV2.pageInfo.endCursor,
-        },
-      });
-    }
-  }, [data, error, fetchMore, platform]);
-
-  useEffect(() => {
-    if (
-      data &&
-      !error &&
-      data?.getExpertPnlSnapshotsV2?.pageInfo?.hasNextPage
-    ) {
-      handleFetchMore();
-    }
-  }, [data, error, handleFetchMore]);
-
-  return {
-    pnlSnapshots,
-    fetchMore: handleFetchMore,
-    loading,
-    hasMore: data?.getExpertPnlSnapshotsV2?.pageInfo?.hasNextPage,
-  };
 }

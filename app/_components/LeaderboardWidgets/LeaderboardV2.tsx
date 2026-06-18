@@ -5,9 +5,8 @@ import { Card, CardBody, Spinner } from "@heroui/react";
 import { Virtuoso } from "react-virtuoso";
 import { Address } from "viem";
 import dayjs from "dayjs";
-import { useQuery } from "@apollo/client/react";
 
-import { Platform, PnlSnapshotKind } from "@/graphql/gql/graphql";
+import { Platform } from "@/graphql/gql/graphql";
 
 import {
   useGetPnlSnapshotsV2,
@@ -15,59 +14,32 @@ import {
 } from "@/app-hooks/useHistory";
 
 import { PerpEventLogPnlChart } from "./PerpEventLogPnlChart/PerpEventLogPnlChart";
-import { useGetTradingSignalLogs } from "@/app/_hooks/useTradingSignals";
 import { useGetActiveBots } from "@/app/_hooks/useAutomation";
-import { GET_BLACKLIST_DOCUMENT } from "@/app/_hooks/usePlan";
-import { GET_WHITELIST_DOCUMENT } from "@/app/_hooks/usePlan";
 import { twMerge } from "tailwind-merge";
-
-const timestampGapByPnlSnapshotKind = {
-  [PnlSnapshotKind.Day]: 24 * 60 * 60 * 1000,
-  [PnlSnapshotKind.Week]: 7 * 24 * 60 * 60 * 1000,
-  [PnlSnapshotKind.Month]: 30 * 24 * 60 * 60 * 1000,
-  [PnlSnapshotKind.ThreeMonth]: 3 * 30 * 24 * 60 * 60 * 1000,
-  [PnlSnapshotKind.AllTime]: 10 * 365 * 24 * 60 * 60 * 1000,
-};
 
 function getKey(address: string, platform: Platform) {
   return `${address.toLowerCase()}-${platform}`;
 }
 
 export type LeaderboardV2Props = {
-  kind: PnlSnapshotKind;
+  isDesc: boolean;
   platform: Platform;
   date: Date;
-  hideTags: boolean;
-  minSlope: number;
-  minR2: number;
 };
 
-export function LeaderboardV2({
-  kind,
-  platform,
-  date,
-  hideTags,
-  minSlope,
-  minR2,
-}: LeaderboardV2Props) {
+export function LeaderboardV2({ isDesc, platform, date }: LeaderboardV2Props) {
   const { pnlSnapshots, hasMore, fetchMore, loading } = useGetPnlSnapshotsV2(
     dayjs(date).format("YYYY-MM-DD"),
-    kind,
     platform,
+    isDesc,
     20,
-    minSlope,
-    minR2,
   );
   const {
     data: isPnlSnapshotInitialized,
     loading: isPnlSnapshotInitializedLoading,
   } = useIsPnlSnapshotV2Initialized(dayjs(date).format("YYYY-MM-DD"), platform);
 
-  const { tradingSignalLogs } = useGetTradingSignalLogs();
   const { bots } = useGetActiveBots();
-  const { data: blacklist } = useQuery(GET_BLACKLIST_DOCUMENT);
-  const { data: whitelist } = useQuery(GET_WHITELIST_DOCUMENT);
-
   const {
     activeAddresses,
     blacklistedAddresses,
@@ -83,33 +55,13 @@ export function LeaderboardV2({
       activeAddresses[bot.leaderAddress.toLowerCase()] = true;
     });
 
-    blacklist?.getBlacklist?.forEach((address) => {
-      blacklistedAddresses[address.toLowerCase()] = true;
-    });
-
-    whitelist?.getWhitelist?.forEach((params) => {
-      const { address } = JSON.parse(params);
-
-      whitelistedAddresses[address.toLowerCase()] = true;
-    });
-
-    tradingSignalLogs.forEach((log) => {
-      tradingSignalAddresses[getKey(log.address, log.platform as Platform)] =
-        true;
-    });
-
     return {
       activeAddresses,
       blacklistedAddresses,
       whitelistedAddresses,
       tradingSignalAddresses,
     };
-  }, [
-    blacklist?.getBlacklist,
-    bots,
-    tradingSignalLogs,
-    whitelist?.getWhitelist,
-  ]);
+  }, [bots]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -140,7 +92,7 @@ export function LeaderboardV2({
         </div>
       ) : (
         <Card className="w-full">
-          <CardBody className="flex min-h-[300px] w-full flex-col gap-6">
+          <CardBody className="flex min-h-75 w-full flex-col gap-6">
             {loading && pnlSnapshots.length === 0 ? (
               <div className="flex w-full items-center justify-center">
                 <Spinner color="warning" size="lg" />
@@ -192,15 +144,8 @@ export function LeaderboardV2({
                     <PerpEventLogPnlChart
                       address={item.address as Address}
                       platform={platform}
-                      perpTradingEventLogs={item.perpTradingEventLogs}
-                      hideTags={hideTags}
+                      perpTradeHistories={item.perpTradeHistories}
                       range={{
-                        from: dayjs(date)
-                          .subtract(
-                            timestampGapByPnlSnapshotKind[kind],
-                            "ms",
-                          )
-                          .toDate(),
                         to: date,
                       }}
                     />

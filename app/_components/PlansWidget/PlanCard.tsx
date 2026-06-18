@@ -14,7 +14,6 @@ import {
 } from "@heroui/react";
 import dayjs from "dayjs";
 import {
-  MissionStatus,
   PlanForwardDetails,
   PlanStatus,
   TaskStatus,
@@ -22,9 +21,6 @@ import {
 
 import { useGetAlertTasks } from "@/app-hooks/useTask";
 import { useDeletePlan } from "@/app-hooks/usePlan";
-import { useGetAllGnsContracts } from "@/app-hooks/useContract";
-
-import { ContractPnl } from "@/app-components/MissionWidgets/ContractPnl";
 
 export const chipColorsByPlanStatus: Record<PlanStatus, ChipProps["color"]> = {
   [PlanStatus.Created]: "primary",
@@ -40,8 +36,6 @@ export type PlanCardProps = {
 export function PlanCard({ plan }: PlanCardProps) {
   const { deletePlan, loading } = useDeletePlan();
   const alertTasks = useGetAlertTasks();
-
-  const gnsContracts = useGetAllGnsContracts();
 
   const handleDelete = () => {
     deletePlan({
@@ -101,7 +95,7 @@ export function PlanCard({ plan }: PlanCardProps) {
   ];
 
   return (
-    <div className="select-none pr-4">
+    <div className="pr-4 select-none">
       <Card>
         <CardHeader className="flex flex-row items-start gap-2 p-3">
           <div className="flex flex-1 flex-col">
@@ -139,118 +133,13 @@ export function PlanCard({ plan }: PlanCardProps) {
               Leader PnL Overview
             </span>
 
-            <div className="flex flex-wrap items-center gap-2">
-              {(gnsContracts || []).map((contract) => (
-                <ContractPnl
-                  key={contract.id}
-                  label={`Chain (${contract.chainId})`}
-                  contractId={contract.id}
-                  finished={plan.status === PlanStatus.Finished}
-                  finishedMissionActions={plan.bots
-                    .filter((bot) => bot.leaderContractId === contract.id)
-                    .flatMap((bot) =>
-                      bot.missions
-                        .filter(
-                          (mission) =>
-                            !!mission.achievePositionKey &&
-                            mission.status === MissionStatus.Closed,
-                        )
-                        .map((mission) =>
-                          mission.tasks.map((task) => task.action),
-                        ),
-                    )}
-                  openedMissionActions={plan.bots
-                    .filter((bot) => bot.leaderContractId === contract.id)
-                    .flatMap((bot) =>
-                      bot.missions
-                        .filter(
-                          (mission) =>
-                            !mission.achievePositionKey &&
-                            mission.status !== MissionStatus.Closed,
-                        )
-                        .map((mission) =>
-                          mission.tasks.map((task) => task.action),
-                        ),
-                    )}
-                />
-              ))}
-            </div>
+            <div className="flex flex-wrap items-center gap-2"></div>
 
             <span className="text-xs text-neutral-400">
               Follower PnL Overview
             </span>
 
-            <div className="flex flex-wrap items-center gap-2">
-              {(gnsContracts || []).map((contract) => (
-                <ContractPnl
-                  key={contract.id}
-                  label={`Chain (${contract.chainId})`}
-                  contractId={contract.id}
-                  finished={plan.status === PlanStatus.Finished}
-                  finishedMissionActions={plan.bots
-                    .filter((bot) => bot.followerContractId === contract.id)
-                    .flatMap((bot) =>
-                      bot.missions
-                        .filter(
-                          (mission) =>
-                            mission.status === MissionStatus.Closed &&
-                            !!mission.achievePositionKey,
-                        )
-                        .map((mission) =>
-                          mission.tasks
-                            .map((task) => {
-                              if (task.followerActions.length === 0) {
-                                return null;
-                              }
-
-                              const followerAction =
-                                task.followerActions[
-                                  task.followerActions.length - 1
-                                ];
-
-                              if (!followerAction) {
-                                return null;
-                              }
-
-                              return followerAction.action;
-                            })
-                            .filter((action) => action !== null),
-                        ),
-                    )}
-                  openedMissionActions={plan.bots
-                    .filter((bot) => bot.followerContractId === contract.id)
-                    .flatMap((bot) =>
-                      bot.missions
-                        .filter(
-                          (mission) =>
-                            mission.status !== MissionStatus.Closed &&
-                            mission.status !== MissionStatus.Ignored &&
-                            !!mission.achievePositionKey,
-                        )
-                        .map((mission) =>
-                          mission.tasks
-                            .map((task) => {
-                              if (task.followerActions.length === 0) {
-                                return null;
-                              }
-
-                              const followerAction =
-                                task.followerActions[
-                                  task.followerActions.length - 1
-                                ];
-
-                              if (!followerAction) {
-                                return null;
-                              }
-
-                              return followerAction.action;
-                            })
-                            .filter((action) => action !== null),
-                        ),
-                    )}
-                />
-              ))}
-            </div>
+            <div className="flex flex-wrap items-center gap-2"></div>
 
             <div className="flex flex-row items-center gap-3 font-mono">
               {createdCount > 0 ? (
@@ -282,7 +171,7 @@ export function PlanCard({ plan }: PlanCardProps) {
 
         <Divider />
 
-        <CardFooter className="justify-between rounded-large p-3">
+        <CardFooter className="rounded-large justify-between p-3">
           <div className="flex flex-row items-center gap-2">
             <Chip color={chipColorsByPlanStatus[plan.status]} variant="flat">
               {plan.status}
@@ -295,7 +184,7 @@ export function PlanCard({ plan }: PlanCardProps) {
                 color="danger"
                 isDisabled={loading}
                 isLoading={loading}
-                onClick={handleDelete}
+                onPress={handleDelete}
               >
                 Delete
               </Button>

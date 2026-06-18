@@ -2,16 +2,6 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type AccPnlV2 {
-  date: Date!
-  in: Float!
-  inOut: Float!
-  out: Float!
-  pnl: Float!
-  positionCount: Int!
-  taskCount: Int!
-}
-
 type AccessToken {
   accessToken: String!
 }
@@ -27,135 +17,12 @@ type Action {
   positionKey: String!
 }
 
-input AddUserInput {
-  address: String!
-}
-
-input ApplyParetoStepInput {
-  metrics: [String!]!
-  pipelineId: ID!
-}
-
-input ApplyThresholdStepInput {
-  metricName: String!
-  operator: String!
-  pipelineId: ID!
-  value: Float!
-}
-
 input AssetInput {
   address: String!
   amount: String!
   collateralIndex: Int!
   contractId: Int!
   kind: String!
-}
-
-type BacktestComponents {
-  exits: [ComponentInfo!]!
-  filters: [ComponentInfo!]!
-  platforms: [ComponentInfo!]!
-  risk: [ComponentInfo!]!
-  signals: [ComponentInfo!]!
-}
-
-type BacktestResult {
-  configId: String!
-  createdAt: Date!
-  id: ID!
-  losingTrades: Int!
-  maxDrawdownPercent: Float!
-  maxDrawdownUsdt: Float!
-  profitFactor: Float
-  resultFolder: String!
-  runDate: String!
-  sharpeRatio: Float
-  strategyConfig: JSON!
-  taskId: ID!
-  totalPnlPercent: Float!
-  totalPnlUsdt: Float!
-  totalTrades: Int!
-  winRate: Float!
-  winningTrades: Int!
-}
-
-type BacktestResultSummary {
-  configId: String!
-  id: ID!
-  maxDrawdownPercent: Float!
-  profitFactor: Float
-  runDate: String!
-  sharpeRatio: Float
-  totalPnlUsdt: Float!
-  totalTrades: Int!
-  winRate: Float!
-}
-
-type BacktestTask {
-  """
-  Config IDs of Pareto-optimal results (optuna only)
-  """
-  bestConfigIds: [String!]!
-  completedAt: Date
-  createdAt: Date!
-  currentConfig: String
-
-  """
-  Current trial number (real-time via heartbeat)
-  """
-  currentTrial: Int!
-  endDate: Date!
-  errorMessage: String
-  id: ID!
-  interval: String!
-
-  """
-  Last heartbeat timestamp from optimizer.py
-  """
-  lastHeartbeat: Date
-  name: String!
-
-  """
-  Metrics to optimize (multi-objective)
-  """
-  optimizationMetrics: [String!]!
-  optimizationParams: JSON!
-
-  """
-  PID of running optimizer process
-  """
-  optimizerPid: Int
-  processedConfigs: Int!
-
-  """
-  Search strategy: grid or optuna
-  """
-  searchStrategy: String!
-  startDate: Date!
-  startedAt: Date
-  status: BacktestTaskStatus!
-  symbol: String!
-  templateId: ID
-  templateSearchId: ID
-  totalConfigs: Int!
-
-  """
-  Trial progress phase: sampling | evaluating | completed
-  """
-  trialProgress: String
-
-  """
-  Number of Optuna trials
-  """
-  trials: Int
-}
-
-enum BacktestTaskStatus {
-  AWAIT
-  CANCELLED
-  DONE
-  FAILED
-  PROCESSING
 }
 
 type BotBackwardDetails {
@@ -173,6 +40,7 @@ type BotBackwardDetails {
   leaderContractId: Int!
   leaderEndedBlock: Int
   leaderStartedBlock: Int
+  mode: BotMode!
   plan: Plan!
   planId: Int!
   startedAt: Date
@@ -184,11 +52,6 @@ type BotBackwardDetails {
 type BotConnection {
   edges: [BotEdge!]!
   pageInfo: BotPageInfo!
-}
-
-type BotCount {
-  botCount: Int!
-  date: Date!
 }
 
 type BotDetails {
@@ -206,6 +69,7 @@ type BotDetails {
   leaderContractId: Int!
   leaderEndedBlock: Int
   leaderStartedBlock: Int
+  mode: BotMode!
   planId: Int!
   startedAt: Date
   status: BotStatus!
@@ -234,6 +98,7 @@ type BotForwardDetails {
   leaderEndedBlock: Int
   leaderStartedBlock: Int
   missions: [MissionForwardDetails!]!
+  mode: BotMode!
   planId: Int!
   startedAt: Date
   status: BotStatus!
@@ -255,6 +120,11 @@ type BotGroupPaginatedResponse {
   totalPages: Int!
 }
 
+enum BotMode {
+  Default
+  Reversed
+}
+
 type BotPageInfo {
   endCursor: Int
   hasNextPage: Boolean!
@@ -273,11 +143,6 @@ input CancelOrderAfterTimeoutInput {
   index: Int!
 }
 
-input ChangeUserTagInput {
-  address: String!
-  tag: String!
-}
-
 input CloseTradeInput {
   address: String!
   contractId: Int!
@@ -289,18 +154,6 @@ type CollateralBalance {
   allowance: String
   balance: String
   collateralIndex: Int!
-}
-
-type ComponentInfo {
-  description: String
-  name: String!
-  params: [ParamInfo!]!
-}
-
-input ConfigureRobustnessInput {
-  minScore: Float!
-  pipelineId: ID!
-  steps: Int!
 }
 
 type Contract {
@@ -327,33 +180,9 @@ type ContractExecutionResult {
   success: Boolean!
 }
 
-type ContractPnlSummary {
-  chainId: Int!
-  contractId: Int!
-  openPositions: [OpenPosition!]!
-  realizedCount: Int!
-  realizedPnl: Float!
-}
-
 enum ContractStatus {
   Dead
   Live
-}
-
-input CreateBacktestTaskInput {
-  endDate: Date!
-  interval: String! = "1m"
-  name: String!
-  optimizationMetrics: [String!] = ["sharpeRatio"]
-
-  """
-  Dynamic optimization params. Format depends on searchStrategy.
-  """
-  optimizationParams: JSON!
-  searchStrategy: String = "grid"
-  startDate: Date!
-  symbol: String!
-  trials: Int
 }
 
 input CreateBotAndStrategyInput {
@@ -362,6 +191,7 @@ input CreateBotAndStrategyInput {
   leaderAddress: String!
   leaderCollateralBaseline: Int!
   leaderContractId: Int!
+  mode: BotMode!
   planId: Int!
   strategy: CreateStrategyInput!
 }
@@ -372,6 +202,7 @@ input CreateBotInput {
   leaderAddress: String!
   leaderCollateralBaseline: Int!
   leaderContractId: Int!
+  mode: BotMode!
   planId: Int!
   strategyId: Int!
 }
@@ -397,38 +228,6 @@ input CreateStrategyInput {
   tpPercentage: Float! = 0
 }
 
-input CreateStrategyTemplateInput {
-  category: StrategyCategory!
-  description: String
-
-  """
-  Factory configuration - same structure as OptimizationParams
-  """
-  factoryConfig: JSON!
-  name: String!
-}
-
-input CreateTemplateSearchInput {
-  endDate: Date!
-  interval: String = "1m"
-  name: String!
-  optimizationMetrics: [String!] = ["sharpeRatio"]
-  searchStrategy: String = "optuna"
-  startDate: Date!
-
-  """
-  Symbol to run backtest on
-  """
-  symbol: String!
-  templateId: ID!
-  trials: Int = 100
-}
-
-input CreateValidationPipelineInput {
-  backtestTaskId: ID!
-  name: String!
-}
-
 """
 Date custom scalar type
 """
@@ -441,54 +240,6 @@ input DecreasePositionSizeInput {
   index: Int!
   leverageDelta: Int!
   pairIndex: Int!
-}
-
-type ExpertPnlSnapshotV2Connection {
-  edges: [ExpertPnlSnapshotV2Edge!]!
-  pageInfo: ExpertPnlSnapshotV2PageInfo!
-}
-
-type ExpertPnlSnapshotV2Edge {
-  cursor: Int!
-  node: ExpertPnlSnapshotV2Node!
-}
-
-type ExpertPnlSnapshotV2Node {
-  accUSDPnl: Float!
-  address: String!
-  avgDuration: Float!
-  avgPnlRatio: Float!
-  dateStr: String!
-  id: Int!
-  kind: PnlSnapshotKind!
-  maxSize: Float!
-  openedPositions: Int!
-  platform: Platform!
-  ratio: Float!
-  score: Float!
-}
-
-type ExpertPnlSnapshotV2PageInfo {
-  endCursor: Int
-  hasNextPage: Boolean!
-}
-
-input ExportFilter {
-  m: Float!
-  maxAvgSize: Int!
-  maxCount: Int!
-  minAvgSize: Int!
-  minCount: Int!
-  minR2: Float!
-  minScore: Float!
-  n: Float!
-  ratio: Float!
-  window: Int!
-}
-
-input FinalApprovalInput {
-  approvedCandidateIds: [ID!]!
-  notes: String
 }
 
 type Follower {
@@ -544,10 +295,6 @@ type FollowerTrade {
   index: Int!
   mission: MissionForwardDetails
   params: String!
-}
-
-input GetUserByAddressInput {
-  address: String!
 }
 
 type GnsPricingRecord {
@@ -697,10 +444,6 @@ enum MissionStatus {
 }
 
 type Mutation {
-  addTagToWalletAccount(input: ChangeUserTagInput!): WalletAccount!
-  addToBlacklist(address: String!): Boolean!
-  addToWhitelist(params: String!): Boolean!
-  addWalletAccount(input: AddUserInput!): WalletAccount!
   allowAuto(
     address: String!
     allowAuto: Boolean!
@@ -708,40 +451,15 @@ type Mutation {
     followerContractId: Int!
     ratio: Float!
   ): User!
-
-  """
-  Apply a Pareto selection run with specified metrics
-  """
-  applyParetoStep(input: ApplyParetoStepInput!): ValidationPipeline!
-
-  """
-  Apply a single threshold filter to pipeline candidates
-  """
-  applyThresholdStep(input: ApplyThresholdStepInput!): ValidationPipeline!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
   buildPnlSnapshotsV2(
     dateStr: String!
     isForceBuild: Boolean!
     platform: Platform!
   ): Boolean!
-
-  """
-  Cancel a running or pending backtest task
-  """
-  cancelBacktestTask(taskId: ID!): BacktestTask!
   cancelOrderAfterTimeout(
     input: CancelOrderAfterTimeoutInput!
   ): ContractExecutionResult!
-
-  """
-  Cancel a template search and its task
-  """
-  cancelTemplateSearch(id: ID!): TemplateSearch!
-
-  """
-  Cancel a validation pipeline
-  """
-  cancelValidationPipeline(id: ID!): ValidationPipeline!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
   checkLog(id: Int!): Log!
@@ -749,59 +467,9 @@ type Mutation {
   cloneMission(id: Int!, manualParams: ManualParams): Boolean!
   closeMission(id: Int!, isForce: Boolean!): Boolean!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
-
-  """
-  Complete Pareto step and advance to WFA
-  """
-  completeParetoStep(pipelineId: ID!): ValidationPipeline!
-
-  """
-  Complete robustness testing, aggregate results, and advance to final approval
-  """
-  completeRobustness(pipelineId: ID!): ValidationPipeline!
-
-  """
-  Complete threshold step and advance to Pareto selection
-  """
-  completeThresholdStep(pipelineId: ID!): ValidationPipeline!
-
-  """
-  Approve WFA results, remove failed candidates, and advance to user selection
-  """
-  completeWfa(pipelineId: ID!): ValidationPipeline!
-
-  """
-  Configure robustness test parameters before running steps
-  """
-  configureRobustness(input: ConfigureRobustnessInput!): ValidationPipeline!
-  createAutoPlan: Boolean!
-
-  """
-  Create a new backtest optimization task
-  """
-  createBacktestTask(input: CreateBacktestTaskInput!): BacktestTask!
   createBot(input: CreateBotInput!): BotBackwardDetails!
   createPlan(createPlanInput: CreatePlanInput!): Plan!
   createSLTP(input: SLTPRequestInput!): SLTPRequest!
-
-  """
-  Create a new strategy template
-  """
-  createStrategyTemplate(input: CreateStrategyTemplateInput!): StrategyTemplate!
-
-  """
-  Create a new template search (spawns a BacktestTask)
-  """
-  createTemplateSearch(
-    input: CreateTemplateSearchInput!
-  ): TemplateSearchWithTemplate!
-
-  """
-  Create a new validation pipeline from a completed backtest task
-  """
-  createValidationPipeline(
-    input: CreateValidationPipelineInput!
-  ): ValidationPipeline!
   decreaseAllowanceToZero(
     collateralIndex: Int!
     contractId: Int!
@@ -811,36 +479,9 @@ type Mutation {
   decreasePositionSize(
     input: DecreasePositionSizeInput!
   ): ContractExecutionResult!
-
-  """
-  Delete a single backtest result
-  """
-  deleteBacktestResult(resultId: ID!): Boolean!
-
-  """
-  Delete a backtest task and its results
-  """
-  deleteBacktestTask(taskId: ID!): Boolean!
   deleteBot(id: Int!): BotBackwardDetails!
-  deleteCategory(id: Int!): TagCategory!
   deletePlan(id: Int!): Int!
   deleteSLTP(id: Int!): SLTPRequest!
-
-  """
-  Delete a strategy template
-  """
-  deleteStrategyTemplate(id: ID!): Boolean!
-  deleteTag(tag: String!): Tag!
-
-  """
-  Delete a template search and its task
-  """
-  deleteTemplateSearch(id: ID!): Boolean!
-
-  """
-  Delete a validation pipeline and all related records
-  """
-  deleteValidationPipeline(id: ID!): Boolean!
   depositAsset(input: AssetInput!): Boolean!
   disableContract(contractId: Int!): Contract!
   dynamicSnapshotBuildV2(dateStr: String!, platform: Platform!): Boolean!
@@ -872,116 +513,19 @@ type Mutation {
   makeSafeApp(password: String!): Boolean!
   openTradeMarket(input: OpenTradeInput!): ContractExecutionResult!
   pauseSystem: Boolean!
-
-  """
-  Pause a running WFA process. Takes effect after current candidate finishes.
-  """
-  pauseWfa(pipelineId: ID!): ValidationPipeline!
   performTask(id: Int!): Boolean!
-
-  """
-  Preview Pareto selection without applying it
-  """
-  previewParetoStep(input: PreviewParetoStepInput!): ParetoPreviewResult!
-
-  """
-  Preview a threshold filter without applying it
-  """
-  previewThresholdStep(
-    input: PreviewThresholdStepInput!
-  ): ThresholdPreviewResult!
-  registerTradingSignalLog(
-    address: String!
-    platform: Platform!
-  ): TradingSignalLog!
-  removeEventLogsFromTradingSignalLog(
-    eventLogIds: [Int!]!
-    signalId: Int!
-  ): TradingSignalLog!
-  removeFromBlacklist(address: String!): Boolean!
-  removeFromWhitelist(address: String!): Boolean!
-
-  """
-  Remove a Pareto step and recalculate
-  """
-  removeParetoStep(pipelineId: ID!, stepId: ID!): ValidationPipeline!
-  removeTagFromWalletAccount(input: ChangeUserTagInput!): WalletAccount!
-
-  """
-  Remove a threshold step and recalculate
-  """
-  removeThresholdStep(pipelineId: ID!, stepId: ID!): ValidationPipeline!
-
-  """
-  Resume or extend an Optuna optimization task
-  """
-  resumeBacktestTask(additionalTrials: Int, taskId: ID!): BacktestTask!
   resumeSystem(password: String): Boolean!
-
-  """
-  Resume a paused WFA process. Continues from where it left off.
-  """
-  resumeWfa(pipelineId: ID!): ValidationPipeline!
-
-  """
-  Retry a failed backtest task
-  """
-  retryBacktestTask(taskId: ID!): BacktestTask!
-
-  """
-  Run a single robustness step across all selected candidates
-  """
-  runRobustnessStep(input: RunRobustnessStepInput!): [RobustnessStepResult!]!
   startAdaption(contractId: Int!, shouldRestart: Boolean!): Boolean!
-
-  """
-  Start global Optuna dashboard (connects to PostgreSQL, shows all studies)
-  """
-  startOptunaDashboard(port: Int! = 8080): OptunaDashboardStatus!
   startPlan(id: Int!): Boolean!
   startSubService(service: String!): Boolean!
-
-  """
-  Start WFA background process. Returns immediately, progress via subscription.
-  """
-  startWfa(input: StartWfaInput!): ValidationPipeline!
   stopBot(id: Int!): Boolean!
-
-  """
-  Stop the running Optuna dashboard
-  """
-  stopOptunaDashboard: Boolean!
   stopTask(id: Int!): Boolean!
-
-  """
-  Submit final approval of candidates to complete the pipeline
-  """
-  submitFinalApproval(
-    input: FinalApprovalInput!
-    pipelineId: ID!
-  ): ValidationPipeline!
-
-  """
-  Submit user selection of candidates and advance to robustness
-  """
-  submitUserSelection(
-    input: UserSelectionInput!
-    pipelineId: ID!
-  ): ValidationPipeline!
-  unregisterTradingSignalLog(signalId: Int!): TradingSignalLog!
   updateLeverage(input: UpdateLeverageInput!): ContractExecutionResult!
   updateMaxOpenMissions(maxCount: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
   updateSl(input: UpdateSlInput!): ContractExecutionResult!
   updateStrategy(id: Int!, input: UpdateStrategyInput!): Strategy!
-
-  """
-  Update an existing strategy template
-  """
-  updateStrategyTemplate(input: UpdateStrategyTemplateInput!): StrategyTemplate!
   updateTp(input: UpdateTpInput!): ContractExecutionResult!
-  upsertCategory(input: TagCategoryInput!): TagCategory!
-  upsertTag(input: TagInput!): Tag!
   withdrawAllETH(input: WithdrawAllInput!): Boolean!
   withdrawAllErc20(input: WithdrawAllInput!): Boolean!
   withdrawAsset(input: AssetInput!): Boolean!
@@ -1022,60 +566,12 @@ input OpenTradeInput {
   tp: String!
 }
 
-type OptunaDashboardStatus {
-  running: Boolean!
-  url: String
-}
-
-"""
-Paginated validation candidates with total count
-"""
-type PaginatedValidationCandidatesResult {
-  candidates: [ValidationCandidateWithResult!]!
-  totalCount: Int!
-}
-
-type ParamInfo {
-  default: String
-  description: String
-  max: Float
-  min: Float
-  name: String!
-  options: [SelectOptionInfo!]
-  required: Boolean!
-  type: String!
-}
-
-type ParetoPreviewResult {
-  currentCount: Int!
-  dominatedCount: Int!
-  optimalCount: Int!
-}
-
-type ParetoStep {
-  candidatesAfter: Int!
-  candidatesBefore: Int!
-  createdAt: Date!
-  id: ID!
-  metrics: [String!]!
-  pipelineId: ID!
-  stepOrder: Int!
-}
-
-enum PerpTradeHistoryOperation {
-  CLOSE
-  DECREASE_LEVERAGE
-  DECREASE_SIZE
-  INCREASE_LEVERAGE
-  INCREASE_SIZE
-  OPEN
-}
-
-type PerpTradeHistoryWithDate {
+type PerpTradeHistory {
   address: String!
   collateralDeltaUsd: Float!
   collateralInUsd: Float!
   date: Date!
+  id: Int!
   isLong: Boolean!
   leverage: Float!
   leverageDelta: Float!
@@ -1088,16 +584,13 @@ type PerpTradeHistoryWithDate {
   usdPnl: Float!
 }
 
-type PerpTradingEventLog {
-  address: String!
-  block: Int!
-  contractId: Int!
-  date: Date!
-  id: Int!
-  jsonLog: String!
-  logIndex: Int!
-  platform: Platform!
-  usdPnl: Float!
+enum PerpTradeHistoryOperation {
+  CLOSE
+  DECREASE_LEVERAGE
+  DECREASE_SIZE
+  INCREASE_LEVERAGE
+  INCREASE_SIZE
+  OPEN
 }
 
 type Plan {
@@ -1151,9 +644,7 @@ type PlanSummary {
   botCount: Int!
   description: String!
   endedAt: Date
-  followerPnl: [ContractPnlSummary!]!
   id: Int!
-  leaderPnl: [ContractPnlSummary!]!
   scheduledEnd: Date!
   scheduledStart: Date!
   startedAt: Date
@@ -1190,7 +681,6 @@ type PnlSnapshotV2 {
   accUSDPnl: Float!
   address: String!
   dateStr: String!
-  id: Int!
   kind: PnlSnapshotKind!
   platform: Platform!
 }
@@ -1199,9 +689,8 @@ type PnlSnapshotV2Details {
   accUSDPnl: Float!
   address: String!
   dateStr: String!
-  id: Int!
   kind: PnlSnapshotKind!
-  perpTradingEventLogs: [PerpTradingEventLog!]!
+  perpTradeHistories: [PerpTradeHistory!]!
   platform: Platform!
 }
 
@@ -1211,7 +700,7 @@ type PnlSnapshotV2DetailsConnection {
 }
 
 type PnlSnapshotV2DetailsEdge {
-  cursor: Int!
+  cursor: String!
   node: PnlSnapshotV2Details!
 }
 
@@ -1222,7 +711,7 @@ type PnlSnapshotV2DetailsForPaginationAPIPageInfo {
 }
 
 type PnlSnapshotV2DetailsPageInfo {
-  endCursor: Int
+  endCursor: String
   hasNextPage: Boolean!
 }
 
@@ -1233,18 +722,6 @@ type PnlSnapshotV2InitializedFlag {
   platform: Platform!
 }
 
-input PreviewParetoStepInput {
-  metrics: [String!]!
-  pipelineId: ID!
-}
-
-input PreviewThresholdStepInput {
-  metricName: String!
-  operator: String!
-  pipelineId: ID!
-  value: Float!
-}
-
 type Query {
   allLogs(
     after: Int
@@ -1252,69 +729,12 @@ type Query {
     first: Int!
     severity: LogSeverity
   ): LogsConnection!
-
-  """
-  Get available backtest components with their parameters
-  """
-  backtestComponents: BacktestComponents!
-
-  """
-  Get list of result dates for a task
-  """
-  backtestResultDates(taskId: ID!): [String!]!
-
-  """
-  Get a specific result file
-  """
-  backtestResultFile(
-    configId: String!
-    date: String!
-    fileName: String!
-    taskId: ID!
-  ): ResultFile
-
-  """
-  Get list of result folders for a task and date
-  """
-  backtestResultFolders(date: String!, taskId: ID!): [ResultFolder!]!
-
-  """
-  Get backtest results for a task with sorting and pagination
-  """
-  backtestResults(
-    limit: Int! = 50
-    offset: Int! = 0
-    sortBy: String! = "totalPnlUsdt"
-    sortOrder: String! = "desc"
-    taskId: ID!
-  ): [BacktestResult!]!
-
-  """
-  Get a single backtest task by ID
-  """
-  backtestTask(id: ID!): BacktestTask
-
-  """
-  Get task count statistics by status
-  """
-  backtestTaskStats: TaskStats!
-
-  """
-  List backtest tasks with optional filtering
-  """
-  backtestTasks(
-    limit: Int! = 20
-    offset: Int! = 0
-    status: BacktestTaskStatus
-    symbol: String
-  ): [BacktestTask!]!
   findContract(id: Int!): Contract!
   findStrategy(id: Int!): Strategy
   getALLSLTPs: [SLTPRequest!]!
   getActiveBots: [BotForwardDetails!]!
   getAdaptionStatus: String!
   getAlertTasks: [TaskBackwardDetails!]!
-  getAllCategories: [TagCategory!]!
   getAllContracts: [Contract!]!
   getAllFollowerDetails(
     after: Int
@@ -1323,15 +743,8 @@ type Query {
   ): FollowerConnection!
   getAllFollowers: [Follower!]!
   getAllStrategy: [Strategy!]!
-  getAllTags: [Tag!]!
   getAllUsers: [User!]!
-  getAllWalletAccounts: [WalletAccount!]!
-  getBlacklist: [String!]
   getBotsByStatus(after: Int, first: Int!, status: BotStatus!): BotConnection!
-  getExpertPnlSnapshotsV2(
-    after: Int
-    platform: Platform!
-  ): ExpertPnlSnapshotV2Connection!
   getGnsPrices(
     fromDate: Date!
     pairName: String!
@@ -1340,11 +753,10 @@ type Query {
   getLogsSeverityCounts: [SeverityCount!]!
   getMaxOpenMissions: Int!
   getMicroserviceStatus: [MicroserviceStatus!]!
-  getPerpEventLogs(
+  getPerpTradeHistories(
     addresses: [String!]!
-    limit: Int
     platform: Platform!
-  ): [[PerpTradingEventLog!]!]!
+  ): [[PerpTradeHistory!]!]!
   getPlanBotGroups(
     hideDead: Boolean! = true
     page: Int! = 1
@@ -1366,176 +778,19 @@ type Query {
     platform: Platform!
   ): [PnlSnapshotV2InitializedFlag!]!
   getPnlSnapshotsV2(
-    after: Int
+    after: String
     dateStr: String!
     first: Int!
-    kind: PnlSnapshotKind!
-    minR2: Float!
-    minSlope: Float!
+    isDesc: Boolean!
     platform: Platform!
   ): PnlSnapshotV2DetailsConnection!
   getServerTime: ServerTime!
-  getTradingSignalLogs: [TradingSignalLog!]!
-  getWalletAccountByAddress(input: GetUserByAddressInput!): WalletAccount!
-  getWhitelist: [String!]
-  getWholeCompressedHistoriesV2(
-    filterParams: [ExportFilter!]!
-    platform: Platform!
-    startDate: String!
-  ): WholeCompressedHistoriesV2!
   isPnlSnapshotV2Initialized(
     dateStr: String!
     platform: Platform!
   ): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
-
-  """
-  Get current Optuna dashboard status
-  """
-  optunaDashboardStatus: OptunaDashboardStatus!
-
-  """
-  Get all Pareto steps for a pipeline
-  """
-  paretoSteps(pipelineId: ID!): [ParetoStep!]!
-
-  """
-  Get a strategy template by ID
-  """
-  strategyTemplate(id: ID!): StrategyTemplate
-
-  """
-  Get a strategy template by name
-  """
-  strategyTemplateByName(name: String!): StrategyTemplate
-
-  """
-  Get a strategy template with usage statistics
-  """
-  strategyTemplateWithStats(id: ID!): StrategyTemplateWithStats
-
-  """
-  List strategy templates with optional filtering
-  """
-  strategyTemplates(
-    category: StrategyCategory
-    isActive: Boolean
-    limit: Int! = 20
-    offset: Int! = 0
-  ): [StrategyTemplate!]!
   systemStatus: Boolean!
-
-  """
-  Get the task for a specific template search
-  """
-  taskByTemplateSearch(searchId: ID!): BacktestTask
-
-  """
-  Get all tasks using a specific template
-  """
-  tasksByTemplate(templateId: ID!): [BacktestTask!]!
-
-  """
-  Get a template search by ID
-  """
-  templateSearch(id: ID!): TemplateSearch
-
-  """
-  Get template search count statistics by status
-  """
-  templateSearchStats: TemplateSearchStats!
-
-  """
-  Get a template search with template and task
-  """
-  templateSearchWithTask(id: ID!): TemplateSearchWithTask
-
-  """
-  List template searches with optional filtering
-  """
-  templateSearches(
-    filter: TemplateSearchFilterInput
-  ): [TemplateSearchWithTemplate!]!
-
-  """
-  Get all threshold steps for a pipeline
-  """
-  thresholdSteps(pipelineId: ID!): [ThresholdStep!]!
-
-  """
-  Get top performing backtest results
-  """
-  topBacktestResults(
-    limit: Int! = 10
-    metric: String! = "totalPnlUsdt"
-    taskId: ID!
-  ): [BacktestResult!]!
-
-  """
-  Get a validation candidate with result details
-  """
-  validationCandidate(id: ID!): ValidationCandidateWithResult
-
-  """
-  Get validation candidates by pipeline and optional status
-  """
-  validationCandidatesByStatus(
-    filter: ValidationCandidateFilterInput!
-  ): PaginatedValidationCandidatesResult!
-
-  """
-  Get a validation pipeline by ID
-  """
-  validationPipeline(id: ID!): ValidationPipeline
-
-  """
-  Get validation pipeline count statistics by status
-  """
-  validationPipelineStats: ValidationPipelineStats!
-
-  """
-  Get a validation pipeline with all its candidates
-  """
-  validationPipelineWithCandidates(id: ID!): ValidationPipelineWithCandidates
-
-  """
-  List validation pipelines with optional filtering
-  """
-  validationPipelines(
-    filter: ValidationPipelineFilterInput
-  ): [ValidationPipeline!]!
-}
-
-type ResultFile {
-  content: String!
-  contentType: String!
-  isCompressed: Boolean!
-  name: String!
-  originalSize: Int!
-  size: Int!
-}
-
-type ResultFolder {
-  configId: String!
-  date: String!
-  files: [String!]!
-  taskId: String!
-}
-
-type RobustnessStepResult {
-  candidateId: ID!
-  configId: String!
-  errorMessage: String
-  maxDrawdown: Float
-  sharpeRatio: Float
-  status: String!
-  stepIndex: Int!
-  totalPnl: Float
-}
-
-input RunRobustnessStepInput {
-  pipelineId: ID!
-  stepIndex: Int!
 }
 
 type SLTPRequest {
@@ -1554,11 +809,6 @@ input SLTPRequestInput {
   positionKey: String!
 }
 
-type SelectOptionInfo {
-  label: String!
-  value: String!
-}
-
 type ServerTime {
   timestamp: Float!
   timezone: String!
@@ -1567,13 +817,6 @@ type ServerTime {
 type SeverityCount {
   counts: Int!
   severity: LogSeverity!
-}
-
-input StartWfaInput {
-  minConsistency: Float!
-  pipelineId: ID!
-  trainRatio: Float!
-  windows: Int!
 }
 
 type Strategy {
@@ -1591,70 +834,7 @@ type Strategy {
   tpPercentage: Float!
 }
 
-"""
-Category of trading strategy
-"""
-enum StrategyCategory {
-  BREAKOUT
-  CUSTOM
-  MEAN_REVERSION
-  MOMENTUM
-  SCALPING
-  SWING
-  TREND_FOLLOWING
-  VOLATILITY
-}
-
-type StrategyTemplate {
-  category: StrategyCategory!
-  createdAt: Date!
-  description: String
-
-  """
-  Factory configuration (same structure as OptimizationParams)
-  """
-  factoryConfig: JSON!
-  id: ID!
-  isActive: Boolean!
-  name: String!
-  updatedAt: Date!
-}
-
-type StrategyTemplateWithStats {
-  category: StrategyCategory!
-  createdAt: Date!
-  description: String
-
-  """
-  Factory configuration (same structure as OptimizationParams)
-  """
-  factoryConfig: JSON!
-  id: ID!
-  isActive: Boolean!
-  name: String!
-
-  """
-  Total number of searches using this template
-  """
-  totalSearches: Int!
-
-  """
-  Total number of backtest tasks using this template
-  """
-  totalTasks: Int!
-  updatedAt: Date!
-}
-
 type Subscription {
-  """
-  Subscribe to new backtest results
-  """
-  backtestResultCreated: BacktestResult!
-
-  """
-  Subscribe to backtest task progress updates
-  """
-  backtestTaskUpdated: BacktestTask!
   botCreated(userId: String!): [BotBackwardDetails!]!
   botUpdated(userId: String!): [BotBackwardDetails!]!
   missionCreated(userId: String!): [MissionBackwardDetails!]!
@@ -1664,50 +844,6 @@ type Subscription {
   planUpdated(userId: String!): Plan!
   taskCreated(userId: String!): [TaskBackwardDetails!]!
   taskUpdated(userId: String!): [TaskBackwardDetails!]!
-
-  """
-  Subscribe to template search status updates
-  """
-  templateSearchUpdated: TemplateSearch!
-  tradingSignalLogUpdated: [TradingSignalLogUpdated!]!
-
-  """
-  Subscribe to validation candidate status updates
-  """
-  validationCandidateUpdated: ValidationCandidate!
-
-  """
-  Subscribe to validation pipeline status updates
-  """
-  validationPipelineUpdated: ValidationPipeline!
-}
-
-type Tag {
-  categoryId: Int
-  color: String!
-  description: String!
-  id: Int!
-  tag: String!
-  userId: String!
-}
-
-type TagCategory {
-  category: String!
-  description: String!
-  id: Int!
-  userId: String!
-}
-
-input TagCategoryInput {
-  category: String!
-  description: String!
-}
-
-input TagInput {
-  categoryId: Int
-  color: String!
-  description: String!
-  tag: String!
 }
 
 type TaskBackwardDetails {
@@ -1733,13 +869,6 @@ type TaskForwardDetails {
   status: TaskStatus!
 }
 
-type TaskStats {
-  await: Int!
-  done: Int!
-  failed: Int!
-  processing: Int!
-}
-
 enum TaskStatus {
   Await
   Completed
@@ -1747,175 +876,6 @@ enum TaskStatus {
   Failed
   Initiated
   Stopped
-}
-
-type TemplateSearch {
-  completedAt: Date
-  createdAt: Date!
-  endDate: Date!
-  errorMessage: String
-  id: ID!
-  interval: String!
-  name: String!
-  searchStrategy: String!
-  startDate: Date!
-  startedAt: Date
-  status: TemplateSearchStatus!
-
-  """
-  Symbol to run backtest on
-  """
-  symbol: String!
-  templateId: ID!
-}
-
-input TemplateSearchFilterInput {
-  limit: Int! = 20
-  offset: Int! = 0
-  status: TemplateSearchStatus
-  templateId: ID
-}
-
-type TemplateSearchStats {
-  await: Int!
-  cancelled: Int!
-  done: Int!
-  failed: Int!
-  processing: Int!
-}
-
-"""
-Status of a template search
-"""
-enum TemplateSearchStatus {
-  AWAIT
-  CANCELLED
-  DONE
-  FAILED
-  PROCESSING
-}
-
-type TemplateSearchWithTask {
-  completedAt: Date
-  createdAt: Date!
-  endDate: Date!
-  errorMessage: String
-  id: ID!
-  interval: String!
-  name: String!
-  searchStrategy: String!
-  startDate: Date!
-  startedAt: Date
-  status: TemplateSearchStatus!
-
-  """
-  Symbol to run backtest on
-  """
-  symbol: String!
-  task: BacktestTask
-  template: StrategyTemplate!
-  templateId: ID!
-}
-
-type TemplateSearchWithTemplate {
-  completedAt: Date
-  createdAt: Date!
-  endDate: Date!
-  errorMessage: String
-  id: ID!
-  interval: String!
-  name: String!
-  searchStrategy: String!
-  startDate: Date!
-  startedAt: Date
-  status: TemplateSearchStatus!
-
-  """
-  Symbol to run backtest on
-  """
-  symbol: String!
-  template: StrategyTemplate!
-  templateId: ID!
-}
-
-type TestingReport {
-  allTimeWeight: Int!
-  avgLoss: Float!
-  avgProfit: Float!
-  bottomAccProfit: Float!
-  calculatedR2: Float!
-  calculatedSlope: Float!
-  id: Int!
-  investedUSD: Float!
-  lossCount: Int!
-  m: Int!
-  maxAvgSize: Int!
-  maxCount: Int!
-  maxLoss: Float!
-  maxProfit: Float!
-  minAvgSize: Int!
-  minCount: Int!
-  minR2: Float!
-  minScore: Float!
-  monthWeight: Int!
-  n: Int!
-  peakAccProfit: Float!
-  profitCount: Int!
-  threeMonthWeight: Int!
-  totalPositions: Int!
-  totalTasks: Int!
-  totalTraders: Int!
-  totalUSDPnl: Float!
-  totalUniqueTraders: Int!
-  usdPnls: [Float!]!
-  weekWeight: Int!
-  window: Int!
-}
-
-type TestingReportEdge {
-  cursor: Int!
-  node: TestingReport!
-}
-
-type TestingReportPageInfo {
-  endCursor: Int
-  hasNextPage: Boolean!
-}
-
-type ThresholdPreviewResult {
-  currentCount: Int!
-  eliminatedCount: Int!
-  survivingCount: Int!
-}
-
-type ThresholdStep {
-  candidatesAfter: Int!
-  candidatesBefore: Int!
-  createdAt: Date!
-  id: ID!
-  metricName: String!
-  operator: String!
-  pipelineId: ID!
-  stepOrder: Int!
-  value: Float!
-}
-
-type TotalBotV2 {
-  address: String!
-  dateStr: String!
-  platform: Platform!
-}
-
-type TradingSignalLog {
-  address: String!
-  eventLogs: [PerpTradingEventLog!]!
-  id: Int!
-  platform: String!
-}
-
-type TradingSignalLogUpdated {
-  eventLogs: [PerpTradingEventLog!]!
-  id: Int!
 }
 
 input UpdateLeverageInput {
@@ -1957,15 +917,6 @@ input UpdateStrategyInput {
   tpPercentage: Float!
 }
 
-input UpdateStrategyTemplateInput {
-  category: StrategyCategory
-  description: String
-  factoryConfig: JSON
-  id: ID!
-  isActive: Boolean
-  name: String
-}
-
 input UpdateTpInput {
   address: String!
   contractId: Int!
@@ -1989,249 +940,11 @@ enum UserPermission {
   Trial
 }
 
-input UserSelectionInput {
-  notes: String
-  selectedCandidateIds: [ID!]!
-}
-
-type ValidationCandidate {
-  configId: String!
-  createdAt: Date!
-  dominatedBy: [String!]
-  finalApprovedAt: Date
-  finalNotes: String
-  id: ID!
-  paretoRank: Int
-  pipelineId: ID!
-  resultId: ID!
-  robustnessPassed: Boolean
-  robustnessScore: Float
-
-  """
-  Per-step robustness results JSON array
-  """
-  robustnessStepResults: JSON
-  status: ValidationCandidateStatus!
-  thresholdPassed: Boolean
-  updatedAt: Date!
-  userNotes: String
-  userSelectedAt: Date
-  wfaConsistency: Float
-  wfaPassed: Boolean
-
-  """
-  Per-window WFA results JSON array
-  """
-  wfaWindowResults: JSON
-}
-
-input ValidationCandidateFilterInput {
-  limit: Int! = 100
-  offset: Int! = 0
-  pipelineId: ID!
-  status: ValidationCandidateStatus
-}
-
-"""
-Status of a validation candidate
-"""
-enum ValidationCandidateStatus {
-  ACTIVE
-  FINAL_APPROVED
-  FINAL_REJECTED
-  PARETO_DOMINATED
-  PARETO_OPTIMAL
-  PENDING
-  ROBUSTNESS_FAILED
-  ROBUSTNESS_PASSED
-  THRESHOLD_ELIMINATED
-  USER_REJECTED
-  USER_SELECTED
-  WFA_FAILED
-  WFA_PASSED
-}
-
-type ValidationCandidateWithResult {
-  configId: String!
-  createdAt: Date!
-  dominatedBy: [String!]
-  finalApprovedAt: Date
-  finalNotes: String
-  id: ID!
-  paretoRank: Int
-  pipelineId: ID!
-  result: BacktestResult!
-  resultId: ID!
-  robustnessPassed: Boolean
-  robustnessScore: Float
-
-  """
-  Per-step robustness results JSON array
-  """
-  robustnessStepResults: JSON
-  status: ValidationCandidateStatus!
-  thresholdPassed: Boolean
-  updatedAt: Date!
-  userNotes: String
-  userSelectedAt: Date
-  wfaConsistency: Float
-  wfaPassed: Boolean
-
-  """
-  Per-window WFA results JSON array
-  """
-  wfaWindowResults: JSON
-}
-
-type ValidationPipeline {
-  backtestTaskId: ID!
-  completedAt: Date
-  createdAt: Date!
-
-  """
-  Current step (1-7)
-  """
-  currentStep: Int!
-  errorMessage: String
-  finalApproved: Int!
-  id: ID!
-  name: String!
-
-  """
-  Pareto config: { metrics: string[] }
-  """
-  paretoConfig: JSON
-  paretoOptimal: Int!
-  passedRobustness: Int!
-  passedThreshold: Int!
-  passedWfa: Int!
-
-  """
-  Number of completed robustness steps
-  """
-  robustnessCompletedSteps: Int!
-
-  """
-  Robustness config: { steps, minScore }
-  """
-  robustnessConfig: JSON
-  startedAt: Date
-  status: ValidationPipelineStatus!
-  totalCandidates: Int!
-  userSelected: Int!
-
-  """
-  Number of completed WFA windows
-  """
-  wfaCompletedWindows: Int!
-
-  """
-  WFA config: { trainRatio, windows, minConsistency }
-  """
-  wfaConfig: JSON
-}
-
-input ValidationPipelineFilterInput {
-  backtestTaskId: ID
-  limit: Int! = 20
-  offset: Int! = 0
-  status: ValidationPipelineStatus
-}
-
-type ValidationPipelineStats {
-  awaitingUser: Int!
-  cancelled: Int!
-  completed: Int!
-  created: Int!
-  failed: Int!
-  inProgress: Int!
-}
-
-"""
-Status of a validation pipeline
-"""
-enum ValidationPipelineStatus {
-  CANCELLED
-  COMPLETED
-  CREATED
-  FAILED
-  STEP_FINAL_APPROVAL
-  STEP_PARETO
-  STEP_ROBUSTNESS
-  STEP_THRESHOLD
-  STEP_USER_SELECTION
-  STEP_WFA
-}
-
-type ValidationPipelineWithCandidates {
-  backtestTaskId: ID!
-  candidates: [ValidationCandidate!]!
-  completedAt: Date
-  createdAt: Date!
-
-  """
-  Current step (1-7)
-  """
-  currentStep: Int!
-  errorMessage: String
-  finalApproved: Int!
-  id: ID!
-  name: String!
-
-  """
-  Pareto config: { metrics: string[] }
-  """
-  paretoConfig: JSON
-  paretoOptimal: Int!
-  passedRobustness: Int!
-  passedThreshold: Int!
-  passedWfa: Int!
-
-  """
-  Number of completed robustness steps
-  """
-  robustnessCompletedSteps: Int!
-
-  """
-  Robustness config: { steps, minScore }
-  """
-  robustnessConfig: JSON
-  startedAt: Date
-  status: ValidationPipelineStatus!
-  totalCandidates: Int!
-  userSelected: Int!
-
-  """
-  Number of completed WFA windows
-  """
-  wfaCompletedWindows: Int!
-
-  """
-  WFA config: { trainRatio, windows, minConsistency }
-  """
-  wfaConfig: JSON
-}
-
 enum Version {
   V1
   V2
   V9
   V10
-}
-
-type WalletAccount {
-  address: String!
-  id: Int!
-  tags: [Tag!]!
-  userId: String!
-}
-
-type WholeCompressedHistoriesV2 {
-  accPnls: [AccPnlV2!]!
-  botCounts: [BotCount!]!
-  maxInvested: Float!
-  totalBots: [TotalBotV2!]!
-  uniqueTraders: [String!]
 }
 
 input WithdrawAllInput {

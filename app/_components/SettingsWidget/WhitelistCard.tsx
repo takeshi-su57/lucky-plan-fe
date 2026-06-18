@@ -124,7 +124,7 @@ export function WhitelistCard() {
                   isIconOnly
                   color="primary"
                   variant="flat"
-                  onClick={() => {
+                  onPress={() => {
                     removeFromWhitelist({
                       variables: {
                         address: whitelist.address,
@@ -196,7 +196,7 @@ export function WhitelistCard() {
         <Button
           isDisabled={isDisabled}
           isLoading={addToWhitelistLoading}
-          onClick={() => {
+          onPress={() => {
             addToWhitelist({
               variables: {
                 params: JSON.stringify({

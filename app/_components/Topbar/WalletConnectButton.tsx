@@ -161,7 +161,7 @@ export default function WalletConnectButton() {
                 return (
                   <Button
                     variant="ghost"
-                    onClick={openConnectModal}
+                    onPress={openConnectModal}
                     className="flex w-fit rounded px-[17px] text-white"
                     isLoading={true}
                   >
@@ -174,7 +174,7 @@ export default function WalletConnectButton() {
                 return (
                   <Button
                     variant="ghost"
-                    onClick={() => {
+                    onPress={() => {
                       handleWalletConnect();
                     }}
                     className="w-fit rounded font-bold text-white"
@@ -190,8 +190,8 @@ export default function WalletConnectButton() {
                   <Button
                     variant="ghost"
                     color="danger"
-                    onClick={openChainModal}
-                    className="!text-red-600"
+                    onPress={openChainModal}
+                    className="text-red-600"
                   >
                     <FaExclamationTriangle size={20} className="text-red-600" />
                     Wrong Network
@@ -201,7 +201,7 @@ export default function WalletConnectButton() {
 
               return (
                 <div className="flex items-center gap-3 md:gap-5">
-                  <Button variant="ghost" onClick={openChainModal}>
+                  <Button variant="ghost" onPress={openChainModal}>
                     {chain.iconUrl ? (
                       <Image
                         src={chain.iconUrl}
@@ -216,7 +216,7 @@ export default function WalletConnectButton() {
                     <FaArrowDown size={12} className="text-gray-400" />
                   </Button>
 
-                  <Button variant="ghost" onClick={openAccountModal}>
+                  <Button variant="ghost" onPress={openAccountModal}>
                     {chain.iconUrl ? (
                       <Image
                         src={chain.iconUrl}

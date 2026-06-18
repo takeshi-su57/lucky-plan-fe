@@ -48,9 +48,7 @@ export function FollowerSummary({
         const data = JSON.parse(trade.params);
 
         const currentPrice = prices?.[data?.pairIndex || 0];
-        const openPrice = data?.openPrice
-          ? Number(data.openPrice) / 1e10
-          : 0;
+        const openPrice = data?.openPrice ? Number(data.openPrice) / 1e10 : 0;
 
         const tradeCollateral =
           chainId && data?.collateralIndex
@@ -103,9 +101,7 @@ export function FollowerSummary({
           let collateralUsd = 0;
           for (const cb of item.collateralBalances || []) {
             const collateral = getCollateral(chainId, cb.collateralIndex);
-            const precision = collateral
-              ? Number(collateral.precision)
-              : 1e6;
+            const precision = collateral ? Number(collateral.precision) : 1e6;
             const amount = Number(cb.balance || 0) / precision;
             const usdPrice = collateralUsdPrices[cb.collateralIndex] || 0;
             collateralUsd += amount * usdPrice;
@@ -183,7 +179,7 @@ export function FollowerSummary({
         />
 
         {contractId ? (
-          <Button color="primary" variant="flat" radius="sm" onClick={onOpen}>
+          <Button color="primary" variant="flat" radius="sm" onPress={onOpen}>
             Withdraw
           </Button>
         ) : null}
@@ -193,7 +189,7 @@ export function FollowerSummary({
           color="primary"
           variant="flat"
           radius="sm"
-          onClick={handleGenerateFollower}
+          onPress={handleGenerateFollower}
         >
           <FaPlus />
         </Button>

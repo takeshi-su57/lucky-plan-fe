@@ -4,7 +4,11 @@ import { Card, CardBody } from "@heroui/react";
 import { IoClose } from "react-icons/io5";
 
 import { useDeleteSLTP } from "@/app-hooks/useFollower";
-import { PercentageCondition, PriceConditionParams, SLTPCondition } from "@/types";
+import {
+  PercentageCondition,
+  PriceConditionParams,
+  SLTPCondition,
+} from "@/types";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 
 export type SLTPCardProps = {
@@ -46,12 +50,12 @@ export function SLTPCard({ id, condition }: SLTPCardProps) {
   const isPercentageType = condition.type === "percentage";
 
   return (
-    <Card className="relative min-w-[160px]">
+    <Card className="relative min-w-40">
       <ButtonWithConfirm
         isIconOnly
         size="sm"
         variant="light"
-        className="absolute right-1 top-1 z-10 h-6 w-6 min-w-0"
+        className="absolute top-1 right-1 z-10 h-6 w-6 min-w-0"
         onPress={handleDelete}
         isDisabled={loading}
         isLoading={loading}
@@ -61,7 +65,7 @@ export function SLTPCard({ id, condition }: SLTPCardProps) {
 
       <CardBody className="gap-2 p-3 pt-6">
         <div className="flex items-center gap-2">
-          <span className="rounded bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
+          <span className="bg-primary/20 text-primary rounded px-2 py-0.5 text-xs font-medium">
             {condition.type.toUpperCase()}
           </span>
         </div>

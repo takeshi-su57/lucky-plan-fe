@@ -1,13 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  Button,
-  Card,
-  CardBody,
-  Spinner,
-  useDisclosure,
-} from "@heroui/react";
+import { Button, Card, CardBody, Spinner, useDisclosure } from "@heroui/react";
 
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 
@@ -80,7 +74,7 @@ export function UsersPanel() {
               isIconOnly
               color="primary"
               variant="flat"
-              onClick={() => {
+              onPress={() => {
                 onOpen();
                 setUser(user);
               }}
