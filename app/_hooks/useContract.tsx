@@ -16,7 +16,6 @@ export const CONTRACT_INFO_FRAGMENT_DOCUMENT = graphql(`
     address
     backendUrl
     description
-    isTestnet
     status
     fromBlock
     lastBlockNumber

@@ -9,12 +9,18 @@ type AccessToken {
 type Action {
   address: String!
   args: String!
+  blockHash: String
   blockNumber: Int!
+  contractId: Int
   createdAt: Date!
+  dedupeKey: String
   id: Int!
   name: String!
   orderInBlock: Int!
+  origin: String!
   positionKey: String!
+  status: String!
+  txHash: String
 }
 
 input AssetInput {
@@ -163,7 +169,6 @@ type Contract {
   description: String!
   fromBlock: Int!
   id: Int!
-  isTestnet: Boolean!
   lastBlockNumber: Int!
   lastLeaderboardBlockNumber: Int!
   platform: Platform!
@@ -221,7 +226,7 @@ input CreateStrategyInput {
   maxOpenMissions: Int! = 0
   minCollateral: Int!
   minLeverage: Int!
-  mode: String! = "default"
+  mode: StrategyMode! = Default
   ratio: Float!
   selectedPairs: String! = "[]"
   slPercentage: Float! = 0
@@ -414,7 +419,6 @@ type MissionForwardDetails {
 
 enum MissionMode {
   Default
-  Hook
   Signal
 }
 
@@ -669,19 +673,10 @@ enum Platform {
   GNS
 }
 
-enum PnlSnapshotKind {
-  ALL_TIME
-  DAY
-  MONTH
-  THREE_MONTH
-  WEEK
-}
-
 type PnlSnapshotV2 {
   accUSDPnl: Float!
   address: String!
   dateStr: String!
-  kind: PnlSnapshotKind!
   platform: Platform!
 }
 
@@ -689,7 +684,6 @@ type PnlSnapshotV2Details {
   accUSDPnl: Float!
   address: String!
   dateStr: String!
-  kind: PnlSnapshotKind!
   perpTradeHistories: [PerpTradeHistory!]!
   platform: Platform!
 }
@@ -827,11 +821,16 @@ type Strategy {
   maxOpenMissions: Int!
   minCollateral: Int!
   minLeverage: Int!
-  mode: String!
+  mode: StrategyMode!
   ratio: Float!
   selectedPairs: String!
   slPercentage: Float!
   tpPercentage: Float!
+}
+
+enum StrategyMode {
+  Default
+  Signal
 }
 
 type Subscription {
@@ -910,7 +909,7 @@ input UpdateStrategyInput {
   maxOpenMissions: Int!
   minCollateral: Int!
   minLeverage: Int!
-  mode: String!
+  mode: StrategyMode!
   ratio: Float!
   selectedPairs: String!
   slPercentage: Float!

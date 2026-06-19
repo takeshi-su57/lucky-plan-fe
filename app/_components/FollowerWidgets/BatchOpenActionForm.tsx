@@ -12,7 +12,11 @@ import {
 import { Address } from "viem";
 
 import { NumericInput } from "@/components/inputs/NumericInput";
-import { getPairs, getCollaterals, getCollateral } from "@/web3/gns/v10/configs";
+import {
+  getPairs,
+  getCollaterals,
+  getCollateral,
+} from "@/web3/gns/v10/configs";
 import { useCollateralSymbols } from "@/app/_hooks/useCollateralSymbols";
 import { useCollateralUsdPrices } from "@/app/_hooks/useCollateralUsdPrices";
 import { useGetAllFollowerDetails } from "@/app/_hooks/useFollower";
@@ -30,7 +34,6 @@ type ContractItem = {
   chainId: number;
   address: string;
   description: string;
-  isTestnet: boolean;
   status: ContractStatus;
 };
 
@@ -194,7 +197,7 @@ export function BatchOpenActionForm({
   );
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-neutral-700 bg-neutral-800/50 p-4">
+    <div className="border-default-200 bg-content2 flex flex-col gap-3 rounded-lg border p-4">
       {/* Contract picker */}
       <Autocomplete
         label="Contract"
@@ -220,9 +223,6 @@ export function BatchOpenActionForm({
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
                 <span className="text-small">Chain: {item.chainId}</span>
-                {item.isTestnet && (
-                  <span className="text-small">(Testnet)</span>
-                )}
               </div>
               <span className="text-tiny text-default-400">
                 {item.description}
@@ -386,11 +386,7 @@ export function BatchOpenActionForm({
         </div>
       )}
 
-      <NumericInput
-        amount={leverage}
-        onChange={setLeverage}
-        label="Leverage"
-      />
+      <NumericInput amount={leverage} onChange={setLeverage} label="Leverage" />
 
       <NumericInput
         amount={maxSlippageP}

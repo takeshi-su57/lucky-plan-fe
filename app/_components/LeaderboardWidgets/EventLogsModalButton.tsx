@@ -24,6 +24,7 @@ export function EventLogsModalButton({
         color="primary"
         size="sm"
         onPress={onOpen}
+        className="h-9 rounded-lg px-4 text-xs font-semibold"
       >
         {label || "Open"}
       </Button>

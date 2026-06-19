@@ -81,7 +81,7 @@ export function PerpEventLogPnlChartExpert({
 
   return (
     <div className="flex min-h-125 gap-4 p-3">
-      <div className="flex w-fit flex-col gap-4 rounded-2xl bg-black/60 p-6">
+      <div className="border-default-200 bg-content1 flex w-fit flex-col gap-4 rounded-lg border p-5">
         <Select
           variant="underlined"
           label="Pairs"

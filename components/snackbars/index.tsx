@@ -27,17 +27,16 @@ const icons: Record<VariantType, ReactNode> = {
 };
 
 const classNames: Record<VariantType, string> = {
-  success: "border-[#17c964] bg-[#162b1b] text-[#17c964]",
-  error: "border-[#fb3b2d] bg-[#310e0b] text-[#fb3b2d]",
-  default: "border-gray-50 bg-[#464646] text-gray-50",
-  warning: "border-[#f5a524] bg-[#2e1c01] text-[#f5a524]",
-  info: "border-[#55a2ff] bg-[#294464] text-[#fffdf7]",
+  success: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  error: "border-rose-200 bg-rose-50 text-rose-700",
+  default: "border-zinc-200 bg-white text-zinc-800",
+  warning: "border-amber-200 bg-amber-50 text-amber-700",
+  info: "border-blue-200 bg-blue-50 text-blue-700",
 };
 
 function generateSnackbar(variant: VariantType) {
   return forwardRef<HTMLDivElement, CustomContentProps>(
     function PureSuccessSnackbar(props, ref) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, message, className, style } = props;
 
       const { closeSnackbar } = useSnackbar();
@@ -63,7 +62,7 @@ function generateSnackbar(variant: VariantType) {
             width={18}
             height={18}
             onClick={handleClose}
-            className="absolute top-2 right-2 cursor-pointer text-sm text-stone-200"
+            className="absolute top-2 right-2 cursor-pointer text-sm text-zinc-500"
           />
           {icons[variant]}
           <div className="flex flex-col font-sans text-xs leading-[18px]">

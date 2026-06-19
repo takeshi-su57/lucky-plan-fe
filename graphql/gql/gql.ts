@@ -26,7 +26,7 @@ type Documents = {
     "\n  mutation stopBot($id: Int!) {\n    stopBot(id: $id)\n  }\n": typeof types.StopBotDocument,
     "\n  subscription botCreated($userId: String!) {\n    botCreated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": typeof types.BotCreatedDocument,
     "\n  subscription botUpdated($userId: String!) {\n    botUpdated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": typeof types.BotUpdatedDocument,
-    "\n  fragment ContractInfo on Contract {\n    id\n    chainId\n    address\n    backendUrl\n    description\n    isTestnet\n    status\n    fromBlock\n    lastBlockNumber\n    lastLeaderboardBlockNumber\n    platform\n    toBlock\n    version\n  }\n": typeof types.ContractInfoFragmentDoc,
+    "\n  fragment ContractInfo on Contract {\n    id\n    chainId\n    address\n    backendUrl\n    description\n    status\n    fromBlock\n    lastBlockNumber\n    lastLeaderboardBlockNumber\n    platform\n    toBlock\n    version\n  }\n": typeof types.ContractInfoFragmentDoc,
     "\n  query getAllContracts {\n    getAllContracts {\n      ...ContractInfo\n    }\n  }\n": typeof types.GetAllContractsDocument,
     "\n  query getAdaptionStatus {\n    getAdaptionStatus\n  }\n": typeof types.GetAdaptionStatusDocument,
     "\n  mutation disableContract($contractId: Int!) {\n    disableContract(contractId: $contractId) {\n      ...ContractInfo\n    }\n  }\n": typeof types.DisableContractDocument,
@@ -60,9 +60,9 @@ type Documents = {
     "\n  mutation withdrawErc20ToUser(\n    $amount: Float!\n    $collateralIndex: Int!\n    $contractId: Int!\n    $password: String!\n  ) {\n    withdrawErc20ToUser(\n      amount: $amount\n      collateralIndex: $collateralIndex\n      contractId: $contractId\n      password: $password\n    )\n  }\n": typeof types.WithdrawErc20ToUserDocument,
     "\n  mutation createSLTP($input: SLTPRequestInput!) {\n    createSLTP(input: $input) {\n      id\n      address\n      contractId\n      positionKey\n      condition\n      createdAt\n    }\n  }\n": typeof types.CreateSltpDocument,
     "\n  mutation deleteSLTP($id: Int!) {\n    deleteSLTP(id: $id) {\n      id\n    }\n  }\n": typeof types.DeleteSltpDocument,
-    "\n  fragment PnlSnapshotV2Info on PnlSnapshotV2 {\n    accUSDPnl\n    address\n    dateStr\n    kind\n    platform\n  }\n": typeof types.PnlSnapshotV2InfoFragmentDoc,
+    "\n  fragment PnlSnapshotV2Info on PnlSnapshotV2 {\n    accUSDPnl\n    address\n    dateStr\n    platform\n  }\n": typeof types.PnlSnapshotV2InfoFragmentDoc,
     "\n  fragment PerpTradeHistoryInfo on PerpTradeHistory {\n    id\n    address\n    collateralDeltaUsd\n    collateralInUsd\n    isLong\n    leverage\n    leverageDelta\n    operation\n    pair\n    positionKey\n    price\n    sizeDeltaUsd\n    sizeInUsd\n    usdPnl\n    date\n  }\n": typeof types.PerpTradeHistoryInfoFragmentDoc,
-    "\n  fragment PnlSnapshotV2DetailsInfo on PnlSnapshotV2Details {\n    accUSDPnl\n    address\n    dateStr\n    kind\n    perpTradeHistories {\n      ...PerpTradeHistoryInfo\n    }\n    platform\n  }\n": typeof types.PnlSnapshotV2DetailsInfoFragmentDoc,
+    "\n  fragment PnlSnapshotV2DetailsInfo on PnlSnapshotV2Details {\n    accUSDPnl\n    address\n    dateStr\n    perpTradeHistories {\n      ...PerpTradeHistoryInfo\n    }\n    platform\n  }\n": typeof types.PnlSnapshotV2DetailsInfoFragmentDoc,
     "\n  query getPerpTradeHistories($addresses: [String!]!, $platform: Platform!) {\n    getPerpTradeHistories(addresses: $addresses, platform: $platform) {\n      ...PerpTradeHistoryInfo\n    }\n  }\n": typeof types.GetPerpTradeHistoriesDocument,
     "\n  query getPnlSnapshotV2InitializedFlag($platform: Platform!) {\n    getPnlSnapshotV2InitializedFlag(platform: $platform) {\n      id\n      dateStr\n      isInit\n      platform\n    }\n  }\n": typeof types.GetPnlSnapshotV2InitializedFlagDocument,
     "\n  query getPnlSnapshotsV2(\n    $dateStr: String!\n    $platform: Platform!\n    $isDesc: Boolean!\n    $first: Int!\n    $after: String\n  ) {\n    getPnlSnapshotsV2(\n      dateStr: $dateStr\n      platform: $platform\n      isDesc: $isDesc\n      first: $first\n      after: $after\n    ) {\n      edges {\n        cursor\n        node {\n          ...PnlSnapshotV2DetailsInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n": typeof types.GetPnlSnapshotsV2Document,
@@ -113,7 +113,7 @@ type Documents = {
     "\n  query isSafeApp {\n    isSafeApp\n  }\n": typeof types.IsSafeAppDocument,
     "\n  mutation cleanDB {\n    cleanDB\n  }\n": typeof types.CleanDbDocument,
     "\n  query getServerTime {\n    getServerTime {\n      timestamp\n      timezone\n    }\n  }\n": typeof types.GetServerTimeDocument,
-    "\n  fragment ActionInfo on Action {\n    id\n    name\n    positionKey\n    address\n    args\n    blockNumber\n    orderInBlock\n    createdAt\n  }\n": typeof types.ActionInfoFragmentDoc,
+    "\n  fragment ActionInfo on Action {\n    address\n    args\n    blockHash\n    blockNumber\n    contractId\n    createdAt\n    dedupeKey\n    id\n    name\n    orderInBlock\n    origin\n    positionKey\n    status\n    txHash\n  }\n": typeof types.ActionInfoFragmentDoc,
     "\n  fragment FollowerActionDetailsInfo on FollowerActionDetails {\n    id\n    taskId\n    actionId\n    action {\n      ...ActionInfo\n    }\n  }\n": typeof types.FollowerActionDetailsInfoFragmentDoc,
     "\n  fragment TaskForwardDetailsInfo on TaskForwardDetails {\n    id\n    missionId\n    actionId\n    logs\n    status\n    createdAt\n    action {\n      ...ActionInfo\n    }\n    followerActions {\n      ...FollowerActionDetailsInfo\n    }\n  }\n": typeof types.TaskForwardDetailsInfoFragmentDoc,
     "\n  fragment TaskBackwardDetailsInfo on TaskBackwardDetails {\n    id\n    missionId\n    actionId\n    logs\n    status\n    createdAt\n    action {\n      ...ActionInfo\n    }\n    followerActions {\n      ...FollowerActionDetailsInfo\n    }\n    mission {\n      ...MissionBackwardDetailsInfo\n    }\n  }\n": typeof types.TaskBackwardDetailsInfoFragmentDoc,
@@ -140,7 +140,7 @@ const documents: Documents = {
     "\n  mutation stopBot($id: Int!) {\n    stopBot(id: $id)\n  }\n": types.StopBotDocument,
     "\n  subscription botCreated($userId: String!) {\n    botCreated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": types.BotCreatedDocument,
     "\n  subscription botUpdated($userId: String!) {\n    botUpdated(userId: $userId) {\n      ...BotBackwardDetailsInfo\n    }\n  }\n": types.BotUpdatedDocument,
-    "\n  fragment ContractInfo on Contract {\n    id\n    chainId\n    address\n    backendUrl\n    description\n    isTestnet\n    status\n    fromBlock\n    lastBlockNumber\n    lastLeaderboardBlockNumber\n    platform\n    toBlock\n    version\n  }\n": types.ContractInfoFragmentDoc,
+    "\n  fragment ContractInfo on Contract {\n    id\n    chainId\n    address\n    backendUrl\n    description\n    status\n    fromBlock\n    lastBlockNumber\n    lastLeaderboardBlockNumber\n    platform\n    toBlock\n    version\n  }\n": types.ContractInfoFragmentDoc,
     "\n  query getAllContracts {\n    getAllContracts {\n      ...ContractInfo\n    }\n  }\n": types.GetAllContractsDocument,
     "\n  query getAdaptionStatus {\n    getAdaptionStatus\n  }\n": types.GetAdaptionStatusDocument,
     "\n  mutation disableContract($contractId: Int!) {\n    disableContract(contractId: $contractId) {\n      ...ContractInfo\n    }\n  }\n": types.DisableContractDocument,
@@ -174,9 +174,9 @@ const documents: Documents = {
     "\n  mutation withdrawErc20ToUser(\n    $amount: Float!\n    $collateralIndex: Int!\n    $contractId: Int!\n    $password: String!\n  ) {\n    withdrawErc20ToUser(\n      amount: $amount\n      collateralIndex: $collateralIndex\n      contractId: $contractId\n      password: $password\n    )\n  }\n": types.WithdrawErc20ToUserDocument,
     "\n  mutation createSLTP($input: SLTPRequestInput!) {\n    createSLTP(input: $input) {\n      id\n      address\n      contractId\n      positionKey\n      condition\n      createdAt\n    }\n  }\n": types.CreateSltpDocument,
     "\n  mutation deleteSLTP($id: Int!) {\n    deleteSLTP(id: $id) {\n      id\n    }\n  }\n": types.DeleteSltpDocument,
-    "\n  fragment PnlSnapshotV2Info on PnlSnapshotV2 {\n    accUSDPnl\n    address\n    dateStr\n    kind\n    platform\n  }\n": types.PnlSnapshotV2InfoFragmentDoc,
+    "\n  fragment PnlSnapshotV2Info on PnlSnapshotV2 {\n    accUSDPnl\n    address\n    dateStr\n    platform\n  }\n": types.PnlSnapshotV2InfoFragmentDoc,
     "\n  fragment PerpTradeHistoryInfo on PerpTradeHistory {\n    id\n    address\n    collateralDeltaUsd\n    collateralInUsd\n    isLong\n    leverage\n    leverageDelta\n    operation\n    pair\n    positionKey\n    price\n    sizeDeltaUsd\n    sizeInUsd\n    usdPnl\n    date\n  }\n": types.PerpTradeHistoryInfoFragmentDoc,
-    "\n  fragment PnlSnapshotV2DetailsInfo on PnlSnapshotV2Details {\n    accUSDPnl\n    address\n    dateStr\n    kind\n    perpTradeHistories {\n      ...PerpTradeHistoryInfo\n    }\n    platform\n  }\n": types.PnlSnapshotV2DetailsInfoFragmentDoc,
+    "\n  fragment PnlSnapshotV2DetailsInfo on PnlSnapshotV2Details {\n    accUSDPnl\n    address\n    dateStr\n    perpTradeHistories {\n      ...PerpTradeHistoryInfo\n    }\n    platform\n  }\n": types.PnlSnapshotV2DetailsInfoFragmentDoc,
     "\n  query getPerpTradeHistories($addresses: [String!]!, $platform: Platform!) {\n    getPerpTradeHistories(addresses: $addresses, platform: $platform) {\n      ...PerpTradeHistoryInfo\n    }\n  }\n": types.GetPerpTradeHistoriesDocument,
     "\n  query getPnlSnapshotV2InitializedFlag($platform: Platform!) {\n    getPnlSnapshotV2InitializedFlag(platform: $platform) {\n      id\n      dateStr\n      isInit\n      platform\n    }\n  }\n": types.GetPnlSnapshotV2InitializedFlagDocument,
     "\n  query getPnlSnapshotsV2(\n    $dateStr: String!\n    $platform: Platform!\n    $isDesc: Boolean!\n    $first: Int!\n    $after: String\n  ) {\n    getPnlSnapshotsV2(\n      dateStr: $dateStr\n      platform: $platform\n      isDesc: $isDesc\n      first: $first\n      after: $after\n    ) {\n      edges {\n        cursor\n        node {\n          ...PnlSnapshotV2DetailsInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n": types.GetPnlSnapshotsV2Document,
@@ -227,7 +227,7 @@ const documents: Documents = {
     "\n  query isSafeApp {\n    isSafeApp\n  }\n": types.IsSafeAppDocument,
     "\n  mutation cleanDB {\n    cleanDB\n  }\n": types.CleanDbDocument,
     "\n  query getServerTime {\n    getServerTime {\n      timestamp\n      timezone\n    }\n  }\n": types.GetServerTimeDocument,
-    "\n  fragment ActionInfo on Action {\n    id\n    name\n    positionKey\n    address\n    args\n    blockNumber\n    orderInBlock\n    createdAt\n  }\n": types.ActionInfoFragmentDoc,
+    "\n  fragment ActionInfo on Action {\n    address\n    args\n    blockHash\n    blockNumber\n    contractId\n    createdAt\n    dedupeKey\n    id\n    name\n    orderInBlock\n    origin\n    positionKey\n    status\n    txHash\n  }\n": types.ActionInfoFragmentDoc,
     "\n  fragment FollowerActionDetailsInfo on FollowerActionDetails {\n    id\n    taskId\n    actionId\n    action {\n      ...ActionInfo\n    }\n  }\n": types.FollowerActionDetailsInfoFragmentDoc,
     "\n  fragment TaskForwardDetailsInfo on TaskForwardDetails {\n    id\n    missionId\n    actionId\n    logs\n    status\n    createdAt\n    action {\n      ...ActionInfo\n    }\n    followerActions {\n      ...FollowerActionDetailsInfo\n    }\n  }\n": types.TaskForwardDetailsInfoFragmentDoc,
     "\n  fragment TaskBackwardDetailsInfo on TaskBackwardDetails {\n    id\n    missionId\n    actionId\n    logs\n    status\n    createdAt\n    action {\n      ...ActionInfo\n    }\n    followerActions {\n      ...FollowerActionDetailsInfo\n    }\n    mission {\n      ...MissionBackwardDetailsInfo\n    }\n  }\n": types.TaskBackwardDetailsInfoFragmentDoc,
@@ -307,7 +307,7 @@ export function graphql(source: "\n  subscription botUpdated($userId: String!) {
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  fragment ContractInfo on Contract {\n    id\n    chainId\n    address\n    backendUrl\n    description\n    isTestnet\n    status\n    fromBlock\n    lastBlockNumber\n    lastLeaderboardBlockNumber\n    platform\n    toBlock\n    version\n  }\n"): (typeof documents)["\n  fragment ContractInfo on Contract {\n    id\n    chainId\n    address\n    backendUrl\n    description\n    isTestnet\n    status\n    fromBlock\n    lastBlockNumber\n    lastLeaderboardBlockNumber\n    platform\n    toBlock\n    version\n  }\n"];
+export function graphql(source: "\n  fragment ContractInfo on Contract {\n    id\n    chainId\n    address\n    backendUrl\n    description\n    status\n    fromBlock\n    lastBlockNumber\n    lastLeaderboardBlockNumber\n    platform\n    toBlock\n    version\n  }\n"): (typeof documents)["\n  fragment ContractInfo on Contract {\n    id\n    chainId\n    address\n    backendUrl\n    description\n    status\n    fromBlock\n    lastBlockNumber\n    lastLeaderboardBlockNumber\n    platform\n    toBlock\n    version\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -443,7 +443,7 @@ export function graphql(source: "\n  mutation deleteSLTP($id: Int!) {\n    delet
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  fragment PnlSnapshotV2Info on PnlSnapshotV2 {\n    accUSDPnl\n    address\n    dateStr\n    kind\n    platform\n  }\n"): (typeof documents)["\n  fragment PnlSnapshotV2Info on PnlSnapshotV2 {\n    accUSDPnl\n    address\n    dateStr\n    kind\n    platform\n  }\n"];
+export function graphql(source: "\n  fragment PnlSnapshotV2Info on PnlSnapshotV2 {\n    accUSDPnl\n    address\n    dateStr\n    platform\n  }\n"): (typeof documents)["\n  fragment PnlSnapshotV2Info on PnlSnapshotV2 {\n    accUSDPnl\n    address\n    dateStr\n    platform\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -451,7 +451,7 @@ export function graphql(source: "\n  fragment PerpTradeHistoryInfo on PerpTradeH
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  fragment PnlSnapshotV2DetailsInfo on PnlSnapshotV2Details {\n    accUSDPnl\n    address\n    dateStr\n    kind\n    perpTradeHistories {\n      ...PerpTradeHistoryInfo\n    }\n    platform\n  }\n"): (typeof documents)["\n  fragment PnlSnapshotV2DetailsInfo on PnlSnapshotV2Details {\n    accUSDPnl\n    address\n    dateStr\n    kind\n    perpTradeHistories {\n      ...PerpTradeHistoryInfo\n    }\n    platform\n  }\n"];
+export function graphql(source: "\n  fragment PnlSnapshotV2DetailsInfo on PnlSnapshotV2Details {\n    accUSDPnl\n    address\n    dateStr\n    perpTradeHistories {\n      ...PerpTradeHistoryInfo\n    }\n    platform\n  }\n"): (typeof documents)["\n  fragment PnlSnapshotV2DetailsInfo on PnlSnapshotV2Details {\n    accUSDPnl\n    address\n    dateStr\n    perpTradeHistories {\n      ...PerpTradeHistoryInfo\n    }\n    platform\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -655,7 +655,7 @@ export function graphql(source: "\n  query getServerTime {\n    getServerTime {\
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  fragment ActionInfo on Action {\n    id\n    name\n    positionKey\n    address\n    args\n    blockNumber\n    orderInBlock\n    createdAt\n  }\n"): (typeof documents)["\n  fragment ActionInfo on Action {\n    id\n    name\n    positionKey\n    address\n    args\n    blockNumber\n    orderInBlock\n    createdAt\n  }\n"];
+export function graphql(source: "\n  fragment ActionInfo on Action {\n    address\n    args\n    blockHash\n    blockNumber\n    contractId\n    createdAt\n    dedupeKey\n    id\n    name\n    orderInBlock\n    origin\n    positionKey\n    status\n    txHash\n  }\n"): (typeof documents)["\n  fragment ActionInfo on Action {\n    address\n    args\n    blockHash\n    blockNumber\n    contractId\n    createdAt\n    dedupeKey\n    id\n    name\n    orderInBlock\n    origin\n    positionKey\n    status\n    txHash\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

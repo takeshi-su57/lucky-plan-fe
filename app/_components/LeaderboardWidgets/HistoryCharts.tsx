@@ -72,7 +72,7 @@ export const HistoryCharts = memo(function HistoryCharts({
               title={item.title}
               data={item.data}
               initialSelected={["y"]}
-              className="h-85 rounded-2xl border border-neutral-800 bg-amber-950/5"
+              className="border-default-200 bg-content1 h-80 rounded-lg border"
             />
           ) : null}
 
@@ -81,7 +81,7 @@ export const HistoryCharts = memo(function HistoryCharts({
               title={item.title}
               data={item.data}
               initialSelected={["y"]}
-              className="h-85 w-full rounded-2xl border border-neutral-800 bg-amber-950/5"
+              className="border-default-200 bg-content1 h-80 w-full rounded-lg border"
             />
           ) : null}
         </div>

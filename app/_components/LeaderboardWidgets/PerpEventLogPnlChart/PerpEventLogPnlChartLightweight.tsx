@@ -149,24 +149,24 @@ export function PerpEventLogPnlChartLightweight({
 
   return (
     <>
-      <Card className="mb-4 w-full shrink-0" isBlurred>
-        <CardBody>
-          <div className="grid min-h-72 grid-cols-3 gap-6 p-3">
-            <div className="col-span-1 flex min-w-0 flex-col justify-between gap-4">
-              <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+      <Card className="border-default-200 bg-content1 shadow-small mb-4 w-full shrink-0 rounded-lg border">
+        <CardBody className="p-0">
+          <div className="grid min-h-68 grid-cols-1 gap-4 p-4 xl:grid-cols-3">
+            <div className="flex min-w-0 flex-col justify-between gap-4 xl:col-span-1">
+              <div className="grid grid-cols-1 gap-x-5 gap-y-2 sm:grid-cols-2">
                 {metrics.map((item) => (
                   <div
-                    className="flex min-w-0 items-center justify-between gap-3"
+                    className="bg-content2 flex min-w-0 items-center justify-between gap-3 rounded-md px-2 py-1.5"
                     key={item.id}
                   >
-                    <span className="shrink-0 text-xs text-neutral-400">
+                    <span className="shrink-0 text-[11px] font-medium text-neutral-500">
                       {item.label}:
                     </span>
                     <span
                       className={twMerge(
-                        "truncate text-right font-mono text-sm font-bold text-white",
-                        item.tone === "positive" && "text-green-400",
-                        item.tone === "negative" && "text-red-400",
+                        "text-foreground truncate text-right font-mono text-xs font-semibold",
+                        item.tone === "positive" && "text-emerald-400",
+                        item.tone === "negative" && "text-rose-400",
                       )}
                     >
                       {item.value}
@@ -179,14 +179,14 @@ export function PerpEventLogPnlChartLightweight({
                 color="primary"
                 variant="flat"
                 size="sm"
-                className="w-32 shrink-0"
+                className="h-8 w-28 shrink-0 rounded-lg text-xs font-semibold"
                 onPress={onOpen}
               >
                 Expert
               </Button>
             </div>
 
-            <div className="col-span-2 grid min-w-0 grid-cols-2 gap-4">
+            <div className="grid min-w-0 grid-cols-1 gap-3 xl:col-span-2 2xl:grid-cols-2">
               <SparklineChart title="ACC PNL" data={pnlAccChartData} />
               <SparklineChart title="ACC In/Out" data={inOutAccChartData} />
             </div>

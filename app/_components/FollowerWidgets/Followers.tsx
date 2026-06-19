@@ -64,9 +64,6 @@ export function Followers() {
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
                     <span className="text-small">Chain: {item.chainId}</span>
-                    <span className="text-small">
-                      {item.isTestnet ? "(Testnet)" : ""}
-                    </span>
                   </div>
                   <span className="text-small">Contract: {item.address}</span>
                   <span className="text-tiny text-default-400">

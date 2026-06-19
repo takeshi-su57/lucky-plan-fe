@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Button, Chip, Divider, useDisclosure } from "@heroui/react";
+import { FaLayerGroup } from "react-icons/fa";
 import { twMerge } from "tailwind-merge";
 import { Address } from "viem";
 
@@ -101,7 +102,15 @@ export function BatchOpenButton() {
 
   return (
     <>
-      <Button onPress={onOpen}>Batch Open</Button>
+      <Button
+        onPress={onOpen}
+        size="sm"
+        startContent={<FaLayerGroup className="h-3.5 w-3.5" />}
+        variant="flat"
+        className="bg-content2 text-foreground h-8 rounded-lg px-3 text-xs font-semibold"
+      >
+        Batch Open
+      </Button>
 
       <StandardModal
         isOpen={isOpen}
@@ -186,7 +195,7 @@ export function BatchOpenButton() {
                 return (
                   <div
                     key={action.id}
-                    className="flex items-center justify-between gap-2 rounded-md bg-neutral-800/50 px-3 py-2"
+                    className="bg-content2 flex items-center justify-between gap-2 rounded-md px-3 py-2"
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <Chip size="sm" variant="flat">

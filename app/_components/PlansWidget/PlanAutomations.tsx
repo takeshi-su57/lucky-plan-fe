@@ -281,7 +281,7 @@ export const GroupedAutomations = memo(function GroupedAutomations({
               title="PNL ACC"
               data={chartData}
               initialSelected={CHART_INITIAL_SELECTED}
-              className="h-[250px] rounded-2xl border border-neutral-800 bg-amber-950/5"
+              className="border-default-200 bg-content1 h-[250px] rounded-lg border"
             />
           )}
         </div>

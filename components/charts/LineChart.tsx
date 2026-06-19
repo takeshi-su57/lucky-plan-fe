@@ -174,8 +174,13 @@ const LineChart = memo(function LineChart({
   return (
     <div className="relative flex w-full flex-col gap-3">
       <div className="absolute top-3 left-4 z-1000 flex flex-row items-center gap-1">
-        <span className="text-sm font-bold">{title || ""}</span>
-        <Button size="sm" variant="ghost" onPress={onOpen}>
+        <span className="text-xs font-semibold">{title || ""}</span>
+        <Button
+          size="sm"
+          variant="ghost"
+          onPress={onOpen}
+          className="h-7 px-2 text-xs"
+        >
           Details
         </Button>
       </div>

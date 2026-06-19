@@ -1,7 +1,7 @@
 "use client";
 import { ReactNode, useEffect } from "react";
 import { HeroUIProvider } from "@heroui/react";
-import { getDefaultConfig, darkTheme } from "@rainbow-me/rainbowkit";
+import { getDefaultConfig, lightTheme } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
 import {
   mainnet,
@@ -235,8 +235,8 @@ export function Providers({ children }: { children: ReactNode }) {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
-          theme={darkTheme({
-            accentColor: "#10b981",
+          theme={lightTheme({
+            accentColor: "#2563eb",
             accentColorForeground: "white",
             borderRadius: "medium",
             fontStack: "rounded",

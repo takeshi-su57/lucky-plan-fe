@@ -37,7 +37,7 @@ export function BatchResultsView({ results, labels }: BatchResultsViewProps) {
         {results.map((result, i) => (
           <div
             key={result.id}
-            className="flex items-center gap-2 rounded-md bg-neutral-800/50 px-3 py-1.5 text-sm"
+            className="bg-content2 flex items-center gap-2 rounded-md px-3 py-1.5 text-xs"
           >
             {result.status === "loading" && <Spinner size="sm" />}
             {result.status === "success" && (

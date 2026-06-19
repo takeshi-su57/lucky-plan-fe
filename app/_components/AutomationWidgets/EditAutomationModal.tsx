@@ -7,16 +7,16 @@ import { StandardModal } from "@/components/modals/StandardModal";
 
 import { NumericInput } from "@/components/inputs/NumericInput";
 
-import { Strategy } from "@/graphql/gql/graphql";
+import { Strategy, StrategyMode } from "@/graphql/gql/graphql";
 import { useUpdateStrategy } from "@/app/_hooks/useStrategy";
 import { getPairs } from "@/web3/gns/v10/configs";
-import { getAdditionalParams } from "./strategy-runtime";
+import { parseSelectedPairs } from "./strategy-runtime";
 import {
   getPairKey,
   parsePairKey,
 } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
 
-const modes = ["default", "signal", "hook"];
+const modes = [StrategyMode.Default, StrategyMode.Signal];
 
 export type EditStrategyModalProps = {
   strategy: Strategy;
@@ -49,32 +49,31 @@ export function EditStrategyModal({
   const [maxOpenMissions, setMaxOpenMissions] = useState("1");
   const [lifeTime, setLifeTime] = useState(strategy.lifeTime.toString());
 
-  const [mode, setMode] = useState<"signal" | "hook" | "default">("default");
+  const [mode, setMode] = useState<StrategyMode>(StrategyMode.Default);
   const [selectedPair, setSelectedPair] = useState<Selection>(
     new Set<string>([]),
   );
 
   useEffect(() => {
-    const runtimeConfig = getAdditionalParams(strategy);
-    setTpPercentage(runtimeConfig.tpPercentage.toString());
-    setSlPercentage(runtimeConfig.slPercentage.toString());
-    setMaxOpenMissions(runtimeConfig.maxOpenMissions.toString());
+    setTpPercentage(strategy.tpPercentage.toString());
+    setSlPercentage(strategy.slPercentage.toString());
+    setMaxOpenMissions(strategy.maxOpenMissions.toString());
+
+    const selectedPairs = parseSelectedPairs(strategy.selectedPairs);
     setSelectedPair(
       new Set<string>(
-        runtimeConfig.selectedPairs.map((item) =>
-          getPairKey(item.pair, item.isLong),
-        ),
+        selectedPairs.map((item) => getPairKey(item.pair, item.isLong)),
       ),
     );
 
-    setMode((runtimeConfig.mode ?? "default") as "signal" | "hook" | "default");
+    setMode(strategy.mode);
   }, [strategy]);
 
   const handleChangeMode: ChangeEventHandler<HTMLSelectElement> = (event) => {
     const value = event.target.value;
 
     if (value.trim() !== "") {
-      setMode(value as "signal" | "hook" | "default");
+      setMode(value as StrategyMode);
     }
   };
 

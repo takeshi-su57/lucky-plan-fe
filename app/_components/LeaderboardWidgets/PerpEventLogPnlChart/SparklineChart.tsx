@@ -58,14 +58,14 @@ export function SparklineChart({ title, data }: SparklineChartProps) {
   }, [data]);
 
   return (
-    <div className="flex min-h-60 flex-1 flex-col gap-2 rounded-md border border-neutral-800 bg-neutral-950/40 p-3">
+    <div className="border-default-200 bg-content1 flex min-h-56 flex-1 flex-col gap-2 rounded-lg border p-3">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-xs font-bold text-neutral-300">{title}</span>
+        <span className="text-foreground text-xs font-semibold">{title}</span>
         <div className="flex items-center gap-3 font-mono text-xs">
           <span className="text-neutral-500">Min ${getPriceStr(minValue)}</span>
           <span
             className={twMerge(
-              finalValue >= 0 ? "text-green-400" : "text-red-400",
+              finalValue >= 0 ? "text-emerald-400" : "text-rose-400",
             )}
           >
             ${getPriceStr(finalValue)}
@@ -76,7 +76,7 @@ export function SparklineChart({ title, data }: SparklineChartProps) {
       <svg
         viewBox="0 0 300 80"
         preserveAspectRatio="none"
-        className="h-50 w-full overflow-visible"
+        className="h-44 w-full overflow-visible"
       >
         <defs>
           <clipPath id={`${clipId}-positive`}>
@@ -91,23 +91,23 @@ export function SparklineChart({ title, data }: SparklineChartProps) {
           x2="300"
           y1={zeroY}
           y2={zeroY}
-          className="stroke-neutral-700"
+          className="stroke-default-300"
           strokeWidth="1"
         />
         <path
           d={areaPath}
-          fill="rgb(34 197 94 / 0.16)"
+          fill="rgb(52 211 153 / 0.16)"
           clipPath={`url(#${clipId}-positive)`}
         />
         <path
           d={areaPath}
-          fill="rgb(248 113 113 / 0.16)"
+          fill="rgb(244 63 94 / 0.22)"
           clipPath={`url(#${clipId}-negative)`}
         />
         <path
           d={linePath}
           fill="none"
-          className="stroke-green-400"
+          className="stroke-emerald-400"
           strokeWidth="2"
           vectorEffect="non-scaling-stroke"
           clipPath={`url(#${clipId}-positive)`}
@@ -115,7 +115,7 @@ export function SparklineChart({ title, data }: SparklineChartProps) {
         <path
           d={linePath}
           fill="none"
-          className="stroke-red-400"
+          className="stroke-rose-500"
           strokeWidth="2"
           vectorEffect="non-scaling-stroke"
           clipPath={`url(#${clipId}-negative)`}

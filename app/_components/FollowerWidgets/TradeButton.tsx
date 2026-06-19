@@ -1,4 +1,5 @@
 import { Button, useDisclosure } from "@heroui/react";
+import { FaPlus } from "react-icons/fa";
 import { twMerge } from "tailwind-merge";
 
 import { RightDrawer } from "@/components/modals/RightDrawer";
@@ -9,7 +10,15 @@ export function TradeButton() {
 
   return (
     <>
-      <Button onPress={onOpen}>Open Trade</Button>
+      <Button
+        color="primary"
+        onPress={onOpen}
+        size="sm"
+        startContent={<FaPlus className="h-3 w-3" />}
+        className="h-8 rounded-lg px-3 text-xs font-semibold shadow-none"
+      >
+        Open Trade
+      </Button>
 
       <RightDrawer
         isOpen={isOpen}

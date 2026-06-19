@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Address } from "viem";
 import { Chip } from "@heroui/react";
-import { FollowerDetail, PnlSnapshotKind } from "@/graphql/gql/graphql";
+import { FollowerDetail } from "@/graphql/gql/graphql";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { LabeledChip } from "@/components/chips/LabeledChip";
@@ -46,9 +46,7 @@ export function FollowerInfoWidget({
         const data = JSON.parse(trade.params);
 
         const currentPrice = prices?.[data?.pairIndex || 0];
-        const openPrice = data?.openPrice
-          ? Number(data.openPrice) / 1e10
-          : 0;
+        const openPrice = data?.openPrice ? Number(data.openPrice) / 1e10 : 0;
 
         const tradeCollateral =
           chainId && data?.collateralIndex
@@ -89,9 +87,7 @@ export function FollowerInfoWidget({
       );
   }, [follower.trades, prices, chainId, collateralUsdPrices]);
 
-  const accUSDPnl =
-    follower.pnlSnapshots.find((item) => item.kind === PnlSnapshotKind.AllTime)
-      ?.accUSDPnl || 0;
+  const accUSDPnl = follower.pnlSnapshots[0]?.accUSDPnl || 0;
 
   const ethBalance = (Number(follower.ethBalance) / 1e18).toFixed(4);
 

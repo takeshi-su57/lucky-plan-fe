@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Tabs, Tab } from "@heroui/react";
 import { ControlPanel } from "../_components/SettingsWidget/ControlPanel";
-import { StrategyPanel } from "../_components/SettingsWidget/StrategyPanel";
 import { ContractPanel } from "../_components/SettingsWidget/ContractPanel";
 import { PnlSnapshotPanel } from "../_components/SettingsWidget/PnlSnapshotPanel";
 import { UsersPanel } from "../_components/SettingsWidget/UsersPanel";
@@ -11,12 +10,7 @@ import { useUserJWT } from "../_hooks/useUserJWT";
 import { UserPermission } from "@/graphql/gql/graphql";
 import { useAppSettings } from "../_hooks/useAppSettings";
 
-type TabType =
-  | "contracts"
-  | "strategies"
-  | "pnlSnapshot"
-  | "users"
-  | "controls";
+type TabType = "contracts" | "pnlSnapshot" | "users" | "controls";
 
 export default function Page() {
   const [selected, setSelected] = useState<TabType>("controls");
@@ -52,7 +46,6 @@ export default function Page() {
       </div>
 
       {selected === "contracts" && <ContractPanel />}
-      {selected === "strategies" && <StrategyPanel />}
 
       {selected === "controls" && <ControlPanel />}
 

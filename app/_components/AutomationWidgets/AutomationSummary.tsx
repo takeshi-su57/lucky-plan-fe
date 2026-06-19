@@ -18,12 +18,13 @@ import {
   BotForwardDetails,
   BotStatus,
   MissionStatus,
+  StrategyMode,
   TaskStatus,
 } from "@/graphql/gql/graphql";
 import { useGetAlertTasks } from "@/app/_hooks/useTask";
 import { LabeledChip } from "@/components/chips/LabeledChip";
 
-import { getAdditionalParams } from "./strategy-runtime";
+import { parseSelectedPairs } from "./strategy-runtime";
 import { getPairKey } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
 
 const colorsByBotsStatus: Record<BotStatus, "default" | "success" | "danger"> =
@@ -91,21 +92,21 @@ export const AutomationSummary = memo(function AutomationSummary({
     };
   }, [bot.missions]);
 
-  const runtimeConfig = useMemo(
-    () => getAdditionalParams(strategy),
+  const selectedPairs = useMemo(
+    () => parseSelectedPairs(strategy.selectedPairs),
     [strategy],
   );
 
   return (
     <div
-      className={`flex items-center justify-between gap-6 text-neutral-400 ${!runtimeConfig.mode ? "rounded-lg bg-green-100/20 p-2" : ""}`}
+      className={`flex items-center justify-between gap-6 text-neutral-400 ${strategy.mode === StrategyMode.Default ? "rounded-lg bg-green-100/20 p-2" : ""}`}
     >
       <div className="flex items-center gap-6">
         <Chip>{bot.id}</Chip>
 
         {!simple ? (
           <div className="flex h-10 items-center gap-4">
-            <div className="flex w-[140px] flex-col items-center">
+            <div className="flex w-35 flex-col items-center">
               <AddressWidget
                 address={leaderAddress as Address}
                 className="text-sm"
@@ -118,7 +119,7 @@ export const AutomationSummary = memo(function AutomationSummary({
 
             <Divider orientation="vertical" />
 
-            <div className="flex w-[150px] flex-col items-center">
+            <div className="flex w-38 flex-col items-center">
               <AddressWidget
                 address={followerAddress as Address}
                 className="text-sm"
@@ -145,19 +146,19 @@ export const AutomationSummary = memo(function AutomationSummary({
         <div className="flex flex-col font-mono">
           <span className="text-xs">
             Tp:
-            {`${Number(runtimeConfig.tpPercentage)} %`}
+            {`${Number(strategy.tpPercentage)} %`}
           </span>
           <span className="text-xs">
             Sl:
-            {`${Number(runtimeConfig.slPercentage)} %`}
+            {`${Number(strategy.slPercentage)} %`}
           </span>
           <span className="text-xs">
             Max Open Missions:
-            {`${Number(runtimeConfig.maxOpenMissions) || 0}`}
+            {`${Number(strategy.maxOpenMissions) || 0}`}
           </span>
         </div>
 
-        {runtimeConfig.selectedPairs.length > 0 ? (
+        {selectedPairs.length > 0 ? (
           <Dropdown>
             <DropdownTrigger>
               <Button
@@ -168,10 +169,8 @@ export const AutomationSummary = memo(function AutomationSummary({
                 Show Allowed Pairs
               </Button>
             </DropdownTrigger>
-            <DropdownMenu
-              classNames={{ list: "max-h-[250px] overflow-y-auto" }}
-            >
-              {runtimeConfig.selectedPairs.map((pair) => (
+            <DropdownMenu classNames={{ list: "max-h-63 overflow-y-auto" }}>
+              {selectedPairs.map((pair) => (
                 <DropdownItem key={getPairKey(pair.pair, pair.isLong)}>
                   {pair.pair} - {pair.isLong ? "Long" : "Short"}
                 </DropdownItem>

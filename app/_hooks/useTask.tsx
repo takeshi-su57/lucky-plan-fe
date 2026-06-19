@@ -25,14 +25,20 @@ import { useAccount } from "wagmi";
 
 export const ACTION_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment ActionInfo on Action {
-    id
-    name
-    positionKey
     address
     args
+    blockHash
     blockNumber
-    orderInBlock
+    contractId
     createdAt
+    dedupeKey
+    id
+    name
+    orderInBlock
+    origin
+    positionKey
+    status
+    txHash
   }
 `);
 

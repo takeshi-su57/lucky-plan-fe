@@ -208,9 +208,6 @@ export function ChangePermissionModal({
                         <span className="text-small">
                           Chain: {item.chainId}
                         </span>
-                        <span className="text-small">
-                          {item.isTestnet ? "(Testnet)" : ""}
-                        </span>
                       </div>
                       <span className="text-small">
                         Contract: {shrinkAddress(item.address as Address)}

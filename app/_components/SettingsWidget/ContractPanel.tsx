@@ -111,7 +111,7 @@ export function ContractPanel() {
             component: (
               <div className="flex flex-col">
                 <AddressWidget address={contract.address as Address} />
-                <span className="text-xs">{`Chain ID: ${contract.chainId} ${contract.isTestnet ? "(Testnet)" : ""}`}</span>
+                <span className="text-xs">{`Chain ID: ${contract.chainId}`}</span>
                 <span className="text-xs text-gray-400/60">
                   {contract.description}
                 </span>

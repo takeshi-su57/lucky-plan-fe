@@ -498,7 +498,7 @@ export function SLTPEditorButton({
                 </div>
 
                 {/* Display All Values */}
-                <div className="flex flex-col gap-2 rounded-lg bg-neutral-900 p-3">
+                <div className="bg-content1 flex flex-col gap-2 rounded-lg p-3">
                   <span className="text-xs font-semibold text-neutral-400">
                     Calculated Values
                   </span>
@@ -531,7 +531,7 @@ export function SLTPEditorButton({
             ) : (
               <>
                 {/* Position Info */}
-                <div className="flex flex-col gap-1 rounded-lg bg-neutral-800 p-3 text-sm">
+                <div className="bg-content2 flex flex-col gap-1 rounded-lg p-3 text-xs">
                   <div className="flex justify-between">
                     <span className="text-neutral-400">Open Price:</span>
                     <span>${getPriceStr(openPrice)}</span>
@@ -706,7 +706,7 @@ export function SLTPEditorButton({
                 )}
 
                 {/* Simulation Preview */}
-                <div className="flex flex-col gap-2 rounded-lg bg-neutral-900 p-3">
+                <div className="bg-content1 flex flex-col gap-2 rounded-lg p-3">
                   <span className="text-xs font-semibold text-neutral-400">
                     Simulation Preview (if max reaches $
                     {getPriceStr(simulatedMaxNum)})

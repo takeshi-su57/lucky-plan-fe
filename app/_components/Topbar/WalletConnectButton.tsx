@@ -162,7 +162,8 @@ export default function WalletConnectButton() {
                   <Button
                     variant="ghost"
                     onPress={openConnectModal}
-                    className="flex w-fit rounded px-[17px] text-white"
+                    size="sm"
+                    className="border-default-200 text-foreground flex h-8 w-fit rounded-lg px-3 text-xs font-semibold"
                     isLoading={true}
                   >
                     Connecting...
@@ -173,11 +174,12 @@ export default function WalletConnectButton() {
               if (!connected) {
                 return (
                   <Button
-                    variant="ghost"
+                    color="primary"
                     onPress={() => {
                       handleWalletConnect();
                     }}
-                    className="w-fit rounded font-bold text-white"
+                    size="sm"
+                    className="h-8 w-fit rounded-lg px-3 text-xs font-semibold"
                   >
                     Connect Wallet
                     <FaPowerOff />
@@ -191,7 +193,8 @@ export default function WalletConnectButton() {
                     variant="ghost"
                     color="danger"
                     onPress={openChainModal}
-                    className="text-red-600"
+                    size="sm"
+                    className="h-8 rounded-lg border-red-500/30 text-xs text-red-400"
                   >
                     <FaExclamationTriangle size={20} className="text-red-600" />
                     Wrong Network
@@ -200,8 +203,13 @@ export default function WalletConnectButton() {
               }
 
               return (
-                <div className="flex items-center gap-3 md:gap-5">
-                  <Button variant="ghost" onPress={openChainModal}>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    onPress={openChainModal}
+                    size="sm"
+                    className="border-default-200 text-foreground h-8 rounded-lg px-3 text-xs font-semibold"
+                  >
                     {chain.iconUrl ? (
                       <Image
                         src={chain.iconUrl}
@@ -213,10 +221,15 @@ export default function WalletConnectButton() {
                     <span className="hidden md:inline">
                       {chain.name ? chain.name : ""}
                     </span>
-                    <FaArrowDown size={12} className="text-gray-400" />
+                    <FaArrowDown size={10} className="text-gray-400" />
                   </Button>
 
-                  <Button variant="ghost" onPress={openAccountModal}>
+                  <Button
+                    variant="ghost"
+                    onPress={openAccountModal}
+                    size="sm"
+                    className="border-default-200 text-foreground h-8 rounded-lg px-3 text-xs font-semibold"
+                  >
                     {chain.iconUrl ? (
                       <Image
                         src={chain.iconUrl}
@@ -228,7 +241,7 @@ export default function WalletConnectButton() {
                     <span className="hidden md:inline">
                       {account.address.substring(0, 7)}
                     </span>
-                    <FaArrowDown size={12} className="text-gray-400" />
+                    <FaArrowDown size={10} className="text-gray-400" />
                   </Button>
                 </div>
               );

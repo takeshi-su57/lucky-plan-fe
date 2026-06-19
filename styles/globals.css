@@ -1,25 +1,39 @@
 @import "tailwindcss";
-@plugin './hero.ts';
+@plugin "./hero.ts";
 /* Note: You may need to change the path to fit your project structure */
-@source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+@source "../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.78125rem;
+  --text-sm--line-height: 1.0625rem;
+  --text-base: 0.8125rem;
+  --text-base--line-height: 1.125rem;
+  --text-lg: 0.875rem;
+  --text-lg--line-height: 1.25rem;
+  --text-xl: 0.9375rem;
+  --text-xl--line-height: 1.375rem;
+  --text-2xl: 1rem;
+  --text-2xl--line-height: 1.45rem;
+  --text-3xl: 1.125rem;
+  --text-3xl--line-height: 1.55rem;
 }
 
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --foreground-rgb: 24, 24, 27;
+  --background-start-rgb: 250, 250, 250;
+  --background-end-rgb: 244, 244, 245;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    --foreground-rgb: 24, 24, 27;
+    --background-start-rgb: 250, 250, 250;
+    --background-end-rgb: 244, 244, 245;
   }
 }
 
@@ -33,50 +47,101 @@ img {
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: #f4f4f5;
+  font-size: 12.5px;
+  line-height: 1.45;
 }
 
 @layer base {
   h1 {
-    @apply text-[90px] leading-[72px] font-bold tracking-[2.70px];
+    @apply text-2xl leading-tight font-semibold;
   }
   h2 {
-    @apply text-7xl leading-[90px] font-bold;
+    @apply text-xl leading-tight font-semibold;
   }
   h3 {
-    @apply text-6xl leading-[70px] font-bold;
+    @apply text-lg leading-snug font-semibold;
   }
   h4 {
-    @apply text-5xl leading-[60px] font-bold;
+    @apply text-base leading-snug font-semibold;
+  }
+  h5 {
+    @apply text-sm leading-snug font-semibold;
   }
   h6 {
-    @apply text-4xl leading-10 font-semibold;
+    @apply text-xs leading-snug font-semibold;
   }
 }
 
 @layer components {
+  .surface-panel {
+    @apply border-default-200 bg-content1 shadow-medium rounded-lg border;
+  }
+
+  .surface-field {
+    @apply border-default-200 bg-content2 rounded-lg border;
+  }
 }
 
 @layer utilities {
+  .light .text-white,
+  .light .text-neutral-100,
+  .light .text-neutral-200 {
+    color: #18181b !important;
+  }
+
+  .light .text-neutral-300,
+  .light .text-neutral-400 {
+    color: #52525b !important;
+  }
+
+  .light .text-neutral-500 {
+    color: #71717a !important;
+  }
+
+  .light .bg-black\/20,
+  .light .bg-black\/25,
+  .light .bg-black\/60,
+  .light .bg-white\/\[0\.025\],
+  .light .bg-white\/\[0\.035\],
+  .light .bg-white\/\[0\.04\],
+  .light .bg-white\/\[0\.045\],
+  .light .bg-white\/\[0\.055\] {
+    background-color: #ffffff !important;
+  }
+
+  .light .border-white\/10,
+  .light .border-neutral-800,
+  .light .border-neutral-700,
+  .light .border-t-neutral-400\/20,
+  .light .border-t-neutral-400\/20 {
+    border-color: #d4d4d8 !important;
+  }
+
+  .light .shadow-\[0_18px_50px_rgba\(0\,0\,0\,0\.18\)\],
+  .light .shadow-\[0_14px_40px_rgba\(0\,0\,0\,0\.22\)\] {
+    box-shadow: 0 10px 30px rgba(24, 24, 27, 0.08) !important;
+  }
+
   .text-balance {
     text-wrap: balance;
   }
 }
 
 *::-webkit-scrollbar {
-  width: 4px;
-  height: 12px;
+  width: 6px;
+  height: 8px;
 }
 
 *::-webkit-scrollbar-track {
-  background: #1c1c22;
+  background: #e4e4e7;
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: #5e5f69;
+  background-color: #a1a1aa;
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #71717a;
 }

@@ -25,9 +25,9 @@ import {
   PerpEventLogPnlChart,
   PerpEventLogPnlChartHandle,
 } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
-import { BotMode } from "@/graphql/gql/graphql";
+import { BotMode, StrategyMode } from "@/graphql/gql/graphql";
 
-const modes = ["default", "signal", "hook"];
+const modes = [StrategyMode.Default, StrategyMode.Signal];
 
 export type CreateAutomationModalProps = {
   planId: number;
@@ -64,7 +64,7 @@ export function CreateAutomationModal({
   const [tpPercentage, setTpPercentage] = useState("0");
   const [slPercentage, setSlPercentage] = useState("0");
   const [maxOpenMissions, setMaxOpenMissions] = useState("10");
-  const [mode, setMode] = useState<"signal" | "hook" | "default">("default");
+  const [mode, setMode] = useState<StrategyMode>(StrategyMode.Default);
   const [lifeTime, setLifeTime] = useState("0");
 
   const { histories: originalHistories } = useGetPerpTradeHistories(
@@ -86,7 +86,7 @@ export function CreateAutomationModal({
     const value = event.target.value;
 
     if (value.trim() !== "") {
-      setMode(value as "signal" | "hook" | "default");
+      setMode(value as StrategyMode);
     }
   };
 
@@ -173,8 +173,7 @@ export function CreateAutomationModal({
 
     const availableContracts = allContracts
       .filter((contract) => contract.status === ContractStatus.Live)
-      .filter((contract) => contract.platform === platform)
-      .filter((contract) => !contract.isTestnet);
+      .filter((contract) => contract.platform === platform);
 
     batchCreateBots({
       variables: {
@@ -279,9 +278,6 @@ export function CreateAutomationModal({
                       <div className="flex items-center gap-2">
                         <span className="text-small">
                           Chain: {item.chainId}
-                        </span>
-                        <span className="text-small">
-                          {item.isTestnet ? "(Testnet)" : ""}
                         </span>
                       </div>
                       <span className="text-small">

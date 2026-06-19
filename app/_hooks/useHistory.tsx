@@ -16,7 +16,6 @@ export const PNL_SNAPSHOT_V2_INFO_FRAGMENT_DOCUMENT = graphql(`
     accUSDPnl
     address
     dateStr
-    kind
     platform
   }
 `);
@@ -46,7 +45,6 @@ export const PNL_SNAPSHOT_V2_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     accUSDPnl
     address
     dateStr
-    kind
     perpTradeHistories {
       ...PerpTradeHistoryInfo
     }

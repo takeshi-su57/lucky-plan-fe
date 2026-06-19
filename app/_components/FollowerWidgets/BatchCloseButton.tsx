@@ -11,6 +11,7 @@ import {
   Spinner,
   useDisclosure,
 } from "@heroui/react";
+import { FaTimesCircle } from "react-icons/fa";
 import { twMerge } from "tailwind-merge";
 import { Address } from "viem";
 
@@ -216,7 +217,15 @@ export function BatchCloseButton() {
 
   return (
     <>
-      <Button onPress={onOpen}>Batch Close</Button>
+      <Button
+        onPress={onOpen}
+        size="sm"
+        startContent={<FaTimesCircle className="h-3.5 w-3.5" />}
+        variant="flat"
+        className="bg-content2 text-foreground h-8 rounded-lg px-3 text-xs font-semibold"
+      >
+        Batch Close
+      </Button>
 
       <StandardModal
         isOpen={isOpen}
@@ -280,7 +289,7 @@ export function BatchCloseButton() {
               {closeList.map((entry, i) => (
                 <div
                   key={entry.id}
-                  className="flex items-center justify-between gap-2 rounded-md bg-neutral-800/50 px-3 py-2"
+                  className="bg-content2 flex items-center justify-between gap-2 rounded-md px-3 py-2"
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <Chip size="sm" variant="flat">
@@ -324,7 +333,7 @@ export function BatchCloseButton() {
           {showPicker && (
             <>
               <Divider />
-              <div className="flex flex-col gap-3 rounded-lg border border-neutral-700 bg-neutral-800/50 p-4">
+              <div className="border-default-200 bg-content2 flex flex-col gap-3 rounded-lg border p-4">
                 {/* Contract picker */}
                 <Autocomplete
                   label="Contract"
@@ -350,9 +359,6 @@ export function BatchCloseButton() {
                           <span className="text-small">
                             Chain: {item.chainId}
                           </span>
-                          {item.isTestnet && (
-                            <span className="text-small">(Testnet)</span>
-                          )}
                         </div>
                         <span className="text-tiny text-default-400">
                           {item.description}
@@ -432,8 +438,8 @@ export function BatchCloseButton() {
                                 ? "cursor-not-allowed opacity-40"
                                 : "cursor-pointer",
                               !added && pickerSelectedIds.has(trade.id)
-                                ? "bg-neutral-700/60"
-                                : "bg-neutral-800/50 hover:bg-neutral-800",
+                                ? "bg-content3"
+                                : "bg-content2 hover:bg-content3",
                             )}
                             onClick={() =>
                               !added && togglePickerSelect(trade.id)

@@ -6,6 +6,7 @@ import {
   Switch,
   useDisclosure,
 } from "@heroui/react";
+import { FaCalculator } from "react-icons/fa";
 import { twMerge } from "tailwind-merge";
 
 import { getPairs } from "@/web3/gns/v10/configs";
@@ -50,7 +51,15 @@ export function CalculatorButton() {
 
   return (
     <>
-      <Button onPress={onOpen}>Calculator</Button>
+      <Button
+        onPress={onOpen}
+        size="sm"
+        startContent={<FaCalculator className="h-3.5 w-3.5" />}
+        variant="flat"
+        className="bg-content2 text-foreground h-8 rounded-lg px-3 text-xs font-semibold"
+      >
+        Calculator
+      </Button>
 
       <StandardModal
         isOpen={isOpen}
@@ -58,7 +67,7 @@ export function CalculatorButton() {
         onOpenChange={onOpenChange}
       >
         <div className="flex flex-col gap-6">
-          <h1 className="text-base font-bold leading-loose text-white md:text-2xl md:leading-none">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
             Calculator
           </h1>
 

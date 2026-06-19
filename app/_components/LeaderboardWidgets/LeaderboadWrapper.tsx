@@ -66,16 +66,21 @@ export function LeaderboadWrapper() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="flex min-w-0 flex-col gap-4">
+      <div className="border-default-200 flex flex-col gap-3 border-b pb-4 xl:flex-row xl:items-end xl:justify-between">
+        <div className="flex flex-wrap items-end gap-3">
           <Select
-            variant="underlined"
+            variant="bordered"
+            size="sm"
             label="Platform"
             selectedKeys={draft.platform ? [draft.platform] : undefined}
             onChange={handleChangePlatform}
             selectionMode="single"
-            className="w-50 font-mono"
+            className="w-44 font-mono"
+            classNames={{
+              trigger: "h-10 rounded-lg border-default-200 bg-content2",
+              label: "text-[10px] font-semibold text-neutral-400",
+            }}
           >
             {Object.values(Platform).map((item) => (
               <SelectItem key={item}>{item}</SelectItem>
@@ -83,7 +88,9 @@ export function LeaderboadWrapper() {
           </Select>
 
           <DatePicker
-            className="max-w-71"
+            className="w-60"
+            size="sm"
+            variant="bordered"
             label="Pick a past date"
             value={parseDate(dayjs(draft.date).format("YYYY-MM-DD")) as any}
             onChange={(date) =>
@@ -95,6 +102,10 @@ export function LeaderboadWrapper() {
             }
             minValue={parseDate("2024-11-01")}
             maxValue={parseDate(dayjs().format("YYYY-MM-DD"))}
+            classNames={{
+              inputWrapper: "h-10 rounded-lg border-default-200 bg-content2",
+              label: "text-[10px] font-semibold text-neutral-400",
+            }}
           />
 
           <Checkbox
@@ -102,16 +113,26 @@ export function LeaderboadWrapper() {
             onValueChange={(isDesc) =>
               setDraft((prev) => ({ ...prev, isDesc }))
             }
+            className="h-10 px-1"
+            classNames={{
+              label: "text-xs font-semibold text-neutral-200",
+            }}
           >
             {draft.isDesc ? "Desc" : "Asc"}
           </Checkbox>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-2">
           <Input
             placeholder="Search by address"
             value={searchAddress}
             onChange={(e) => setSearchAddress(e.target.value)}
+            size="sm"
+            variant="bordered"
+            className="w-64"
+            classNames={{
+              inputWrapper: "h-9 rounded-lg border-default-200 bg-content2",
+            }}
           />
 
           <EventLogsModalButton
@@ -120,7 +141,12 @@ export function LeaderboadWrapper() {
           />
 
           {hasChanges && (
-            <Button color="primary" onPress={handleApply}>
+            <Button
+              color="primary"
+              onPress={handleApply}
+              size="sm"
+              className="h-9 rounded-lg px-4 text-xs font-semibold"
+            >
               Apply
             </Button>
           )}

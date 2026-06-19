@@ -43,27 +43,30 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={twMerge(
-          `dark antialiased`,
+          `light antialiased`,
           geistSans.variable,
           geistMono.variable,
         )}
       >
         <Providers>
-          <div className="flex h-screen w-screen flex-col bg-neutral-900 font-sans">
-            <div className="flex h-[calc(100%-32px)] w-full">
-              <div className="flex h-full w-[300px] flex-col overflow-auto border-r border-neutral-800">
+          <div className="bg-background text-foreground flex h-screen w-screen flex-col overflow-hidden font-sans">
+            <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(135deg,#fafafa,#f4f4f5_52%,#e4e4e7)]" />
+            <div className="relative flex min-h-0 flex-1">
+              <div className="border-default-200 bg-content1/90 hidden h-full w-[214px] shrink-0 flex-col overflow-auto border-r backdrop-blur-xl lg:flex">
                 {sidebar}
               </div>
 
-              <div className="relative flex h-full flex-1 flex-col overflow-auto">
-                <div className="sticky top-0 z-50 w-full border-b border-neutral-800 bg-neutral-900 p-4">
+              <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
+                <div className="border-default-200 bg-content1/90 sticky top-0 z-50 w-full border-b px-4 py-3 shadow-[0_10px_28px_rgba(24,24,27,0.08)] backdrop-blur-xl md:px-5">
                   {topbar}
                 </div>
-                <div className="relative z-0 w-full p-4">{children}</div>
+                <main className="relative z-0 min-h-0 w-full flex-1 overflow-auto px-4 py-5 md:px-5">
+                  {children}
+                </main>
               </div>
             </div>
 
-            <div className="h-8 w-full shrink-0 border-t border-neutral-400/20 p-4">
+            <div className="border-default-200 bg-content1/90 relative h-8 w-full shrink-0 border-t px-4 md:px-5">
               {statusbar}
             </div>
           </div>

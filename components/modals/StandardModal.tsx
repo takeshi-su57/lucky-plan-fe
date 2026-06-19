@@ -36,9 +36,9 @@ export function StandardModal({ children, classNames, ...props }: ModalProps) {
       classNames={mergeClassNames<ModalSlots>(
         {
           base: "max-w-147.5 max-h-115 gap-3 overflow-visible font-sans scale-100",
-          body: "gap-3 rounded-xl bg-neutral-900 border border-neutral-800 px-5 py-6 md:p-6",
+          body: "gap-3 rounded-lg border border-default-200 bg-content1 px-4 py-5 text-sm shadow-large [&_h1]:!text-base [&_h1]:!leading-snug [&_h2]:!text-sm md:p-5 md:[&_h1]:!text-lg",
           closeButton:
-            "top-6 right-6 cursor-pointer z-30 text-neutral-400 text-[24px] hover:bg-neutral-300 hover:text-neutral-900 active:bg-neutral-400",
+            "top-4 right-4 cursor-pointer z-30 text-neutral-500 text-lg hover:bg-content3 hover:text-neutral-100 active:bg-content4",
         },
         classNames,
       )}

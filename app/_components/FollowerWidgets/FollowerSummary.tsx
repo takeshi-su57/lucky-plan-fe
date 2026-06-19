@@ -10,7 +10,7 @@ import { getPriceStr } from "@/utils/price";
 
 import { LabeledChip } from "@/components/chips/LabeledChip";
 import { WithdrawModal } from "./WithdrawModal";
-import { FollowerDetail, PnlSnapshotKind } from "@/graphql/gql/graphql";
+import { FollowerDetail } from "@/graphql/gql/graphql";
 import { useGetPrices } from "@/app/_hooks/useGetPrices";
 import { useCollateralUsdPrices } from "@/app/_hooks/useCollateralUsdPrices";
 import { getCollateral } from "@/web3/gns/v10/configs";
@@ -93,10 +93,7 @@ export function FollowerSummary({
     useMemo(() => {
       const result = followers.reduce(
         (acc, item) => {
-          const accUSDPnl =
-            item.pnlSnapshots.find(
-              (snap) => snap.kind === PnlSnapshotKind.AllTime,
-            )?.accUSDPnl || 0;
+          const accUSDPnl = item.pnlSnapshots[0]?.accUSDPnl || 0;
 
           let collateralUsd = 0;
           for (const cb of item.collateralBalances || []) {

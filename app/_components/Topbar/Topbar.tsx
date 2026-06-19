@@ -32,8 +32,8 @@ export function Topbar() {
   ).length;
 
   return (
-    <div className="sticky flex items-center justify-between">
-      <div className="flex flex-row items-center gap-4">
+    <div className="flex min-h-10 items-center justify-between gap-4">
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
         <TradeButton />
 
         <CalculatorButton />
@@ -46,30 +46,38 @@ export function Topbar() {
 
         {createdCount > 0 ? (
           <Badge color="secondary" content={createdCount}>
-            <Chip color="secondary">Created</Chip>
+            <Chip color="secondary" size="sm" variant="flat">
+              Created
+            </Chip>
           </Badge>
         ) : null}
 
         {awaitedCount > 0 ? (
           <Badge color="warning" content={awaitedCount}>
-            <Chip color="warning">Await</Chip>
+            <Chip color="warning" size="sm" variant="flat">
+              Await
+            </Chip>
           </Badge>
         ) : null}
 
         {initiatedCount > 0 ? (
           <Badge color="success" content={initiatedCount}>
-            <Chip color="success">Initiated</Chip>
+            <Chip color="success" size="sm" variant="flat">
+              Initiated
+            </Chip>
           </Badge>
         ) : null}
 
         {failedCount > 0 ? (
           <Badge color="danger" content={failedCount}>
-            <Chip color="danger">Failed</Chip>
+            <Chip color="danger" size="sm" variant="flat">
+              Failed
+            </Chip>
           </Badge>
         ) : null}
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex shrink-0 items-center gap-2">
         <WalletConnectButton />
       </div>
     </div>

@@ -5,32 +5,33 @@ import { useGetSystemStatus } from "@/app-hooks/useSystem";
 
 export function Statusbar() {
   const { data } = useGetSystemStatus();
+  const isPaused = data?.systemStatus === true;
 
   return (
-    <div className="flex h-full items-center justify-between">
+    <div className="flex h-full items-center justify-between text-[11px]">
       <div className="flex flex-row items-center gap-2">
         <div className="relative flex items-center justify-center">
           <div
             className={twMerge(
-              "z-10 h-2 w-2 rounded-full bg-red-500",
-              data?.systemStatus === true ? "bg-red-500" : "bg-green-400",
+              "z-10 h-1.5 w-1.5 rounded-full",
+              isPaused ? "bg-red-400" : "bg-emerald-400",
             )}
           />
           <div
             className={twMerge(
-              "absolute h-2 w-2 animate-ping rounded-full bg-red-500",
-              data?.systemStatus === true ? "bg-red-500" : "bg-green-400",
+              "absolute h-1.5 w-1.5 animate-ping rounded-full",
+              isPaused ? "bg-red-400" : "bg-emerald-400",
             )}
           />
         </div>
 
         <span
           className={twMerge(
-            "text-xs font-medium",
-            data?.systemStatus === true ? "text-red-500" : "text-green-400",
+            "font-semibold tracking-[0.14em] uppercase",
+            isPaused ? "text-red-300" : "text-emerald-300",
           )}
         >
-          {data?.systemStatus === true ? "Paused" : "Running"}
+          {isPaused ? "Paused" : "Running"}
         </span>
       </div>
     </div>
