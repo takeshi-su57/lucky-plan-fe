@@ -6,8 +6,6 @@ import { Chip } from "@heroui/react";
 import { FollowerDetail } from "@/graphql/gql/graphql";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
-import { LabeledChip } from "@/components/chips/LabeledChip";
-
 import { getPriceStr } from "@/utils/price";
 import { useGetPrices } from "@/app/_hooks/useGetPrices";
 import { getPNLPercentage } from "@/utils";
@@ -91,61 +89,92 @@ export function FollowerInfoWidget({
 
   const ethBalance = (Number(follower.ethBalance) / 1e18).toFixed(4);
 
+  const pnlColor = accUSDPnl > 0 ? "text-warning" : "text-danger";
+
   return (
-    <div className="flex flex-1 items-center justify-between gap-3">
-      <div className="flex items-center gap-2">
-        <Chip>{follower.accountIndex}</Chip>
-        <AddressWidget address={follower.address as Address} />
+    <div className="flex w-full min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div className="flex min-w-0 items-center gap-3">
+        <Chip
+          size="sm"
+          radius="sm"
+          variant="flat"
+          color="primary"
+          className="shrink-0 font-semibold"
+        >
+          #{follower.accountIndex}
+        </Chip>
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-neutral-100">{ethBalance}</span>
-          <span className="text-xs text-neutral-400">ETH</span>
+        <div className="min-w-0">
+          <AddressWidget address={follower.address as Address} />
+          <div className="text-default-500 mt-1 flex flex-wrap items-center gap-2 text-[11px]">
+            <span>User {follower.userId}</span>
+            <span className="bg-default-300 h-1 w-1 rounded-full" />
+            <span>Contract {follower.contractId}</span>
+          </div>
         </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-neutral-100">
-            {getPriceStr(totalCollateralUsd)}
-          </span>
-          <span className="text-xs text-neutral-400">USD</span>
-        </div>
-
-        {accUSDPnl !== 0 ? (
-          <Chip color={accUSDPnl > 0 ? "warning" : "danger"}>
-            {getPriceStr(accUSDPnl)} USD
-          </Chip>
-        ) : null}
-
-        {follower.trades.length > 0 ? (
-          <Chip color="success">{follower.trades.length} Trades</Chip>
-        ) : null}
-
-        {follower.pendingOrders.length > 0 ? (
-          <Chip color="secondary">
-            {follower.pendingOrders.length} Pendings
-          </Chip>
-        ) : null}
       </div>
 
-      <div className="flex items-center gap-4">
-        {follower.trades.length > 0 && (
-          <LabeledChip
-            label="uPnL"
-            value={getPriceStr(summary.pnls, 2)}
-            unit="$"
-            isPrefix={true}
-            color={summary.pnls >= 0 ? "warning" : "danger"}
-          />
-        )}
+      <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 md:flex md:flex-wrap md:justify-end">
+        <div className="border-default-200 bg-default-50 rounded-lg border px-3 py-2">
+          <div className="text-default-500 text-[11px]">Gas</div>
+          <div className="text-default-800 mt-1 text-sm font-semibold whitespace-nowrap">
+            {ethBalance}{" "}
+            <span className="text-default-400 text-[11px]">ETH</span>
+          </div>
+        </div>
 
-        {follower.trades.length > 0 && (
-          <LabeledChip
-            label="Size"
-            value={getPriceStr(summary.size)}
-            unit="$"
-            isPrefix={true}
-            color="default"
-          />
-        )}
+        <div className="border-default-200 bg-default-50 rounded-lg border px-3 py-2">
+          <div className="text-default-500 text-[11px]">Collateral</div>
+          <div className="text-default-800 mt-1 text-sm font-semibold whitespace-nowrap">
+            {getPriceStr(totalCollateralUsd)}{" "}
+            <span className="text-default-400 text-[11px]">USD</span>
+          </div>
+        </div>
+
+        <div className="border-default-200 bg-default-50 rounded-lg border px-3 py-2">
+          <div className="text-default-500 text-[11px]">Realized PnL</div>
+          <div
+            className={`mt-1 text-sm font-semibold whitespace-nowrap ${
+              accUSDPnl === 0 ? "text-default-700" : pnlColor
+            }`}
+          >
+            {getPriceStr(accUSDPnl)}{" "}
+            <span className="text-default-400 text-[11px]">USD</span>
+          </div>
+        </div>
+
+        <div className="border-default-200 bg-default-50 flex items-center gap-2 rounded-lg border px-3 py-2">
+          <Chip size="sm" radius="sm" variant="flat" color="success">
+            {follower.trades.length}
+          </Chip>
+          <span className="text-default-500 text-[11px]">Trades</span>
+          <Chip size="sm" radius="sm" variant="flat" color="secondary">
+            {follower.pendingOrders.length}
+          </Chip>
+          <span className="text-default-500 text-[11px]">Pending</span>
+        </div>
+
+        {follower.trades.length > 0 ? (
+          <>
+            <div className="border-default-200 bg-default-50 rounded-lg border px-3 py-2">
+              <div className="text-default-500 text-[11px]">uPnL</div>
+              <div
+                className={`mt-1 text-sm font-semibold whitespace-nowrap ${
+                  summary.pnls >= 0 ? "text-warning" : "text-danger"
+                }`}
+              >
+                ${getPriceStr(summary.pnls, 2)}
+              </div>
+            </div>
+
+            <div className="border-default-200 bg-default-50 rounded-lg border px-3 py-2">
+              <div className="text-default-500 text-[11px]">Size</div>
+              <div className="text-default-800 mt-1 text-sm font-semibold whitespace-nowrap">
+                ${getPriceStr(summary.size)}
+              </div>
+            </div>
+          </>
+        ) : null}
       </div>
     </div>
   );

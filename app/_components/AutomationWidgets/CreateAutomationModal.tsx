@@ -19,7 +19,7 @@ import { useBatchCreateBots } from "@/app-hooks/useAutomation";
 import { shrinkAddress } from "@/utils";
 import { NumericInput } from "@/components/inputs/NumericInput";
 
-import { useGetPerpTradeHistories } from "@/app/_hooks/useHistory";
+import { useGetPerpTradePositions } from "@/app/_hooks/useHistory";
 import { ContractStatus, Platform } from "@/graphql/gql/graphql";
 import {
   PerpEventLogPnlChart,
@@ -67,9 +67,12 @@ export function CreateAutomationModal({
   const [mode, setMode] = useState<StrategyMode>(StrategyMode.Default);
   const [lifeTime, setLifeTime] = useState("0");
 
-  const { histories: originalHistories } = useGetPerpTradeHistories(
-    isAddress(leaderAddress) ? [leaderAddress] : [],
+  const { data: positionsWithSummary } = useGetPerpTradePositions(
+    leaderAddress,
     platform,
+    null,
+    null,
+    null,
   );
 
   const handleChangePlatform: ChangeEventHandler<HTMLSelectElement> = (
@@ -182,7 +185,6 @@ export function CreateAutomationModal({
           planId,
           leaderContractId: contract.id,
           followerContractId: +followerContractId,
-          leaderCollateralBaseline: 0,
           strategy: {
             ratio: +ratio,
             lifeTime: +lifeTime,
@@ -213,16 +215,16 @@ export function CreateAutomationModal({
       isOpen={isOpen}
       isDismissable={false}
       onOpenChange={onOpenChange}
-      classNames={{ base: "max-w-[80%]" }}
+      classNames={{ base: "w-[90vw] max-w-[90vw]" }}
     >
-      <div className="flex w-full flex-col gap-8">
+      <div className="flex h-full min-h-0 w-full flex-col gap-4">
         <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
           Create New Automation
         </h1>
 
-        <div className="flex w-full gap-8">
-          <div className="flex w-50 flex-col gap-8">
-            <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex min-h-0 w-full flex-1 gap-4 overflow-hidden">
+          <div className="flex w-50 flex-col gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-1">
               <Select
                 variant="underlined"
                 label="Mode"
@@ -368,14 +370,17 @@ export function CreateAutomationModal({
             </Button>
           </div>
 
-          <div className="flex flex-1 flex-col gap-6">
+          <div className="flex min-w-0 flex-1 flex-col gap-6 overflow-hidden">
             <PerpEventLogPnlChart
               ref={chartRef}
               address={leaderAddress as Address}
               platform={platform}
-              perpTradeHistories={originalHistories[0] || []}
+              positionsWithSummary={positionsWithSummary || undefined}
               cols={1}
               mode="expert"
+              startedAt={null}
+              stoppedAt={null}
+              endedAt={null}
             />
           </div>
         </div>

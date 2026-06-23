@@ -9,9 +9,16 @@ import { HistoryChartData } from "../HistoryCharts";
 export type SparklineChartProps = {
   title: string;
   data: HistoryChartData[];
+  className?: string;
+  svgClassName?: string;
 };
 
-export function SparklineChart({ title, data }: SparklineChartProps) {
+export function SparklineChart({
+  title,
+  data,
+  className,
+  svgClassName,
+}: SparklineChartProps) {
   const clipId = useId();
   const { areaPath, linePath, zeroY, minValue, finalValue } = useMemo(() => {
     const width = 300;
@@ -58,7 +65,12 @@ export function SparklineChart({ title, data }: SparklineChartProps) {
   }, [data]);
 
   return (
-    <div className="border-default-200 bg-content1 flex min-h-56 flex-1 flex-col gap-2 rounded-lg border p-3">
+    <div
+      className={twMerge(
+        "border-default-200 bg-content1 flex min-h-56 flex-1 flex-col gap-2 rounded-lg border p-3",
+        className,
+      )}
+    >
       <div className="flex items-center justify-between gap-3">
         <span className="text-foreground text-xs font-semibold">{title}</span>
         <div className="flex items-center gap-3 font-mono text-xs">
@@ -76,7 +88,7 @@ export function SparklineChart({ title, data }: SparklineChartProps) {
       <svg
         viewBox="0 0 300 80"
         preserveAspectRatio="none"
-        className="h-44 w-full overflow-visible"
+        className={twMerge("h-44 w-full overflow-visible", svgClassName)}
       >
         <defs>
           <clipPath id={`${clipId}-positive`}>

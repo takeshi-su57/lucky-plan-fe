@@ -8,7 +8,6 @@ import { PnlSnapshotPanel } from "../_components/SettingsWidget/PnlSnapshotPanel
 import { UsersPanel } from "../_components/SettingsWidget/UsersPanel";
 import { useUserJWT } from "../_hooks/useUserJWT";
 import { UserPermission } from "@/graphql/gql/graphql";
-import { useAppSettings } from "../_hooks/useAppSettings";
 
 type TabType = "contracts" | "pnlSnapshot" | "users" | "controls";
 
@@ -16,8 +15,6 @@ export default function Page() {
   const [selected, setSelected] = useState<TabType>("controls");
 
   const { userJwtQuery } = useUserJWT();
-
-  const { appSettings } = useAppSettings();
 
   return (
     <div className="flex flex-col gap-6">
@@ -27,12 +24,7 @@ export default function Page() {
           selectedKey={selected}
           onSelectionChange={(value) => value && setSelected(value as TabType)}
         >
-          {appSettings.isDevMode ? (
-            <>
-              <Tab key="contracts" title="Contracts" />
-              <Tab key="strategies" title="Strategies" />
-            </>
-          ) : null}
+          <Tab key="contracts" title="Contracts" />
 
           {userJwtQuery?.data?.permission === UserPermission.Admin ? (
             <>

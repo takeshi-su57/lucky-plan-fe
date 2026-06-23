@@ -6,7 +6,6 @@ import { Pagination } from "@heroui/react";
 import {
   PerpTradeHistory,
   PerpTradeHistoryOperation,
-  Platform,
 } from "@/graphql/gql/graphql";
 
 import { HistoriesView } from "./HistoriesView";
@@ -15,7 +14,6 @@ const OPENED_PAGE_SIZE = 4;
 const CLOSED_PAGE_SIZE = 6;
 
 export type ExpertPositionsPanelProps = {
-  platform: Platform;
   missionHistories: PerpTradeHistory[][];
 };
 
@@ -32,7 +30,6 @@ function PositionSection({
   page,
   onChangePage,
   emptyLabel,
-  platform,
 }: {
   title: string;
   histories: PerpTradeHistory[][];
@@ -40,7 +37,6 @@ function PositionSection({
   page: number;
   onChangePage: (page: number) => void;
   emptyLabel: string;
-  platform: Platform;
 }) {
   const totalPages = Math.max(1, Math.ceil(histories.length / pageSize));
   const visibleHistories = histories.slice(
@@ -67,11 +63,10 @@ function PositionSection({
       </div>
 
       {visibleHistories.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-3">
           {visibleHistories.map((item) => (
             <HistoriesView
               key={item.map((history) => history.id).join("-")}
-              platform={platform}
               histories={item}
             />
           ))}
@@ -86,7 +81,6 @@ function PositionSection({
 }
 
 export function ExpertPositionsPanel({
-  platform,
   missionHistories,
 }: ExpertPositionsPanelProps) {
   const [openedPage, setOpenedPage] = useState(1);
@@ -102,7 +96,7 @@ export function ExpertPositionsPanel({
   }, [missionHistories]);
 
   return (
-    <div className="flex max-h-[76vh] w-100 flex-col gap-6 overflow-y-auto pr-3">
+    <div className="flex h-full max-h-[calc(100vh-112px)] w-full min-w-0 flex-col gap-5 overflow-y-auto pr-2">
       <PositionSection
         title="Opened Positions"
         histories={openedPositions}
@@ -110,7 +104,6 @@ export function ExpertPositionsPanel({
         page={openedPage}
         onChangePage={setOpenedPage}
         emptyLabel="No opened positions"
-        platform={platform}
       />
 
       <PositionSection
@@ -120,7 +113,6 @@ export function ExpertPositionsPanel({
         page={closedPage}
         onChangePage={setClosedPage}
         emptyLabel="No closed positions"
-        platform={platform}
       />
     </div>
   );

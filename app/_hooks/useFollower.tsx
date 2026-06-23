@@ -8,7 +8,6 @@ import { useSnackbar } from "notistack";
 
 import { useGetAllGnsContracts } from "./useContract";
 import { getMissionForwardDetails } from "./useMission";
-import { PNL_SNAPSHOT_V2_INFO_FRAGMENT_DOCUMENT } from "./useHistory";
 import { SLTPCondition } from "@/types";
 import { getGnsPositionKey } from "@/web3/gns/utils";
 
@@ -54,7 +53,10 @@ export const FOLLOWER_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     }
     contractId
     pnlSnapshots {
-      ...PnlSnapshotV2Info
+      accUSDPnl
+      address
+      dateStr
+      platform
     }
     trades {
       ...FollowerTradeInfo
@@ -407,9 +409,7 @@ export function useGetAllFollowerDetails(
           follower,
         );
 
-        const pnlSnapshots = followerData.pnlSnapshots.map((snapshot) =>
-          getFragmentData(PNL_SNAPSHOT_V2_INFO_FRAGMENT_DOCUMENT, snapshot),
-        );
+        const pnlSnapshots = followerData.pnlSnapshots;
 
         const trades = followerData.trades.map((trade) => {
           const tradeData = getFragmentData(

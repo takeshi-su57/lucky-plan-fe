@@ -1,7 +1,7 @@
 import { Ref } from "react";
 import { Address } from "viem";
 
-import { PerpTradeHistory, Platform } from "@/graphql/gql/graphql";
+import { PerpTradePositionsWithSummary, Platform } from "@/graphql/gql/graphql";
 
 export type PerpEventLogPnlChartHandle = {
   getSelectedPairs: () => { pair: string; isLong: boolean }[];
@@ -10,13 +10,13 @@ export type PerpEventLogPnlChartHandle = {
 export type PerpEventLogPnlChartProps = {
   address: Address;
   platform: Platform;
-  perpTradeHistories: PerpTradeHistory[];
-  range?: {
-    from?: Date;
-    to?: Date;
-  };
+  positionsWithSummary?: PerpTradePositionsWithSummary;
   cols?: 1 | 2 | 4;
   mode?: "lightweight" | "expert";
+  className?: string;
+  startedAt: Date | null;
+  stoppedAt: Date | null;
+  endedAt: Date | null;
 };
 
 export type PerpEventLogPnlChartWithRefProps = PerpEventLogPnlChartProps & {

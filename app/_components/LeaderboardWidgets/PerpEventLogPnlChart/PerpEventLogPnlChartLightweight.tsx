@@ -29,9 +29,12 @@ function getTone(value: number) {
 export function PerpEventLogPnlChartLightweight({
   address,
   platform,
-  perpTradeHistories,
-  range,
+  positionsWithSummary,
   cols,
+  className,
+  startedAt,
+  stoppedAt,
+  endedAt,
 }: PerpEventLogPnlChartProps) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const {
@@ -51,10 +54,8 @@ export function PerpEventLogPnlChartLightweight({
     slope,
     r2,
   } = useMemo(() => {
-    return getHistoriesChartData(perpTradeHistories, {
-      range,
-    });
-  }, [perpTradeHistories, range]);
+    return getHistoriesChartData(positionsWithSummary || null, new Set());
+  }, [positionsWithSummary]);
 
   const totalInvested = inOutChartData.reduce(
     (acc, curr) => (acc > curr.value ? curr.value : acc),
@@ -105,34 +106,34 @@ export function PerpEventLogPnlChartLightweight({
     {
       id: "avgDuration",
       label: "Avg Duration",
-      value: `${(duration.total.avg / 1000 / 60).toFixed(2)}mins`,
+      value: `${(duration.avg / 1000 / 60).toFixed(2)}mins`,
     },
     {
       id: "avgPnl",
       label: "Avg PnL",
-      value: `$${pnl.total.avg.toFixed(2)}`,
-      tone: getTone(pnl.total.avg),
+      value: `$${pnl.avg.toFixed(2)}`,
+      tone: getTone(pnl.avg),
     },
     {
       id: "avgPnlPBySize",
       label: "Avg PnL % By Size",
-      value: `${pnlP.total.avgBySize.toFixed(2)}%`,
-      tone: getTone(pnlP.total.avgBySize),
+      value: `${pnlP.avgBySize.toFixed(2)}%`,
+      tone: getTone(pnlP.avgBySize),
     },
     {
       id: "avgSize",
       label: "Avg Size",
-      value: `$${getPriceStr(size.total.avg)}`,
+      value: `$${getPriceStr(size.avg)}`,
     },
     {
       id: "avgCollateral",
       label: "Avg Collateral",
-      value: `$${getPriceStr(collateral.total.avg)}`,
+      value: `$${getPriceStr(collateral.avg)}`,
     },
     {
       id: "avgLeverage",
       label: "Avg Leverage",
-      value: `${leverage.total.avg.toFixed(2)}x`,
+      value: `${leverage.avg.toFixed(2)}x`,
     },
     {
       id: "slope",
@@ -149,7 +150,13 @@ export function PerpEventLogPnlChartLightweight({
 
   return (
     <>
-      <Card className="border-default-200 bg-content1 shadow-small mb-4 w-full shrink-0 rounded-lg border">
+      <Card
+        shadow="none"
+        className={twMerge(
+          "border-default-200 bg-content1 mb-4 w-full shrink-0 rounded-lg border",
+          className,
+        )}
+      >
         <CardBody className="p-0">
           <div className="grid min-h-68 grid-cols-1 gap-4 p-4 xl:grid-cols-3">
             <div className="flex min-w-0 flex-col justify-between gap-4 xl:col-span-1">
@@ -207,9 +214,11 @@ export function PerpEventLogPnlChartLightweight({
           <PerpEventLogPnlChartExpert
             address={address}
             platform={platform}
-            perpTradeHistories={perpTradeHistories}
-            range={range}
+            positionsWithSummary={positionsWithSummary}
             cols={cols}
+            startedAt={startedAt}
+            stoppedAt={stoppedAt}
+            endedAt={endedAt}
           />
         ) : null}
       </StandardModal>

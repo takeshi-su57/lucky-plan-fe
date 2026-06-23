@@ -3,8 +3,7 @@
 import { memo, useRef, useEffect, useCallback, useState } from "react";
 import Chart from "chart.js/auto";
 import { twMerge } from "tailwind-merge";
-import { Button, Checkbox, CheckboxGroup, useDisclosure } from "@heroui/react";
-import { StandardModal } from "../modals/StandardModal";
+import { Checkbox, CheckboxGroup } from "@heroui/react";
 
 export type BarChartProps = {
   title?: string;
@@ -28,13 +27,9 @@ const BarChart = memo(function BarChart({
   initialSelected,
 }: BarChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
-  const modalChartRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const modalContainerRef = useRef<HTMLDivElement>(null);
   const ref = useRef<Chart>(null);
-  const modalRef = useRef<Chart>(null);
 
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [selected, setSelected] = useState<string[]>(initialSelected || []);
 
   const drawChart = useCallback(() => {
@@ -56,14 +51,14 @@ const BarChart = memo(function BarChart({
             data: chartData.map((item) => item.value),
             backgroundColor: chartData.map((item) =>
               item.value > 0
-                ? "oklch(0.448 0.119 151.328)"
-                : "oklch(0.505 0.213 27.518)",
+                ? "rgb(34 197 94 / 0.85)"
+                : "rgb(239 68 68 / 0.85)",
             ),
             borderWidth: 0,
             borderColor: chartData.map((item) =>
               item.value > 0
-                ? "oklch(0.448 0.119 151.328)"
-                : "oklch(0.505 0.213 27.518)",
+                ? "rgb(34 197 94)"
+                : "rgb(239 68 68)",
             ),
           },
         ],
@@ -106,84 +101,10 @@ const BarChart = memo(function BarChart({
     };
   }, [drawChart]);
 
-  const drawModalChart = useCallback(() => {
-    if (modalRef.current) {
-      modalRef.current.destroy();
-    }
-
-    const chartData = data.length === 0 ? EMPTY_CHART_DATA : data;
-
-    const chartContainer = modalChartRef.current!;
-
-    modalRef.current = new Chart(chartContainer, {
-      type: "line",
-      data: {
-        labels: chartData.map((item) => item.label),
-        datasets: [
-          {
-            label: "Amount",
-            data: chartData.map((item) => item.value),
-            pointRadius: 0,
-            fill: {
-              target: "origin",
-              above: "#022c22", // Area will be red above the origin
-              below: "#450a0a", // And blue below the origin
-            },
-            borderWidth: 1,
-            borderColor: "#525252",
-          },
-        ],
-      },
-      options: {
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            display: true,
-          },
-          y: {
-            display: true,
-          },
-        },
-        plugins: {
-          legend: {
-            display: false,
-          },
-        },
-      },
-    });
-  }, [data]);
-
-  useEffect(() => {
-    if (!modalChartRef.current || !modalContainerRef.current || !isOpen) {
-      return;
-    }
-
-    drawModalChart();
-
-    const observer = new ResizeObserver(() => {
-      drawModalChart();
-    });
-
-    observer.observe(modalContainerRef.current);
-
-    return () => {
-      modalRef.current?.destroy();
-      observer.disconnect();
-    };
-  }, [drawModalChart, isOpen]);
-
   return (
     <div className="relative flex flex-col gap-3">
-      <div className="absolute top-3 left-4 z-1000 flex flex-row items-center gap-1">
+      <div className="absolute top-3 left-4 z-1000 flex flex-row items-center gap-1 bg-white">
         <span className="text-xs font-semibold">{title || ""}</span>
-        <Button
-          size="sm"
-          variant="ghost"
-          onPress={onOpen}
-          className="h-7 px-2 text-xs"
-        >
-          Details
-        </Button>
       </div>
 
       <div className="absolute right-4 bottom-4 z-1000 flex flex-row items-center justify-between gap-0">
@@ -207,26 +128,6 @@ const BarChart = memo(function BarChart({
       >
         <canvas ref={chartRef} />
       </div>
-
-      <StandardModal
-        isOpen={isOpen}
-        isDismissable={false}
-        onOpenChange={onOpenChange}
-        backdrop="blur"
-        classNames={{
-          base: "max-w-full max-h-full",
-        }}
-      >
-        <div
-          ref={modalContainerRef}
-          className={twMerge(
-            "relative h-full w-full items-center justify-center gap-8 rounded-md p-3.5",
-            className,
-          )}
-        >
-          <canvas ref={modalChartRef} />
-        </div>
-      </StandardModal>
     </div>
   );
 });

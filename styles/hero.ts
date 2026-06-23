@@ -10,14 +10,12 @@ export default heroui({
       small: "0.78125rem",
       medium: "0.8125rem",
       large: "0.875rem",
-      DEFAULT: "0.8125rem",
     },
     lineHeight: {
       tiny: "0.875rem",
       small: "1rem",
       medium: "1.125rem",
       large: "1.25rem",
-      DEFAULT: "1.125rem",
     },
     radius: {
       small: "0.375rem",

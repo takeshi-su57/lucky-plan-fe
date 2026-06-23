@@ -98,12 +98,6 @@ export const GET_ALERT_TASKS_DOCUMENT = graphql(`
   }
 `);
 
-export const PERFORM_TASK_DOCUMENT = graphql(`
-  mutation performTask($id: Int!) {
-    performTask(id: $id)
-  }
-`);
-
 export const STOP_TASK_DOCUMENT = graphql(`
   mutation stopTask($id: Int!) {
     stopTask(id: $id)
@@ -300,30 +294,6 @@ export function useSubscribeTask() {
       });
     }
   }, [client.cache, enqueueSnackbar, error1, newData]);
-}
-
-export function usePerformTask() {
-  const [performTask, { data: newData, error }] = useMutation(
-    PERFORM_TASK_DOCUMENT,
-  );
-  const client = useApolloClient();
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (newData && !error) {
-      enqueueSnackbar("Success at perform task!", {
-        variant: "success",
-      });
-    }
-
-    if (newData && error) {
-      enqueueSnackbar("Error at perform task!", {
-        variant: "error",
-      });
-    }
-  }, [client.cache, newData, error, enqueueSnackbar]);
-
-  return performTask;
 }
 
 export function useStopTask() {

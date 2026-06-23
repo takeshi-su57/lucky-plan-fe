@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Button, Card, CardBody, Switch } from "@heroui/react";
+import { Button, Card, CardBody } from "@heroui/react";
 import {
   useCleanDB,
   useGetMicroserviceStatus,
@@ -11,7 +11,6 @@ import {
   usePauseSystem,
   useStartSubService,
 } from "@/app-hooks/useSystem";
-import { useAppSettings } from "@/app-hooks/useAppSettings";
 import { useUserJWT } from "@/app-hooks/useUserJWT";
 import { UserPermission } from "@/graphql/gql/graphql";
 
@@ -41,7 +40,6 @@ export function ControlPanel() {
   const { data: isSafeApp } = useIsSafeApp();
   const microserviceStatus = useGetMicroserviceStatus();
 
-  const { appSettings, changeAppSettings } = useAppSettings();
   const { userJwtQuery } = useUserJWT();
 
   const pauseSystem = usePauseSystem();
@@ -50,10 +48,6 @@ export function ControlPanel() {
   const { startSubService, loading: startSubServiceLoading } =
     useStartSubService();
   const { cleanDB, loading: cleanDBLoading } = useCleanDB();
-
-  const handleToggleDevMode = (isSelected: boolean) => {
-    changeAppSettings.mutate({ isDevMode: isSelected });
-  };
 
   const rows = useMemo(() => {
     if (!microserviceStatus) {
@@ -149,13 +143,6 @@ export function ControlPanel() {
                 </div>
               </>
             ) : null}
-
-            <Switch
-              checked={appSettings.isDevMode}
-              onValueChange={handleToggleDevMode}
-            >
-              Toggle Dev Mode
-            </Switch>
 
             <MaxMissionPanel />
           </div>

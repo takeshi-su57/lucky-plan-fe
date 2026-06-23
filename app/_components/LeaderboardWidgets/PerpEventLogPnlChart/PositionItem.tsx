@@ -58,22 +58,22 @@ export function PositionItem({
   return (
     <div
       className={twMerge(
-        "relative w-62 rounded-3xl p-4",
+        "relative w-full rounded-2xl p-3",
         isLong ? "bg-green-900/30" : "bg-red-950/30",
       )}
     >
-      <div className="flex flex-col items-center gap-2">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2">
-            <span className="relative flex size-8">
+      <div className="flex flex-col items-center gap-1.5">
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5">
+            <span className="relative flex size-7">
               {isLatest ? (
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-yellow-400 opacity-75"></span>
               ) : null}
-              <PairIcon from={from} to={to} width={32} height={32} />
+              <PairIcon from={from} to={to} width={28} height={28} />
             </span>
 
             <div className="flex flex-col text-xs text-neutral-400">
-              <span className="text-sm">
+              <span className="text-xs">
                 {pair} - ({actions})
               </span>
             </div>
@@ -86,7 +86,7 @@ export function PositionItem({
             <b>{`${getPriceStr(price)}`}</b>
           </span>
         ) : (
-          <span className="text-base text-neutral-400">
+          <span className="text-sm text-neutral-400">
             <b>{`${getPriceStr(price)}`}</b>{" "}
             <span
               className={twMerge(
@@ -99,7 +99,7 @@ export function PositionItem({
 
         <span
           className={twMerge(
-            "text-sm",
+            "text-xs",
             totalPnL >= 0 ? "text-green-700" : "text-red-700",
           )}
         >
@@ -110,11 +110,11 @@ export function PositionItem({
           <b>{`$${getPriceStr(collateral, 0)}`}</b> x <b>{`${leverage}x`}</b>
         </span>
 
-        <span className="text-xs text-neutral-400/60 italic">
+        <span className="text-xs text-neutral-700 italic">
           {convertMillisToReadableTime(dayjs().diff(dayjs(date)))} ago
         </span>
 
-        <span className="text-xs text-neutral-400/60 italic">
+        <span className="text-xs text-neutral-700 italic">
           Date: {dayjs(date).format("MMM DD HH:mm")}
         </span>
 
@@ -124,7 +124,7 @@ export function PositionItem({
           </Chip>
         ) : (
           <div className="flex items-center gap-6">
-            <Chip variant="flat" color="warning" className="text-xs">
+            <Chip variant="flat" color="warning" className="h-6 text-xs">
               Opened
             </Chip>
             {!isClosed ? (

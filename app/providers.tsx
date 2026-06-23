@@ -39,6 +39,7 @@ import {
   InfoSnackbar,
 } from "@/components/snackbars";
 import { useSubscribeBot } from "@/app-hooks/useAutomation";
+import { useSubscribePlan } from "@/app-hooks/usePlan";
 import { LOCAL_USER_JWT_KEY } from "@/app-hooks/useUserJWT";
 import dynamic from "next/dynamic";
 import { OperationTypeNode } from "graphql";
@@ -104,7 +105,8 @@ const cache = new InMemoryCache({
         allLogs: relayStylePagination(["checked", "severity"]),
         getAllFollowerDetails: relayStylePagination(["contractId"]),
         getExpertPnlSnapshotsV2: relayStylePagination(["platform"]),
-        getPlanBotGroups: relayStylePagination(["planId", "hideDead"]),
+        getPlanBotGroups: relayStylePagination(["planId"]),
+        getSimulationPlans: relayStylePagination([]),
       },
     },
     User: {
@@ -287,6 +289,7 @@ export async function requestNotificationPermission() {
 }
 
 export function SubscriptionWrapper({ children }: { children: ReactNode }) {
+  useSubscribePlan();
   useSubscribeTask();
   useSubscribeMission();
   useSubscribeBot();

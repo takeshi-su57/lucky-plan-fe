@@ -1,19 +1,19 @@
 "use client";
 
 import { useMemo } from "react";
-import { Button, useDisclosure } from "@heroui/react";
-import { FaPlus } from "react-icons/fa";
+import { Button, ChipProps, Tooltip, useDisclosure } from "@heroui/react";
+import { FaPlus, FaWallet } from "react-icons/fa";
 
 import { useGenerateFollower } from "@/app-hooks/useFollower";
 import { getPNLPercentage } from "@/utils";
 import { getPriceStr } from "@/utils/price";
 
-import { LabeledChip } from "@/components/chips/LabeledChip";
 import { WithdrawModal } from "./WithdrawModal";
 import { FollowerDetail } from "@/graphql/gql/graphql";
 import { useGetPrices } from "@/app/_hooks/useGetPrices";
 import { useCollateralUsdPrices } from "@/app/_hooks/useCollateralUsdPrices";
 import { getCollateral } from "@/web3/gns/v10/configs";
+import { MetricBox } from "@/components/views/MetricBox";
 
 export type FollowerSummaryProps = {
   contractId: number;
@@ -117,79 +117,102 @@ export function FollowerSummary({
       return result;
     }, [followers, chainId, collateralUsdPrices]);
 
+  const metrics: {
+    label: string;
+    value: string | number;
+    unit?: string;
+    color?: ChipProps["color"];
+  }[] = [
+    {
+      label: "Followers",
+      value: followers.length,
+      color: "primary",
+    },
+    {
+      label: "Pending",
+      value: followers.reduce(
+        (acc, item) => acc + item.pendingOrders.length,
+        0,
+      ),
+      color: "secondary",
+    },
+    {
+      label: "Trades",
+      value: followers.reduce((acc, item) => acc + item.trades.length, 0),
+      color: "success",
+    },
+    {
+      label: "Gas",
+      value: totalEth.toFixed(2),
+      unit: "ETH",
+    },
+    {
+      label: "Collateral",
+      value: getPriceStr(totalCollateralUsd),
+      unit: "USD",
+    },
+    {
+      label: "Earned",
+      value: getPriceStr(totalEarned),
+      unit: "USD",
+      color: "warning",
+    },
+    {
+      label: "Lost",
+      value: getPriceStr(totalLost),
+      unit: "USD",
+      color: "danger",
+    },
+    {
+      label: "Unrealized",
+      value: getPriceStr(summary.pnls),
+      unit: "USD",
+      color: summary.pnls >= 0 ? "warning" : "danger",
+    },
+    {
+      label: "Locked",
+      value: getPriceStr(summary.size),
+      unit: "USD",
+    },
+  ];
+
   return (
     <div>
-      <div className="flex items-center gap-4">
-        <LabeledChip
-          label="Pending Orders"
-          value={followers
-            .map((item) => item.pendingOrders.length)
-            .reduce((acc, item) => acc + item, 0)}
-          unit=""
-          color="secondary"
-        />
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
+        <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 sm:grid-cols-3 lg:flex lg:flex-wrap lg:justify-end">
+          {metrics.map((metric) => (
+            <MetricBox key={metric.label} {...metric} />
+          ))}
+        </div>
 
-        <LabeledChip
-          label="Open Trades"
-          value={followers
-            .map((item) => item.trades.length)
-            .reduce((acc, item) => acc + item, 0)}
-          unit=""
-          color="success"
-        />
+        <div className="flex shrink-0 items-center gap-2">
+          {contractId ? (
+            <Button
+              color="primary"
+              variant="flat"
+              radius="sm"
+              size="sm"
+              startContent={<FaWallet className="text-xs" />}
+              onPress={onOpen}
+            >
+              Withdraw
+            </Button>
+          ) : null}
 
-        <LabeledChip label="Gas" value={totalEth.toFixed(2)} unit="ETH" />
-
-        <LabeledChip
-          label="Collateral"
-          value={getPriceStr(totalCollateralUsd)}
-          unit="USD"
-          color="default"
-        />
-
-        <LabeledChip
-          label="Earned"
-          value={getPriceStr(totalEarned)}
-          unit="USD"
-          color="warning"
-        />
-
-        <LabeledChip
-          label="Lost"
-          value={getPriceStr(totalLost)}
-          unit="USD"
-          color="danger"
-        />
-
-        <LabeledChip
-          label="Unrealized PNL"
-          value={getPriceStr(summary.pnls)}
-          unit="USD"
-          color={summary.pnls >= 0 ? "warning" : "danger"}
-        />
-
-        <LabeledChip
-          label="Locked at Gains"
-          value={getPriceStr(summary.size)}
-          unit="USD"
-          color="default"
-        />
-
-        {contractId ? (
-          <Button color="primary" variant="flat" radius="sm" onPress={onOpen}>
-            Withdraw
-          </Button>
-        ) : null}
-
-        <Button
-          isIconOnly
-          color="primary"
-          variant="flat"
-          radius="sm"
-          onPress={handleGenerateFollower}
-        >
-          <FaPlus />
-        </Button>
+          <Tooltip content="Generate follower">
+            <Button
+              isIconOnly
+              color="primary"
+              variant="solid"
+              radius="sm"
+              size="sm"
+              aria-label="Generate follower"
+              onPress={handleGenerateFollower}
+            >
+              <FaPlus className="text-xs" />
+            </Button>
+          </Tooltip>
+        </div>
       </div>
 
       <WithdrawModal

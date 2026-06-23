@@ -63,7 +63,6 @@ export function ResumeSystemButton() {
           </h1>
 
           <Input
-            className="max-w-xs"
             endContent={
               <button
                 aria-label="toggle password visibility"

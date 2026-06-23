@@ -35,7 +35,7 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
     }
   }, [plan?.status, endPlan, numericPlanId]);
 
-  const items = useMemo(
+  const timelineItems = useMemo(
     () =>
       plan
         ? [
@@ -66,70 +66,85 @@ export function PlanDetailPanel({ planId }: { planId: string }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <div className="flex gap-2">
-          <div className="flex flex-1 flex-col">
-            <span className="text-xl font-bold text-neutral-400">
+      <div className="border-default-200 flex flex-col gap-4 border-b pb-5">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-xl font-bold text-neutral-200">
               {plan?.title || ""}
-            </span>
-            <p className="text-xs text-neutral-400">
+            </h1>
+            <p className="mt-1 max-w-4xl text-sm text-neutral-400">
               {plan?.description || ""}
             </p>
           </div>
 
-          <Chip variant="flat">Plan {plan?.id || ""}</Chip>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <Chip variant="flat">Plan {plan?.id || ""}</Chip>
+            {plan && (
+              <Chip color={chipColorsByPlanStatus[plan.status]} variant="flat">
+                {plan.status}
+              </Chip>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-6">
-          {items.map(
-            (item) =>
-              item.value !== null && (
-                <div key={item.label} className="flex items-center gap-2">
-                  <span className="text-xs text-neutral-400">
-                    {item.label}:
-                  </span>
-                  <span className="text-sm font-bold text-neutral-300">
-                    {item.value}
-                  </span>
-                </div>
-              ),
-          )}
+        <div className="flex flex-row items-center justify-between">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {timelineItems.map(
+              (item) =>
+                item.value !== null && (
+                  <div
+                    key={item.label}
+                    className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2"
+                  >
+                    <span className="text-[10px] font-semibold text-neutral-500 uppercase">
+                      {item.label}
+                    </span>
+                    <span className="mt-1 text-sm font-semibold text-neutral-300">
+                      {item.value}
+                    </span>
+                  </div>
+                ),
+            )}
+          </div>
 
-          {plan && (
-            <Chip color={chipColorsByPlanStatus[plan.status]} variant="flat">
-              {plan.status}
-            </Chip>
-          )}
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+            {plan?.status === PlanStatus.Created && (
+              <Button
+                size="sm"
+                color="primary"
+                onPress={handleStartPlan}
+                isLoading={startPlanLoading}
+                isDisabled={startPlanLoading}
+                className="h-9 rounded-lg px-4 text-xs font-semibold"
+              >
+                Start Plan
+              </Button>
+            )}
 
-          {plan?.status === PlanStatus.Created && (
+            {plan?.status === PlanStatus.Started && (
+              <Button
+                size="sm"
+                color="warning"
+                onPress={handleEndPlan}
+                isLoading={endPlanLoading}
+                isDisabled={endPlanLoading}
+                className="h-9 rounded-lg px-4 text-xs font-semibold"
+              >
+                End Plan
+              </Button>
+            )}
+
             <Button
-              size="sm"
               color="primary"
-              onPress={handleStartPlan}
-              isLoading={startPlanLoading}
-              isDisabled={startPlanLoading}
-            >
-              Start Plan
-            </Button>
-          )}
-
-          {plan?.status === PlanStatus.Started && (
-            <Button
+              variant="flat"
               size="sm"
-              color="warning"
-              onPress={handleEndPlan}
-              isLoading={endPlanLoading}
-              isDisabled={endPlanLoading}
+              startContent={<FaPlus />}
+              onPress={onOpen}
+              className="h-9 rounded-lg px-4 text-xs font-semibold"
             >
-              End Plan
+              Add Automation
             </Button>
-          )}
-        </div>
-
-        <div className="flex items-center justify-end gap-2">
-          <Button isIconOnly color="primary" variant="flat" onPress={onOpen}>
-            <FaPlus />
-          </Button>
+          </div>
         </div>
       </div>
 

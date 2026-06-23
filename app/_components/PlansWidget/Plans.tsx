@@ -7,10 +7,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FaPlus } from "react-icons/fa";
 import { GroupedVirtuoso } from "react-virtuoso";
 
-import { PlanSummary, PlanStatus } from "@/graphql/gql/graphql";
+import { PlanSummary } from "@/graphql/gql/graphql";
 
 import {
-  useGetPlanSummariesByStatus,
+  useFinishedPlanSummaries,
   useLivePlanSummaries,
 } from "@/app-hooks/usePlan";
 import { PlanRow } from "./PlanRow";
@@ -37,20 +37,22 @@ export function Plans() {
     hasMore: hasMoreHistories,
     loading: loadingHistories,
     fetchMore: fetchMoreHistories,
-  } = useGetPlanSummariesByStatus(PlanStatus.Finished);
+  } = useFinishedPlanSummaries();
 
   const { groupCounts, groupContent, plans } = useMemo(() => {
     const weekPlans: Record<string, PlanSummary[]> = {};
+    const selectedPlans = selected === "live" ? livePlans : planHistories;
 
-    (selected === "live" ? livePlans : planHistories)
+    [...selectedPlans]
       .sort(
         (a, b) =>
-          (b.startedAt ? new Date(b.startedAt).getTime() : 0) -
-          (a.startedAt ? new Date(a.startedAt).getTime() : 0),
+          new Date(b.startedAt ?? b.scheduledStart).getTime() -
+          new Date(a.startedAt ?? a.scheduledStart).getTime(),
       )
       .forEach((plan) => {
-        const week = plan.startedAt
-          ? getWeekDateStr(new Date(plan.startedAt))
+        const groupDate = plan.startedAt;
+        const week = groupDate
+          ? getWeekDateStr(new Date(groupDate))
           : "Not Started";
 
         if (!weekPlans[week]) {
@@ -104,7 +106,7 @@ export function Plans() {
       </div>
 
       {loading ? (
-        <div className="flex h-[300px] w-full items-center justify-center">
+        <div className="flex h-75 w-full items-center justify-center">
           <Spinner size="lg" color="warning" />
         </div>
       ) : (

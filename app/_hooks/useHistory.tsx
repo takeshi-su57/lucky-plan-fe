@@ -9,16 +9,7 @@ import {
 } from "@apollo/client/react";
 import { useSnackbar } from "notistack";
 import { getFragmentData, graphql } from "@/gql/index";
-import { Platform, GetPnlSnapshotsV2Query } from "@/graphql/gql/graphql";
-
-export const PNL_SNAPSHOT_V2_INFO_FRAGMENT_DOCUMENT = graphql(`
-  fragment PnlSnapshotV2Info on PnlSnapshotV2 {
-    accUSDPnl
-    address
-    dateStr
-    platform
-  }
-`);
+import { GetPerpTradePositionsQuery, Platform } from "@/graphql/gql/graphql";
 
 export const PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment PerpTradeHistoryInfo on PerpTradeHistory {
@@ -37,25 +28,70 @@ export const PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
     sizeInUsd
     usdPnl
     date
+    contractId
+    platform
   }
 `);
+
+export const PERP_TRADE_POSITION_INFO_DOCUMENT = graphql(`
+  fragment PerpTradePositionInfo on PerpTradePosition {
+    histories {
+      ...PerpTradeHistoryInfo
+    }
+  }
+`);
+
+export const PERP_TRADE_POSITIONS_WITH_SUMMARY_INFO_FRAGMENT_DOCUMENT = graphql(
+  `
+    fragment PerpTradePositionsWithSummaryInfo on PerpTradePositionsWithSummary {
+      positions {
+        ...PerpTradePositionInfo
+      }
+      avgCollateral
+      avgDuration
+      avgLeverage
+      avgNegativePnl
+      avgPnl
+      avgPnlPercentageByCollateral
+      avgPnlPercentageBySize
+      avgPositivePnl
+      avgSize
+      maxDuration
+      openedPositions
+      totalPnl
+      totalPositions
+    }
+  `,
+);
 
 export const PNL_SNAPSHOT_V2_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment PnlSnapshotV2DetailsInfo on PnlSnapshotV2Details {
     accUSDPnl
     address
     dateStr
-    perpTradeHistories {
-      ...PerpTradeHistoryInfo
+    positionsWithSummary {
+      ...PerpTradePositionsWithSummaryInfo
     }
     platform
   }
 `);
 
-export const GET_PERP_TRADE_HISTORIES_DOCUMENT = graphql(`
-  query getPerpTradeHistories($addresses: [String!]!, $platform: Platform!) {
-    getPerpTradeHistories(addresses: $addresses, platform: $platform) {
-      ...PerpTradeHistoryInfo
+export const GET_PERP_TRADE_POSITIONS_DOCUMENT = graphql(`
+  query getPerpTradePositions(
+    $address: String!
+    $platform: Platform!
+    $startedAt: Date
+    $stoppedAt: Date
+    $endedAt: Date
+  ) {
+    getPerpTradePositions(
+      address: $address
+      platform: $platform
+      startedAt: $startedAt
+      stoppedAt: $stoppedAt
+      endedAt: $endedAt
+    ) {
+      ...PerpTradePositionsWithSummaryInfo
     }
   }
 `);
@@ -145,19 +181,26 @@ export const INITIALIZE_PNL_SNAPSHOT_V2_DOCUMENT = graphql(`
   }
 `);
 
-function getPnlSnapshotV2Info(
-  snapshot: GetPnlSnapshotsV2Query["getPnlSnapshotsV2"]["edges"][number]["node"],
+function unwrapPositionsWithSummary(
+  info: GetPerpTradePositionsQuery["getPerpTradePositions"],
 ) {
-  const snapshotInfo = getFragmentData(
-    PNL_SNAPSHOT_V2_DETAILS_INFO_FRAGMENT_DOCUMENT,
-    snapshot,
+  const unwrapped = getFragmentData(
+    PERP_TRADE_POSITIONS_WITH_SUMMARY_INFO_FRAGMENT_DOCUMENT,
+    info,
+  );
+
+  const positions = getFragmentData(
+    PERP_TRADE_POSITION_INFO_DOCUMENT,
+    unwrapped.positions,
   );
 
   return {
-    ...snapshotInfo,
-    perpTradeHistories: snapshotInfo.perpTradeHistories.map((history) =>
-      getFragmentData(PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT, history),
-    ),
+    ...unwrapped,
+    positions: positions.map((position) => ({
+      histories: position.histories.map((history) =>
+        getFragmentData(PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT, history),
+      ),
+    })),
   };
 }
 
@@ -258,9 +301,20 @@ export function useGetPnlSnapshotsV2(
     if (!data) {
       return [];
     }
-    return data.getPnlSnapshotsV2.edges.map((edge) =>
-      getPnlSnapshotV2Info(edge.node),
-    );
+
+    return data.getPnlSnapshotsV2.edges.map((edge) => {
+      const unwrapped = getFragmentData(
+        PNL_SNAPSHOT_V2_DETAILS_INFO_FRAGMENT_DOCUMENT,
+        edge.node,
+      );
+
+      return {
+        ...unwrapped,
+        positionsWithSummary: unwrapPositionsWithSummary(
+          unwrapped.positionsWithSummary,
+        ),
+      };
+    });
   }, [data]);
 
   const handleFetchMore = useCallback(() => {
@@ -285,30 +339,33 @@ export function useGetPnlSnapshotsV2(
   };
 }
 
-export function useGetPerpTradeHistories(
-  addresses: string[],
+export function useGetPerpTradePositions(
+  address: string,
   platform: Platform,
+  startedAt: Date | null,
+  stoppedAt: Date | null,
+  endedAt: Date | null,
 ) {
-  const { data, loading } = useQuery(GET_PERP_TRADE_HISTORIES_DOCUMENT, {
+  const { data, loading } = useQuery(GET_PERP_TRADE_POSITIONS_DOCUMENT, {
     variables: {
-      addresses,
+      address,
       platform,
+      startedAt,
+      stoppedAt,
+      endedAt,
     },
   });
 
-  const histories = useMemo(() => {
+  const result = useMemo(() => {
     if (!data) {
-      return [];
+      return null;
     }
-    return data.getPerpTradeHistories.map((history) =>
-      history.map((history) =>
-        getFragmentData(PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT, history),
-      ),
-    );
+
+    return unwrapPositionsWithSummary(data.getPerpTradePositions);
   }, [data]);
 
   return {
-    histories,
+    data: result,
     loading,
   };
 }

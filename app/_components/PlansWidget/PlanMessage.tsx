@@ -1,4 +1,4 @@
-import { PlanStatus, Plan } from "@/graphql/gql/graphql";
+import { PlanInfoFragment, PlanStatus } from "@/graphql/gql/graphql";
 import { Chip } from "@heroui/react";
 
 const statusColors: Record<
@@ -11,7 +11,7 @@ const statusColors: Record<
   [PlanStatus.Finished]: "secondary",
 };
 
-export function PlanMessage({ plan }: { plan: Plan }) {
+export function PlanMessage({ plan }: { plan: PlanInfoFragment }) {
   return (
     <div className="flex w-full flex-col gap-2">
       <div className="flex items-center gap-2">

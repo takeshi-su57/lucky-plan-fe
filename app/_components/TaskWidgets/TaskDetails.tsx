@@ -9,7 +9,6 @@ import {
 } from "@/graphql/gql/graphql";
 
 import { useStopTask } from "@/app-hooks/useTask";
-import { usePerformTask } from "@/app-hooks/useTask";
 
 import { ActionView } from "@/app-components/ActionsWidget/ActionView";
 
@@ -21,16 +20,7 @@ export type TaskDetailsProps = {
 };
 
 export function TaskDetails({ task, missionStatus }: TaskDetailsProps) {
-  const performTask = usePerformTask();
   const stopTask = useStopTask();
-
-  const handlePerformTask = useCallback(() => {
-    performTask({
-      variables: {
-        id: task.id,
-      },
-    });
-  }, [performTask, task.id]);
 
   const handleStopTask = useCallback(() => {
     stopTask({
@@ -45,14 +35,9 @@ export function TaskDetails({ task, missionStatus }: TaskDetailsProps) {
       {missionStatus === MissionStatus.Opened &&
       task.status !== TaskStatus.Stopped &&
       task.status !== TaskStatus.Completed ? (
-        <div className="flex items-center gap-2">
-          <Button onPress={handlePerformTask} size="sm" color="primary">
-            Perform
-          </Button>
-          <Button onPress={handleStopTask} size="sm" color="danger">
-            Stop
-          </Button>
-        </div>
+        <Button onPress={handleStopTask} size="sm" color="danger">
+          Stop
+        </Button>
       ) : null}
 
       <div className="flex justify-between">

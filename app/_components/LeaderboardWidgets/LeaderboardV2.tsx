@@ -76,43 +76,36 @@ export function LeaderboardV2({ isDesc, platform, date }: LeaderboardV2Props) {
           </div>
         </div>
       ) : (
-        <div className="border-default-200 bg-content1 shadow-small w-full overflow-hidden rounded-lg border p-3">
+        <div className="bg-content1 shadow-small w-full overflow-hidden rounded-lg p-4">
           {loading && pnlSnapshots.length === 0 ? (
-            <div className="flex min-h-75 w-full items-center justify-center">
+            <div
+              className="flex w-full items-center justify-center"
+              style={{ height: "calc(100vh - 250px)", minHeight: 520 }}
+            >
               <Spinner color="warning" size="lg" />
             </div>
           ) : (
             <Virtuoso
-              style={{ height: "calc(100vh - 190px)", minHeight: 520 }}
+              style={{ height: "calc(100vh - 250px)", minHeight: 520 }}
               data={pnlSnapshots}
               endReached={() => {
                 if (hasMore && !loading) fetchMore();
               }}
               overscan={200}
               itemContent={(_index, item) => (
-                <div className="flex w-full flex-col gap-3 pb-4">
-                  <span
-                    className={twMerge(
-                      "min-h-6",
-                      activeAddresses[item.address.toLowerCase()]
-                        ? "text-green-400"
-                        : "text-foreground",
-                    )}
-                  >
-                    {activeAddresses[item.address.toLowerCase()] && (
-                      <span className="rounded-md bg-green-400/10 px-2 py-1 text-xs font-semibold text-green-400">
-                        Active
-                      </span>
-                    )}
-                  </span>
+                <div className="flex w-full flex-col pr-1">
                   <PerpEventLogPnlChart
                     address={item.address as Address}
                     platform={platform}
-                    perpTradeHistories={item.perpTradeHistories}
-                    range={{
-                      to: date,
-                    }}
+                    positionsWithSummary={item.positionsWithSummary}
                     mode="lightweight"
+                    className={twMerge(
+                      activeAddresses[item.address.toLowerCase()] &&
+                        "bg-green-500/20",
+                    )}
+                    startedAt={null}
+                    stoppedAt={null}
+                    endedAt={date}
                   />
                 </div>
               )}

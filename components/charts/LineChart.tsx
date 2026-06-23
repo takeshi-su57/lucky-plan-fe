@@ -3,9 +3,8 @@
 import { memo, useRef, useEffect, useCallback, useState } from "react";
 import Chart from "chart.js/auto";
 import { twMerge } from "tailwind-merge";
-import { Button, Checkbox, useDisclosure } from "@heroui/react";
+import { Checkbox } from "@heroui/react";
 import { CheckboxGroup } from "@heroui/react";
-import { StandardModal } from "../modals/StandardModal";
 
 export type LineChartProps = {
   title?: string;
@@ -29,13 +28,8 @@ const LineChart = memo(function LineChart({
   initialSelected,
 }: LineChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
-  const modalChartRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const modalContainerRef = useRef<HTMLDivElement>(null);
   const ref = useRef<Chart>(null);
-  const modalRef = useRef<Chart>(null);
-
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const [selected, setSelected] = useState<string[]>(initialSelected || []);
 
@@ -59,8 +53,8 @@ const LineChart = memo(function LineChart({
             pointRadius: 0,
             fill: {
               target: "origin",
-              above: "#022c22", // Area will be red above the origin
-              below: "#450a0a", // And blue below the origin
+              above: "rgb(16 185 129 / 0.72)",
+              below: "rgb(239 68 68 / 0.72)",
             },
             borderWidth: 1,
             borderColor: "#525252",
@@ -105,84 +99,10 @@ const LineChart = memo(function LineChart({
     };
   }, [drawChart]);
 
-  const drawModalChart = useCallback(() => {
-    if (modalRef.current) {
-      modalRef.current.destroy();
-    }
-
-    const chartData = data.length === 0 ? EMPTY_CHART_DATA : data;
-
-    const chartContainer = modalChartRef.current!;
-
-    modalRef.current = new Chart(chartContainer, {
-      type: "line",
-      data: {
-        labels: chartData.map((item) => item.label),
-        datasets: [
-          {
-            label: "Amount",
-            data: chartData.map((item) => item.value),
-            pointRadius: 0,
-            fill: {
-              target: "origin",
-              above: "#022c22", // Area will be red above the origin
-              below: "#450a0a", // And blue below the origin
-            },
-            borderWidth: 1,
-            borderColor: "#525252",
-          },
-        ],
-      },
-      options: {
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            display: true,
-          },
-          y: {
-            display: true,
-          },
-        },
-        plugins: {
-          legend: {
-            display: false,
-          },
-        },
-      },
-    });
-  }, [data]);
-
-  useEffect(() => {
-    if (!modalChartRef.current || !modalContainerRef.current || !isOpen) {
-      return;
-    }
-
-    drawModalChart();
-
-    const observer = new ResizeObserver(() => {
-      drawModalChart();
-    });
-
-    observer.observe(modalContainerRef.current);
-
-    return () => {
-      modalRef.current?.destroy();
-      observer.disconnect();
-    };
-  }, [drawModalChart, isOpen]);
-
   return (
     <div className="relative flex w-full flex-col gap-3">
-      <div className="absolute top-3 left-4 z-1000 flex flex-row items-center gap-1">
+      <div className="absolute top-3 left-4 z-1000 flex flex-row items-center gap-1 bg-white">
         <span className="text-xs font-semibold">{title || ""}</span>
-        <Button
-          size="sm"
-          variant="ghost"
-          onPress={onOpen}
-          className="h-7 px-2 text-xs"
-        >
-          Details
-        </Button>
       </div>
 
       <div className="absolute right-4 bottom-4 z-1000 flex flex-row items-center justify-between gap-0">
@@ -206,26 +126,6 @@ const LineChart = memo(function LineChart({
       >
         <canvas ref={chartRef} />
       </div>
-
-      <StandardModal
-        isOpen={isOpen}
-        isDismissable={false}
-        onOpenChange={onOpenChange}
-        backdrop="blur"
-        classNames={{
-          base: "max-w-full max-h-full",
-        }}
-      >
-        <div
-          ref={modalContainerRef}
-          className={twMerge(
-            "relative h-full w-full items-center justify-center gap-8 rounded-md p-3.5",
-            className,
-          )}
-        >
-          <canvas ref={modalChartRef} />
-        </div>
-      </StandardModal>
     </div>
   );
 });

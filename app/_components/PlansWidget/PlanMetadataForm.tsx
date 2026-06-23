@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, RangeValue, Input, DateRangePicker } from "@heroui/react";
+import { Button, DateRangePicker, Input, RangeValue } from "@heroui/react";
 import { now } from "@internationalized/date";
 import type { DateValue } from "@react-types/datepicker";
 
@@ -100,7 +100,7 @@ export function PlanMetadataForm({
         />
 
         <DateRangePicker
-          label="Plan Duration"
+          label={"Plan Duration"}
           visibleMonths={2}
           value={scheduleRange as any}
           onChange={setScheduleRange as any}

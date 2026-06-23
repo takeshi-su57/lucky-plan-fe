@@ -83,11 +83,14 @@ export function PlanRow({ plan }: PlanRowProps) {
 
   return (
     <div className="pb-3 select-none">
-      <Card>
+      <Card
+        shadow="none"
+        className="border-default-200 bg-content1 mb-4 w-full shrink-0 rounded-lg border"
+      >
         <CardBody>
           <div className="flex items-start justify-between">
             <div className="flex h-full items-start gap-2">
-              <div className="flex w-[300px] flex-col gap-2 border-r border-neutral-800">
+              <div className="flex w-75 flex-col gap-2 border-r border-neutral-800">
                 <div className="flex gap-4">
                   <span className="text-sm text-gray-400">{plan.title}</span>
                   <Chip variant="flat">Plan {plan.id}</Chip>
@@ -102,7 +105,7 @@ export function PlanRow({ plan }: PlanRowProps) {
                 </div>
               </div>
 
-              <div className="flex h-full w-[170px] flex-col gap-2 border-r border-neutral-800">
+              <div className="flex h-full w-43 flex-col gap-2 border-r border-neutral-800">
                 {items.map(
                   (item) =>
                     item.value !== null && (

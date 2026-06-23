@@ -13,20 +13,15 @@ import { StandardModal } from "@/components/modals/StandardModal";
 import { PositionItem } from "./PositionItem";
 import {
   PerpTradeHistoryOperation,
-  Platform,
   PerpTradeHistory,
 } from "@/graphql/gql/graphql";
 import { PairChip } from "../PairChip";
-import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
-import { Address } from "viem";
-import { EventLogsModalButton } from "../EventLogsModalButton";
 
 export type HistoriesViewProps = {
-  platform: Platform;
   histories: PerpTradeHistory[];
 };
 
-export function HistoriesView({ platform, histories }: HistoriesViewProps) {
+export function HistoriesView({ histories }: HistoriesViewProps) {
   const { isOpen, onOpenChange, onOpen } = useDisclosure();
 
   const latestHistory = histories[histories.length - 1];
@@ -74,18 +69,6 @@ export function HistoriesView({ platform, histories }: HistoriesViewProps) {
             </h1>
 
             <PairChip pairName={latestHistory.pair} />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-neutral-400">
-              <AddressWidget address={latestHistory.address as Address} />
-              {`on ${platform}`}
-            </div>
-
-            <EventLogsModalButton
-              address={latestHistory.address as Address}
-              platform={platform}
-            />
           </div>
 
           <div className="flex flex-wrap items-center gap-6">

@@ -15,6 +15,7 @@ import {
   BotForwardDetails,
   PlanForwardDetailsInfoFragment,
   PlanForwardDetails,
+  PlanInfoFragment,
   PlanSummary,
   PlanStatus,
   Platform,
@@ -116,18 +117,8 @@ export const GET_PLAN_BY_ID_DOCUMENT = graphql(`
 `);
 
 export const GET_PLAN_BOT_GROUPS_DOCUMENT = graphql(`
-  query getPlanBotGroups(
-    $planId: Int!
-    $page: Int!
-    $pageSize: Int!
-    $hideDead: Boolean!
-  ) {
-    getPlanBotGroups(
-      planId: $planId
-      page: $page
-      pageSize: $pageSize
-      hideDead: $hideDead
-    ) {
+  query getPlanBotGroups($planId: Int!, $page: Int!, $pageSize: Int!) {
+    getPlanBotGroups(planId: $planId, page: $page, pageSize: $pageSize) {
       items {
         leaderAddress
         platform
@@ -256,31 +247,6 @@ export function useGetPlansByStatus(status: PlanStatus) {
   };
 }
 
-export function useLivePlans() {
-  const createdPlans = useGetPlansByStatus(PlanStatus.Created);
-  const startedPlans = useGetPlansByStatus(PlanStatus.Started);
-  const stoppedPlans = useGetPlansByStatus(PlanStatus.Stopped);
-
-  const handleFetchMore = useCallback(() => {
-    createdPlans.fetchMore();
-    startedPlans.fetchMore();
-    stoppedPlans.fetchMore();
-  }, [createdPlans, startedPlans, stoppedPlans]);
-
-  return {
-    plans: [
-      ...createdPlans.plans,
-      ...startedPlans.plans,
-      ...stoppedPlans.plans,
-    ],
-    loading:
-      createdPlans.loading || startedPlans.loading || stoppedPlans.loading,
-    fetchMore: handleFetchMore,
-    hasMore:
-      createdPlans.hasMore || startedPlans.hasMore || stoppedPlans.hasMore,
-  };
-}
-
 export function useGetPlanSummariesByStatus(status: PlanStatus) {
   const [query, { data, fetchMore, loading, error }] = useLazyQuery(
     GET_PLAN_SUMMARIES_BY_STATUS_DOCUMENT,
@@ -339,17 +305,26 @@ export function useLivePlanSummaries() {
     stoppedPlans.fetchMore();
   }, [createdPlans, startedPlans, stoppedPlans]);
 
+  const plans = useMemo(
+    () => [...createdPlans.plans, ...startedPlans.plans, ...stoppedPlans.plans],
+    [createdPlans.plans, startedPlans.plans, stoppedPlans.plans],
+  );
+
   return {
-    plans: [
-      ...createdPlans.plans,
-      ...startedPlans.plans,
-      ...stoppedPlans.plans,
-    ],
+    plans,
     loading:
       createdPlans.loading || startedPlans.loading || stoppedPlans.loading,
     fetchMore: handleFetchMore,
     hasMore:
       createdPlans.hasMore || startedPlans.hasMore || stoppedPlans.hasMore,
+  };
+}
+
+export function useFinishedPlanSummaries() {
+  const finishedPlans = useGetPlanSummariesByStatus(PlanStatus.Finished);
+
+  return {
+    ...finishedPlans,
   };
 }
 
@@ -362,6 +337,7 @@ export function useSubscribePlan() {
       variables: {
         userId: address?.toLowerCase() ?? "",
       },
+      skip: !address,
     },
   );
   const { data: updatedData, error: error2 } = useSubscription(
@@ -370,11 +346,51 @@ export function useSubscribePlan() {
       variables: {
         userId: address?.toLowerCase() ?? "",
       },
+      skip: !address,
     },
   );
 
   const client = useApolloClient();
   const { enqueueSnackbar } = useSnackbar();
+
+  const writePlanToCache = useCallback(
+    (planInfo: PlanInfoFragment) => {
+      client.cache.writeFragment({
+        id: client.cache.identify({
+          __typename: "Plan",
+          id: planInfo.id,
+        }),
+        fragment: PLAN_INFO_FRAGMENT_DOCUMENT,
+        fragmentName: "PlanInfo",
+        data: {
+          __typename: "Plan",
+          ...planInfo,
+        },
+      });
+
+      client.cache.updateQuery(
+        {
+          query: GET_PLAN_BY_ID_DOCUMENT,
+          variables: { id: planInfo.id },
+        },
+        (oldData) => {
+          if (!oldData?.getPlanById) {
+            return oldData;
+          }
+
+          return {
+            ...oldData,
+            getPlanById: {
+              ...oldData.getPlanById,
+              ...planInfo,
+              __typename: "Plan" as const,
+            },
+          };
+        },
+      );
+    },
+    [client.cache],
+  );
 
   useEffect(() => {
     if (updatedData && !error2) {
@@ -382,6 +398,8 @@ export function useSubscribePlan() {
         PLAN_INFO_FRAGMENT_DOCUMENT,
         updatedData.planUpdated,
       );
+
+      writePlanToCache(planInfo);
 
       enqueueSnackbar(<PlanMessage plan={planInfo} />, {
         variant: "info",
@@ -499,7 +517,15 @@ export function useSubscribePlan() {
         }
       }
     }
-  }, [client.cache, enqueueSnackbar, error1, error2, newData, updatedData]);
+  }, [
+    client.cache,
+    enqueueSnackbar,
+    error1,
+    error2,
+    newData,
+    updatedData,
+    writePlanToCache,
+  ]);
 
   useEffect(() => {
     if (newData && !error1) {
@@ -507,6 +533,8 @@ export function useSubscribePlan() {
         PLAN_INFO_FRAGMENT_DOCUMENT,
         newData.planCreated,
       );
+
+      writePlanToCache(planInfo);
 
       enqueueSnackbar(<PlanMessage plan={planInfo} />, {
         variant: "info",
@@ -572,7 +600,7 @@ export function useSubscribePlan() {
         );
       }
     }
-  }, [client.cache, enqueueSnackbar, error1, newData]);
+  }, [client.cache, enqueueSnackbar, error1, newData, writePlanToCache]);
 }
 
 export function useGetPlanById(id: number) {
@@ -601,7 +629,6 @@ export type BotGroupData = {
 
 export function useGetPlanBotGroups(
   planId: number,
-  hideDead: boolean,
   page: number,
   pageSize: number = 10,
 ) {
@@ -610,7 +637,6 @@ export function useGetPlanBotGroups(
       planId,
       page,
       pageSize,
-      hideDead,
     },
     fetchPolicy: "network-only",
   });

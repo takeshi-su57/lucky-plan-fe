@@ -17,12 +17,12 @@ export type HistoryChartsProps = {
   cols?: 1 | 2 | 4;
 };
 
-type FormattedHistoryChartData = {
+export type FormattedHistoryChartData = {
   value: number;
   label: string;
 };
 
-function formatChartData(
+export function formatChartData(
   data: HistoryChartData[],
 ): FormattedHistoryChartData[] {
   return data.map((item) => ({
@@ -72,7 +72,10 @@ export const HistoryCharts = memo(function HistoryCharts({
               title={item.title}
               data={item.data}
               initialSelected={["y"]}
-              className="border-default-200 bg-content1 h-80 rounded-lg border"
+              className={twMerge(
+                "border-default-200 bg-content1 rounded-lg border",
+                cols === 1 ? "h-40" : "h-80",
+              )}
             />
           ) : null}
 
@@ -81,7 +84,10 @@ export const HistoryCharts = memo(function HistoryCharts({
               title={item.title}
               data={item.data}
               initialSelected={["y"]}
-              className="border-default-200 bg-content1 h-80 w-full rounded-lg border"
+              className={twMerge(
+                "border-default-200 bg-content1 w-full rounded-lg border",
+                cols === 1 ? "h-40" : "h-80",
+              )}
             />
           ) : null}
         </div>

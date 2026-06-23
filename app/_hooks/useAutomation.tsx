@@ -22,6 +22,7 @@ import { BotBackwardDetailsInfoFragment } from "@/graphql/gql/graphql";
 
 import { FOLLOWER_INFO_FRAGMENT_DOCUMENT } from "./useFollower";
 import {
+  GET_PLAN_BOT_GROUPS_DOCUMENT,
   PLAN_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT,
   PLAN_INFO_FRAGMENT_DOCUMENT,
 } from "./usePlan";
@@ -39,7 +40,6 @@ export const BOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     strategyId
     planId
     leaderContractId
-    leaderCollateralBaseline
     leaderStartedBlock
     leaderEndedBlock
     followerContractId
@@ -72,7 +72,6 @@ export const BOT_FORWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     strategyId
     planId
     leaderContractId
-    leaderCollateralBaseline
     leaderStartedBlock
     leaderEndedBlock
     followerContractId
@@ -108,7 +107,6 @@ export const BOT_BACKWARD_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     strategyId
     planId
     leaderContractId
-    leaderCollateralBaseline
     leaderStartedBlock
     leaderEndedBlock
     followerContractId
@@ -420,7 +418,6 @@ export function useSubscribeBot() {
             followerStartedBlock: botInfo.followerStartedBlock,
             id: botInfo.id,
             leaderAddress: botInfo.leaderAddress,
-            leaderCollateralBaseline: botInfo.leaderCollateralBaseline,
             leaderContract: botInfo.leaderContract,
             leaderContractId: botInfo.leaderContractId,
             leaderEndedBlock: botInfo.leaderEndedBlock,
@@ -499,8 +496,20 @@ export function useSubscribeBot() {
           }
         }
       });
+
+      client.refetchQueries({
+        include: [GET_PLAN_BOT_GROUPS_DOCUMENT],
+      });
     }
-  }, [client.cache, enqueueSnackbar, error1, error2, newData, updatedData]);
+  }, [
+    client,
+    client.cache,
+    enqueueSnackbar,
+    error1,
+    error2,
+    newData,
+    updatedData,
+  ]);
 
   useEffect(() => {
     if (newData && !error1) {
@@ -529,7 +538,6 @@ export function useSubscribeBot() {
             followerStartedBlock: botInfo.followerStartedBlock,
             id: botInfo.id,
             leaderAddress: botInfo.leaderAddress,
-            leaderCollateralBaseline: botInfo.leaderCollateralBaseline,
             leaderContract: botInfo.leaderContract,
             leaderContractId: botInfo.leaderContractId,
             leaderEndedBlock: botInfo.leaderEndedBlock,
@@ -606,8 +614,12 @@ export function useSubscribeBot() {
           });
         }
       });
+
+      client.refetchQueries({
+        include: [GET_PLAN_BOT_GROUPS_DOCUMENT],
+      });
     }
-  }, [client.cache, enqueueSnackbar, error1, newData]);
+  }, [client, client.cache, enqueueSnackbar, error1, newData]);
 }
 
 export function useCreateBot() {

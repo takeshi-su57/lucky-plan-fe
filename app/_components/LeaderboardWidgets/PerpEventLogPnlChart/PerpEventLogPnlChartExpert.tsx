@@ -1,29 +1,144 @@
 "use client";
 
 import { Ref, useImperativeHandle, useMemo, useState } from "react";
-import { Select, SelectItem } from "@heroui/react";
+import { Button, Select, SelectItem, Spinner } from "@heroui/react";
 import type { Selection } from "@heroui/react";
+import { FaCopy } from "react-icons/fa";
 
 import { getHistoriesChartData } from "@/utils/historiesV2Chart";
+import { useGetPerpTradePositions } from "@/app/_hooks/useHistory";
+import {
+  PerpTradeHistory,
+  PerpTradeHistoryOperation,
+  Platform,
+} from "@/graphql/gql/graphql";
 import { HistoryCharts } from "../HistoryCharts";
 import { HistoriesSummary } from "./HistoriesSummary";
 import { ExpertPositionsPanel } from "./ExpertPositionsPanel";
-import { getPairKey, getTradePairs, parsePairKey } from "./utils";
+import { getTradePairs, parsePairKey } from "./utils";
 import { PerpEventLogPnlChartHandle, PerpEventLogPnlChartProps } from "./types";
+
+function roundTo(value: number, decimals = 2) {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  const factor = 10 ** decimals;
+  return Math.round(value * factor) / factor;
+}
+
+function getOperationLabel(operation: PerpTradeHistoryOperation) {
+  switch (operation) {
+    case PerpTradeHistoryOperation.Open:
+      return "open position";
+    case PerpTradeHistoryOperation.Close:
+      return "close position";
+    case PerpTradeHistoryOperation.IncreaseLeverage:
+      return "increase leverage";
+    case PerpTradeHistoryOperation.DecreaseLeverage:
+      return "decrease leverage";
+    case PerpTradeHistoryOperation.IncreaseSize:
+      return "increase size";
+    case PerpTradeHistoryOperation.DecreaseSize:
+      return "decrease size";
+    default:
+      return "trade update";
+  }
+}
+
+function getExportLogsPayload(
+  perpTradeHistories: PerpTradeHistory[],
+  address: string,
+  platform: Platform,
+) {
+  const sortedLogs = [...perpTradeHistories].sort((a, b) => {
+    return new Date(a.date).getTime() - new Date(b.date).getTime();
+  });
+
+  const timeline = sortedLogs.map((history) => {
+    const side = history.isLong ? "long" : "short";
+    const action = getOperationLabel(history.operation);
+
+    return {
+      when: new Date(history.date).toISOString(),
+      action,
+      market: history.pair,
+      side,
+      priceUsd: roundTo(history.price, 6),
+      leverageX: roundTo(history.leverage, 3),
+      sizeUsd: roundTo(history.sizeInUsd),
+      collateralUsd: roundTo(history.collateralInUsd),
+      realizedPnlUsd: roundTo(history.usdPnl),
+      summary: `${action} ${side} ${history.pair} @ ${roundTo(history.price, 6)} | size ${roundTo(history.sizeInUsd)} | collateral ${roundTo(history.collateralInUsd)} | lev ${roundTo(history.leverage, 3)}x | pnl ${roundTo(history.usdPnl)}`,
+    };
+  });
+
+  const actionsByType = timeline.reduce<Record<string, number>>((acc, item) => {
+    acc[item.action] = (acc[item.action] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const realizedPnlTotal = roundTo(
+    timeline.reduce((sum, item) => sum + item.realizedPnlUsd, 0),
+  );
+
+  const uniqueMarkets = Array.from(
+    new Set(timeline.map((item) => `${item.market}:${item.side}`)),
+  );
+
+  return {
+    meta: {
+      address,
+      platform,
+      sourceLogCount: sortedLogs.length,
+      usableHistoryCount: timeline.length,
+      skippedLogCount: sortedLogs.length - timeline.length,
+      exportedAt: new Date().toISOString(),
+      format: "lucky-plan-perp-trading-history-v2-readable",
+      range:
+        timeline.length > 0
+          ? {
+              from: timeline[0].when,
+              to: timeline[timeline.length - 1].when,
+            }
+          : null,
+    },
+    summary: {
+      totalActions: timeline.length,
+      realizedPnlTotalUsd: realizedPnlTotal,
+      actionsByType,
+      markets: uniqueMarkets,
+    },
+    timeline,
+  };
+}
 
 export function PerpEventLogPnlChartExpert({
   address,
   platform,
-  perpTradeHistories,
-  range,
   ref,
   cols = 2,
+  startedAt,
+  stoppedAt,
+  endedAt,
 }: PerpEventLogPnlChartProps & {
   ref?: Ref<PerpEventLogPnlChartHandle>;
 }) {
   const [selectedPair, setSelectedPair] = useState<Selection>(
     new Set<string>([]),
   );
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">(
+    "idle",
+  );
+  const { data, loading } = useGetPerpTradePositions(
+    address,
+    platform,
+    startedAt,
+    stoppedAt,
+    endedAt,
+  );
+
+  const canExport = !loading && data;
 
   useImperativeHandle(
     ref ?? null,
@@ -34,26 +149,22 @@ export function PerpEventLogPnlChartExpert({
     [selectedPair],
   );
 
-  const tradePairs = useMemo(
-    () => getTradePairs(perpTradeHistories),
-    [perpTradeHistories],
-  );
+  const tradePairs = useMemo(() => {
+    const missionHistories = (data?.positions || []).map(
+      (position) => position.histories,
+    );
+    const sortedHistories = missionHistories
+      .flat()
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return getTradePairs(sortedHistories || []);
+  }, [data]);
 
   const selectedPairKeys = useMemo(() => {
     return new Set(Array.from(selectedPair) as string[]);
   }, [selectedPair]);
 
-  const filteredHistories = useMemo(() => {
-    if (selectedPairKeys.size === 0) {
-      return perpTradeHistories;
-    }
-
-    return perpTradeHistories.filter((item) =>
-      selectedPairKeys.has(getPairKey(item.pair, item.isLong)),
-    );
-  }, [perpTradeHistories, selectedPairKeys]);
-
   const {
+    sortedHistories,
     missionHistories,
     pnlChartData,
     pnlAccChartData,
@@ -74,14 +185,55 @@ export function PerpEventLogPnlChartExpert({
     slope,
     r2,
   } = useMemo(() => {
-    return getHistoriesChartData(filteredHistories, {
-      range,
-    });
-  }, [filteredHistories, range]);
+    return getHistoriesChartData(data, selectedPairKeys);
+  }, [data, selectedPairKeys]);
+
+  const copyExportPayload = async () => {
+    try {
+      const exportPayload = getExportLogsPayload(
+        sortedHistories,
+        address,
+        platform,
+      );
+
+      await navigator.clipboard.writeText(
+        JSON.stringify(exportPayload, null, 2),
+      );
+      setCopyState("copied");
+      setTimeout(() => setCopyState("idle"), 1800);
+    } catch {
+      setCopyState("failed");
+      setTimeout(() => setCopyState("idle"), 1800);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-80 w-full items-center justify-center">
+        <Spinner color="warning" size="lg" />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex min-h-125 gap-4 p-3">
-      <div className="border-default-200 bg-content1 flex w-fit flex-col gap-4 rounded-lg border p-5">
+    <div className="grid h-full min-h-0 grid-cols-[240px_260px_minmax(0,1fr)] items-start gap-4 p-3">
+      <div className="border-default-200 bg-content1 flex h-full min-h-0 flex-col gap-4 rounded-lg border p-5">
+        <Button
+          size="sm"
+          variant="flat"
+          color={copyState === "failed" ? "danger" : "primary"}
+          isDisabled={!canExport}
+          onPress={copyExportPayload}
+          startContent={<FaCopy size={14} />}
+          className="h-9 rounded-lg px-3 text-xs font-semibold"
+        >
+          {copyState === "copied"
+            ? "Copied"
+            : copyState === "failed"
+              ? "Copy failed"
+              : "Copy Trading Histories JSON"}
+        </Button>
+
         <Select
           variant="underlined"
           label="Pairs"
@@ -121,10 +273,7 @@ export function PerpEventLogPnlChartExpert({
         />
       </div>
 
-      <ExpertPositionsPanel
-        platform={platform}
-        missionHistories={missionHistories}
-      />
+      <ExpertPositionsPanel missionHistories={missionHistories} />
 
       <HistoryCharts
         pnlChartData={pnlChartData}

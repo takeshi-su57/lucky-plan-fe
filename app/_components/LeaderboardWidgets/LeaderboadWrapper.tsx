@@ -8,7 +8,6 @@ import {
   DatePicker,
   Select,
   SelectItem,
-  Input,
 } from "@heroui/react";
 import { parseDate, now } from "@internationalized/date";
 import dayjs from "dayjs";
@@ -17,8 +16,6 @@ import { getServerTimezone } from "@/utils";
 import { Platform } from "@/graphql/gql/graphql";
 
 import { LeaderboardV2 } from "./LeaderboardV2";
-
-import { EventLogsModalButton } from "./EventLogsModalButton";
 
 type LeaderboardParams = {
   platform: Platform;
@@ -37,7 +34,6 @@ export function LeaderboadWrapper() {
 
   const [draft, setDraft] = useState<LeaderboardParams>(defaultParams);
   const [applied, setApplied] = useState<LeaderboardParams>(defaultParams);
-  const [searchAddress, setSearchAddress] = useState<string>("");
 
   const hasChanges = useMemo(() => {
     return (
@@ -120,25 +116,6 @@ export function LeaderboadWrapper() {
           >
             {draft.isDesc ? "Desc" : "Asc"}
           </Checkbox>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Input
-            placeholder="Search by address"
-            value={searchAddress}
-            onChange={(e) => setSearchAddress(e.target.value)}
-            size="sm"
-            variant="bordered"
-            className="w-64"
-            classNames={{
-              inputWrapper: "h-9 rounded-lg border-default-200 bg-content2",
-            }}
-          />
-
-          <EventLogsModalButton
-            address={searchAddress}
-            platform={draft.platform}
-          />
 
           {hasChanges && (
             <Button
@@ -150,6 +127,18 @@ export function LeaderboadWrapper() {
               Apply
             </Button>
           )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            color="primary"
+            variant="shadow"
+            onPress={() => router.push("/leaderboards/analyze")}
+            size="sm"
+            className="h-9 rounded-lg px-5 text-xs font-semibold"
+          >
+            Analyze
+          </Button>
         </div>
       </div>
 

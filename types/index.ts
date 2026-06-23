@@ -47,7 +47,6 @@ export type VirtualBot = {
   followerContract: ContractItem;
   leaderAddress: string;
   leaderContract: ContractItem;
-  leaderCollateralBaseline: number;
   strategy: VirtualStrategy;
 };
 

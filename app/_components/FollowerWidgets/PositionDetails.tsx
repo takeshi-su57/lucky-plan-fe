@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button, Divider, useDisclosure } from "@heroui/react";
 import { JsonView, allExpanded, defaultStyles } from "react-json-view-lite";
 import "react-json-view-lite/dist/index.css";
@@ -11,15 +12,16 @@ import { MissionDetails } from "../MissionWidgets/MissionDetails";
 import { SlUpdateButton } from "./SlUpdateButton";
 import { TpUpdateButton } from "./TpUpdateButton";
 import { WithdrawPositivePnlButton } from "./WithdrawPositivePnlButton";
-import { EventLogsModalButton } from "../LeaderboardWidgets/EventLogsModalButton";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import { UpdateLeverageButton } from "./UpdateLeverageButton";
 import { IncreasePositionButton } from "./IncreasePositionButton";
 import { DecreasePositionButton } from "./DecreasePositionButton";
 import { SLTPEditorButton } from "./SLTPEditorButton";
 import { SLTPCard } from "./SLTPCard";
+import { PerpEventLogPnlChart } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
 import { getGnsPositionKey } from "@/web3/gns/utils";
 import { getCollateral } from "@/web3/gns/v10/configs";
+import { Address, isAddress } from "viem";
 
 export type PositionDetailsProps = {
   address: string;
@@ -40,7 +42,19 @@ export function PositionDetails({
   chainId,
   diamondAddress,
 }: PositionDetailsProps) {
-  const { isOpen, onOpenChange, onOpen } = useDisclosure();
+  const {
+    isOpen: isMissionDrawerOpen,
+    onOpenChange: onMissionDrawerOpenChange,
+    onOpen: onMissionDrawerOpen,
+  } = useDisclosure();
+  const {
+    isOpen: isEventLogsDrawerOpen,
+    onOpenChange: onEventLogsDrawerOpenChange,
+    onOpen: onEventLogsDrawerOpen,
+  } = useDisclosure();
+  const [eventLogsPlatform, setEventLogsPlatform] = useState<Platform>(
+    Platform.Gns,
+  );
 
   const sltps = useGetAllSLTPS(address, index);
 
@@ -83,6 +97,19 @@ export function PositionDetails({
         },
       },
     });
+  };
+
+  const eventLogsAddress = mission?.tasks[0]?.action?.address;
+  const isEventLogsAddressValid =
+    !!eventLogsAddress && isAddress(eventLogsAddress);
+
+  const handleOpenEventLogs = (platform: Platform) => {
+    if (!isEventLogsAddressValid) {
+      return;
+    }
+
+    setEventLogsPlatform(platform);
+    onEventLogsDrawerOpen();
   };
 
   return (
@@ -164,18 +191,24 @@ export function PositionDetails({
 
           {mission ? (
             <div className="flex flex-row items-center gap-4">
-              <EventLogsModalButton
-                address={mission.tasks[0]?.action?.address}
-                platform={Platform.Gmx}
-                label="GMX Event Logs"
-              />
-              <EventLogsModalButton
-                address={mission.tasks[0]?.action?.address}
-                platform={Platform.Gns}
-                label="GNS Event Logs"
-              />
+              <Button
+                color="primary"
+                size="sm"
+                isDisabled={!isEventLogsAddressValid}
+                onPress={() => handleOpenEventLogs(Platform.Gmx)}
+              >
+                GMX Event Logs
+              </Button>
+              <Button
+                color="primary"
+                size="sm"
+                isDisabled={!isEventLogsAddressValid}
+                onPress={() => handleOpenEventLogs(Platform.Gns)}
+              >
+                GNS Event Logs
+              </Button>
 
-              <Button onPress={onOpen} color="primary" size="sm">
+              <Button onPress={onMissionDrawerOpen} color="primary" size="sm">
                 Mission Details
               </Button>
             </div>
@@ -203,14 +236,35 @@ export function PositionDetails({
       </div>
 
       <RightDrawer
-        isOpen={isOpen}
+        isOpen={isMissionDrawerOpen}
         isDismissable={false}
-        onOpenChange={onOpenChange}
+        onOpenChange={onMissionDrawerOpenChange}
         classNames={{ base: "max-w-[80%]" }}
       >
         <div className="flex w-full flex-col gap-6">
           {mission ? (
             <MissionDetails mission={mission} followerContractId={contractId} />
+          ) : null}
+        </div>
+      </RightDrawer>
+
+      <RightDrawer
+        isOpen={isEventLogsDrawerOpen}
+        isDismissable={false}
+        onOpenChange={onEventLogsDrawerOpenChange}
+        classNames={{ base: "max-w-[80%]" }}
+      >
+        <div className="flex w-full flex-col gap-6">
+          {isEventLogsAddressValid ? (
+            <PerpEventLogPnlChart
+              address={eventLogsAddress as Address}
+              platform={eventLogsPlatform}
+              mode="expert"
+              cols={1}
+              startedAt={null}
+              stoppedAt={null}
+              endedAt={null}
+            />
           ) : null}
         </div>
       </RightDrawer>

@@ -14,7 +14,7 @@ export default function Layout({
 
   if (!userJwtQuery.isFetched) {
     return (
-      <div className="flex h-[300px] w-full items-center justify-center">
+      <div className="flex h-75 w-full items-center justify-center">
         <Spinner size="lg" color="warning" />
       </div>
     );
@@ -22,7 +22,7 @@ export default function Layout({
 
   if (!userJwtQuery.data) {
     return (
-      <div className="flex h-[300px] w-full flex-col items-center justify-center gap-2">
+      <div className="flex h-75 w-full flex-col items-center justify-center gap-2">
         <WalletConnectButton />
         <p className="text-sm text-gray-500">
           Please connect your wallet to continue
@@ -33,7 +33,7 @@ export default function Layout({
 
   if (userJwtQuery.data.permission === UserPermission.Trial) {
     return (
-      <div className="flex h-[300px] w-full flex-col items-center justify-center gap-2">
+      <div className="flex h-75 w-full flex-col items-center justify-center gap-2">
         <p className="text-base text-gray-500">
           You are not authorized to access this page.
         </p>

@@ -29,7 +29,6 @@ import { useCloseMission } from "@/app/_hooks/useMission";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { EditStrategyModal } from "./EditAutomationModal";
-import { EventLogsWidget } from "../LeaderboardWidgets/EventLogsWidget";
 import { twMerge } from "tailwind-merge";
 import { PaginatedViews } from "@/components/views/PaginatedViews";
 
@@ -122,7 +121,7 @@ export function AutomationDetails({ bot }: AutomationDetailsProps) {
             address={bot.followerAddress as Address}
             className="text-sm"
           />
-          <span>{bot.leaderContract.chainId}</span>
+          <span>{bot.followerContract.chainId}</span>
         </div>
 
         <div className="flex flex-col gap-2 font-mono">
@@ -248,7 +247,7 @@ export function AutomationDetails({ bot }: AutomationDetailsProps) {
             onChangePage={setPage}
             loading={false}
           >
-            <div className="flex h-[500px] w-full flex-col gap-6 overflow-y-auto">
+            <div className="flex h-125 w-full flex-col gap-6 overflow-y-auto">
               <Accordion isCompact variant="splitted">
                 {closedMissions
                   .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
@@ -268,12 +267,6 @@ export function AutomationDetails({ bot }: AutomationDetailsProps) {
           </PaginatedViews>
         </CardBody>
       </Card>
-
-      <EventLogsWidget
-        address={bot.leaderAddress as Address}
-        platform={bot.leaderContract.platform}
-        cols={1}
-      />
     </div>
   );
 }

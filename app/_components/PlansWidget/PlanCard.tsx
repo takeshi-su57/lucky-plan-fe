@@ -96,7 +96,7 @@ export function PlanCard({ plan }: PlanCardProps) {
 
   return (
     <div className="pr-4 select-none">
-      <Card>
+      <Card shadow="sm">
         <CardHeader className="flex flex-row items-start gap-2 p-3">
           <div className="flex flex-1 flex-col">
             <span className="text-base font-bold text-neutral-400">

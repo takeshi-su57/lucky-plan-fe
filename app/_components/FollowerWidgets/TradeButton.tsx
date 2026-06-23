@@ -24,7 +24,7 @@ export function TradeButton() {
         isOpen={isOpen}
         isDismissable={false}
         onOpenChange={onOpenChange}
-        classNames={{ base: twMerge("max-w-[80%]") }}
+        classNames={{ base: twMerge("max-w-[90%]") }}
       >
         <Followers />
       </RightDrawer>

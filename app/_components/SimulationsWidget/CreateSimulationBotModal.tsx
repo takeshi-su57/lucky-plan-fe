@@ -1,0 +1,203 @@
+"use client";
+
+import { useState, useRef, ChangeEventHandler } from "react";
+import { Button, Input, Select, SelectItem } from "@heroui/react";
+import { Address, isAddress } from "viem";
+
+import { RightDrawer } from "@/components/modals/RightDrawer";
+
+import { useGetAllContracts } from "@/app-hooks/useContract";
+
+import { NumericInput } from "@/components/inputs/NumericInput";
+
+import { useGetPerpTradePositions } from "@/app/_hooks/useHistory";
+import {
+  ContractStatus,
+  Platform,
+  SimulationPlanDetails,
+} from "@/graphql/gql/graphql";
+import {
+  PerpEventLogPnlChart,
+  PerpEventLogPnlChartHandle,
+} from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
+import { BotMode } from "@/graphql/gql/graphql";
+import { useBatchCreateSimulationBots } from "@/app/_hooks/useSimulations";
+import dayjs from "dayjs";
+
+export type CreateSimulationBotModalProps = {
+  simulationPlan: SimulationPlanDetails;
+  isOpen: boolean;
+  onClose: () => void;
+  onOpenChange: (value: boolean) => void;
+};
+
+export function CreateSimulationBotModal({
+  simulationPlan,
+  isOpen,
+  onClose,
+  onOpenChange,
+}: CreateSimulationBotModalProps) {
+  const { batchCreateSimulationBots, loading: createBotsLoading } =
+    useBatchCreateSimulationBots();
+
+  const allContracts = useGetAllContracts();
+
+  const chartRef = useRef<PerpEventLogPnlChartHandle | null>(null);
+
+  const [platform, setPlatform] = useState<Platform>(Platform.Gns);
+  const [direction, setDirection] = useState<BotMode>(BotMode.Default);
+
+  const [leaderAddress, setLeaderAddress] = useState<string>("");
+
+  const [ratio, setRatio] = useState("0.1");
+
+  const { data: positionsWithSummary } = useGetPerpTradePositions(
+    leaderAddress,
+    platform,
+    null,
+    null,
+    simulationPlan.cursor,
+  );
+
+  const handleChangePlatform: ChangeEventHandler<HTMLSelectElement> = (
+    event,
+  ) => {
+    const value = event.target.value;
+
+    if (value.trim() !== "") {
+      setPlatform(value as Platform);
+    }
+  };
+
+  const handleChangeDirection: ChangeEventHandler<HTMLSelectElement> = (
+    event,
+  ) => {
+    const value = event.target.value;
+
+    if (value.trim() !== "") {
+      setDirection(value as BotMode);
+    }
+  };
+
+  let ratioHelper = "";
+
+  if (Number.isNaN(+ratio)) {
+    ratioHelper = "Invalid ratio";
+  }
+
+  const isDisabled = !isAddress(leaderAddress) || createBotsLoading;
+
+  const handleConfirm = () => {
+    if (isDisabled) {
+      return;
+    }
+
+    if (ratio.trim() === "") {
+      return;
+    }
+
+    const availableContracts = allContracts
+      .filter((contract) => contract.status === ContractStatus.Live)
+      .filter((contract) => contract.platform === platform);
+
+    batchCreateSimulationBots({
+      variables: {
+        inputs: availableContracts.map((contract) => ({
+          leaderAddress,
+          simulationPlanId: simulationPlan.id,
+          leaderContractId: contract.id,
+          ratio: +ratio,
+          mode: direction,
+        })),
+      },
+    });
+
+    setLeaderAddress("");
+
+    onClose();
+  };
+
+  return (
+    <RightDrawer
+      isOpen={isOpen}
+      isDismissable={false}
+      onOpenChange={onOpenChange}
+      classNames={{ base: "w-[90vw] max-w-[90vw]" }}
+    >
+      <div className="flex h-full min-h-0 w-full flex-col gap-4">
+        <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
+          Create New Simulation Bot
+        </h1>
+
+        <div className="flex min-h-0 w-full flex-1 gap-4 overflow-hidden">
+          <div className="flex w-50 flex-col gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-1">
+              <Select
+                variant="underlined"
+                label="Platform"
+                selectedKeys={platform ? [platform] : undefined}
+                onChange={handleChangePlatform}
+                selectionMode="single"
+                className="w-50 font-mono"
+              >
+                {Object.values(Platform).map((item) => (
+                  <SelectItem key={item}>{item}</SelectItem>
+                ))}
+              </Select>
+
+              <Input
+                placeholder="Enter Leader Address"
+                value={leaderAddress || ""}
+                onChange={(e) => setLeaderAddress(e.target.value)}
+              />
+
+              <Select
+                variant="underlined"
+                label="Direction"
+                selectedKeys={direction ? [direction] : undefined}
+                onChange={handleChangeDirection}
+                selectionMode="single"
+                className="w-50 font-mono"
+              >
+                {Object.values(BotMode).map((item) => (
+                  <SelectItem key={item}>{item}</SelectItem>
+                ))}
+              </Select>
+
+              <NumericInput
+                amount={ratio}
+                onChange={setRatio}
+                label="Ratio"
+                errorMessage={ratioHelper}
+                isInvalid={ratioHelper.trim() !== ""}
+              />
+            </div>
+
+            <Button
+              onPress={handleConfirm}
+              color="primary"
+              isDisabled={isDisabled}
+              isLoading={createBotsLoading}
+            >
+              Save
+            </Button>
+          </div>
+
+          <div className="flex min-w-0 flex-1 flex-col gap-6 overflow-hidden">
+            <PerpEventLogPnlChart
+              ref={chartRef}
+              address={leaderAddress as Address}
+              platform={platform}
+              positionsWithSummary={positionsWithSummary || undefined}
+              cols={1}
+              mode="expert"
+              startedAt={null}
+              stoppedAt={null}
+              endedAt={dayjs(simulationPlan.cursor).subtract(1, "day").toDate()}
+            />
+          </div>
+        </div>
+      </div>
+    </RightDrawer>
+  );
+}

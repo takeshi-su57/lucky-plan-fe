@@ -1,332 +1,57 @@
+import { getPairKey } from "@/app/_components/LeaderboardWidgets/PerpEventLogPnlChart/utils";
 import {
   PerpTradeHistoryOperation,
-  PerpTradeHistory,
+  PerpTradePositionsWithSummary,
 } from "@/graphql/gql/graphql";
 import { TradeActionType } from "@/types";
 import { SimpleLinearRegression } from "ml-regression-simple-linear";
 
-export function getSortedPartialHistories(
-  histories: PerpTradeHistory[],
-  filters: {
-    range?: { from?: Date; to?: Date };
-  },
-) {
-  const sortedHistories = [...histories]
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .filter((history) => {
-      if (
-        filters.range &&
-        filters.range.from &&
-        filters.range.from > new Date(history.date)
-      ) {
-        return false;
-      }
-
-      if (
-        filters.range &&
-        filters.range.to &&
-        filters.range.to < new Date(history.date)
-      ) {
-        return false;
-      }
-
-      return true;
-    });
-
-  let openedPositions = 0;
-  let totalDuration = 0;
-  let maxDuration = 0;
-  let totalPositions = 0;
-  let sumOfLeverages = 0;
-  const sumOfPnl = {
-    total: 0,
-    positive: 0,
-    negative: 0,
-    positiveCount: 0,
-    negativeCount: 0,
-  };
-  let sumOfSize = 0;
-  let sumOfCollaterals = 0;
-
-  const missionHistories: (PerpTradeHistory & { date: Date; id: number })[][] =
-    [];
-
-  const groupedByPositionKey: Record<
-    string,
-    (PerpTradeHistory & { date: Date; id: number })[]
-  > = {};
-
-  sortedHistories.forEach((history) => {
-    if (!history) {
-      return;
-    }
-
-    if (groupedByPositionKey[history.positionKey]) {
-      groupedByPositionKey[history.positionKey].push(history);
-    } else {
-      groupedByPositionKey[history.positionKey] = [history];
-    }
-  });
-
-  for (const histories of Object.values(groupedByPositionKey)) {
-    for (let i = 0; i < histories.length; i++) {
-      const history = histories[i];
-
-      if (history.operation !== PerpTradeHistoryOperation.Open) {
-        continue;
-      }
-
-      openedPositions++;
-
-      totalPositions++;
-
-      let maxSizeIn = 0;
-      let maxCollaterals = 0;
-      let maxLeverages = 0;
-      let tempPnl = 0;
-
-      const tempHistories: (PerpTradeHistory & { date: Date; id: number })[] =
-        [];
-
-      for (let j = i; j < histories.length; j++) {
-        const nextHistory = histories[j];
-
-        tempPnl += +nextHistory.usdPnl;
-
-        maxSizeIn = Math.max(maxSizeIn, +nextHistory.sizeInUsd);
-        maxCollaterals = Math.max(maxCollaterals, +nextHistory.collateralInUsd);
-        maxLeverages = Math.max(maxLeverages, +nextHistory.leverage);
-
-        tempHistories.push(nextHistory);
-
-        if (nextHistory.operation === PerpTradeHistoryOperation.Close) {
-          const gap =
-            new Date(histories[j].date).getTime() -
-            new Date(histories[i].date).getTime();
-
-          totalDuration += gap;
-
-          openedPositions--;
-          maxDuration = Math.max(maxDuration, gap);
-          break;
-        }
-      }
-
-      sumOfSize += maxSizeIn;
-      sumOfCollaterals += maxCollaterals;
-      sumOfPnl.total += tempPnl;
-      sumOfLeverages += maxLeverages;
-
-      if (tempPnl > 0) {
-        sumOfPnl.positive += tempPnl;
-        sumOfPnl.positiveCount++;
-      } else {
-        sumOfPnl.negative += tempPnl;
-        sumOfPnl.negativeCount++;
-      }
-
-      missionHistories.push(tempHistories);
-    }
-  }
-
-  let latestTotalDuration = 0;
-  let latestMaxDuration = 0;
-  let latestTotalPositions = 0;
-  const latestSumOfPnl = {
-    total: 0,
-    positive: 0,
-    negative: 0,
-    positiveCount: 0,
-    negativeCount: 0,
-  };
-  let latestSumOfSize = 0;
-  let latestSumOfCollaterals = 0;
-  let latestSumOfLeverages = 0;
-
-  const groupedByPositionKey2: Record<
-    string,
-    (PerpTradeHistory & { date: Date })[]
-  > = {};
-
-  sortedHistories
-    .slice(Math.max(0, sortedHistories.length - 256), sortedHistories.length)
-    .forEach((history) => {
-      if (!history) {
-        return;
-      }
-
-      if (groupedByPositionKey2[history.positionKey]) {
-        groupedByPositionKey2[history.positionKey].push(history);
-      } else {
-        groupedByPositionKey2[history.positionKey] = [history];
-      }
-    });
-
-  for (const histories of Object.values(groupedByPositionKey2)) {
-    for (let i = 0; i < histories.length; i++) {
-      const history = histories[i];
-
-      if (history.operation !== PerpTradeHistoryOperation.Open) {
-        continue;
-      }
-
-      latestTotalPositions++;
-
-      let tempPnl = 0;
-      let maxSizeIn = 0;
-      let maxCollaterals = 0;
-      let maxLeverages = 0;
-
-      for (let j = i; j < histories.length; j++) {
-        const nextHistory = histories[j];
-
-        tempPnl += +nextHistory.usdPnl;
-        maxSizeIn = Math.max(maxSizeIn, +nextHistory.sizeInUsd);
-        maxCollaterals = Math.max(maxCollaterals, +nextHistory.collateralInUsd);
-        maxLeverages = Math.max(maxLeverages, +nextHistory.leverage);
-
-        if (nextHistory.operation === PerpTradeHistoryOperation.Close) {
-          const gap =
-            new Date(histories[j].date).getTime() -
-            new Date(histories[i].date).getTime();
-
-          latestTotalDuration += gap;
-
-          latestMaxDuration = Math.max(latestMaxDuration, gap);
-          break;
-        }
-      }
-
-      latestSumOfLeverages += maxLeverages;
-
-      latestSumOfSize += maxSizeIn;
-      latestSumOfCollaterals += maxCollaterals;
-      latestSumOfPnl.total += tempPnl;
-      sumOfLeverages += maxLeverages;
-
-      if (tempPnl > 0) {
-        latestSumOfPnl.positive += tempPnl;
-        latestSumOfPnl.positiveCount++;
-      } else {
-        latestSumOfPnl.negative += tempPnl;
-        latestSumOfPnl.negativeCount++;
-      }
-    }
-  }
-
-  return {
-    missionHistories: missionHistories.sort((a, b) => {
-      if (a.length === 0 || b.length === 0) {
-        return a.length - b.length;
-      }
-
-      return (
-        new Date(b[b.length - 1].date).getTime() -
-        new Date(a[a.length - 1].date).getTime()
-      );
-    }),
-    sortedHistories,
-    openedPositions,
-    duration: {
-      latest: {
-        max: latestMaxDuration,
-        avg:
-          latestTotalPositions > 0
-            ? latestTotalDuration / latestTotalPositions
-            : 0,
-      },
-      total: {
-        max: maxDuration,
-        avg: totalPositions > 0 ? totalDuration / totalPositions : 0,
-      },
-    },
-    pnl: {
-      latest: {
-        pAvg:
-          latestSumOfPnl.positiveCount > 0
-            ? latestSumOfPnl.positive / latestSumOfPnl.positiveCount
-            : 0,
-        avg:
-          latestTotalPositions > 0
-            ? latestSumOfPnl.total / latestTotalPositions
-            : 0,
-        nAvg:
-          latestSumOfPnl.negativeCount > 0
-            ? latestSumOfPnl.negative / latestSumOfPnl.negativeCount
-            : 0,
-      },
-      total: {
-        pAvg:
-          sumOfPnl.positiveCount > 0
-            ? sumOfPnl.positive / sumOfPnl.positiveCount
-            : 0,
-        avg: totalPositions > 0 ? sumOfPnl.total / totalPositions : 0,
-        nAvg:
-          sumOfPnl.negativeCount > 0
-            ? sumOfPnl.negative / sumOfPnl.negativeCount
-            : 0,
-      },
-    },
-    size: {
-      latest: {
-        avg:
-          latestTotalPositions > 0 ? latestSumOfSize / latestTotalPositions : 0,
-      },
-      total: {
-        avg: totalPositions > 0 ? sumOfSize / totalPositions : 0,
-      },
-    },
-    collateral: {
-      latest: {
-        avg:
-          latestTotalPositions > 0
-            ? latestSumOfCollaterals / latestTotalPositions
-            : 0,
-      },
-      total: {
-        avg: totalPositions > 0 ? sumOfCollaterals / totalPositions : 0,
-      },
-    },
-    pnlP: {
-      latest: {
-        avgBySize:
-          latestSumOfSize > 0
-            ? (latestSumOfPnl.total / latestSumOfSize) * 100
-            : 1000_000_000,
-        avgByCollateral:
-          latestSumOfCollaterals > 0
-            ? (latestSumOfPnl.total / latestSumOfCollaterals) * 100
-            : 1000_000_000,
-      },
-      total: {
-        avgBySize:
-          sumOfSize > 0 ? (sumOfPnl.total / sumOfSize) * 100 : 1000_000_000,
-        avgByCollateral:
-          sumOfCollaterals > 0
-            ? (sumOfPnl.total / sumOfCollaterals) * 100
-            : 1000_000_000,
-      },
-    },
-    leverage: {
-      latest: {
-        avg:
-          latestSumOfLeverages > 0
-            ? latestSumOfLeverages / latestTotalPositions
-            : 0,
-      },
-      total: {
-        avg: sumOfLeverages > 0 ? sumOfLeverages / totalPositions : 0,
-      },
-    },
-  };
-}
-
 export function getHistoriesChartData(
-  perpTradeHistories: PerpTradeHistory[],
-  filters: {
-    range?: { from?: Date; to?: Date };
-  },
+  summary: PerpTradePositionsWithSummary | null,
+  selectedPairs: Set<string>,
 ) {
+  if (!summary) {
+    return {
+      sortedHistories: [],
+      missionHistories: [],
+      pnlChartData: [],
+      pnlAccChartData: [],
+      inOutChartData: [],
+      inOutAccChartData: [],
+      minIn: 0,
+      maxIn: 0,
+      sumIn: 0,
+      countIn: 0,
+      openedPositions: 0,
+      duration: {
+        max: 0,
+        avg: 0,
+      },
+      pnl: {
+        pAvg: 0,
+        avg: 0,
+        nAvg: 0,
+      },
+      size: {
+        avg: 0,
+      },
+      collateral: {
+        avg: 0,
+      },
+      pnlP: {
+        avgBySize: 0,
+        avgByCollateral: 0,
+      },
+      leverage: {
+        avg: 0,
+      },
+      firstActivity: null,
+      lastActivity: null,
+      slope: 0,
+      r2: 0,
+    };
+  }
+
   const pnlChartData: {
     value: number;
     date: Date;
@@ -354,17 +79,16 @@ export function getHistoriesChartData(
   let sumIn = 0;
   let countIn = 0;
 
-  const {
-    missionHistories,
-    sortedHistories,
-    openedPositions,
-    duration,
-    pnl,
-    size,
-    collateral,
-    pnlP,
-    leverage,
-  } = getSortedPartialHistories(perpTradeHistories, filters);
+  const missionHistories = summary.positions.map((position) =>
+    position.histories.filter(
+      (history) =>
+        selectedPairs.size === 0 ||
+        selectedPairs.has(getPairKey(history.pair, history.isLong)),
+    ),
+  );
+  const sortedHistories = missionHistories
+    .flat()
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   if (sortedHistories.length > 0) {
     [
@@ -509,6 +233,7 @@ export function getHistoriesChartData(
   const score = regression.score(xs, pnlArrs);
 
   return {
+    sortedHistories,
     missionHistories,
     pnlChartData,
     pnlAccChartData,
@@ -518,13 +243,29 @@ export function getHistoriesChartData(
     maxIn,
     sumIn,
     countIn,
-    openedPositions,
-    duration,
-    pnl,
-    pnlP,
-    size,
-    collateral,
-    leverage,
+    openedPositions: summary.openedPositions,
+    duration: {
+      max: summary.maxDuration,
+      avg: summary.avgDuration,
+    },
+    pnl: {
+      pAvg: summary.avgPositivePnl,
+      avg: summary.avgPnl,
+      nAvg: summary.avgNegativePnl,
+    },
+    size: {
+      avg: summary.avgSize,
+    },
+    collateral: {
+      avg: summary.avgCollateral,
+    },
+    pnlP: {
+      avgBySize: summary.avgPnlPercentageBySize,
+      avgByCollateral: summary.avgPnlPercentageByCollateral,
+    },
+    leverage: {
+      avg: summary.avgLeverage,
+    },
     firstActivity:
       sortedHistories.length > 0 ? new Date(sortedHistories[0].date) : null,
     lastActivity:

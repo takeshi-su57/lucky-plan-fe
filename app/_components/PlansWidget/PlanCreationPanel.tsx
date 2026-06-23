@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { getFragmentData } from "@/graphql/gql/fragment-masking";
 
 import { getServerTimezone } from "@/utils";
@@ -9,30 +10,20 @@ import { Stepper } from "@/components/Stepper/Stepper";
 import { PlanMetadata, PlanMetadataForm } from "./PlanMetadataForm";
 import { SaveStep } from "./SaveStep";
 
-import { VirtualBotParams } from "@/types";
 import { PLAN_INFO_FRAGMENT_DOCUMENT } from "@/app-hooks/usePlan";
-import { useGetAllContracts } from "@/app-hooks/useContract";
 
-import { useBatchCreateBots } from "@/app-hooks/useAutomation";
 import { useCreatePlan } from "@/app-hooks/usePlan";
-import { BotMode, ContractStatus } from "@/graphql/gql/graphql";
 
 export function PlanCreationPanel() {
+  const router = useRouter();
   const { createPlan, loading: createPlanLoading } = useCreatePlan();
-  const { batchCreateBots, loading: createBotsLoading } = useBatchCreateBots();
-  const allContracts = useGetAllContracts();
 
   const [currentStep, setCurrentStep] = useState(1);
-
-  const [virtualBotParams, setVirtualBotParams] = useState<VirtualBotParams[]>(
-    [],
-  );
 
   const [planMetadata, setPlanMetadata] = useState<PlanMetadata | null>(null);
 
   const handleInitialize = () => {
     setCurrentStep(1);
-    setVirtualBotParams([]);
     setPlanMetadata(null);
   };
 
@@ -59,43 +50,7 @@ export function PlanCreationPanel() {
       planData.createPlan,
     ).id;
 
-    const availableContracts = allContracts.filter(
-      (item) => item.status === ContractStatus.Live,
-    );
-
-    if (virtualBotParams.length > 0) {
-      await batchCreateBots({
-        variables: {
-          input: virtualBotParams
-            .map((item) => {
-              return availableContracts
-                .filter((contract) => contract.platform === item.platform)
-                .map((contract) => ({
-                  planId: +planId,
-                  followerContractId: item.followerContract!.contractId,
-                  leaderAddress: item.leaderAddress,
-                  leaderCollateralBaseline: 0,
-                  leaderContractId: contract.id,
-                  strategy: {
-                    ratio: item.strategy!.ratio,
-                    lifeTime: item.strategy!.lifeTime,
-                    maxCollateral: item.strategy!.maxCollateral,
-                    minCollateral: item.strategy!.minCollateral,
-                    maxLeverage: Math.floor(+item.strategy!.maxLeverage * 1000),
-                    minLeverage: Math.floor(+item.strategy!.minLeverage * 1000),
-                    tpPercentage: 0,
-                    slPercentage: 0,
-                    maxOpenMissions: 0,
-                    selectedPairs: "[]",
-                    mode: "default",
-                  },
-                  mode: BotMode.Default,
-                }));
-            })
-            .flat(),
-        },
-      });
-    }
+    router.push(`/plans/${planId}`);
   };
 
   const steps = [
@@ -117,7 +72,7 @@ export function PlanCreationPanel() {
       description: `Create the plan.`,
       content: (
         <SaveStep
-          loading={createBotsLoading || createPlanLoading}
+          loading={createPlanLoading}
           onPrevStep={() => setCurrentStep(1)}
           onReset={handleInitialize}
           onSave={handleSaveVirtualBots}

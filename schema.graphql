@@ -43,7 +43,6 @@ type BotBackwardDetails {
   followerStartedBlock: Int
   id: Int!
   leaderAddress: String!
-  leaderCollateralBaseline: Int!
   leaderContract: Contract!
   leaderContractId: Int!
   leaderEndedBlock: Int
@@ -72,7 +71,6 @@ type BotDetails {
   followerStartedBlock: Int
   id: Int!
   leaderAddress: String!
-  leaderCollateralBaseline: Int!
   leaderContract: Contract!
   leaderContractId: Int!
   leaderEndedBlock: Int
@@ -100,7 +98,6 @@ type BotForwardDetails {
   followerStartedBlock: Int
   id: Int!
   leaderAddress: String!
-  leaderCollateralBaseline: Int!
   leaderContract: Contract!
   leaderContractId: Int!
   leaderEndedBlock: Int
@@ -196,7 +193,6 @@ input CreateBotAndStrategyInput {
   followerAddress: String
   followerContractId: Int!
   leaderAddress: String!
-  leaderCollateralBaseline: Int!
   leaderContractId: Int!
   mode: BotMode!
   planId: Int!
@@ -207,7 +203,6 @@ input CreateBotInput {
   followerAddress: String!
   followerContractId: Int!
   leaderAddress: String!
-  leaderCollateralBaseline: Int!
   leaderContractId: Int!
   mode: BotMode!
   planId: Int!
@@ -218,6 +213,21 @@ input CreatePlanInput {
   description: String!
   scheduledEnd: Date!
   scheduledStart: Date!
+  title: String!
+}
+
+input CreateSimulationBotInput {
+  leaderAddress: String!
+  leaderContractId: Int!
+  mode: BotMode!
+  ratio: Float!
+  simulationPlanId: Int!
+}
+
+input CreateSimulationPlanInput {
+  description: String!
+  endAt: Date!
+  startAt: Date!
   title: String!
 }
 
@@ -448,6 +458,7 @@ enum MissionStatus {
 type Mutation {
   allowAuto(address: String!, allowAuto: Boolean!, budget: Float!, followerContractId: Int!, ratio: Float!): User!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
+  batchCreateSimulationBots(inputs: [CreateSimulationBotInput!]!): [SimulationBot!]!
   buildPnlSnapshotsV2(dateStr: String!, isForceBuild: Boolean!, platform: Platform!): Boolean!
   cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
@@ -460,6 +471,7 @@ type Mutation {
   createBot(input: CreateBotInput!): BotBackwardDetails!
   createPlan(createPlanInput: CreatePlanInput!): Plan!
   createSLTP(input: SLTPRequestInput!): SLTPRequest!
+  createSimulationPlan(input: CreateSimulationPlanInput!): SimulationPlan!
   decreaseAllowanceToZero(collateralIndex: Int!, contractId: Int!, followerAddress: String!, password: String!): Boolean!
   decreasePositionSize(input: DecreasePositionSizeInput!): ContractExecutionResult!
   deleteBot(id: Int!): BotBackwardDetails!
@@ -481,12 +493,13 @@ type Mutation {
   makeSafeApp(password: String!): Boolean!
   openTradeMarket(input: OpenTradeInput!): ContractExecutionResult!
   pauseSystem: Boolean!
-  performTask(id: Int!): Boolean!
+  playSimulationPlan(id: Int!): SimulationPlan!
   resumeSystem(password: String): Boolean!
   startAdaption(contractId: Int!, shouldRestart: Boolean!): Boolean!
   startPlan(id: Int!): Boolean!
   startSubService(service: String!): Boolean!
   stopBot(id: Int!): Boolean!
+  stopSimulationBot(id: Int!): SimulationBot!
   stopTask(id: Int!): Boolean!
   updateLeverage(input: UpdateLeverageInput!): ContractExecutionResult!
   updateMaxOpenMissions(maxCount: Int!): Boolean!
@@ -500,14 +513,6 @@ type Mutation {
   withdrawETHToUser(amount: Float!, contractId: Int!, password: String!): Boolean!
   withdrawErc20ToUser(amount: Float!, collateralIndex: Int!, contractId: Int!, password: String!): Boolean!
   withdrawPositivePnl(input: WithdrawPositivePnlInput!): ContractExecutionResult!
-}
-
-type OpenPosition {
-  leverage: Float!
-  long: Boolean!
-  openPrice: Float!
-  pairIndex: Int!
-  size: Float!
 }
 
 input OpenTradeInput {
@@ -527,6 +532,7 @@ type PerpTradeHistory {
   address: String!
   collateralDeltaUsd: Float!
   collateralInUsd: Float!
+  contractId: Int!
   date: Date!
   id: Int!
   isLong: Boolean!
@@ -534,6 +540,7 @@ type PerpTradeHistory {
   leverageDelta: Float!
   operation: PerpTradeHistoryOperation!
   pair: String!
+  platform: Platform!
   positionKey: String!
   price: Float!
   sizeDeltaUsd: Float!
@@ -548,6 +555,27 @@ enum PerpTradeHistoryOperation {
   INCREASE_LEVERAGE
   INCREASE_SIZE
   OPEN
+}
+
+type PerpTradePosition {
+  histories: [PerpTradeHistory!]!
+}
+
+type PerpTradePositionsWithSummary {
+  avgCollateral: Float!
+  avgDuration: Float!
+  avgLeverage: Float!
+  avgNegativePnl: Float!
+  avgPnl: Float!
+  avgPnlPercentageByCollateral: Float!
+  avgPnlPercentageBySize: Float!
+  avgPositivePnl: Float!
+  avgSize: Float!
+  maxDuration: Float!
+  openedPositions: Int!
+  positions: [PerpTradePosition!]!
+  totalPnl: Float!
+  totalPositions: Int!
 }
 
 type Plan {
@@ -637,8 +665,8 @@ type PnlSnapshotV2Details {
   accUSDPnl: Float!
   address: String!
   dateStr: String!
-  perpTradeHistories: [PerpTradeHistory!]!
   platform: Platform!
+  positionsWithSummary: PerpTradePositionsWithSummary!
 }
 
 type PnlSnapshotV2DetailsConnection {
@@ -687,14 +715,16 @@ type Query {
   getLogsSeverityCounts: [SeverityCount!]!
   getMaxOpenMissions: Int!
   getMicroserviceStatus: [MicroserviceStatus!]!
-  getPerpTradeHistories(addresses: [String!]!, platform: Platform!): [[PerpTradeHistory!]!]!
-  getPlanBotGroups(hideDead: Boolean! = true, page: Int! = 1, pageSize: Int! = 10, planId: Int!): BotGroupPaginatedResponse!
+  getPerpTradePositions(address: String!, endedAt: Date, platform: Platform!, startedAt: Date, stoppedAt: Date): PerpTradePositionsWithSummary!
+  getPlanBotGroups(page: Int! = 1, pageSize: Int! = 10, planId: Int!): BotGroupPaginatedResponse!
   getPlanById(id: Int!): Plan
   getPlanSummariesByStatus(after: Int, first: Int!, status: PlanStatus!): PlanSummaryConnection!
   getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
   getPnlSnapshotV2InitializedFlag(platform: Platform!): [PnlSnapshotV2InitializedFlag!]!
   getPnlSnapshotsV2(after: String, dateStr: String!, first: Int!, isDesc: Boolean!, platform: Platform!): PnlSnapshotV2DetailsConnection!
   getServerTime: ServerTime!
+  getSimulationPlanById(id: Int!): SimulationPlanDetails!
+  getSimulationPlans(after: Int, first: Int!): SimulationPlanConnection!
   isPnlSnapshotV2Initialized(dateStr: String!, platform: Platform!): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   systemStatus: Boolean!
@@ -724,6 +754,109 @@ type ServerTime {
 type SeverityCount {
   counts: Int!
   severity: LogSeverity!
+}
+
+type SimulationBot {
+  avgCollateral: Float!
+  avgDuration: Float!
+  avgLeverage: Float!
+  avgNegativePnl: Float!
+  avgPnl: Float!
+  avgPnlPercentageByCollateral: Float!
+  avgPnlPercentageBySize: Float!
+  avgPositivePnl: Float!
+  avgSize: Float!
+  id: Int!
+  leaderAddress: String!
+  leaderContract: Contract!
+  leaderContractId: Int!
+  maxDuration: Float!
+  mode: BotMode!
+  openedPositions: Int!
+  ratio: Float!
+  simulationPlanId: Int!
+  startedAt: Date!
+  stoppedAt: Date
+  totalPnl: Float!
+  totalPositions: Int!
+}
+
+type SimulationBotDetails {
+  avgCollateral: Float!
+  avgDuration: Float!
+  avgLeverage: Float!
+  avgNegativePnl: Float!
+  avgPnl: Float!
+  avgPnlPercentageByCollateral: Float!
+  avgPnlPercentageBySize: Float!
+  avgPositivePnl: Float!
+  avgSize: Float!
+  id: Int!
+  leaderAddress: String!
+  leaderContract: Contract!
+  leaderContractId: Int!
+  maxDuration: Float!
+  mode: BotMode!
+  openedPositions: Int!
+  positions: [SimulationTradePosition!]!
+  ratio: Float!
+  simulationPlanId: Int!
+  startedAt: Date!
+  stoppedAt: Date
+  totalPnl: Float!
+  totalPositions: Int!
+}
+
+type SimulationPlan {
+  cursor: Date!
+  description: String!
+  endAt: Date!
+  id: Int!
+  openedPositions: Int!
+  simulationBots: [SimulationBot!]!
+  startAt: Date!
+  title: String!
+  totalFollowerPnl: Float!
+  totalLeaderPnl: Float!
+  totalPositions: Int!
+}
+
+type SimulationPlanConnection {
+  edges: [SimulationPlanEdge!]!
+  pageInfo: SimulationPlanPageInfo!
+}
+
+type SimulationPlanDetails {
+  cursor: Date!
+  description: String!
+  endAt: Date!
+  id: Int!
+  openedPositions: Int!
+  simulationBots: [SimulationBotDetails!]!
+  startAt: Date!
+  title: String!
+  totalFollowerPnl: Float!
+  totalLeaderPnl: Float!
+  totalPositions: Int!
+}
+
+type SimulationPlanEdge {
+  cursor: Int!
+  node: SimulationPlan!
+}
+
+type SimulationPlanPageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
+type SimulationTradeHistory {
+  follower: PerpTradeHistory!
+  leader: PerpTradeHistory!
+}
+
+type SimulationTradePosition {
+  histories: [SimulationTradeHistory!]!
 }
 
 type Strategy {

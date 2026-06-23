@@ -4,13 +4,9 @@ import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 
 export const LOCAL_APP_SETTINGS = "local-app-settings";
 
-export const initialAppSettings = {
-  isDevMode: false,
-};
+export const initialAppSettings = {};
 
-export type AppSettings = {
-  isDevMode: boolean;
-};
+export type AppSettings = {};
 
 export function useAppSettings() {
   const queryClient = useQueryClient();
