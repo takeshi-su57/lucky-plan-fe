@@ -34,6 +34,7 @@ export const SIMULATION_BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
     mode
     openedPositions
     ratio
+    maxLeverage
     simulationPlanId
     startedAt
     stoppedAt
@@ -105,6 +106,7 @@ export const SIMULATION_BOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     stoppedAt
     totalPnl
     totalPositions
+    maxLeverage
     positions {
       ...SimulationTradePositionInfo
     }
@@ -158,6 +160,14 @@ export const CREATE_SIMULATION_PLAN_DOCUMENT = graphql(`
   mutation createSimulationPlan($input: CreateSimulationPlanInput!) {
     createSimulationPlan(input: $input) {
       ...SimulationPlanInfo
+    }
+  }
+`);
+
+export const UPDATE_SIMULATION_BOT_DOCUMENT = graphql(`
+  mutation updateSimulationBot($input: UpdateSimulationBotInput!) {
+    updateSimulationBot(input: $input) {
+      ...SimulationBotInfo
     }
   }
 `);
@@ -323,6 +333,31 @@ export function useCreateSimulationPlan() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return { createSimulationPlan, loading };
+}
+
+export function useUpdateSimulationBot() {
+  const [updateSimulationBot, { data: newData, error, loading }] = useMutation(
+    UPDATE_SIMULATION_BOT_DOCUMENT,
+  );
+  const client = useApolloClient();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      enqueueSnackbar("Success at updating simulation bot!", {
+        variant: "success",
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at updating simulation bot!", {
+        variant: "error",
+      });
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return { updateSimulationBot, loading };
 }
 
 export function useBatchCreateSimulationBots() {

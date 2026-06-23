@@ -50,6 +50,7 @@ export function CreateSimulationBotModal({
   const [leaderAddress, setLeaderAddress] = useState<string>("");
 
   const [ratio, setRatio] = useState("0.1");
+  const [maxLeverage, setMaxLeverage] = useState("40");
 
   const { data: positionsWithSummary } = useGetPerpTradePositions(
     leaderAddress,
@@ -80,19 +81,28 @@ export function CreateSimulationBotModal({
   };
 
   let ratioHelper = "";
+  let maxLeverageHelper = "";
 
   if (Number.isNaN(+ratio)) {
     ratioHelper = "Invalid ratio";
   }
 
-  const isDisabled = !isAddress(leaderAddress) || createBotsLoading;
+  if (Number.isNaN(+maxLeverage)) {
+    maxLeverageHelper = "Invalid max leverage";
+  }
+
+  const isDisabled =
+    !isAddress(leaderAddress) ||
+    createBotsLoading ||
+    ratioHelper !== "" ||
+    maxLeverageHelper !== "";
 
   const handleConfirm = () => {
     if (isDisabled) {
       return;
     }
 
-    if (ratio.trim() === "") {
+    if (ratio.trim() === "" || maxLeverage.trim() === "") {
       return;
     }
 
@@ -107,6 +117,7 @@ export function CreateSimulationBotModal({
           simulationPlanId: simulationPlan.id,
           leaderContractId: contract.id,
           ratio: +ratio,
+          maxLeverage: +maxLeverage,
           mode: direction,
         })),
       },
@@ -168,6 +179,14 @@ export function CreateSimulationBotModal({
                 amount={ratio}
                 onChange={setRatio}
                 label="Ratio"
+                errorMessage={ratioHelper}
+                isInvalid={ratioHelper.trim() !== ""}
+              />
+
+              <NumericInput
+                amount={maxLeverage}
+                onChange={setMaxLeverage}
+                label="Max Leverage"
                 errorMessage={ratioHelper}
                 isInvalid={ratioHelper.trim() !== ""}
               />

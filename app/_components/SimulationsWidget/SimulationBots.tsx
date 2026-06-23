@@ -6,7 +6,7 @@ import { PaginatedViews } from "@/components/views/PaginatedViews";
 import { SimulationGroupedBots } from "./SimulationGroupedBots";
 import { Platform, SimulationBotDetails } from "@/graphql/gql/graphql";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 
 export type SimulationBotsProps = {
   cursor: Date;

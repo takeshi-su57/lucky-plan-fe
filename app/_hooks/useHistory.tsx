@@ -1,12 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
-import {
-  useApolloClient,
-  useLazyQuery,
-  useMutation,
-  useQuery,
-} from "@apollo/client/react";
+import { useEffect, useMemo } from "react";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client/react";
 import { useSnackbar } from "notistack";
 import { getFragmentData, graphql } from "@/gql/index";
 import { GetPerpTradePositionsQuery, Platform } from "@/graphql/gql/graphql";
@@ -112,26 +107,22 @@ export const GET_PNL_SNAPSHOT_V2_DOCUMENT = graphql(`
     $dateStr: String!
     $platform: Platform!
     $isDesc: Boolean!
-    $first: Int!
-    $after: String
+    $page: Int!
+    $pageSize: Int!
   ) {
     getPnlSnapshotsV2(
       dateStr: $dateStr
       platform: $platform
       isDesc: $isDesc
-      first: $first
-      after: $after
+      page: $page
+      pageSize: $pageSize
     ) {
-      edges {
-        cursor
-        node {
-          ...PnlSnapshotV2DetailsInfo
-        }
+      items {
+        ...PnlSnapshotV2DetailsInfo
       }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
+      total
+      totalPages
+      currentPage
     }
   }
 `);
@@ -280,32 +271,28 @@ export function useGetPnlSnapshotsV2(
   dateStr: string,
   platform: Platform,
   isDesc: boolean,
-  first: number,
+  page: number,
+  pageSize: number,
 ) {
-  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
-    GET_PNL_SNAPSHOT_V2_DOCUMENT,
-  );
-
-  useEffect(() => {
-    query({
-      variables: {
-        dateStr,
-        isDesc,
-        first,
-        platform,
-      },
-    });
-  }, [dateStr, isDesc, query, platform, first]);
+  const { data, loading, error } = useQuery(GET_PNL_SNAPSHOT_V2_DOCUMENT, {
+    variables: {
+      platform,
+      dateStr,
+      isDesc,
+      page,
+      pageSize,
+    },
+  });
 
   const pnlSnapshots = useMemo(() => {
     if (!data) {
       return [];
     }
 
-    return data.getPnlSnapshotsV2.edges.map((edge) => {
+    return data.getPnlSnapshotsV2.items.map((item) => {
       const unwrapped = getFragmentData(
         PNL_SNAPSHOT_V2_DETAILS_INFO_FRAGMENT_DOCUMENT,
-        edge.node,
+        item,
       );
 
       return {
@@ -317,25 +304,13 @@ export function useGetPnlSnapshotsV2(
     });
   }, [data]);
 
-  const handleFetchMore = useCallback(() => {
-    if (data && !error) {
-      fetchMore({
-        variables: {
-          dateStr,
-          isDesc,
-          first,
-          after: data.getPnlSnapshotsV2.pageInfo.endCursor,
-          platform,
-        },
-      });
-    }
-  }, [data, error, fetchMore, dateStr, isDesc, first, platform]);
-
   return {
-    hasMore: data?.getPnlSnapshotsV2.pageInfo.hasNextPage,
     pnlSnapshots,
-    fetchMore: handleFetchMore,
+    total: data?.getPnlSnapshotsV2?.total ?? 0,
+    totalPages: data?.getPnlSnapshotsV2?.totalPages ?? 0,
+    currentPage: data?.getPnlSnapshotsV2?.currentPage ?? 0,
     loading,
+    error,
   };
 }
 

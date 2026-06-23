@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Spinner } from "@heroui/react";
-import { Virtuoso } from "react-virtuoso";
 import { Address } from "viem";
 import dayjs from "dayjs";
 
@@ -16,6 +15,9 @@ import {
 import { PerpEventLogPnlChart } from "./PerpEventLogPnlChart/PerpEventLogPnlChart";
 import { useGetActiveBots } from "@/app/_hooks/useAutomation";
 import { twMerge } from "tailwind-merge";
+import { PaginatedViews } from "@/components/views/PaginatedViews";
+
+const PAGE_SIZE = 20;
 
 export type LeaderboardV2Props = {
   isDesc: boolean;
@@ -24,12 +26,16 @@ export type LeaderboardV2Props = {
 };
 
 export function LeaderboardV2({ isDesc, platform, date }: LeaderboardV2Props) {
-  const { pnlSnapshots, hasMore, fetchMore, loading } = useGetPnlSnapshotsV2(
+  const [page, setPage] = useState(1);
+
+  const { pnlSnapshots, loading, totalPages } = useGetPnlSnapshotsV2(
     dayjs(date).format("YYYY-MM-DD"),
     platform,
     isDesc,
-    10,
+    page,
+    PAGE_SIZE,
   );
+
   const {
     data: isPnlSnapshotInitialized,
     loading: isPnlSnapshotInitializedLoading,
@@ -76,50 +82,35 @@ export function LeaderboardV2({ isDesc, platform, date }: LeaderboardV2Props) {
           </div>
         </div>
       ) : (
-        <div className="bg-content1 shadow-small w-full overflow-hidden rounded-lg p-4">
-          {loading && pnlSnapshots.length === 0 ? (
-            <div
-              className="flex w-full items-center justify-center"
-              style={{ height: "calc(100vh - 250px)", minHeight: 520 }}
-            >
-              <Spinner color="warning" size="lg" />
-            </div>
-          ) : (
-            <Virtuoso
-              style={{ height: "calc(100vh - 250px)", minHeight: 520 }}
-              data={pnlSnapshots}
-              endReached={() => {
-                if (hasMore && !loading) fetchMore();
-              }}
-              overscan={200}
-              itemContent={(_index, item) => (
-                <div className="flex w-full flex-col pr-1">
-                  <PerpEventLogPnlChart
-                    address={item.address as Address}
-                    platform={platform}
-                    positionsWithSummary={item.positionsWithSummary}
-                    mode="lightweight"
-                    className={twMerge(
-                      activeAddresses[item.address.toLowerCase()] &&
-                        "bg-green-500/20",
-                    )}
-                    startedAt={null}
-                    stoppedAt={null}
-                    endedAt={date}
-                  />
-                </div>
-              )}
-              components={{
-                Footer: () =>
-                  loading ? (
-                    <div className="flex w-full items-center justify-center py-4">
-                      <Spinner color="warning" size="sm" />
-                    </div>
-                  ) : null,
-              }}
-            />
-          )}
-        </div>
+        <PaginatedViews
+          currentPage={page}
+          totalPages={totalPages}
+          onChangePage={setPage}
+          loading={loading}
+        >
+          <div className="flex flex-col gap-1">
+            {pnlSnapshots.map((item) => (
+              <div
+                key={`${item.platform}-${item.dateStr}-${item.address}`}
+                className="flex w-full flex-col"
+              >
+                <PerpEventLogPnlChart
+                  address={item.address as Address}
+                  platform={platform}
+                  positionsWithSummary={item.positionsWithSummary}
+                  mode="lightweight"
+                  className={twMerge(
+                    activeAddresses[item.address.toLowerCase()] &&
+                      "bg-green-500/20",
+                  )}
+                  startedAt={null}
+                  stoppedAt={null}
+                  endedAt={date}
+                />
+              </div>
+            ))}
+          </div>
+        </PaginatedViews>
       )}
     </div>
   );

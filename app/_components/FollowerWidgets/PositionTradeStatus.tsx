@@ -31,7 +31,7 @@ export function PositionTradeStatus({
   if (currentPrice === undefined) {
     return (
       <Skeleton className="rounded-lg">
-        <div className="h-8 w-[100px] rounded-full bg-default-300" />
+        <div className="bg-default-300 h-8 w-25 rounded-full" />
       </Skeleton>
     );
   }

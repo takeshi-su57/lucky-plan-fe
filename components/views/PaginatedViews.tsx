@@ -48,7 +48,7 @@ export function PaginatedViews({
   };
 
   return (
-    <div className="flex w-full flex-col gap-6">
+    <div className="flex w-full flex-col gap-1">
       {loading ? (
         <div className="flex w-full items-center justify-center">
           <Spinner color="warning" size="lg" />
@@ -79,10 +79,7 @@ export function PaginatedViews({
             }}
           />
 
-          <form
-            className="flex items-center gap-2"
-            onSubmit={handleSubmitPage}
-          >
+          <form className="flex items-center gap-2" onSubmit={handleSubmitPage}>
             <Input
               aria-label="Go to page"
               value={tempPage}

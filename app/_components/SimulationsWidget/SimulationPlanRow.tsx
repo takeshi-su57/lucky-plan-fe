@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Card, CardBody, Chip, Badge, Link } from "@heroui/react";
+import { Button, Card, CardBody, Chip, Link } from "@heroui/react";
 import dayjs from "dayjs";
 import { SimulationPlan } from "@/graphql/gql/graphql";
 import { LabeledChip } from "@/components/chips/LabeledChip";
@@ -71,18 +71,23 @@ export function SimulationPlanRow({ simulationPlan }: SimulationPlanRowProps) {
 
             <div className="flex flex-row items-center gap-3 font-mono">
               {simulationPlan.openedPositions > 0 ? (
-                <Badge
+                <LabeledChip
+                  size="sm"
+                  variant="flat"
                   color="secondary"
-                  content={simulationPlan.openedPositions}
-                >
-                  <Chip color="secondary">Opened Positions</Chip>
-                </Badge>
+                  value={simulationPlan.openedPositions}
+                  unit="Opened Positions"
+                />
               ) : null}
 
               {simulationPlan.totalPositions > 0 ? (
-                <Badge color="warning" content={simulationPlan.totalPositions}>
-                  <Chip color="warning">Await</Chip>
-                </Badge>
+                <LabeledChip
+                  size="sm"
+                  variant="flat"
+                  color="warning"
+                  value={simulationPlan.totalPositions}
+                  unit="Total Positions"
+                />
               ) : null}
 
               {simulationPlan.totalLeaderPnl > 0 ? (

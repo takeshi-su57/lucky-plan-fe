@@ -217,6 +217,7 @@ input CreatePlanInput {
 input CreateSimulationBotInput {
   leaderAddress: String!
   leaderContractId: Int!
+  maxLeverage: Float!
   mode: BotMode!
   ratio: Float!
   simulationPlanId: Int!
@@ -542,6 +543,7 @@ type Mutation {
   updateLeverage(input: UpdateLeverageInput!): ContractExecutionResult!
   updateMaxOpenMissions(maxCount: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
+  updateSimulationBot(input: UpdateSimulationBotInput!): SimulationBot!
   updateSl(input: UpdateSlInput!): ContractExecutionResult!
   updateStrategy(id: Int!, input: UpdateStrategyInput!): Strategy!
   updateTp(input: UpdateTpInput!): ContractExecutionResult!
@@ -718,25 +720,11 @@ type PnlSnapshotV2Details {
   positionsWithSummary: PerpTradePositionsWithSummary!
 }
 
-type PnlSnapshotV2DetailsConnection {
-  edges: [PnlSnapshotV2DetailsEdge!]!
-  pageInfo: PnlSnapshotV2DetailsPageInfo!
-}
-
-type PnlSnapshotV2DetailsEdge {
-  cursor: String!
-  node: PnlSnapshotV2Details!
-}
-
-type PnlSnapshotV2DetailsForPaginationAPIPageInfo {
-  page: Int!
+type PnlSnapshotV2DetailsPaginatedResponse {
+  currentPage: Int!
+  items: [PnlSnapshotV2Details!]!
   total: Int!
   totalPages: Int!
-}
-
-type PnlSnapshotV2DetailsPageInfo {
-  endCursor: String
-  hasNextPage: Boolean!
 }
 
 type PnlSnapshotV2InitializedFlag {
@@ -804,12 +792,12 @@ type Query {
     platform: Platform!
   ): [PnlSnapshotV2InitializedFlag!]!
   getPnlSnapshotsV2(
-    after: String
     dateStr: String!
-    first: Int!
     isDesc: Boolean!
+    page: Int!
+    pageSize: Int!
     platform: Platform!
-  ): PnlSnapshotV2DetailsConnection!
+  ): PnlSnapshotV2DetailsPaginatedResponse!
   getServerTime: ServerTime!
   getSimulationPlanById(id: Int!): SimulationPlanDetails!
   getSimulationPlans(after: Int, first: Int!): SimulationPlanConnection!
@@ -862,6 +850,7 @@ type SimulationBot {
   leaderContract: Contract!
   leaderContractId: Int!
   maxDuration: Float!
+  maxLeverage: Float!
   mode: BotMode!
   openedPositions: Int!
   ratio: Float!
@@ -887,6 +876,7 @@ type SimulationBotDetails {
   leaderContract: Contract!
   leaderContractId: Int!
   maxDuration: Float!
+  maxLeverage: Float!
   mode: BotMode!
   openedPositions: Int!
   positions: [SimulationTradePosition!]!
@@ -1030,6 +1020,13 @@ input UpdatePlanInput {
   startedAt: Date
   status: PlanStatus!
   title: String
+}
+
+input UpdateSimulationBotInput {
+  id: Int!
+  maxLeverage: Float
+  mode: BotMode
+  ratio: Float
 }
 
 input UpdateSlInput {

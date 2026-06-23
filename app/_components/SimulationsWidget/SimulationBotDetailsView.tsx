@@ -11,6 +11,7 @@ import { twMerge } from "tailwind-merge";
 import { SimulationPositionView } from "./SimulationPositionView";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import { useStopSimulationBot } from "@/app/_hooks/useSimulations";
+import { EditSimulationBot } from "./EditAutomationModal";
 
 export type SimulationBotDetailsViewProps = {
   simulationBot: SimulationBotDetails;
@@ -68,6 +69,8 @@ export function SimulationBotDetailsView({
             </ButtonWithConfirm>
           </div>
         ) : null}
+
+        <EditSimulationBot simulationBot={simulationBot} />
       </div>
 
       <Card className={twMerge("mb-4 w-full shrink-0")} isBlurred>

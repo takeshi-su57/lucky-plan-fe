@@ -104,8 +104,6 @@ const cache = new InMemoryCache({
         getPlansByStatus: relayStylePagination(["status"]),
         allLogs: relayStylePagination(["checked", "severity"]),
         getAllFollowerDetails: relayStylePagination(["contractId"]),
-        getExpertPnlSnapshotsV2: relayStylePagination(["platform"]),
-        getPlanBotGroups: relayStylePagination(["planId"]),
         getSimulationPlans: relayStylePagination([]),
       },
     },
