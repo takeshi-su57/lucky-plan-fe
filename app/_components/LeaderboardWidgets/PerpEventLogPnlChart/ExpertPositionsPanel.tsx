@@ -96,7 +96,7 @@ export function ExpertPositionsPanel({
   }, [missionHistories]);
 
   return (
-    <div className="flex h-full max-h-[calc(100vh-112px)] w-full min-w-0 flex-col gap-5 overflow-y-auto pr-2">
+    <div className="flex h-full max-h-175 w-full min-w-0 flex-col gap-5 overflow-y-auto pr-2">
       <PositionSection
         title="Opened Positions"
         histories={openedPositions}

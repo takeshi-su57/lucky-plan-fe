@@ -224,7 +224,7 @@ export function HistoriesSummary({
   ];
 
   return (
-    <div className="flex h-full w-50 flex-col justify-between gap-8">
+    <div className="flex h-full w-full flex-col justify-between gap-8">
       <div className="flex flex-col gap-2">
         {primaryItems.map((item) => (
           <div

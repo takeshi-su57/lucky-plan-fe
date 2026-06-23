@@ -1,7 +1,7 @@
 "use client";
 
 import { Ref, useImperativeHandle, useMemo, useState } from "react";
-import { Button, Select, SelectItem, Spinner } from "@heroui/react";
+import { Button, Select, SelectItem, Spinner, Tab, Tabs } from "@heroui/react";
 import type { Selection } from "@heroui/react";
 import { FaCopy } from "react-icons/fa";
 
@@ -17,6 +17,8 @@ import { HistoriesSummary } from "./HistoriesSummary";
 import { ExpertPositionsPanel } from "./ExpertPositionsPanel";
 import { getTradePairs, parsePairKey } from "./utils";
 import { PerpEventLogPnlChartHandle, PerpEventLogPnlChartProps } from "./types";
+import { NumericInput } from "@/components/inputs/NumericInput";
+import { CopyTradingScorePanel } from "./CopyTradingScorePanel";
 
 function roundTo(value: number, decimals = 2) {
   if (!Number.isFinite(value)) {
@@ -45,6 +47,8 @@ function getOperationLabel(operation: PerpTradeHistoryOperation) {
       return "trade update";
   }
 }
+
+type TabType = "summary" | "positions" | "analyze";
 
 function getExportLogsPayload(
   perpTradeHistories: PerpTradeHistory[],
@@ -130,6 +134,10 @@ export function PerpEventLogPnlChartExpert({
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">(
     "idle",
   );
+  const [selected, setSelected] = useState<TabType>("summary");
+
+  const [maxLeverage, setMaxLeverage] = useState("40");
+
   const { data, loading } = useGetPerpTradePositions(
     address,
     platform,
@@ -184,9 +192,14 @@ export function PerpEventLogPnlChartExpert({
     leverage,
     slope,
     r2,
+    copyTrading,
   } = useMemo(() => {
-    return getHistoriesChartData(data, selectedPairKeys);
-  }, [data, selectedPairKeys]);
+    return getHistoriesChartData(
+      data,
+      selectedPairKeys,
+      Number.isNaN(+maxLeverage) ? null : +maxLeverage,
+    );
+  }, [data, selectedPairKeys, maxLeverage]);
 
   const copyExportPayload = async () => {
     try {
@@ -207,6 +220,12 @@ export function PerpEventLogPnlChartExpert({
     }
   };
 
+  let maxLeverageHelper = "";
+
+  if (Number.isNaN(+maxLeverage)) {
+    maxLeverageHelper = "Invalid max leverage";
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-80 w-full items-center justify-center">
@@ -216,64 +235,96 @@ export function PerpEventLogPnlChartExpert({
   }
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-[240px_260px_minmax(0,1fr)] items-start gap-4 p-3">
+    <div className="grid h-full min-h-0 grid-cols-[300px_minmax(0,1fr)] items-start gap-4 p-3">
       <div className="border-default-200 bg-content1 flex h-full min-h-0 flex-col gap-4 rounded-lg border p-5">
-        <Button
-          size="sm"
-          variant="flat"
-          color={copyState === "failed" ? "danger" : "primary"}
-          isDisabled={!canExport}
-          onPress={copyExportPayload}
-          startContent={<FaCopy size={14} />}
-          className="h-9 rounded-lg px-3 text-xs font-semibold"
+        <Tabs
+          aria-label="users-table-tabs"
+          selectedKey={selected}
+          onSelectionChange={(value) => {
+            if (value) {
+              setSelected(value as TabType);
+            }
+          }}
         >
-          {copyState === "copied"
-            ? "Copied"
-            : copyState === "failed"
-              ? "Copy failed"
-              : "Copy Trading Histories JSON"}
-        </Button>
+          <Tab key="summary" title="Summaries" />
+          <Tab key="positions" title="Positions" />
+          <Tab key="analyze" title="Analyze" />
+        </Tabs>
 
-        <Select
-          variant="underlined"
-          label="Pairs"
-          placeholder="Select pairs"
-          selectedKeys={selectedPair}
-          onSelectionChange={setSelectedPair}
-          selectionMode="multiple"
-          className="w-50 font-mono"
-        >
-          {tradePairs.map((item) => (
-            <SelectItem key={item.key}>
-              {`${item.pair} - (${item.count} ${item.isLong ? "Long" : "Short"})`}
-            </SelectItem>
-          ))}
-        </Select>
+        {selected === "positions" && (
+          <ExpertPositionsPanel missionHistories={missionHistories} />
+        )}
 
-        <HistoriesSummary
-          address={address}
-          actionCounts={{}}
-          maxIn={maxIn}
-          sumIn={sumIn}
-          countIn={countIn}
-          firstActivity={firstActivity}
-          lastActivity={lastActivity}
-          pnlChartData={pnlAccChartData}
-          inOutChartData={inOutChartData}
-          openedPositions={openedPositions}
-          positions={missionHistories.length}
-          duration={duration}
-          pnl={pnl}
-          size={size}
-          collateral={collateral}
-          leverage={leverage}
-          pnlP={pnlP}
-          slope={slope}
-          r2={r2}
-        />
+        {selected === "analyze" && (
+          <CopyTradingScorePanel copyTrading={copyTrading} />
+        )}
+
+        {selected === "summary" && (
+          <div className="flex flex-col gap-3">
+            <Button
+              size="sm"
+              variant="flat"
+              color={copyState === "failed" ? "danger" : "primary"}
+              isDisabled={!canExport}
+              onPress={copyExportPayload}
+              startContent={<FaCopy size={14} />}
+              className="h-9 rounded-lg px-3 text-xs font-semibold"
+            >
+              {copyState === "copied"
+                ? "Copied"
+                : copyState === "failed"
+                  ? "Copy failed"
+                  : "Copy Trading Histories JSON"}
+            </Button>
+
+            <NumericInput
+              amount={maxLeverage}
+              onChange={setMaxLeverage}
+              label="Max Leverage"
+              errorMessage={maxLeverageHelper}
+              isInvalid={maxLeverageHelper.trim() !== ""}
+            />
+
+            <Select
+              variant="underlined"
+              label="Pairs"
+              placeholder="Select pairs"
+              selectedKeys={selectedPair}
+              onSelectionChange={setSelectedPair}
+              selectionMode="multiple"
+              className="w-50 font-mono"
+            >
+              {tradePairs.map((item) => (
+                <SelectItem key={item.key}>
+                  {`${item.pair} - (${item.count} ${item.isLong ? "Long" : "Short"})`}
+                </SelectItem>
+              ))}
+            </Select>
+
+            <HistoriesSummary
+              address={address}
+              actionCounts={{}}
+              maxIn={maxIn}
+              sumIn={sumIn}
+              countIn={countIn}
+              firstActivity={firstActivity}
+              lastActivity={lastActivity}
+              pnlChartData={pnlAccChartData}
+              inOutChartData={inOutChartData}
+              openedPositions={openedPositions}
+              positions={missionHistories.length}
+              duration={duration}
+              pnl={pnl}
+              size={size}
+              collateral={collateral}
+              leverage={leverage}
+              pnlP={pnlP}
+              slope={slope}
+              r2={r2}
+            />
+          </div>
+        )}
       </div>
-
-      <ExpertPositionsPanel missionHistories={missionHistories} />
 
       <HistoryCharts
         pnlChartData={pnlChartData}

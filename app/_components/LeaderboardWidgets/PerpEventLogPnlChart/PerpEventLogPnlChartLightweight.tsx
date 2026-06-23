@@ -54,7 +54,7 @@ export function PerpEventLogPnlChartLightweight({
     slope,
     r2,
   } = useMemo(() => {
-    return getHistoriesChartData(positionsWithSummary || null, new Set());
+    return getHistoriesChartData(positionsWithSummary || null, new Set(), null);
   }, [positionsWithSummary]);
 
   const totalInvested = inOutChartData.reduce(
