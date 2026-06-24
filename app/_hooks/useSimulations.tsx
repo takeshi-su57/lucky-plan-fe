@@ -212,6 +212,22 @@ export const GET_SIMULATIONS_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_SIMULATION_DOCUMENT = graphql(`
+  query simulation($id: Int!) {
+    simulation(id: $id) {
+      ...SimulationInfo
+    }
+  }
+`);
+
+export const GET_SIMULATION_PLANS_BY_SIMULATION_DOCUMENT = graphql(`
+  query simulationPlansBySimulation($simulationId: Int!) {
+    simulationPlansBySimulation(simulationId: $simulationId) {
+      ...SimulationPlanInfo
+    }
+  }
+`);
+
 export const GET_SIMULATION_PLAN_BY_ID_DOCUMENT = graphql(`
   query getSimulationPlanById($id: Int!) {
     getSimulationPlanById(id: $id) {
@@ -375,6 +391,56 @@ export function useGetSimulations() {
     fetchMore: handleFetchMore,
     hasMore: data?.simulations.pageInfo.hasNextPage,
   };
+}
+
+export function useGetSimulation(id: number) {
+  const { data, loading } = useQuery(GET_SIMULATION_DOCUMENT, {
+    variables: { id },
+  });
+
+  const simulation = useMemo(() => {
+    if (!data?.simulation) {
+      return null;
+    }
+
+    return getFragmentData(
+      SIMULATION_INFO_FRAGMENT_DOCUMENT,
+      data.simulation,
+    ) as Simulation;
+  }, [data]);
+
+  return { simulation, loading };
+}
+
+export function useGetSimulationPlansBySimulation(simulationId: number) {
+  const { data, loading } = useQuery(
+    GET_SIMULATION_PLANS_BY_SIMULATION_DOCUMENT,
+    {
+      variables: { simulationId },
+    },
+  );
+
+  const simulationPlans = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return data.simulationPlansBySimulation.map((plan) => {
+      const unwrapped = getFragmentData(
+        SIMULATION_PLAN_INFO_FRAGMENT_DOCUMENT,
+        plan,
+      );
+
+      return {
+        ...unwrapped,
+        simulationBots: unwrapped.simulationBots.map((simulationBot) =>
+          getFragmentData(SIMULATION_BOT_INFO_FRAGMENT_DOCUMENT, simulationBot),
+        ),
+      } as SimulationPlan;
+    });
+  }, [data]);
+
+  return { simulationPlans, loading };
 }
 
 export function useGetSimulationPlanById(id: number) {

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Button, Card, CardBody, Chip, Progress } from "@heroui/react";
 import dayjs from "dayjs";
 
@@ -73,6 +74,12 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              <Link href={`/simulations/auto/${simulation.id}`}>
+                <Button size="sm" color="primary" variant="light">
+                  Show Plans
+                </Button>
+              </Link>
+
               {canPlay ? (
                 <Button
                   size="sm"
@@ -158,7 +165,11 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
             <Progress
               size="sm"
               value={simulation.progressPercent}
-              color={simulation.status === SimulationStatus.Failed ? "danger" : "primary"}
+              color={
+                simulation.status === SimulationStatus.Failed
+                  ? "danger"
+                  : "primary"
+              }
               aria-label={`Simulation ${simulation.id} progress`}
             />
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
@@ -206,7 +217,7 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
           </div>
 
           {simulation.error ? (
-            <div className="border-danger-500/30 bg-danger-500/10 rounded-lg border px-3 py-2 text-xs text-danger-200">
+            <div className="border-danger-500/30 bg-danger-500/10 text-danger-200 rounded-lg border px-3 py-2 text-xs">
               {simulation.error}
             </div>
           ) : null}
