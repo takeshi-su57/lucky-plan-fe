@@ -99,6 +99,7 @@ const cache = new InMemoryCache({
         allLogs: relayStylePagination(["checked", "severity"]),
         getAllFollowerDetails: relayStylePagination(["contractId"]),
         getSimulationPlans: relayStylePagination([]),
+        simulations: relayStylePagination([]),
       },
     },
     User: {

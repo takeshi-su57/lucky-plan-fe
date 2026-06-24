@@ -11,7 +11,11 @@ import { getFragmentData, graphql } from "@/gql/index";
 import { useCallback, useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
 import { PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT } from "./useHistory";
-import { SimulationBotDetails, SimulationPlan } from "@/graphql/gql/graphql";
+import {
+  Simulation,
+  SimulationBotDetails,
+  SimulationPlan,
+} from "@/graphql/gql/graphql";
 
 export const SIMULATION_BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment SimulationBotInfo on SimulationBot {
@@ -58,6 +62,47 @@ export const SIMULATION_PLAN_INFO_FRAGMENT_DOCUMENT = graphql(`
     simulationBots {
       ...SimulationBotInfo
     }
+  }
+`);
+
+export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment SimulationInfo on Simulation {
+    closeFeeRate
+    completedPlans
+    createdAt
+    cursor
+    description
+    endAt
+    error
+    id
+    maxCollateralUsd
+    maxDrawdownUsd
+    maxLeverage
+    maxRatio
+    minCollateralUsd
+    minNegativeR2
+    minRatio
+    minTrades
+    openFeeRate
+    platform
+    profitFactor
+    progressMessage
+    progressPercent
+    progressPhase
+    selectedLeaderCount
+    slippageRate
+    standardCollateralUsd
+    startAt
+    status
+    title
+    totalCostUsd
+    totalFollowerPnl
+    totalLeaderPnl
+    totalNetPnlUsd
+    totalSimulationPlans
+    tradeCount
+    updatedAt
+    winRate
   }
 `);
 
@@ -150,6 +195,23 @@ export const GET_SIMULATION_PLANS_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_SIMULATIONS_DOCUMENT = graphql(`
+  query simulations($after: Int, $first: Int!) {
+    simulations(after: $after, first: $first) {
+      edges {
+        cursor
+        node {
+          ...SimulationInfo
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+`);
+
 export const GET_SIMULATION_PLAN_BY_ID_DOCUMENT = graphql(`
   query getSimulationPlanById($id: Int!) {
     getSimulationPlanById(id: $id) {
@@ -162,6 +224,14 @@ export const CREATE_SIMULATION_PLAN_DOCUMENT = graphql(`
   mutation createSimulationPlan($input: CreateSimulationPlanInput!) {
     createSimulationPlan(input: $input) {
       ...SimulationPlanInfo
+    }
+  }
+`);
+
+export const CREATE_SIMULATION_DOCUMENT = graphql(`
+  mutation createSimulation($input: CreateSimulationInput!) {
+    createSimulation(input: $input) {
+      ...SimulationInfo
     }
   }
 `);
@@ -186,6 +256,22 @@ export const PLAY_SIMULATION_PLAN_DOCUMENT = graphql(`
   mutation playSimulationPlan($id: Int!) {
     playSimulationPlan(id: $id) {
       ...SimulationPlanInfo
+    }
+  }
+`);
+
+export const PLAY_AUTO_SIMULATION_DOCUMENT = graphql(`
+  mutation playAutoSimulation($id: Int!) {
+    playAutoSimulation(id: $id) {
+      ...SimulationInfo
+    }
+  }
+`);
+
+export const CANCEL_SIMULATION_DOCUMENT = graphql(`
+  mutation cancelSimulation($id: Int!) {
+    cancelSimulation(id: $id) {
+      ...SimulationInfo
     }
   }
 `);
@@ -246,6 +332,48 @@ export function useGetSimulationPlans() {
     loading,
     fetchMore: handleFetchMore,
     hasMore: data?.getSimulationPlans.pageInfo.hasNextPage,
+  };
+}
+
+export function useGetSimulations() {
+  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
+    GET_SIMULATIONS_DOCUMENT,
+  );
+
+  useEffect(() => {
+    query({
+      variables: {
+        first: 20,
+      },
+    });
+  }, [query]);
+
+  const simulations = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return data.simulations.edges.map((edge) =>
+      getFragmentData(SIMULATION_INFO_FRAGMENT_DOCUMENT, edge.node),
+    ) as Simulation[];
+  }, [data]);
+
+  const handleFetchMore = useCallback(() => {
+    if (data && !error) {
+      fetchMore({
+        variables: {
+          first: 20,
+          after: data.simulations.pageInfo.endCursor,
+        },
+      });
+    }
+  }, [data, error, fetchMore]);
+
+  return {
+    simulations,
+    loading,
+    fetchMore: handleFetchMore,
+    hasMore: data?.simulations.pageInfo.hasNextPage,
   };
 }
 
@@ -338,6 +466,42 @@ export function useCreateSimulationPlan() {
   return { createSimulationPlan, loading };
 }
 
+export function useCreateSimulation() {
+  const [createSimulation, { data: newData, error, loading }] = useMutation(
+    CREATE_SIMULATION_DOCUMENT,
+  );
+  const client = useApolloClient();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      enqueueSnackbar("Success at creating new auto simulation!", {
+        variant: "success",
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at creating new auto simulation!", {
+        variant: "error",
+      });
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  const simulation = useMemo(() => {
+    if (!newData?.createSimulation) {
+      return null;
+    }
+
+    return getFragmentData(
+      SIMULATION_INFO_FRAGMENT_DOCUMENT,
+      newData.createSimulation,
+    ) as Simulation;
+  }, [newData]);
+
+  return { createSimulation, simulation, loading };
+}
+
 export function useUpdateSimulationBot() {
   const [updateSimulationBot, { data: newData, error, loading }] = useMutation(
     UPDATE_SIMULATION_BOT_DOCUMENT,
@@ -410,6 +574,56 @@ export function usePlaySimulationPlan() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return { playSimulationPlan, loading };
+}
+
+export function usePlayAutoSimulation() {
+  const [playAutoSimulation, { data: newData, error, loading }] = useMutation(
+    PLAY_AUTO_SIMULATION_DOCUMENT,
+  );
+  const client = useApolloClient();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      enqueueSnackbar("Auto simulation started!", {
+        variant: "success",
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at starting auto simulation!", {
+        variant: "error",
+      });
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return { playAutoSimulation, loading };
+}
+
+export function useCancelSimulation() {
+  const [cancelSimulation, { data: newData, error, loading }] = useMutation(
+    CANCEL_SIMULATION_DOCUMENT,
+  );
+  const client = useApolloClient();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      enqueueSnackbar("Auto simulation cancelled!", {
+        variant: "success",
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at cancelling auto simulation!", {
+        variant: "error",
+      });
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return { cancelSimulation, loading };
 }
 
 export function useStopSimulationBot() {

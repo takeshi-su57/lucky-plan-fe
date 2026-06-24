@@ -1,14 +1,28 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Button, Spinner } from "@heroui/react";
+import { Button, Spinner, Tab, Tabs } from "@heroui/react";
 import { FaPlus } from "react-icons/fa";
 import { Virtuoso } from "react-virtuoso";
 
 import { SimulationPlanRow } from "./SimulationPlanRow";
-import { useGetSimulationPlans } from "@/app/_hooks/useSimulations";
+import { SimulationRow } from "./SimulationRow";
+import {
+  useGetSimulationPlans,
+  useGetSimulations,
+} from "@/app/_hooks/useSimulations";
+
+type SimulationTab = "auto" | "manual";
 
 export function Simulations() {
+  const [selected, setSelected] = useState<SimulationTab>("auto");
+  const {
+    simulations,
+    hasMore: hasMoreSimulations,
+    loading: simulationsLoading,
+    fetchMore: fetchMoreSimulations,
+  } = useGetSimulations();
   const { simultionPlans, hasMore, loading, fetchMore } =
     useGetSimulationPlans();
 
@@ -17,20 +31,78 @@ export function Simulations() {
       <div className="flex items-center justify-between">
         <h1>Simulations</h1>
 
-        <Link href="/simulations/create">
-          <Button isIconOnly color="primary" variant="flat">
-            <FaPlus />
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/simulations/create-plan">
+            <Button color="primary" variant="light" size="sm">
+              Manual Plan
+            </Button>
+          </Link>
+
+          <Link href="/simulations/create">
+            <Button
+              color="primary"
+              variant="flat"
+              size="sm"
+              startContent={<FaPlus />}
+            >
+              Auto Simulation
+            </Button>
+          </Link>
+        </div>
       </div>
 
-      {loading ? (
+      <Tabs
+        aria-label="simulation-tabs"
+        selectedKey={selected}
+        onSelectionChange={(value) => setSelected(value as SimulationTab)}
+      >
+        <Tab key="auto" title="Auto Simulations" />
+        <Tab key="manual" title="Manual Plans" />
+      </Tabs>
+
+      {selected === "auto" && simulationsLoading ? (
+        <div className="flex h-75 w-full items-center justify-center">
+          <Spinner size="lg" color="warning" />
+        </div>
+      ) : selected === "auto" ? (
+        <Virtuoso
+          style={{ height: "calc(100vh - 300px)", minHeight: 520 }}
+          data={simulations}
+          endReached={() => {
+            if (hasMoreSimulations && !simulationsLoading) {
+              fetchMoreSimulations();
+            }
+          }}
+          overscan={200}
+          itemContent={(_index, item) => <SimulationRow simulation={item} />}
+          components={{
+            Footer: () => (
+              <div className="flex w-full items-center justify-center py-4">
+                {hasMoreSimulations === false ? (
+                  <span className="font-sans text-neutral-400/40">
+                    No More Results Available
+                  </span>
+                ) : hasMoreSimulations ? (
+                  <Button
+                    variant="flat"
+                    color="primary"
+                    isLoading={simulationsLoading}
+                    onPress={() => fetchMoreSimulations()}
+                  >
+                    Load More
+                  </Button>
+                ) : null}
+              </div>
+            ),
+          }}
+        />
+      ) : loading ? (
         <div className="flex h-75 w-full items-center justify-center">
           <Spinner size="lg" color="warning" />
         </div>
       ) : (
         <Virtuoso
-          style={{ height: "calc(100vh - 250px)", minHeight: 520 }}
+          style={{ height: "calc(100vh - 300px)", minHeight: 520 }}
           data={simultionPlans}
           endReached={() => {
             if (hasMore && !loading) fetchMore();

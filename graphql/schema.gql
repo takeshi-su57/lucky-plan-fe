@@ -223,6 +223,26 @@ input CreateSimulationBotInput {
   simulationPlanId: Int!
 }
 
+input CreateSimulationInput {
+  closeFeeRate: Float! = 0
+  description: String!
+  endAt: Date!
+  maxCollateralUsd: Float! = 500
+  maxLeverage: Float! = 50
+  maxRatio: Float! = 3
+  minCollateralUsd: Float! = 10
+  minNegativeR2: Float! = 0.25
+  minRatio: Float! = 0.05
+  minTrades: Int! = 3
+  openFeeRate: Float! = 0
+  platform: Platform!
+  selectedLeaderCount: Int! = 10
+  slippageRate: Float! = 0
+  standardCollateralUsd: Float! = 100
+  startAt: Date!
+  title: String!
+}
+
 input CreateSimulationPlanInput {
   description: String!
   endAt: Date!
@@ -478,6 +498,7 @@ type Mutation {
   cancelOrderAfterTimeout(
     input: CancelOrderAfterTimeoutInput!
   ): ContractExecutionResult!
+  cancelSimulation(id: Int!): Simulation!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
   checkLog(id: Int!): Log!
@@ -488,6 +509,7 @@ type Mutation {
   createBot(input: CreateBotInput!): BotBackwardDetails!
   createPlan(createPlanInput: CreatePlanInput!): Plan!
   createSLTP(input: SLTPRequestInput!): SLTPRequest!
+  createSimulation(input: CreateSimulationInput!): Simulation!
   createSimulationPlan(input: CreateSimulationPlanInput!): SimulationPlan!
   decreaseAllowanceToZero(
     collateralIndex: Int!
@@ -501,6 +523,7 @@ type Mutation {
   deleteBot(id: Int!): BotBackwardDetails!
   deletePlan(id: Int!): Int!
   deleteSLTP(id: Int!): SLTPRequest!
+  deleteSimulation(id: Int!): Int!
   depositAsset(input: AssetInput!): Boolean!
   disableContract(contractId: Int!): Contract!
   dynamicSnapshotBuildV2(dateStr: String!, platform: Platform!): Boolean!
@@ -532,6 +555,7 @@ type Mutation {
   makeSafeApp(password: String!): Boolean!
   openTradeMarket(input: OpenTradeInput!): ContractExecutionResult!
   pauseSystem: Boolean!
+  playAutoSimulation(id: Int!): Simulation!
   playSimulationPlan(id: Int!): SimulationPlan!
   resumeSystem(password: String): Boolean!
   startAdaption(contractId: Int!, shouldRestart: Boolean!): Boolean!
@@ -543,6 +567,7 @@ type Mutation {
   updateLeverage(input: UpdateLeverageInput!): ContractExecutionResult!
   updateMaxOpenMissions(maxCount: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
+  updateSimulation(input: UpdateSimulationInput!): Simulation!
   updateSimulationBot(input: UpdateSimulationBotInput!): SimulationBot!
   updateSl(input: UpdateSlInput!): ContractExecutionResult!
   updateStrategy(id: Int!, input: UpdateStrategyInput!): Strategy!
@@ -811,6 +836,13 @@ type Query {
     platform: Platform!
   ): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
+  simulation(id: Int!): Simulation
+  simulationLeaderSelections(
+    simulationId: Int!
+    simulationPlanId: Int
+  ): [SimulationLeaderSelection!]!
+  simulationPlansBySimulation(simulationId: Int!): [SimulationPlan!]!
+  simulations(after: Int, first: Int!): SimulationConnection!
   systemStatus: Boolean!
 }
 
@@ -838,6 +870,45 @@ type ServerTime {
 type SeverityCount {
   counts: Int!
   severity: LogSeverity!
+}
+
+type Simulation {
+  closeFeeRate: Float!
+  completedPlans: Int!
+  createdAt: Date!
+  cursor: Date
+  description: String!
+  endAt: Date!
+  error: String
+  id: Int!
+  maxCollateralUsd: Float!
+  maxDrawdownUsd: Float!
+  maxLeverage: Float!
+  maxRatio: Float!
+  minCollateralUsd: Float!
+  minNegativeR2: Float!
+  minRatio: Float!
+  minTrades: Int!
+  openFeeRate: Float!
+  platform: Platform!
+  profitFactor: Float!
+  progressMessage: String
+  progressPercent: Float!
+  progressPhase: String
+  selectedLeaderCount: Int!
+  slippageRate: Float!
+  standardCollateralUsd: Float!
+  startAt: Date!
+  status: SimulationStatus!
+  title: String!
+  totalCostUsd: Float!
+  totalFollowerPnl: Float!
+  totalLeaderPnl: Float!
+  totalNetPnlUsd: Float!
+  totalSimulationPlans: Int!
+  tradeCount: Int!
+  updatedAt: Date!
+  winRate: Float!
 }
 
 type SimulationBot {
@@ -893,6 +964,40 @@ type SimulationBotDetails {
   totalPositions: Int!
 }
 
+type SimulationConnection {
+  edges: [SimulationEdge!]!
+  pageInfo: SimulationPageInfo!
+}
+
+type SimulationEdge {
+  cursor: Int!
+  node: Simulation!
+}
+
+type SimulationLeaderSelection {
+  createdAt: Date!
+  date: Date!
+  id: Int!
+  leaderAddress: String!
+  rawR2: Float!
+  rawSlope: Float!
+  rawTotalPnlUsd: Float!
+  rawTradeCount: Int!
+  reverseDrawdownUsd: Float!
+  reverseNetPnlUsd: Float!
+  score: Float!
+  simulationId: Int!
+  simulationPlanId: Int
+  suggestedCollateralUsd: Float!
+  suggestedRatio: Float!
+  updatedAt: Date!
+}
+
+type SimulationPageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
 type SimulationPlan {
   cursor: Date!
   description: String!
@@ -900,6 +1005,7 @@ type SimulationPlan {
   id: Int!
   openedPositions: Int!
   simulationBots: [SimulationBot!]!
+  simulationId: Int
   startAt: Date!
   title: String!
   totalFollowerPnl: Float!
@@ -919,6 +1025,7 @@ type SimulationPlanDetails {
   id: Int!
   openedPositions: Int!
   simulationBots: [SimulationBotDetails!]!
+  simulationId: Int
   startAt: Date!
   title: String!
   totalFollowerPnl: Float!
@@ -934,6 +1041,15 @@ type SimulationPlanEdge {
 type SimulationPlanPageInfo {
   endCursor: Int
   hasNextPage: Boolean!
+}
+
+enum SimulationStatus {
+  Cancelled
+  Completed
+  Created
+  Failed
+  Paused
+  Running
 }
 
 type SimulationTradeHistory {
@@ -1034,6 +1150,24 @@ input UpdateSimulationBotInput {
   maxLeverage: Float
   mode: BotMode
   ratio: Float
+}
+
+input UpdateSimulationInput {
+  closeFeeRate: Float
+  description: String
+  id: Int!
+  maxCollateralUsd: Float
+  maxLeverage: Float
+  maxRatio: Float
+  minCollateralUsd: Float
+  minNegativeR2: Float
+  minRatio: Float
+  minTrades: Int
+  openFeeRate: Float
+  selectedLeaderCount: Int
+  slippageRate: Float
+  standardCollateralUsd: Float
+  title: String
 }
 
 input UpdateSlInput {
