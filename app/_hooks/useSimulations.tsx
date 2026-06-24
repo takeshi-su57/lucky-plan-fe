@@ -295,6 +295,7 @@ export function useGetSimulationPlanById(id: number) {
           });
 
           return {
+            ...position,
             histories,
           };
         });

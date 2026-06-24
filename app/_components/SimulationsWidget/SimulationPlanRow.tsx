@@ -80,7 +80,7 @@ export function SimulationPlanRow({ simulationPlan }: SimulationPlanRowProps) {
                 />
               ) : null}
 
-              {simulationPlan.totalPositions > 0 ? (
+              {simulationPlan.totalPositions !== 0 ? (
                 <LabeledChip
                   size="sm"
                   variant="flat"
@@ -90,7 +90,7 @@ export function SimulationPlanRow({ simulationPlan }: SimulationPlanRowProps) {
                 />
               ) : null}
 
-              {simulationPlan.totalLeaderPnl > 0 ? (
+              {simulationPlan.totalLeaderPnl !== 0 ? (
                 <LabeledChip
                   size="sm"
                   variant="flat"
@@ -100,7 +100,7 @@ export function SimulationPlanRow({ simulationPlan }: SimulationPlanRowProps) {
                 />
               ) : null}
 
-              {simulationPlan.totalFollowerPnl > 0 ? (
+              {simulationPlan.totalFollowerPnl !== 0 ? (
                 <LabeledChip
                   size="sm"
                   variant="flat"

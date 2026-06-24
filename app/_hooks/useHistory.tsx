@@ -27,6 +27,7 @@ export const PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
     date
     contractId
     platform
+    collateralUsdPrice
   }
 `);
 

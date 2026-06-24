@@ -249,7 +249,7 @@ export function getHistoriesChartData(
         }
 
         case PerpTradeHistoryOperation.IncreaseLeverage: {
-          inOutSum += history.collateralDeltaUsd;
+          inOutSum += history.collateralDeltaUsd + history.usdPnl;
 
           inOutChartData.push({
             value: history.collateralDeltaUsd,
@@ -260,7 +260,7 @@ export function getHistoriesChartData(
         }
 
         case PerpTradeHistoryOperation.DecreaseLeverage: {
-          inOutSum -= history.collateralDeltaUsd;
+          inOutSum -= history.collateralDeltaUsd + history.usdPnl;
 
           inOutChartData.push({
             value: -history.collateralDeltaUsd,
@@ -271,7 +271,7 @@ export function getHistoriesChartData(
         }
 
         case PerpTradeHistoryOperation.IncreaseSize: {
-          inOutSum -= history.collateralDeltaUsd;
+          inOutSum -= history.collateralDeltaUsd + history.usdPnl;
 
           inOutChartData.push({
             value: -history.collateralDeltaUsd,

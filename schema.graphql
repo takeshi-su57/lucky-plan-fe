@@ -534,6 +534,7 @@ type PerpTradeHistory {
   address: String!
   collateralDeltaUsd: Float!
   collateralInUsd: Float!
+  collateralUsdPrice: Float!
   contractId: Int!
   date: Date!
   id: Int!
