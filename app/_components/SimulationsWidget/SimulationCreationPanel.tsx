@@ -15,6 +15,7 @@ import {
 import { now } from "@internationalized/date";
 import type { DateValue } from "@react-types/datepicker";
 
+import { NumericInput } from "@/components/inputs/NumericInput";
 import { getServerTimezone } from "@/utils";
 import { Platform } from "@/graphql/gql/graphql";
 import {
@@ -37,6 +38,9 @@ export function SimulationCreationPanel() {
       start: now(getServerTimezone()).subtract({ days: 30 }),
       end: now(getServerTimezone()).subtract({ days: 1 }),
     });
+  const [minTrades, setMinTrades] = useState("3");
+  const [minNegativeR2, setMinNegativeR2] = useState("0.25");
+  const [minRatio, setMinRatio] = useState("0");
 
   const errors = useMemo(() => {
     const result: Record<string, string> = {};
@@ -53,8 +57,24 @@ export function SimulationCreationPanel() {
       result.scheduleRange = "Please select a valid date range";
     }
 
+    if (minTrades.trim() === "" || Number(minTrades) < 1) {
+      result.minTrades = "Min trades must be greater than 0";
+    }
+
+    if (
+      minNegativeR2.trim() === "" ||
+      Number(minNegativeR2) < 0 ||
+      Number(minNegativeR2) > 1
+    ) {
+      result.minNegativeR2 = "Min R2 must be between 0 and 1";
+    }
+
+    if (minRatio.trim() === "" || Number(minRatio) < 0) {
+      result.minRatio = "Min ratio cannot be negative";
+    }
+
     return result;
-  }, [description, scheduleRange, title]);
+  }, [description, minNegativeR2, minRatio, minTrades, scheduleRange, title]);
 
   const isDisabled = Object.keys(errors).length > 0;
 
@@ -71,6 +91,9 @@ export function SimulationCreationPanel() {
           platform,
           startAt: scheduleRange.start.toDate(getServerTimezone()),
           endAt: scheduleRange.end.toDate(getServerTimezone()),
+          minTrades: Math.trunc(Number(minTrades)),
+          minNegativeR2: Number(minNegativeR2),
+          minRatio: Number(minRatio),
         },
       },
     });
@@ -145,6 +168,39 @@ export function SimulationCreationPanel() {
             errorMessage={errors.scheduleRange}
             isInvalid={Boolean(errors.scheduleRange)}
           />
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <NumericInput
+              amount={minTrades}
+              onChange={setMinTrades}
+              label="Min Trades"
+              min={1}
+              step={1}
+              errorMessage={errors.minTrades}
+              isInvalid={Boolean(errors.minTrades)}
+            />
+
+            <NumericInput
+              amount={minNegativeR2}
+              onChange={setMinNegativeR2}
+              label="Min R2"
+              min={0}
+              max={1}
+              step={0.01}
+              errorMessage={errors.minNegativeR2}
+              isInvalid={Boolean(errors.minNegativeR2)}
+            />
+
+            <NumericInput
+              amount={minRatio}
+              onChange={setMinRatio}
+              label="Min Ratio"
+              min={0}
+              step={0.01}
+              errorMessage={errors.minRatio}
+              isInvalid={Boolean(errors.minRatio)}
+            />
+          </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <Button

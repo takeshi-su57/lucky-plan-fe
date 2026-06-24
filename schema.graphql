@@ -234,7 +234,7 @@ input CreateSimulationInput {
   maxRatio: Float! = 3
   minCollateralUsd: Float! = 10
   minNegativeR2: Float! = 0.25
-  minRatio: Float! = 0.05
+  minRatio: Float! = 0
   minTrades: Int! = 3
   openFeeRate: Float! = 0
   platform: Platform!
@@ -266,9 +266,7 @@ input CreateStrategyInput {
   tpPercentage: Float! = 0
 }
 
-"""
-Date custom scalar type
-"""
+"""Date custom scalar type"""
 scalar Date
 
 input DecreasePositionSizeInput {
@@ -351,9 +349,7 @@ input IncreasePositionSizeInput {
   pairIndex: Int!
 }
 
-"""
-JSON custom scalar type
-"""
+"""JSON custom scalar type"""
 scalar JSON
 
 type Log {
@@ -481,25 +477,11 @@ enum MissionStatus {
 }
 
 type Mutation {
-  allowAuto(
-    address: String!
-    allowAuto: Boolean!
-    budget: Float!
-    followerContractId: Int!
-    ratio: Float!
-  ): User!
+  allowAuto(address: String!, allowAuto: Boolean!, budget: Float!, followerContractId: Int!, ratio: Float!): User!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
-  batchCreateSimulationBots(
-    inputs: [CreateSimulationBotInput!]!
-  ): [SimulationBot!]!
-  buildPnlSnapshotsV2(
-    dateStr: String!
-    isForceBuild: Boolean!
-    platform: Platform!
-  ): Boolean!
-  cancelOrderAfterTimeout(
-    input: CancelOrderAfterTimeoutInput!
-  ): ContractExecutionResult!
+  batchCreateSimulationBots(inputs: [CreateSimulationBotInput!]!): [SimulationBot!]!
+  buildPnlSnapshotsV2(dateStr: String!, isForceBuild: Boolean!, platform: Platform!): Boolean!
+  cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
   cancelSimulation(id: Int!): Simulation!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
@@ -513,15 +495,8 @@ type Mutation {
   createSLTP(input: SLTPRequestInput!): SLTPRequest!
   createSimulation(input: CreateSimulationInput!): Simulation!
   createSimulationPlan(input: CreateSimulationPlanInput!): SimulationPlan!
-  decreaseAllowanceToZero(
-    collateralIndex: Int!
-    contractId: Int!
-    followerAddress: String!
-    password: String!
-  ): Boolean!
-  decreasePositionSize(
-    input: DecreasePositionSizeInput!
-  ): ContractExecutionResult!
+  decreaseAllowanceToZero(collateralIndex: Int!, contractId: Int!, followerAddress: String!, password: String!): Boolean!
+  decreasePositionSize(input: DecreasePositionSizeInput!): ContractExecutionResult!
   deleteBot(id: Int!): BotBackwardDetails!
   deletePlan(id: Int!): Int!
   deleteSLTP(id: Int!): SLTPRequest!
@@ -531,26 +506,11 @@ type Mutation {
   dynamicSnapshotBuildV2(dateStr: String!, platform: Platform!): Boolean!
   endPlan(id: Int!): Boolean!
   generateNewFollower: Follower!
-  getToken(
-    signature: String!
-    timestamp: String!
-    walletAddress: String!
-  ): AccessToken!
+  getToken(signature: String!, timestamp: String!, walletAddress: String!): AccessToken!
   ignoreMission(id: Int!): Boolean!
-  increaseAllowanceToMax(
-    collateralIndex: Int!
-    contractId: Int!
-    followerAddress: String!
-    password: String!
-  ): Boolean!
-  increasePositionSize(
-    input: IncreasePositionSizeInput!
-  ): ContractExecutionResult!
-  initializePnlSnapshotV2(
-    beginingDate: Date!
-    isForceBuild: Boolean!
-    platform: Platform!
-  ): Boolean!
+  increaseAllowanceToMax(collateralIndex: Int!, contractId: Int!, followerAddress: String!, password: String!): Boolean!
+  increasePositionSize(input: IncreasePositionSizeInput!): ContractExecutionResult!
+  initializePnlSnapshotV2(beginingDate: Date!, isForceBuild: Boolean!, platform: Platform!): Boolean!
   killSubService(service: String!): Boolean!
   liveBot(id: Int!): Boolean!
   liveContract(contractId: Int!, fromBlock: Int): Contract!
@@ -577,20 +537,9 @@ type Mutation {
   withdrawAllETH(input: WithdrawAllInput!): Boolean!
   withdrawAllErc20(input: WithdrawAllInput!): Boolean!
   withdrawAsset(input: AssetInput!): Boolean!
-  withdrawETHToUser(
-    amount: Float!
-    contractId: Int!
-    password: String!
-  ): Boolean!
-  withdrawErc20ToUser(
-    amount: Float!
-    collateralIndex: Int!
-    contractId: Int!
-    password: String!
-  ): Boolean!
-  withdrawPositivePnl(
-    input: WithdrawPositivePnlInput!
-  ): ContractExecutionResult!
+  withdrawETHToUser(amount: Float!, contractId: Int!, password: String!): Boolean!
+  withdrawErc20ToUser(amount: Float!, collateralIndex: Int!, contractId: Int!, password: String!): Boolean!
+  withdrawPositivePnl(input: WithdrawPositivePnlInput!): ContractExecutionResult!
 }
 
 input OpenTradeInput {
@@ -765,12 +714,7 @@ type PnlSnapshotV2InitializedFlag {
 }
 
 type Query {
-  allLogs(
-    after: Int
-    checked: Boolean!
-    first: Int!
-    severity: LogSeverity
-  ): LogsConnection!
+  allLogs(after: Int, checked: Boolean!, first: Int!, severity: LogSeverity): LogsConnection!
   findContract(id: Int!): Contract!
   findStrategy(id: Int!): Strategy
   getALLSLTPs: [SLTPRequest!]!
@@ -778,71 +722,29 @@ type Query {
   getAdaptionStatus: String!
   getAlertTasks: [TaskBackwardDetails!]!
   getAllContracts: [Contract!]!
-  getAllFollowerDetails(
-    after: Int
-    contractId: Int!
-    first: Int!
-  ): FollowerConnection!
+  getAllFollowerDetails(after: Int, contractId: Int!, first: Int!): FollowerConnection!
   getAllFollowers: [Follower!]!
   getAllStrategy: [Strategy!]!
   getAllUsers: [User!]!
   getBotsByStatus(after: Int, first: Int!, status: BotStatus!): BotConnection!
-  getGnsPrices(
-    fromDate: Date!
-    pairName: String!
-    toDate: Date!
-  ): [GnsPricingRecord!]!
+  getGnsPrices(fromDate: Date!, pairName: String!, toDate: Date!): [GnsPricingRecord!]!
   getLogsSeverityCounts: [SeverityCount!]!
   getMaxOpenMissions: Int!
   getMicroserviceStatus: [MicroserviceStatus!]!
-  getPerpTradePositions(
-    address: String!
-    endedAt: Date
-    maxLeverage: Float
-    platform: Platform!
-    startedAt: Date
-    stoppedAt: Date
-  ): PerpTradePositionsWithSummary!
-  getPlanBotGroups(
-    page: Int! = 1
-    pageSize: Int! = 10
-    planId: Int!
-  ): BotGroupPaginatedResponse!
+  getPerpTradePositions(address: String!, endedAt: Date, maxLeverage: Float, platform: Platform!, startedAt: Date, stoppedAt: Date): PerpTradePositionsWithSummary!
+  getPlanBotGroups(page: Int! = 1, pageSize: Int! = 10, planId: Int!): BotGroupPaginatedResponse!
   getPlanById(id: Int!): Plan
-  getPlanSummariesByStatus(
-    after: Int
-    first: Int!
-    status: PlanStatus!
-  ): PlanSummaryConnection!
-  getPlansByStatus(
-    after: Int
-    first: Int!
-    status: PlanStatus!
-  ): PlanConnection!
-  getPnlSnapshotV2InitializedFlag(
-    platform: Platform!
-  ): [PnlSnapshotV2InitializedFlag!]!
-  getPnlSnapshotsV2(
-    dateStr: String!
-    isDesc: Boolean!
-    maxLeverage: Float
-    page: Int!
-    pageSize: Int!
-    platform: Platform!
-  ): PnlSnapshotV2DetailsPaginatedResponse!
+  getPlanSummariesByStatus(after: Int, first: Int!, status: PlanStatus!): PlanSummaryConnection!
+  getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
+  getPnlSnapshotV2InitializedFlag(platform: Platform!): [PnlSnapshotV2InitializedFlag!]!
+  getPnlSnapshotsV2(dateStr: String!, isDesc: Boolean!, maxLeverage: Float, page: Int!, pageSize: Int!, platform: Platform!): PnlSnapshotV2DetailsPaginatedResponse!
   getServerTime: ServerTime!
   getSimulationPlanById(id: Int!): SimulationPlanDetails!
   getSimulationPlans(after: Int, first: Int!): SimulationPlanConnection!
-  isPnlSnapshotV2Initialized(
-    dateStr: String!
-    platform: Platform!
-  ): PnlSnapshotV2InitializedFlag
+  isPnlSnapshotV2Initialized(dateStr: String!, platform: Platform!): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   simulation(id: Int!): Simulation
-  simulationLeaderSelections(
-    simulationId: Int!
-    simulationPlanId: Int
-  ): [SimulationLeaderSelection!]!
+  simulationLeaderSelections(simulationId: Int!, simulationPlanId: Int): [SimulationLeaderSelection!]!
   simulationPlansBySimulation(simulationId: Int!): [SimulationPlan!]!
   simulations(after: Int, first: Int!): SimulationConnection!
   systemStatus: Boolean!

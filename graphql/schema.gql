@@ -232,7 +232,7 @@ input CreateSimulationInput {
   maxRatio: Float! = 3
   minCollateralUsd: Float! = 10
   minNegativeR2: Float! = 0.25
-  minRatio: Float! = 0.05
+  minRatio: Float! = 0
   minTrades: Int! = 3
   openFeeRate: Float! = 0
   platform: Platform!
