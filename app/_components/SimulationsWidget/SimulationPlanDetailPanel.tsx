@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import Link from "next/link";
 import { Button, Chip, Spinner, Tab, Tabs, useDisclosure } from "@heroui/react";
 import dayjs from "dayjs";
 
@@ -94,6 +95,13 @@ export function SimulationPlanDetailPanel({
     return <div>There is no simulation</div>;
   }
 
+  const backHref = simulationPlan.simulationId
+    ? `/simulations/auto/${simulationPlan.simulationId}`
+    : "/simulations";
+  const backLabel = simulationPlan.simulationId
+    ? "Back to Auto Simulation"
+    : "Back to Simulations";
+
   return (
     <div className="flex flex-col gap-6">
       <div className="border-default-200 flex flex-col gap-4 border-b pb-5">
@@ -111,6 +119,11 @@ export function SimulationPlanDetailPanel({
             <Chip variant="flat">
               Simulation Plan {simulationPlan.id || ""}
             </Chip>
+            <Link href={backHref}>
+              <Button color="primary" variant="light" size="sm">
+                {backLabel}
+              </Button>
+            </Link>
           </div>
         </div>
 

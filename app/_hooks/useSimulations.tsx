@@ -167,6 +167,7 @@ export const SIMULATION_PLAN_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     endAt
     id
     openedPositions
+    simulationId
     simulationBots {
       ...SimulationBotDetailsInfo
     }

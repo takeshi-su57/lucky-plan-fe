@@ -37,7 +37,8 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
   const canPlay =
     simulation.status === SimulationStatus.Created ||
     simulation.status === SimulationStatus.Paused ||
-    simulation.status === SimulationStatus.Failed;
+    simulation.status === SimulationStatus.Failed ||
+    simulation.status === SimulationStatus.Running;
   const canCancel = simulation.status === SimulationStatus.Running;
 
   return (
@@ -91,7 +92,9 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
                     playAutoSimulation({ variables: { id: simulation.id } })
                   }
                 >
-                  Play Auto
+                  {simulation.status === SimulationStatus.Running
+                    ? "Resume"
+                    : "Play Auto"}
                 </Button>
               ) : null}
 

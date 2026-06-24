@@ -5,8 +5,10 @@ import { Button, Chip, Progress, Spinner } from "@heroui/react";
 import dayjs from "dayjs";
 
 import {
+  useCancelSimulation,
   useGetSimulation,
   useGetSimulationPlansBySimulation,
+  usePlayAutoSimulation,
 } from "@/app/_hooks/useSimulations";
 import { LabeledChip } from "@/components/chips/LabeledChip";
 import { getPriceStr } from "@/utils/price";
@@ -22,6 +24,8 @@ export function SimulationDetailPanel({
   const { simulation, loading: simulationLoading } = useGetSimulation(id);
   const { simulationPlans, loading: plansLoading } =
     useGetSimulationPlansBySimulation(id);
+  const { playAutoSimulation, loading: playLoading } = usePlayAutoSimulation();
+  const { cancelSimulation, loading: cancelLoading } = useCancelSimulation();
 
   if (simulationLoading) {
     return <Spinner size="sm" label="Loading Simulation..." />;
@@ -30,6 +34,13 @@ export function SimulationDetailPanel({
   if (!simulation) {
     return <div>There is no simulation</div>;
   }
+
+  const canPlay =
+    simulation.status === SimulationStatus.Created ||
+    simulation.status === SimulationStatus.Paused ||
+    simulation.status === SimulationStatus.Failed ||
+    simulation.status === SimulationStatus.Running;
+  const canCancel = simulation.status === SimulationStatus.Running;
 
   return (
     <div className="flex flex-col gap-6">
@@ -65,11 +76,45 @@ export function SimulationDetailPanel({
             </p>
           </div>
 
-          <Link href="/simulations">
-            <Button color="primary" variant="light" size="sm">
-              Back
-            </Button>
-          </Link>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {canPlay ? (
+              <Button
+                color="primary"
+                variant="flat"
+                size="sm"
+                isLoading={playLoading}
+                isDisabled={playLoading || cancelLoading}
+                onPress={() =>
+                  playAutoSimulation({ variables: { id: simulation.id } })
+                }
+              >
+                {simulation.status === SimulationStatus.Running
+                  ? "Resume"
+                  : "Play Auto"}
+              </Button>
+            ) : null}
+
+            {canCancel ? (
+              <Button
+                color="danger"
+                variant="flat"
+                size="sm"
+                isLoading={cancelLoading}
+                isDisabled={playLoading || cancelLoading}
+                onPress={() =>
+                  cancelSimulation({ variables: { id: simulation.id } })
+                }
+              >
+                Cancel
+              </Button>
+            ) : null}
+
+            <Link href="/simulations">
+              <Button color="primary" variant="light" size="sm">
+                Back to Simulations
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
