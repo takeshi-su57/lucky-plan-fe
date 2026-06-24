@@ -10,7 +10,6 @@ import { useGetAllContracts } from "@/app-hooks/useContract";
 
 import { NumericInput } from "@/components/inputs/NumericInput";
 
-import { useGetPerpTradePositions } from "@/app/_hooks/useHistory";
 import {
   ContractStatus,
   Platform,
@@ -51,14 +50,6 @@ export function CreateSimulationBotModal({
 
   const [ratio, setRatio] = useState("0.1");
   const [maxLeverage, setMaxLeverage] = useState("40");
-
-  const { data: positionsWithSummary } = useGetPerpTradePositions(
-    leaderAddress,
-    platform,
-    null,
-    null,
-    simulationPlan.cursor,
-  );
 
   const handleChangePlatform: ChangeEventHandler<HTMLSelectElement> = (
     event,
@@ -187,8 +178,8 @@ export function CreateSimulationBotModal({
                 amount={maxLeverage}
                 onChange={setMaxLeverage}
                 label="Max Leverage"
-                errorMessage={ratioHelper}
-                isInvalid={ratioHelper.trim() !== ""}
+                errorMessage={maxLeverageHelper}
+                isInvalid={maxLeverageHelper.trim() !== ""}
               />
             </div>
 
@@ -207,7 +198,6 @@ export function CreateSimulationBotModal({
               ref={chartRef}
               address={leaderAddress as Address}
               platform={platform}
-              positionsWithSummary={positionsWithSummary || undefined}
               cols={1}
               mode="expert"
               startedAt={null}

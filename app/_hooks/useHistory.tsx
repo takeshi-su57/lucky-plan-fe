@@ -22,6 +22,8 @@ export const PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT = graphql(`
     sizeDeltaUsd
     sizeInUsd
     usdPnl
+    usdBasePnl
+    usdFee
     date
     contractId
     platform
@@ -75,6 +77,7 @@ export const GET_PERP_TRADE_POSITIONS_DOCUMENT = graphql(`
   query getPerpTradePositions(
     $address: String!
     $platform: Platform!
+    $maxLeverage: Float
     $startedAt: Date
     $stoppedAt: Date
     $endedAt: Date
@@ -82,6 +85,7 @@ export const GET_PERP_TRADE_POSITIONS_DOCUMENT = graphql(`
     getPerpTradePositions(
       address: $address
       platform: $platform
+      maxLeverage: $maxLeverage
       startedAt: $startedAt
       stoppedAt: $stoppedAt
       endedAt: $endedAt
@@ -107,6 +111,7 @@ export const GET_PNL_SNAPSHOT_V2_DOCUMENT = graphql(`
     $dateStr: String!
     $platform: Platform!
     $isDesc: Boolean!
+    $maxLeverage: Float
     $page: Int!
     $pageSize: Int!
   ) {
@@ -114,6 +119,7 @@ export const GET_PNL_SNAPSHOT_V2_DOCUMENT = graphql(`
       dateStr: $dateStr
       platform: $platform
       isDesc: $isDesc
+      maxLeverage: $maxLeverage
       page: $page
       pageSize: $pageSize
     ) {
@@ -271,6 +277,7 @@ export function useGetPnlSnapshotsV2(
   dateStr: string,
   platform: Platform,
   isDesc: boolean,
+  maxLeverage: number | null,
   page: number,
   pageSize: number,
 ) {
@@ -279,6 +286,7 @@ export function useGetPnlSnapshotsV2(
       platform,
       dateStr,
       isDesc,
+      maxLeverage,
       page,
       pageSize,
     },
@@ -317,6 +325,7 @@ export function useGetPnlSnapshotsV2(
 export function useGetPerpTradePositions(
   address: string,
   platform: Platform,
+  maxLeverage: number | null,
   startedAt: Date | null,
   stoppedAt: Date | null,
   endedAt: Date | null,
@@ -325,6 +334,7 @@ export function useGetPerpTradePositions(
     variables: {
       address,
       platform,
+      maxLeverage,
       startedAt,
       stoppedAt,
       endedAt,

@@ -18,10 +18,7 @@ export const SimulationBotSummary = memo(function SimulationBotSummary({
   const followerPnl = useMemo(
     () =>
       simulationBot.positions
-        .map((position) =>
-          position.histories.map((history) => history.follower.usdPnl),
-        )
-        .flat()
+        .map((position) => position.followerPnl)
         .reduce((acc, item) => acc + item, 0),
     [simulationBot],
   );

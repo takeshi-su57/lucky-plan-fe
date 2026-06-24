@@ -11,21 +11,27 @@ import { LeaderboardV2 } from "./LeaderboardV2";
 type LeaderboardParams = {
   platform: Platform;
   isDesc: boolean;
+  isAppliedFilter: boolean;
+  hideDegens: boolean;
 };
 
 const defaultParams: LeaderboardParams = {
   platform: Platform.Gns,
   isDesc: true,
+  isAppliedFilter: true,
+  hideDegens: true,
 };
 
 export type LeaderboardDrawerProps = {
   date: Date;
   isOpen: boolean;
   onOpenChange: (value: boolean) => void;
+  highlighed: Map<string, boolean>;
 };
 
 export function LeaderboardDrawer({
   date,
+  highlighed,
   isOpen,
   onOpenChange,
 }: LeaderboardDrawerProps) {
@@ -95,6 +101,32 @@ export function LeaderboardDrawer({
             >
               {draft.isDesc ? "Desc" : "Asc"}
             </Checkbox>
+
+            <Checkbox
+              isSelected={draft.isAppliedFilter}
+              onValueChange={(isAppliedFilter) =>
+                setDraft((prev) => ({ ...prev, isAppliedFilter }))
+              }
+              className="h-10 px-1"
+              classNames={{
+                label: "text-xs font-semibold text-neutral-200",
+              }}
+            >
+              {draft.isAppliedFilter ? "Filtered" : "Original"}
+            </Checkbox>
+
+            <Checkbox
+              isSelected={draft.hideDegens}
+              onValueChange={(hideDegens) =>
+                setDraft((prev) => ({ ...prev, hideDegens }))
+              }
+              className="h-10 px-1"
+              classNames={{
+                label: "text-xs font-semibold text-neutral-200",
+              }}
+            >
+              {draft.hideDegens ? "Hide Degens" : "Show Degens"}
+            </Checkbox>
           </div>
 
           {hasChanges && (
@@ -113,6 +145,9 @@ export function LeaderboardDrawer({
           date={date}
           platform={applied.platform}
           isDesc={applied.isDesc}
+          isAppliedFilter={applied.isAppliedFilter}
+          hideDegens={applied.hideDegens}
+          highlightedAddresses={highlighed}
         />
       </div>
     </RightDrawer>

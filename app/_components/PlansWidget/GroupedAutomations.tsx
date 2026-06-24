@@ -103,6 +103,7 @@ export const GroupedAutomations = memo(function GroupedAutomations({
   const { data, loading } = useGetPerpTradePositions(
     leaderAddress,
     platform,
+    50,
     null,
     null,
     null,

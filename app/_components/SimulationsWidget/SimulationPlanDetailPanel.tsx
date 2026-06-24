@@ -69,6 +69,18 @@ export function SimulationPlanDetailPanel({
     [simulationPlan],
   );
 
+  const { activeAddresses } = useMemo(() => {
+    const activeAddresses = new Map<string, boolean>();
+
+    (simulationPlan?.simulationBots || []).forEach((bot) => {
+      activeAddresses.set(bot.leaderAddress.toLowerCase(), true);
+    });
+
+    return {
+      activeAddresses,
+    };
+  }, [simulationPlan]);
+
   const canResumt = simulationPlan
     ? dayjs(simulationPlan.cursor).add(1, "day").toDate().getTime() <=
       dayjs(simulationPlan.endAt).toDate().getTime()
@@ -217,6 +229,7 @@ export function SimulationPlanDetailPanel({
         date={dayjs(simulationPlan.cursor).subtract(1, "day").toDate()}
         isOpen={isLeaderboardOpen}
         onOpenChange={onLeaderboardOpenChange}
+        highlighed={activeAddresses}
       />
     </div>
   );

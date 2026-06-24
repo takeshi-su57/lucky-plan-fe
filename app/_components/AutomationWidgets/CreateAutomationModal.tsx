@@ -19,7 +19,6 @@ import { useBatchCreateBots } from "@/app-hooks/useAutomation";
 import { shrinkAddress } from "@/utils";
 import { NumericInput } from "@/components/inputs/NumericInput";
 
-import { useGetPerpTradePositions } from "@/app/_hooks/useHistory";
 import { ContractStatus, Platform } from "@/graphql/gql/graphql";
 import {
   PerpEventLogPnlChart,
@@ -66,14 +65,6 @@ export function CreateAutomationModal({
   const [maxOpenMissions, setMaxOpenMissions] = useState("10");
   const [mode, setMode] = useState<StrategyMode>(StrategyMode.Default);
   const [lifeTime, setLifeTime] = useState("0");
-
-  const { data: positionsWithSummary } = useGetPerpTradePositions(
-    leaderAddress,
-    platform,
-    null,
-    null,
-    null,
-  );
 
   const handleChangePlatform: ChangeEventHandler<HTMLSelectElement> = (
     event,
@@ -375,7 +366,6 @@ export function CreateAutomationModal({
               ref={chartRef}
               address={leaderAddress as Address}
               platform={platform}
-              positionsWithSummary={positionsWithSummary || undefined}
               cols={1}
               mode="expert"
               startedAt={null}

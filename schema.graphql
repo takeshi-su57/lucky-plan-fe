@@ -547,6 +547,8 @@ type PerpTradeHistory {
   price: Float!
   sizeDeltaUsd: Float!
   sizeInUsd: Float!
+  usdBasePnl: Float!
+  usdFee: Float!
   usdPnl: Float!
 }
 
@@ -703,13 +705,13 @@ type Query {
   getLogsSeverityCounts: [SeverityCount!]!
   getMaxOpenMissions: Int!
   getMicroserviceStatus: [MicroserviceStatus!]!
-  getPerpTradePositions(address: String!, endedAt: Date, platform: Platform!, startedAt: Date, stoppedAt: Date): PerpTradePositionsWithSummary!
+  getPerpTradePositions(address: String!, endedAt: Date, maxLeverage: Float, platform: Platform!, startedAt: Date, stoppedAt: Date): PerpTradePositionsWithSummary!
   getPlanBotGroups(page: Int! = 1, pageSize: Int! = 10, planId: Int!): BotGroupPaginatedResponse!
   getPlanById(id: Int!): Plan
   getPlanSummariesByStatus(after: Int, first: Int!, status: PlanStatus!): PlanSummaryConnection!
   getPlansByStatus(after: Int, first: Int!, status: PlanStatus!): PlanConnection!
   getPnlSnapshotV2InitializedFlag(platform: Platform!): [PnlSnapshotV2InitializedFlag!]!
-  getPnlSnapshotsV2(dateStr: String!, isDesc: Boolean!, page: Int!, pageSize: Int!, platform: Platform!): PnlSnapshotV2DetailsPaginatedResponse!
+  getPnlSnapshotsV2(dateStr: String!, isDesc: Boolean!, maxLeverage: Float, page: Int!, pageSize: Int!, platform: Platform!): PnlSnapshotV2DetailsPaginatedResponse!
   getServerTime: ServerTime!
   getSimulationPlanById(id: Int!): SimulationPlanDetails!
   getSimulationPlans(after: Int, first: Int!): SimulationPlanConnection!
@@ -846,7 +848,9 @@ type SimulationTradeHistory {
 }
 
 type SimulationTradePosition {
+  followerPnl: Float!
   histories: [SimulationTradeHistory!]!
+  leaderPnl: Float!
 }
 
 type Strategy {

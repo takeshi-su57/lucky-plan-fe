@@ -77,6 +77,8 @@ export const SIMULATION_TRADE_POSITION_INFO_FRAGMENT_DOCUMENT = graphql(`
     histories {
       ...SimulationTradeHistoryInfo
     }
+    followerPnl
+    leaderPnl
   }
 `);
 

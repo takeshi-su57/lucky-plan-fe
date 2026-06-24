@@ -596,6 +596,8 @@ type PerpTradeHistory {
   price: Float!
   sizeDeltaUsd: Float!
   sizeInUsd: Float!
+  usdBasePnl: Float!
+  usdFee: Float!
   usdPnl: Float!
 }
 
@@ -768,6 +770,7 @@ type Query {
   getPerpTradePositions(
     address: String!
     endedAt: Date
+    maxLeverage: Float
     platform: Platform!
     startedAt: Date
     stoppedAt: Date
@@ -794,6 +797,7 @@ type Query {
   getPnlSnapshotsV2(
     dateStr: String!
     isDesc: Boolean!
+    maxLeverage: Float
     page: Int!
     pageSize: Int!
     platform: Platform!
@@ -937,7 +941,9 @@ type SimulationTradeHistory {
 }
 
 type SimulationTradePosition {
+  followerPnl: Float!
   histories: [SimulationTradeHistory!]!
+  leaderPnl: Float!
 }
 
 type Strategy {

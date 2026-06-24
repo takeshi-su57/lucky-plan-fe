@@ -13,7 +13,6 @@ import {
 } from "@/app-hooks/useHistory";
 
 import { PerpEventLogPnlChart } from "./PerpEventLogPnlChart/PerpEventLogPnlChart";
-import { useGetActiveBots } from "@/app/_hooks/useAutomation";
 import { twMerge } from "tailwind-merge";
 import { PaginatedViews } from "@/components/views/PaginatedViews";
 
@@ -21,17 +20,28 @@ const PAGE_SIZE = 20;
 
 export type LeaderboardV2Props = {
   isDesc: boolean;
+  isAppliedFilter: boolean;
+  hideDegens: boolean;
   platform: Platform;
   date: Date;
+  highlightedAddresses: Map<string, boolean>;
 };
 
-export function LeaderboardV2({ isDesc, platform, date }: LeaderboardV2Props) {
+export function LeaderboardV2({
+  isDesc,
+  isAppliedFilter,
+  hideDegens,
+  platform,
+  date,
+  highlightedAddresses,
+}: LeaderboardV2Props) {
   const [page, setPage] = useState(1);
 
   const { pnlSnapshots, loading, totalPages } = useGetPnlSnapshotsV2(
     dayjs(date).format("YYYY-MM-DD"),
     platform,
     isDesc,
+    hideDegens ? 50 : null,
     page,
     PAGE_SIZE,
   );
@@ -41,18 +51,52 @@ export function LeaderboardV2({ isDesc, platform, date }: LeaderboardV2Props) {
     loading: isPnlSnapshotInitializedLoading,
   } = useIsPnlSnapshotV2Initialized(dayjs(date).format("YYYY-MM-DD"), platform);
 
-  const { bots } = useGetActiveBots();
-  const { activeAddresses } = useMemo(() => {
-    const activeAddresses: Record<string, boolean> = {};
+  const filtered = useMemo(() => {
+    return pnlSnapshots
+      .filter((item) => {
+        if (!isAppliedFilter) {
+          return true;
+        }
 
-    bots.forEach((bot) => {
-      activeAddresses[bot.leaderAddress.toLowerCase()] = true;
-    });
+        // too mig leverage
+        if (item.positionsWithSummary.avgLeverage > 50) {
+          return false;
+        }
 
-    return {
-      activeAddresses,
-    };
-  }, [bots]);
+        // bot trader
+        if (item.positionsWithSummary.avgDuration / 1000 / 60 < 10) {
+          return false;
+        }
+
+        // too early trader
+        if (item.positionsWithSummary.positions.length < 20) {
+          return false;
+        }
+
+        return true;
+      })
+      .map((snapshot) => ({
+        ...snapshot,
+        positionsWithSummary: {
+          ...snapshot.positionsWithSummary,
+          positions: snapshot.positionsWithSummary.positions.filter(
+            (position) => {
+              const history = position.histories[0];
+
+              if (hideDegens && history.pair.toLowerCase().includes("degen")) {
+                return false;
+              }
+
+              if (history.leverage > 50) {
+                return false;
+              }
+
+              return true;
+            },
+          ),
+        },
+      }));
+  }, [hideDegens, isAppliedFilter, pnlSnapshots]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -89,7 +133,7 @@ export function LeaderboardV2({ isDesc, platform, date }: LeaderboardV2Props) {
           loading={loading}
         >
           <div className="flex flex-col gap-1">
-            {pnlSnapshots.map((item) => (
+            {filtered.map((item) => (
               <div
                 key={`${item.platform}-${item.dateStr}-${item.address}`}
                 className="flex w-full flex-col"
@@ -100,7 +144,7 @@ export function LeaderboardV2({ isDesc, platform, date }: LeaderboardV2Props) {
                   positionsWithSummary={item.positionsWithSummary}
                   mode="lightweight"
                   className={twMerge(
-                    activeAddresses[item.address.toLowerCase()] &&
+                    highlightedAddresses.get(item.address.toLowerCase()) &&
                       "bg-green-500/20",
                   )}
                   startedAt={null}

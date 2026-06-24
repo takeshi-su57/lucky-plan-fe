@@ -3,21 +3,12 @@
 import { Input, Select, SelectItem } from "@heroui/react";
 import { Address } from "viem";
 import { useState, ChangeEventHandler } from "react";
-import { useGetPerpTradePositions } from "@/app/_hooks/useHistory";
 import { Platform } from "@/graphql/gql/graphql";
 import { PerpEventLogPnlChart } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
 
 export function AnalyzePanel() {
   const [platform, setPlatform] = useState<Platform>(Platform.Gns);
   const [address, setAddress] = useState<string>("");
-
-  const { data } = useGetPerpTradePositions(
-    address.toLowerCase(),
-    platform,
-    null,
-    null,
-    null,
-  );
 
   const handleChangePlatform: ChangeEventHandler<HTMLSelectElement> = (
     event,
@@ -57,7 +48,6 @@ export function AnalyzePanel() {
       <PerpEventLogPnlChart
         address={address as Address}
         platform={platform}
-        positionsWithSummary={data || undefined}
         mode="expert"
         stoppedAt={null}
         startedAt={null}

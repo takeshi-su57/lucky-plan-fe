@@ -8,7 +8,6 @@ import { SimpleLinearRegression } from "ml-regression-simple-linear";
 export function getHistoriesChartData(
   summary: PerpTradePositionsWithSummary | null,
   selectedPairs: Set<string>,
-  maxLeverageLimit: number | null,
   copyTradingOptions: {
     standardCollateralUsd?: number;
     minRatio?: number;
@@ -168,10 +167,6 @@ export function getHistoriesChartData(
         selectedPairs.size > 0 &&
         !selectedPairs.has(getPairKey(history.pair, history.isLong))
       ) {
-        return false;
-      }
-
-      if (maxLeverageLimit && history.leverage > maxLeverageLimit) {
         return false;
       }
 

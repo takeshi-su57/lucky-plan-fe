@@ -16,17 +16,22 @@ import { getServerTimezone } from "@/utils";
 import { Platform } from "@/graphql/gql/graphql";
 
 import { LeaderboardV2 } from "./LeaderboardV2";
+import { useGetActiveBots } from "@/app/_hooks/useAutomation";
 
 type LeaderboardParams = {
   platform: Platform;
   date: Date;
   isDesc: boolean;
+  isAppliedFilter: boolean;
+  hideDegens: boolean;
 };
 
 const defaultParams: LeaderboardParams = {
   platform: Platform.Gns,
   date: now(getServerTimezone()).toDate(),
   isDesc: true,
+  isAppliedFilter: true,
+  hideDegens: true,
 };
 
 export function LeaderboadWrapper() {
@@ -34,6 +39,19 @@ export function LeaderboadWrapper() {
 
   const [draft, setDraft] = useState<LeaderboardParams>(defaultParams);
   const [applied, setApplied] = useState<LeaderboardParams>(defaultParams);
+
+  const { bots } = useGetActiveBots();
+  const { activeAddresses } = useMemo(() => {
+    const activeAddresses = new Map<string, boolean>();
+
+    bots.forEach((bot) => {
+      activeAddresses.set(bot.leaderAddress.toLowerCase(), true);
+    });
+
+    return {
+      activeAddresses,
+    };
+  }, [bots]);
 
   const hasChanges = useMemo(() => {
     return (
@@ -117,6 +135,32 @@ export function LeaderboadWrapper() {
             {draft.isDesc ? "Desc" : "Asc"}
           </Checkbox>
 
+          <Checkbox
+            isSelected={draft.isAppliedFilter}
+            onValueChange={(isAppliedFilter) =>
+              setDraft((prev) => ({ ...prev, isAppliedFilter }))
+            }
+            className="h-10 px-1"
+            classNames={{
+              label: "text-xs font-semibold text-neutral-200",
+            }}
+          >
+            {draft.isAppliedFilter ? "Filtered" : "Original"}
+          </Checkbox>
+
+          <Checkbox
+            isSelected={draft.hideDegens}
+            onValueChange={(hideDegens) =>
+              setDraft((prev) => ({ ...prev, hideDegens }))
+            }
+            className="h-10 px-1"
+            classNames={{
+              label: "text-xs font-semibold text-neutral-200",
+            }}
+          >
+            {draft.hideDegens ? "Hide Degens" : "Show Degens"}
+          </Checkbox>
+
           {hasChanges && (
             <Button
               color="primary"
@@ -146,6 +190,9 @@ export function LeaderboadWrapper() {
         date={applied.date}
         platform={applied.platform}
         isDesc={applied.isDesc}
+        isAppliedFilter={applied.isAppliedFilter}
+        highlightedAddresses={activeAddresses}
+        hideDegens={applied.hideDegens}
       />
     </div>
   );

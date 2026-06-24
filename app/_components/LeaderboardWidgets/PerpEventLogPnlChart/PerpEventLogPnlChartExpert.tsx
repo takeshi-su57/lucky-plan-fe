@@ -141,6 +141,7 @@ export function PerpEventLogPnlChartExpert({
   const { data, loading } = useGetPerpTradePositions(
     address,
     platform,
+    Number.isNaN(+maxLeverage) || +maxLeverage === 0 ? null : +maxLeverage,
     startedAt,
     stoppedAt,
     endedAt,
@@ -194,12 +195,8 @@ export function PerpEventLogPnlChartExpert({
     r2,
     copyTrading,
   } = useMemo(() => {
-    return getHistoriesChartData(
-      data,
-      selectedPairKeys,
-      Number.isNaN(+maxLeverage) ? null : +maxLeverage,
-    );
-  }, [data, selectedPairKeys, maxLeverage]);
+    return getHistoriesChartData(data, selectedPairKeys);
+  }, [data, selectedPairKeys]);
 
   const copyExportPayload = async () => {
     try {

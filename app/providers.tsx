@@ -94,12 +94,6 @@ const cache = new InMemoryCache({
   typePolicies: {
     Query: {
       fields: {
-        getPnlSnapshotsV2: relayStylePagination([
-          "kind",
-          "platform",
-          "dateStr",
-          "isDesc",
-        ]),
         getBotsByStatus: relayStylePagination(["status"]),
         getPlansByStatus: relayStylePagination(["status"]),
         allLogs: relayStylePagination(["checked", "severity"]),

@@ -27,6 +27,7 @@ export const SimulationGroupedBots = memo(function SimulationGroupedBots({
   const { data, loading } = useGetPerpTradePositions(
     leaderAddress,
     platform,
+    50,
     null,
     null,
     cursor,
