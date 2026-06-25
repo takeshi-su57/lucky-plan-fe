@@ -256,7 +256,7 @@ export function HistoriesSummary({
         Show More
       </Switch>
 
-      {isSelected !== undefined ? (
+      {isSelected !== undefined && address ? (
         <Checkbox
           isSelected={isSelected}
           onValueChange={(value) => onChangeSelection?.(address, value)}

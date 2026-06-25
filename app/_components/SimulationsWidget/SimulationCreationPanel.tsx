@@ -41,6 +41,7 @@ export function SimulationCreationPanel() {
   const [minTrades, setMinTrades] = useState("3");
   const [minNegativeR2, setMinNegativeR2] = useState("0.25");
   const [minRatio, setMinRatio] = useState("0");
+  const [maxLeverage, setMaxLeverage] = useState("50");
 
   const errors = useMemo(() => {
     const result: Record<string, string> = {};
@@ -73,8 +74,20 @@ export function SimulationCreationPanel() {
       result.minRatio = "Min ratio cannot be negative";
     }
 
+    if (maxLeverage.trim() === "" || Number(maxLeverage) <= 0) {
+      result.maxLeverage = "Max leverage must be greater than 0";
+    }
+
     return result;
-  }, [description, minNegativeR2, minRatio, minTrades, scheduleRange, title]);
+  }, [
+    description,
+    maxLeverage,
+    minNegativeR2,
+    minRatio,
+    minTrades,
+    scheduleRange,
+    title,
+  ]);
 
   const isDisabled = Object.keys(errors).length > 0;
 
@@ -94,6 +107,7 @@ export function SimulationCreationPanel() {
           minTrades: Math.trunc(Number(minTrades)),
           minNegativeR2: Number(minNegativeR2),
           minRatio: Number(minRatio),
+          maxLeverage: Number(maxLeverage),
         },
       },
     });
@@ -169,7 +183,7 @@ export function SimulationCreationPanel() {
             isInvalid={Boolean(errors.scheduleRange)}
           />
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-4">
             <NumericInput
               amount={minTrades}
               onChange={setMinTrades}
@@ -199,6 +213,16 @@ export function SimulationCreationPanel() {
               step={0.01}
               errorMessage={errors.minRatio}
               isInvalid={Boolean(errors.minRatio)}
+            />
+
+            <NumericInput
+              amount={maxLeverage}
+              onChange={setMaxLeverage}
+              label="Max Leverage"
+              min={1}
+              step={1}
+              errorMessage={errors.maxLeverage}
+              isInvalid={Boolean(errors.maxLeverage)}
             />
           </div>
 

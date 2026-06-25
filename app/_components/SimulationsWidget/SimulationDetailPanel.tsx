@@ -1,12 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Button, Chip, Progress, Spinner } from "@heroui/react";
+import { Button, Chip, Progress, Spinner, Tab, Tabs } from "@heroui/react";
 import dayjs from "dayjs";
 
 import {
   useCancelSimulation,
   useGetSimulation,
+  useGetSimulationPlanDetailsBySimulation,
   useGetSimulationPlansBySimulation,
   usePlayAutoSimulation,
 } from "@/app/_hooks/useSimulations";
@@ -14,16 +16,22 @@ import { LabeledChip } from "@/components/chips/LabeledChip";
 import { getPriceStr } from "@/utils/price";
 import { SimulationPlanRow } from "./SimulationPlanRow";
 import { SimulationStatus } from "@/graphql/gql/graphql";
+import { SimulationAutoOverview } from "./SimulationAutoOverview";
+
+type DetailTab = "overview" | "plans";
 
 export function SimulationDetailPanel({
   simulationId,
 }: {
   simulationId: string;
 }) {
+  const [selected, setSelected] = useState<DetailTab>("overview");
   const id = Number(simulationId);
   const { simulation, loading: simulationLoading } = useGetSimulation(id);
   const { simulationPlans, loading: plansLoading } =
     useGetSimulationPlansBySimulation(id);
+  const { simulationPlanDetails, loading: detailsLoading } =
+    useGetSimulationPlanDetailsBySimulation(id);
   const { playAutoSimulation, loading: playLoading } = usePlayAutoSimulation();
   const { cancelSimulation, loading: cancelLoading } = useCancelSimulation();
 
@@ -206,33 +214,53 @@ export function SimulationDetailPanel({
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-neutral-200">
-            Generated Plans
-          </h2>
-          <Chip variant="flat" size="sm">
-            {simulationPlans.length}
-          </Chip>
-        </div>
+      <Tabs
+        aria-label="auto-simulation-details"
+        selectedKey={selected}
+        onSelectionChange={(value) => setSelected(value as DetailTab)}
+      >
+        <Tab key="overview" title="Overview" />
+        <Tab key="plans" title="Plans" />
+      </Tabs>
 
-        {plansLoading ? (
+      {selected === "overview" &&
+        (detailsLoading ? (
           <div className="flex h-40 w-full items-center justify-center">
             <Spinner size="lg" color="warning" />
           </div>
-        ) : simulationPlans.length > 0 ? (
-          <div className="flex flex-col">
-            {simulationPlans.map((plan) => (
-              <SimulationPlanRow key={plan.id} simulationPlan={plan} />
-            ))}
-          </div>
         ) : (
-          <div className="border-default-200 bg-content1 rounded-lg border p-6 text-sm text-neutral-400">
-            No generated plans yet. Start the auto simulation to create daily
-            plans.
+          <SimulationAutoOverview simulationPlans={simulationPlanDetails} />
+        ))}
+
+      {selected === "plans" ? (
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-neutral-200">
+              Generated Plans
+            </h2>
+            <Chip variant="flat" size="sm">
+              {simulationPlans.length}
+            </Chip>
           </div>
-        )}
-      </div>
+
+          {plansLoading ? (
+            <div className="flex h-40 w-full items-center justify-center">
+              <Spinner size="lg" color="warning" />
+            </div>
+          ) : simulationPlans.length > 0 ? (
+            <div className="flex flex-col">
+              {simulationPlans.map((plan) => (
+                <SimulationPlanRow key={plan.id} simulationPlan={plan} />
+              ))}
+            </div>
+          ) : (
+            <div className="border-default-200 bg-content1 rounded-lg border p-6 text-sm text-neutral-400">
+              No generated plans yet. Start the auto simulation to create daily
+              plans.
+            </div>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }

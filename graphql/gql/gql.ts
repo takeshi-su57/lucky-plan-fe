@@ -111,6 +111,7 @@ type Documents = {
     "\n  query simulations($after: Int, $first: Int!) {\n    simulations(after: $after, first: $first) {\n      edges {\n        cursor\n        node {\n          ...SimulationInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n": typeof types.SimulationsDocument,
     "\n  query simulation($id: Int!) {\n    simulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": typeof types.SimulationDocument,
     "\n  query simulationPlansBySimulation($simulationId: Int!) {\n    simulationPlansBySimulation(simulationId: $simulationId) {\n      ...SimulationPlanInfo\n    }\n  }\n": typeof types.SimulationPlansBySimulationDocument,
+    "\n  query simulationPlanDetailsBySimulation($simulationId: Int!) {\n    simulationPlanDetailsBySimulation(simulationId: $simulationId) {\n      ...SimulationPlanDetailsInfo\n    }\n  }\n": typeof types.SimulationPlanDetailsBySimulationDocument,
     "\n  query getSimulationPlanById($id: Int!) {\n    getSimulationPlanById(id: $id) {\n      ...SimulationPlanDetailsInfo\n    }\n  }\n": typeof types.GetSimulationPlanByIdDocument,
     "\n  mutation createSimulationPlan($input: CreateSimulationPlanInput!) {\n    createSimulationPlan(input: $input) {\n      ...SimulationPlanInfo\n    }\n  }\n": typeof types.CreateSimulationPlanDocument,
     "\n  mutation createSimulation($input: CreateSimulationInput!) {\n    createSimulation(input: $input) {\n      ...SimulationInfo\n    }\n  }\n": typeof types.CreateSimulationDocument,
@@ -245,6 +246,7 @@ const documents: Documents = {
     "\n  query simulations($after: Int, $first: Int!) {\n    simulations(after: $after, first: $first) {\n      edges {\n        cursor\n        node {\n          ...SimulationInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n": types.SimulationsDocument,
     "\n  query simulation($id: Int!) {\n    simulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": types.SimulationDocument,
     "\n  query simulationPlansBySimulation($simulationId: Int!) {\n    simulationPlansBySimulation(simulationId: $simulationId) {\n      ...SimulationPlanInfo\n    }\n  }\n": types.SimulationPlansBySimulationDocument,
+    "\n  query simulationPlanDetailsBySimulation($simulationId: Int!) {\n    simulationPlanDetailsBySimulation(simulationId: $simulationId) {\n      ...SimulationPlanDetailsInfo\n    }\n  }\n": types.SimulationPlanDetailsBySimulationDocument,
     "\n  query getSimulationPlanById($id: Int!) {\n    getSimulationPlanById(id: $id) {\n      ...SimulationPlanDetailsInfo\n    }\n  }\n": types.GetSimulationPlanByIdDocument,
     "\n  mutation createSimulationPlan($input: CreateSimulationPlanInput!) {\n    createSimulationPlan(input: $input) {\n      ...SimulationPlanInfo\n    }\n  }\n": types.CreateSimulationPlanDocument,
     "\n  mutation createSimulation($input: CreateSimulationInput!) {\n    createSimulation(input: $input) {\n      ...SimulationInfo\n    }\n  }\n": types.CreateSimulationDocument,
@@ -684,6 +686,10 @@ export function graphql(source: "\n  query simulation($id: Int!) {\n    simulati
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query simulationPlansBySimulation($simulationId: Int!) {\n    simulationPlansBySimulation(simulationId: $simulationId) {\n      ...SimulationPlanInfo\n    }\n  }\n"): (typeof documents)["\n  query simulationPlansBySimulation($simulationId: Int!) {\n    simulationPlansBySimulation(simulationId: $simulationId) {\n      ...SimulationPlanInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query simulationPlanDetailsBySimulation($simulationId: Int!) {\n    simulationPlanDetailsBySimulation(simulationId: $simulationId) {\n      ...SimulationPlanDetailsInfo\n    }\n  }\n"): (typeof documents)["\n  query simulationPlanDetailsBySimulation($simulationId: Int!) {\n    simulationPlanDetailsBySimulation(simulationId: $simulationId) {\n      ...SimulationPlanDetailsInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

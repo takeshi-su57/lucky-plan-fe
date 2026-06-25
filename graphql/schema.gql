@@ -837,6 +837,9 @@ type Query {
   ): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   simulation(id: Int!): Simulation
+  simulationPlanDetailsBySimulation(
+    simulationId: Int!
+  ): [SimulationPlanDetails!]!
   simulationLeaderSelections(
     simulationId: Int!
     simulationPlanId: Int

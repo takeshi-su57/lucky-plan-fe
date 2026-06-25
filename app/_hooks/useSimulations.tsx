@@ -15,6 +15,7 @@ import {
   Simulation,
   SimulationBotDetails,
   SimulationPlan,
+  SimulationPlanDetails,
 } from "@/graphql/gql/graphql";
 
 export const SIMULATION_BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
@@ -225,6 +226,14 @@ export const GET_SIMULATION_PLANS_BY_SIMULATION_DOCUMENT = graphql(`
   query simulationPlansBySimulation($simulationId: Int!) {
     simulationPlansBySimulation(simulationId: $simulationId) {
       ...SimulationPlanInfo
+    }
+  }
+`);
+
+export const GET_SIMULATION_PLAN_DETAILS_BY_SIMULATION_DOCUMENT = graphql(`
+  query simulationPlanDetailsBySimulation($simulationId: Int!) {
+    simulationPlanDetailsBySimulation(simulationId: $simulationId) {
+      ...SimulationPlanDetailsInfo
     }
   }
 `);
@@ -444,6 +453,79 @@ export function useGetSimulationPlansBySimulation(simulationId: number) {
   return { simulationPlans, loading };
 }
 
+function unwrapSimulationPlanDetails(plan: any) {
+  const simulationPlanDetails = getFragmentData(
+    SIMULATION_PLAN_DETAILS_INFO_FRAGMENT_DOCUMENT,
+    plan,
+  ) as any;
+
+  const simulationBots = simulationPlanDetails.simulationBots.map(
+    (simulationBot: any) => {
+      const unwrapped = getFragmentData(
+        SIMULATION_BOT_DETAILS_INFO_FRAGMENT_DOCUMENT,
+        simulationBot,
+      );
+
+      const positions = unwrapped.positions.map((position: any) => {
+        const histories = getFragmentData(
+          SIMULATION_TRADE_POSITION_INFO_FRAGMENT_DOCUMENT,
+          position,
+        ).histories.map((item: any) => {
+          const tradeHistory = getFragmentData(
+            SIMULATION_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT,
+            item,
+          );
+
+          return {
+            ...tradeHistory,
+            leader: getFragmentData(
+              PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT,
+              tradeHistory.leader,
+            ),
+            follower: getFragmentData(
+              PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT,
+              tradeHistory.follower,
+            ),
+          };
+        });
+
+        return {
+          ...position,
+          histories,
+        };
+      });
+
+      return {
+        ...unwrapped,
+        positions,
+      };
+    },
+  ) as SimulationBotDetails[];
+
+  return { ...simulationPlanDetails, simulationBots } as SimulationPlanDetails;
+}
+
+export function useGetSimulationPlanDetailsBySimulation(simulationId: number) {
+  const { data, loading } = useQuery(
+    GET_SIMULATION_PLAN_DETAILS_BY_SIMULATION_DOCUMENT,
+    {
+      variables: { simulationId },
+    },
+  );
+
+  const simulationPlanDetails = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return data.simulationPlanDetailsBySimulation.map((plan) =>
+      unwrapSimulationPlanDetails(plan),
+    );
+  }, [data]);
+
+  return { simulationPlanDetails, loading };
+}
+
 export function useGetSimulationPlanById(id: number) {
   const { data, loading } = useQuery(GET_SIMULATION_PLAN_BY_ID_DOCUMENT, {
     variables: { id },
@@ -454,55 +536,7 @@ export function useGetSimulationPlanById(id: number) {
       return null;
     }
 
-    const simulationPlanDetails = getFragmentData(
-      SIMULATION_PLAN_DETAILS_INFO_FRAGMENT_DOCUMENT,
-      data.getSimulationPlanById,
-    );
-
-    const simulationBots = simulationPlanDetails.simulationBots.map(
-      (simulationBot) => {
-        const unwrapped = getFragmentData(
-          SIMULATION_BOT_DETAILS_INFO_FRAGMENT_DOCUMENT,
-          simulationBot,
-        );
-
-        const positions = unwrapped.positions.map((position) => {
-          const histories = getFragmentData(
-            SIMULATION_TRADE_POSITION_INFO_FRAGMENT_DOCUMENT,
-            position,
-          ).histories.map((item) => {
-            const tradeHistory = getFragmentData(
-              SIMULATION_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT,
-              item,
-            );
-
-            return {
-              ...tradeHistory,
-              leader: getFragmentData(
-                PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT,
-                tradeHistory.leader,
-              ),
-              follower: getFragmentData(
-                PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT,
-                tradeHistory.follower,
-              ),
-            };
-          });
-
-          return {
-            ...position,
-            histories,
-          };
-        });
-
-        return {
-          ...unwrapped,
-          positions,
-        };
-      },
-    ) as SimulationBotDetails[];
-
-    return { ...simulationPlanDetails, simulationBots };
+    return unwrapSimulationPlanDetails(data.getSimulationPlanById);
   }, [data]);
 
   return { simulationPlan, loading };
