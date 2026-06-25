@@ -178,10 +178,10 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
 
             <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
               <span className="text-[10px] font-semibold text-neutral-500 uppercase">
-                Leaders
+                Leader Selection
               </span>
               <span className="mt-1 text-sm font-semibold text-neutral-300">
-                {simulation.selectedLeaderCount}
+                Uncapped
               </span>
             </div>
           </div>

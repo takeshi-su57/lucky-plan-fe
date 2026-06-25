@@ -17,12 +17,151 @@ import {
 import { LabeledChip } from "@/components/chips/LabeledChip";
 import { getPriceStr } from "@/utils/price";
 import { SimulationPlanRow } from "./SimulationPlanRow";
-import { SimulationStatus, UserPermission } from "@/graphql/gql/graphql";
+import {
+  Simulation,
+  SimulationStatus,
+  UserPermission,
+} from "@/graphql/gql/graphql";
 import { SimulationAutoOverview } from "./SimulationAutoOverview";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 
 type DetailTab = "overview" | "plans";
+type DetailStatTone = "default" | "success" | "danger" | "warning";
+
+function formatPercent(value: number) {
+  return `${(value * 100).toFixed(2)}%`;
+}
+
+function formatRate(value: number) {
+  return `${(value * 100).toFixed(4)}%`;
+}
+
+function DetailStat({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value: string | number;
+  tone?: DetailStatTone;
+}) {
+  const toneClass =
+    tone === "success"
+      ? "text-emerald-600"
+      : tone === "danger"
+        ? "text-rose-600"
+        : tone === "warning"
+          ? "text-amber-600"
+          : "text-neutral-700";
+
+  return (
+    <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
+      <span className="text-[10px] font-semibold text-neutral-500 uppercase">
+        {label}
+      </span>
+      <span className={`mt-1 text-sm font-semibold ${toneClass}`}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function SimulationConfigResults({ simulation }: { simulation: Simulation }) {
+  const configItems = [
+    { label: "Leader Selection", value: "Uncapped" },
+    { label: "Min Trades", value: simulation.minTrades },
+    { label: "Min R2", value: simulation.minNegativeR2.toFixed(2) },
+    {
+      label: "Collateral",
+      value: `${getPriceStr(simulation.minCollateralUsd)} - ${getPriceStr(
+        simulation.maxCollateralUsd,
+      )}`,
+    },
+    {
+      label: "Ratio",
+      value: `${simulation.minRatio}x - ${simulation.maxRatio}x`,
+    },
+    { label: "Max Leverage", value: `${simulation.maxLeverage}x` },
+    { label: "Open Fee", value: formatRate(simulation.openFeeRate) },
+    { label: "Close Fee", value: formatRate(simulation.closeFeeRate) },
+    { label: "Slippage", value: formatRate(simulation.slippageRate) },
+  ];
+
+  const resultItems: Array<{
+    label: string;
+    value: string | number;
+    tone?: DetailStatTone;
+  }> = [
+    {
+      label: "Net PnL",
+      value: getPriceStr(simulation.totalNetPnlUsd),
+      tone: simulation.totalNetPnlUsd >= 0 ? "success" : "danger",
+    },
+    {
+      label: "Leader PnL",
+      value: getPriceStr(simulation.totalLeaderPnl),
+      tone: simulation.totalLeaderPnl >= 0 ? "success" : "danger",
+    },
+    {
+      label: "Follower PnL",
+      value: getPriceStr(simulation.totalFollowerPnl),
+      tone: simulation.totalFollowerPnl >= 0 ? "success" : "danger",
+    },
+    {
+      label: "Max Drawdown",
+      value: getPriceStr(simulation.maxDrawdownUsd),
+      tone: "warning",
+    },
+    { label: "Cost", value: getPriceStr(simulation.totalCostUsd) },
+    { label: "Trades", value: simulation.tradeCount },
+    { label: "Win Rate", value: formatPercent(simulation.winRate) },
+    { label: "Profit Factor", value: simulation.profitFactor.toFixed(2) },
+  ];
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-2">
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-neutral-300">
+            Configuration
+          </h2>
+          <Chip size="sm" variant="flat">
+            {simulation.platform}
+          </Chip>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {configItems.map((item) => (
+            <DetailStat
+              key={item.label}
+              label={item.label}
+              value={item.value}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-neutral-300">Results</h2>
+          <Chip size="sm" variant="flat">
+            {simulation.completedPlans} / {simulation.totalSimulationPlans}
+          </Chip>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-2">
+          {resultItems.map((item) => (
+            <DetailStat
+              key={item.label}
+              label={item.label}
+              value={item.value}
+              tone={item.tone}
+            />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
 
 export function SimulationDetailPanel({
   simulationId,
@@ -238,6 +377,8 @@ export function SimulationDetailPanel({
             unit="Trades"
           />
         </div>
+
+        <SimulationConfigResults simulation={simulation} />
       </div>
 
       <Tabs
