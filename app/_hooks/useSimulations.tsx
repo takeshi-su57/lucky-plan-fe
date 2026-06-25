@@ -68,7 +68,6 @@ export const SIMULATION_PLAN_INFO_FRAGMENT_DOCUMENT = graphql(`
 
 export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment SimulationInfo on Simulation {
-    closeFeeRate
     completedPlans
     createdAt
     cursor
@@ -76,22 +75,16 @@ export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
     endAt
     error
     id
-    maxCollateralUsd
     maxDrawdownUsd
     maxLeverage
-    maxRatio
-    minCollateralUsd
     minNegativeR2
-    minRatio
     minTrades
-    openFeeRate
     platform
     profitFactor
     progressMessage
     progressPercent
     progressPhase
     selectedLeaderCount
-    slippageRate
     standardCollateralUsd
     startAt
     status

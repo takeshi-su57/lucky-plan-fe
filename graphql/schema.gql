@@ -224,20 +224,13 @@ input CreateSimulationBotInput {
 }
 
 input CreateSimulationInput {
-  closeFeeRate: Float! = 0
   description: String!
   endAt: Date!
-  maxCollateralUsd: Float! = 500
   maxLeverage: Float! = 50
-  maxRatio: Float! = 3
-  minCollateralUsd: Float! = 10
   minNegativeR2: Float! = 0.25
-  minRatio: Float! = 0
   minTrades: Int! = 3
-  openFeeRate: Float! = 0
   platform: Platform!
   selectedLeaderCount: Int! = 10
-  slippageRate: Float! = 0
   standardCollateralUsd: Float! = 100
   startAt: Date!
   title: String!
@@ -877,7 +870,6 @@ type SeverityCount {
 }
 
 type Simulation {
-  closeFeeRate: Float!
   completedPlans: Int!
   createdAt: Date!
   cursor: Date
@@ -885,22 +877,16 @@ type Simulation {
   endAt: Date!
   error: String
   id: Int!
-  maxCollateralUsd: Float!
   maxDrawdownUsd: Float!
   maxLeverage: Float!
-  maxRatio: Float!
-  minCollateralUsd: Float!
   minNegativeR2: Float!
-  minRatio: Float!
   minTrades: Int!
-  openFeeRate: Float!
   platform: Platform!
   profitFactor: Float!
   progressMessage: String
   progressPercent: Float!
   progressPhase: String
   selectedLeaderCount: Int!
-  slippageRate: Float!
   standardCollateralUsd: Float!
   startAt: Date!
   status: SimulationStatus!
@@ -1157,19 +1143,12 @@ input UpdateSimulationBotInput {
 }
 
 input UpdateSimulationInput {
-  closeFeeRate: Float
   description: String
   id: Int!
-  maxCollateralUsd: Float
   maxLeverage: Float
-  maxRatio: Float
-  minCollateralUsd: Float
   minNegativeR2: Float
-  minRatio: Float
   minTrades: Int
-  openFeeRate: Float
   selectedLeaderCount: Int
-  slippageRate: Float
   standardCollateralUsd: Float
   title: String
 }

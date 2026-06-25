@@ -33,9 +33,12 @@ function formatPercent(value: number) {
   return `${(value * 100).toFixed(2)}%`;
 }
 
-function formatRate(value: number) {
-  return `${(value * 100).toFixed(4)}%`;
-}
+const SIMULATION_SYSTEM_CONFIG = {
+  minCollateralUsd: 10,
+  maxCollateralUsd: 500,
+  minRatio: 0,
+  maxRatio: 3,
+} as const;
 
 function DetailStat({
   label,
@@ -73,19 +76,22 @@ function SimulationConfigResults({ simulation }: { simulation: Simulation }) {
     { label: "Min Trades", value: simulation.minTrades },
     { label: "Min R2", value: simulation.minNegativeR2.toFixed(2) },
     {
+      label: "Base Collateral",
+      value: getPriceStr(simulation.standardCollateralUsd),
+    },
+    {
       label: "Collateral",
-      value: `${getPriceStr(simulation.minCollateralUsd)} - ${getPriceStr(
-        simulation.maxCollateralUsd,
+      value: `${getPriceStr(
+        SIMULATION_SYSTEM_CONFIG.minCollateralUsd,
+      )} - ${getPriceStr(
+        SIMULATION_SYSTEM_CONFIG.maxCollateralUsd,
       )}`,
     },
     {
       label: "Ratio",
-      value: `${simulation.minRatio}x - ${simulation.maxRatio}x`,
+      value: `${SIMULATION_SYSTEM_CONFIG.minRatio}x - ${SIMULATION_SYSTEM_CONFIG.maxRatio}x`,
     },
     { label: "Max Leverage", value: `${simulation.maxLeverage}x` },
-    { label: "Open Fee", value: formatRate(simulation.openFeeRate) },
-    { label: "Close Fee", value: formatRate(simulation.closeFeeRate) },
-    { label: "Slippage", value: formatRate(simulation.slippageRate) },
   ];
 
   const resultItems: Array<{

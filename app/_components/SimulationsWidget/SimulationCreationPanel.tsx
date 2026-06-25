@@ -40,7 +40,6 @@ export function SimulationCreationPanel() {
     });
   const [minTrades, setMinTrades] = useState("3");
   const [minNegativeR2, setMinNegativeR2] = useState("0.25");
-  const [minRatio, setMinRatio] = useState("0");
   const [maxLeverage, setMaxLeverage] = useState("50");
 
   const errors = useMemo(() => {
@@ -70,10 +69,6 @@ export function SimulationCreationPanel() {
       result.minNegativeR2 = "Min R2 must be between 0 and 1";
     }
 
-    if (minRatio.trim() === "" || Number(minRatio) < 0) {
-      result.minRatio = "Min ratio cannot be negative";
-    }
-
     if (maxLeverage.trim() === "" || Number(maxLeverage) <= 0) {
       result.maxLeverage = "Max leverage must be greater than 0";
     }
@@ -83,7 +78,6 @@ export function SimulationCreationPanel() {
     description,
     maxLeverage,
     minNegativeR2,
-    minRatio,
     minTrades,
     scheduleRange,
     title,
@@ -106,7 +100,6 @@ export function SimulationCreationPanel() {
           endAt: scheduleRange.end.toDate(getServerTimezone()),
           minTrades: Math.trunc(Number(minTrades)),
           minNegativeR2: Number(minNegativeR2),
-          minRatio: Number(minRatio),
           maxLeverage: Number(maxLeverage),
         },
       },
@@ -183,7 +176,7 @@ export function SimulationCreationPanel() {
             isInvalid={Boolean(errors.scheduleRange)}
           />
 
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-3">
             <NumericInput
               amount={minTrades}
               onChange={setMinTrades}
@@ -203,16 +196,6 @@ export function SimulationCreationPanel() {
               step={0.01}
               errorMessage={errors.minNegativeR2}
               isInvalid={Boolean(errors.minNegativeR2)}
-            />
-
-            <NumericInput
-              amount={minRatio}
-              onChange={setMinRatio}
-              label="Min Ratio"
-              min={0}
-              step={0.01}
-              errorMessage={errors.minRatio}
-              isInvalid={Boolean(errors.minRatio)}
             />
 
             <NumericInput
