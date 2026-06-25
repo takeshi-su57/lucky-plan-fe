@@ -120,6 +120,8 @@ type Documents = {
     "\n  mutation playSimulationPlan($id: Int!) {\n    playSimulationPlan(id: $id) {\n      ...SimulationPlanInfo\n    }\n  }\n": typeof types.PlaySimulationPlanDocument,
     "\n  mutation playAutoSimulation($id: Int!) {\n    playAutoSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": typeof types.PlayAutoSimulationDocument,
     "\n  mutation cancelSimulation($id: Int!) {\n    cancelSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": typeof types.CancelSimulationDocument,
+    "\n  mutation deleteSimulation($id: Int!) {\n    deleteSimulation(id: $id)\n  }\n": typeof types.DeleteSimulationDocument,
+    "\n  mutation deleteSimulationPlan($id: Int!) {\n    deleteSimulationPlan(id: $id)\n  }\n": typeof types.DeleteSimulationPlanDocument,
     "\n  mutation stopSimulationBot($id: Int!) {\n    stopSimulationBot(id: $id) {\n      ...SimulationBotInfo\n    }\n  }\n": typeof types.StopSimulationBotDocument,
     "\n  fragment StrategyInfo on Strategy {\n    id\n    lifeTime\n    maxCollateral\n    minCollateral\n    maxLeverage\n    minLeverage\n    tpPercentage\n    slPercentage\n    maxOpenMissions\n    selectedPairs\n    mode\n    ratio\n  }\n": typeof types.StrategyInfoFragmentDoc,
     "\n  query getAllStrategy {\n    getAllStrategy {\n      ...StrategyInfo\n    }\n  }\n": typeof types.GetAllStrategyDocument,
@@ -255,6 +257,8 @@ const documents: Documents = {
     "\n  mutation playSimulationPlan($id: Int!) {\n    playSimulationPlan(id: $id) {\n      ...SimulationPlanInfo\n    }\n  }\n": types.PlaySimulationPlanDocument,
     "\n  mutation playAutoSimulation($id: Int!) {\n    playAutoSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": types.PlayAutoSimulationDocument,
     "\n  mutation cancelSimulation($id: Int!) {\n    cancelSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": types.CancelSimulationDocument,
+    "\n  mutation deleteSimulation($id: Int!) {\n    deleteSimulation(id: $id)\n  }\n": types.DeleteSimulationDocument,
+    "\n  mutation deleteSimulationPlan($id: Int!) {\n    deleteSimulationPlan(id: $id)\n  }\n": types.DeleteSimulationPlanDocument,
     "\n  mutation stopSimulationBot($id: Int!) {\n    stopSimulationBot(id: $id) {\n      ...SimulationBotInfo\n    }\n  }\n": types.StopSimulationBotDocument,
     "\n  fragment StrategyInfo on Strategy {\n    id\n    lifeTime\n    maxCollateral\n    minCollateral\n    maxLeverage\n    minLeverage\n    tpPercentage\n    slPercentage\n    maxOpenMissions\n    selectedPairs\n    mode\n    ratio\n  }\n": types.StrategyInfoFragmentDoc,
     "\n  query getAllStrategy {\n    getAllStrategy {\n      ...StrategyInfo\n    }\n  }\n": types.GetAllStrategyDocument,
@@ -722,6 +726,14 @@ export function graphql(source: "\n  mutation playAutoSimulation($id: Int!) {\n 
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation cancelSimulation($id: Int!) {\n    cancelSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n"): (typeof documents)["\n  mutation cancelSimulation($id: Int!) {\n    cancelSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation deleteSimulation($id: Int!) {\n    deleteSimulation(id: $id)\n  }\n"): (typeof documents)["\n  mutation deleteSimulation($id: Int!) {\n    deleteSimulation(id: $id)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation deleteSimulationPlan($id: Int!) {\n    deleteSimulationPlan(id: $id)\n  }\n"): (typeof documents)["\n  mutation deleteSimulationPlan($id: Int!) {\n    deleteSimulationPlan(id: $id)\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

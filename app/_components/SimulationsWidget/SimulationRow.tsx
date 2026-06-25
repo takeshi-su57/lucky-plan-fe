@@ -5,12 +5,16 @@ import { Button, Card, CardBody, Chip, Progress } from "@heroui/react";
 import dayjs from "dayjs";
 
 import { Simulation, SimulationStatus } from "@/graphql/gql/graphql";
+import { UserPermission } from "@/graphql/gql/graphql";
 import { LabeledChip } from "@/components/chips/LabeledChip";
 import { getPriceStr } from "@/utils/price";
 import {
   useCancelSimulation,
+  useDeleteSimulation,
   usePlayAutoSimulation,
 } from "@/app/_hooks/useSimulations";
+import { useUserJWT } from "@/app/_hooks/useUserJWT";
+import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 
 export type SimulationRowProps = {
   simulation: Simulation;
@@ -33,6 +37,8 @@ const STATUS_COLOR: Partial<
 export function SimulationRow({ simulation }: SimulationRowProps) {
   const { playAutoSimulation, loading: playLoading } = usePlayAutoSimulation();
   const { cancelSimulation, loading: cancelLoading } = useCancelSimulation();
+  const { deleteSimulation, loading: deleteLoading } = useDeleteSimulation();
+  const { userJwtQuery } = useUserJWT();
 
   const canPlay =
     simulation.status === SimulationStatus.Created ||
@@ -40,6 +46,7 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
     simulation.status === SimulationStatus.Failed ||
     simulation.status === SimulationStatus.Running;
   const canCancel = simulation.status === SimulationStatus.Running;
+  const isAdmin = userJwtQuery.data?.permission === UserPermission.Admin;
 
   return (
     <div className="pb-3 select-none">
@@ -87,7 +94,7 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
                   color="primary"
                   variant="flat"
                   isLoading={playLoading}
-                  isDisabled={playLoading || cancelLoading}
+                  isDisabled={playLoading || cancelLoading || deleteLoading}
                   onPress={() =>
                     playAutoSimulation({ variables: { id: simulation.id } })
                   }
@@ -104,13 +111,28 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
                   color="danger"
                   variant="flat"
                   isLoading={cancelLoading}
-                  isDisabled={playLoading || cancelLoading}
+                  isDisabled={playLoading || cancelLoading || deleteLoading}
                   onPress={() =>
                     cancelSimulation({ variables: { id: simulation.id } })
                   }
                 >
                   Cancel
                 </Button>
+              ) : null}
+
+              {isAdmin ? (
+                <ButtonWithConfirm
+                  size="sm"
+                  color="danger"
+                  variant="solid"
+                  isLoading={deleteLoading}
+                  isDisabled={playLoading || cancelLoading || deleteLoading}
+                  onPress={() =>
+                    deleteSimulation({ variables: { id: simulation.id } })
+                  }
+                >
+                  Remove
+                </ButtonWithConfirm>
               ) : null}
             </div>
           </div>

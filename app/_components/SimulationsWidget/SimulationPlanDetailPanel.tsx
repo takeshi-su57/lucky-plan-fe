@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button, Chip, Spinner, Tab, Tabs, useDisclosure } from "@heroui/react";
 import dayjs from "dayjs";
 
@@ -9,6 +10,7 @@ import { SimulationBots } from "./SimulationBots";
 
 import { FaPlus } from "react-icons/fa";
 import {
+  useDeleteSimulationPlan,
   useGetSimulationPlanById,
   usePlaySimulationPlan,
 } from "@/app/_hooks/useSimulations";
@@ -17,6 +19,9 @@ import { LabeledChip } from "@/components/chips/LabeledChip";
 import { LeaderboardDrawer } from "../LeaderboardWidgets/LeaderboardDrawer";
 import { getPriceStr } from "@/utils/price";
 import { SimulationOverview } from "./SimulationOverview";
+import { useUserJWT } from "@/app/_hooks/useUserJWT";
+import { UserPermission } from "@/graphql/gql/graphql";
+import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 
 type TabType = "overview" | "bots";
 
@@ -33,11 +38,15 @@ export function SimulationPlanDetailPanel({
   } = useDisclosure();
 
   const [selected, setSelected] = useState<TabType>("overview");
+  const router = useRouter();
 
   const { playSimulationPlan, loading: playSimulationLoading } =
     usePlaySimulationPlan();
+  const { deleteSimulationPlan, loading: deleteSimulationPlanLoading } =
+    useDeleteSimulationPlan();
   const { simulationPlan, loading } =
     useGetSimulationPlanById(+simulationPlanId);
+  const { userJwtQuery } = useUserJWT();
 
   const handlePlaySimulationPlan = useCallback(() => {
     playSimulationPlan({ variables: { id: +simulationPlanId } });
@@ -101,6 +110,7 @@ export function SimulationPlanDetailPanel({
   const backLabel = simulationPlan.simulationId
     ? "Back to Auto Simulation"
     : "Back to Simulations";
+  const isAdmin = userJwtQuery.data?.permission === UserPermission.Admin;
 
   return (
     <div className="flex flex-col gap-6">
@@ -154,7 +164,9 @@ export function SimulationPlanDetailPanel({
                 color="primary"
                 onPress={handlePlaySimulationPlan}
                 isLoading={playSimulationLoading}
-                isDisabled={playSimulationLoading}
+                isDisabled={
+                  playSimulationLoading || deleteSimulationPlanLoading
+                }
                 className="h-9 rounded-lg px-4 text-xs font-semibold"
               >
                 Play Simulation
@@ -181,6 +193,27 @@ export function SimulationPlanDetailPanel({
             >
               Open Leaderboard
             </Button>
+
+            {isAdmin ? (
+              <ButtonWithConfirm
+                color="danger"
+                variant="solid"
+                size="sm"
+                isLoading={deleteSimulationPlanLoading}
+                isDisabled={
+                  playSimulationLoading || deleteSimulationPlanLoading
+                }
+                onPress={async () => {
+                  await deleteSimulationPlan({
+                    variables: { id: simulationPlan.id },
+                  });
+                  router.push(backHref);
+                }}
+                className="h-9 rounded-lg px-4 text-xs font-semibold"
+              >
+                Remove
+              </ButtonWithConfirm>
+            ) : null}
           </div>
         </div>
 

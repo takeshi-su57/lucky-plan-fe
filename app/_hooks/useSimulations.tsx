@@ -302,6 +302,18 @@ export const CANCEL_SIMULATION_DOCUMENT = graphql(`
   }
 `);
 
+export const DELETE_SIMULATION_DOCUMENT = graphql(`
+  mutation deleteSimulation($id: Int!) {
+    deleteSimulation(id: $id)
+  }
+`);
+
+export const DELETE_SIMULATION_PLAN_DOCUMENT = graphql(`
+  mutation deleteSimulationPlan($id: Int!) {
+    deleteSimulationPlan(id: $id)
+  }
+`);
+
 export const STOP_SIMULATION_BOT_DOCUMENT = graphql(`
   mutation stopSimulationBot($id: Int!) {
     stopSimulationBot(id: $id) {
@@ -725,6 +737,61 @@ export function useCancelSimulation() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return { cancelSimulation, loading };
+}
+
+export function useDeleteSimulation() {
+  const [deleteSimulation, { data: newData, error, loading }] = useMutation(
+    DELETE_SIMULATION_DOCUMENT,
+  );
+  const client = useApolloClient();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      client.cache.evict({ id: `Simulation:${newData.deleteSimulation}` });
+      client.cache.gc();
+      enqueueSnackbar("Auto simulation removed!", {
+        variant: "success",
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at removing auto simulation!", {
+        variant: "error",
+      });
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return { deleteSimulation, loading };
+}
+
+export function useDeleteSimulationPlan() {
+  const [deleteSimulationPlan, { data: newData, error, loading }] =
+    useMutation(DELETE_SIMULATION_PLAN_DOCUMENT);
+  const client = useApolloClient();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      client.cache.evict({
+        id: `SimulationPlan:${newData.deleteSimulationPlan}`,
+      });
+      client.cache.gc();
+      enqueueSnackbar("Simulation plan removed!", {
+        variant: "success",
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at removing simulation plan!", {
+        variant: "error",
+      });
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return { deleteSimulationPlan, loading };
 }
 
 export function useStopSimulationBot() {

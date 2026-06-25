@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button, Chip, Progress, Spinner, Tab, Tabs } from "@heroui/react";
 import dayjs from "dayjs";
 
 import {
   useCancelSimulation,
+  useDeleteSimulation,
   useGetSimulation,
   useGetSimulationPlanDetailsBySimulation,
   useGetSimulationPlansBySimulation,
@@ -15,8 +17,10 @@ import {
 import { LabeledChip } from "@/components/chips/LabeledChip";
 import { getPriceStr } from "@/utils/price";
 import { SimulationPlanRow } from "./SimulationPlanRow";
-import { SimulationStatus } from "@/graphql/gql/graphql";
+import { SimulationStatus, UserPermission } from "@/graphql/gql/graphql";
 import { SimulationAutoOverview } from "./SimulationAutoOverview";
+import { useUserJWT } from "@/app/_hooks/useUserJWT";
+import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 
 type DetailTab = "overview" | "plans";
 
@@ -27,6 +31,7 @@ export function SimulationDetailPanel({
 }) {
   const [selected, setSelected] = useState<DetailTab>("overview");
   const id = Number(simulationId);
+  const router = useRouter();
   const { simulation, loading: simulationLoading } = useGetSimulation(id);
   const { simulationPlans, loading: plansLoading } =
     useGetSimulationPlansBySimulation(id);
@@ -34,6 +39,8 @@ export function SimulationDetailPanel({
     useGetSimulationPlanDetailsBySimulation(id);
   const { playAutoSimulation, loading: playLoading } = usePlayAutoSimulation();
   const { cancelSimulation, loading: cancelLoading } = useCancelSimulation();
+  const { deleteSimulation, loading: deleteLoading } = useDeleteSimulation();
+  const { userJwtQuery } = useUserJWT();
 
   if (simulationLoading) {
     return <Spinner size="sm" label="Loading Simulation..." />;
@@ -49,6 +56,7 @@ export function SimulationDetailPanel({
     simulation.status === SimulationStatus.Failed ||
     simulation.status === SimulationStatus.Running;
   const canCancel = simulation.status === SimulationStatus.Running;
+  const isAdmin = userJwtQuery.data?.permission === UserPermission.Admin;
 
   return (
     <div className="flex flex-col gap-6">
@@ -91,7 +99,7 @@ export function SimulationDetailPanel({
                 variant="flat"
                 size="sm"
                 isLoading={playLoading}
-                isDisabled={playLoading || cancelLoading}
+                isDisabled={playLoading || cancelLoading || deleteLoading}
                 onPress={() =>
                   playAutoSimulation({ variables: { id: simulation.id } })
                 }
@@ -108,13 +116,31 @@ export function SimulationDetailPanel({
                 variant="flat"
                 size="sm"
                 isLoading={cancelLoading}
-                isDisabled={playLoading || cancelLoading}
+                isDisabled={playLoading || cancelLoading || deleteLoading}
                 onPress={() =>
                   cancelSimulation({ variables: { id: simulation.id } })
                 }
               >
                 Cancel
               </Button>
+            ) : null}
+
+            {isAdmin ? (
+              <ButtonWithConfirm
+                color="danger"
+                variant="solid"
+                size="sm"
+                isLoading={deleteLoading}
+                isDisabled={playLoading || cancelLoading || deleteLoading}
+                onPress={async () => {
+                  await deleteSimulation({
+                    variables: { id: simulation.id },
+                  });
+                  router.push("/simulations");
+                }}
+              >
+                Remove
+              </ButtonWithConfirm>
             ) : null}
 
             <Link href="/simulations">
