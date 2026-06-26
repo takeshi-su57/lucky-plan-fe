@@ -24,6 +24,24 @@ export const SimulationBotSummary = memo(function SimulationBotSummary({
   );
 
   const botStatus = simulationBot.stoppedAt ? "Stop" : "Live";
+  const cacheState = simulationBot.cacheState;
+  const cacheLabel = cacheState
+    ? cacheState.rebuilding
+      ? "Rebuilding"
+      : cacheState.rebuildRequested
+        ? "Queued"
+        : cacheState.completed
+          ? "Ready"
+          : "Pending"
+    : "Untracked";
+  const cacheColor =
+    cacheState?.lastError
+      ? "danger"
+      : cacheState?.rebuilding
+        ? "warning"
+        : cacheState?.completed
+          ? "success"
+          : "default";
 
   return (
     <div className="flex min-w-0 items-center justify-between gap-4 text-neutral-400">
@@ -52,6 +70,13 @@ export const SimulationBotSummary = memo(function SimulationBotSummary({
 
         <div className="flex min-w-0 items-center gap-2 font-mono">
           <div className="flex min-w-0 items-center gap-1">
+            <LabeledChip
+              size="sm"
+              variant="flat"
+              color={cacheColor}
+              value={cacheLabel}
+              unit="Cache"
+            />
             {simulationBot.totalPositions > 0 ? (
               <LabeledChip
                 size="sm"
@@ -94,9 +119,16 @@ export const SimulationBotSummary = memo(function SimulationBotSummary({
         </div>
       </div>
 
-      <Chip size="sm" color={botStatus === "Live" ? "success" : "danger"}>
-        {botStatus}
-      </Chip>
+      <div className="flex items-center gap-2">
+        {cacheState?.lastFetchedAt ? (
+          <Chip size="sm" variant="flat">
+            {dayjs(cacheState.lastFetchedAt).format("MMM D, HH:mm")}
+          </Chip>
+        ) : null}
+        <Chip size="sm" color={botStatus === "Live" ? "success" : "danger"}>
+          {botStatus}
+        </Chip>
+      </div>
     </div>
   );
 });

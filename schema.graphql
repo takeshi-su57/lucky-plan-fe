@@ -829,6 +829,14 @@ type SimulationBot {
   totalPositions: Int!
 }
 
+type SimulationBotCacheState {
+  completed: Boolean!
+  lastError: String
+  lastFetchedAt: Date
+  rebuildRequested: Boolean!
+  rebuilding: Boolean!
+}
+
 type SimulationBotDetails {
   avgCollateral: Float!
   avgDuration: Float!
@@ -839,6 +847,7 @@ type SimulationBotDetails {
   avgPnlPercentageBySize: Float!
   avgPositivePnl: Float!
   avgSize: Float!
+  cacheState: SimulationBotCacheState
   id: Int!
   leaderAddress: String!
   leaderContract: Contract!

@@ -831,13 +831,13 @@ type Query {
   ): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   simulation(id: Int!): Simulation
-  simulationPlanDetailsBySimulation(
-    simulationId: Int!
-  ): [SimulationPlanDetails!]!
   simulationLeaderSelections(
     simulationId: Int!
     simulationPlanId: Int
   ): [SimulationLeaderSelection!]!
+  simulationPlanDetailsBySimulation(
+    simulationId: Int!
+  ): [SimulationPlanDetails!]!
   simulationPlansBySimulation(simulationId: Int!): [SimulationPlan!]!
   simulations(after: Int, first: Int!): SimulationConnection!
   systemStatus: Boolean!
@@ -927,6 +927,14 @@ type SimulationBot {
   totalPositions: Int!
 }
 
+type SimulationBotCacheState {
+  completed: Boolean!
+  lastError: String
+  lastFetchedAt: Date
+  rebuildRequested: Boolean!
+  rebuilding: Boolean!
+}
+
 type SimulationBotDetails {
   avgCollateral: Float!
   avgDuration: Float!
@@ -937,6 +945,7 @@ type SimulationBotDetails {
   avgPnlPercentageBySize: Float!
   avgPositivePnl: Float!
   avgSize: Float!
+  cacheState: SimulationBotCacheState
   id: Int!
   leaderAddress: String!
   leaderContract: Contract!

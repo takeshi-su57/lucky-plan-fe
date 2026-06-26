@@ -148,6 +148,13 @@ export const SIMULATION_BOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     totalPnl
     totalPositions
     maxLeverage
+    cacheState {
+      completed
+      lastError
+      lastFetchedAt
+      rebuildRequested
+      rebuilding
+    }
     positions {
       ...SimulationTradePositionInfo
     }

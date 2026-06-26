@@ -95,6 +95,31 @@ export function SimulationPlanDetailPanel({
     ? dayjs(simulationPlan.cursor).add(1, "day").toDate().getTime() <=
       dayjs(simulationPlan.endAt).toDate().getTime()
     : false;
+  const cacheSummary = useMemo(() => {
+    const summary = {
+      ready: 0,
+      rebuilding: 0,
+      queued: 0,
+      failed: 0,
+      pending: 0,
+    };
+
+    for (const bot of simulationPlan?.simulationBots || []) {
+      if (bot.cacheState?.lastError) {
+        summary.failed += 1;
+      } else if (bot.cacheState?.rebuilding) {
+        summary.rebuilding += 1;
+      } else if (bot.cacheState?.rebuildRequested) {
+        summary.queued += 1;
+      } else if (bot.cacheState?.completed) {
+        summary.ready += 1;
+      } else {
+        summary.pending += 1;
+      }
+    }
+
+    return summary;
+  }, [simulationPlan]);
 
   if (loading) {
     return <Spinner size="sm" label="Loading Simulation Plan..." />;
@@ -237,7 +262,55 @@ export function SimulationPlanDetailPanel({
               unit="Follower PnL"
             />
           ) : null}
+
+          <LabeledChip
+            size="sm"
+            variant="flat"
+            color="success"
+            value={cacheSummary.ready}
+            unit="Cache Ready"
+          />
+
+          {cacheSummary.rebuilding > 0 ? (
+            <LabeledChip
+              size="sm"
+              variant="flat"
+              color="warning"
+              value={cacheSummary.rebuilding}
+              unit="Rebuilding"
+            />
+          ) : null}
+
+          {cacheSummary.queued > 0 ? (
+            <LabeledChip
+              size="sm"
+              variant="flat"
+              color="secondary"
+              value={cacheSummary.queued}
+              unit="Queued"
+            />
+          ) : null}
+
+          {cacheSummary.failed > 0 ? (
+            <LabeledChip
+              size="sm"
+              variant="flat"
+              color="danger"
+              value={cacheSummary.failed}
+              unit="Cache Errors"
+            />
+          ) : null}
         </div>
+
+        {(cacheSummary.rebuilding > 0 ||
+          cacheSummary.queued > 0 ||
+          cacheSummary.failed > 0 ||
+          cacheSummary.pending > 0) && (
+          <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
+            Cached bot results are still syncing for this plan. Some overview
+            charts or position details may be partial until rebuilding finishes.
+          </div>
+        )}
 
         <Tabs
           aria-label="simulation-details"
