@@ -15,7 +15,11 @@ import {
   useCreateSimulationPlan,
 } from "@/app/_hooks/useSimulations";
 
-export function SimulationPlanCreationPanel() {
+export function SimulationPlanCreationPanel({
+  compactHeading = false,
+}: {
+  compactHeading?: boolean;
+}) {
   const router = useRouter();
   const { createSimulationPlan, loading: createPlanLoading } =
     useCreateSimulationPlan();
@@ -84,9 +88,11 @@ export function SimulationPlanCreationPanel() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
-        Create A New Simulation Plan
-      </h1>
+      {!compactHeading ? (
+        <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
+          Create A New Simulation Plan
+        </h1>
+      ) : null}
 
       <Stepper steps={steps} currentStep={currentStep} />
     </div>

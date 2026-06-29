@@ -280,16 +280,13 @@ export type CreateSimulationResearchInput = {
   description: Scalars['String']['input'];
   direction: BotMode;
   endAt: Scalars['Date']['input'];
-  maxLeverage: FloatRangeInput;
-  maxR2: FloatRangeInput;
-  maxSlope: FloatRangeInput;
-  maxTrades: IntRangeInput;
-  minR2: FloatRangeInput;
-  minSlope: FloatRangeInput;
-  minTrades: IntRangeInput;
+  maxLeverage: Array<Scalars['Float']['input']>;
   platform: Platform;
+  r2: Array<FloatMinMaxInput>;
+  slope: Array<FloatMinMaxInput>;
   startAt: Scalars['Date']['input'];
   title: Scalars['String']['input'];
+  trade: Array<IntMinMaxInput>;
 };
 
 export type CreateStrategyInput = {
@@ -316,12 +313,6 @@ export type DecreasePositionSizeInput = {
 };
 
 export type FloatMinMaxInput = {
-  max: Scalars['Float']['input'];
-  min: Scalars['Float']['input'];
-};
-
-export type FloatRangeInput = {
-  gap: Scalars['Float']['input'];
   max: Scalars['Float']['input'];
   min: Scalars['Float']['input'];
 };
@@ -407,12 +398,6 @@ export type IncreasePositionSizeInput = {
 };
 
 export type IntMinMaxInput = {
-  max: Scalars['Int']['input'];
-  min: Scalars['Int']['input'];
-};
-
-export type IntRangeInput = {
-  gap: Scalars['Int']['input'];
   max: Scalars['Int']['input'];
   min: Scalars['Int']['input'];
 };

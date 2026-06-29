@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Button,
@@ -27,124 +27,323 @@ import { getFragmentData } from "@/graphql/gql";
 const PLATFORM_OPTIONS = [Platform.Gns, Platform.Gmx, Platform.Avnt];
 const DIRECTION_OPTIONS = [BotMode.Default, BotMode.Reversed];
 
-type RangeState = {
+type RangeEntryState = {
+  id: string;
   min: string;
   max: string;
-  gap: string;
 };
 
-function RangeTriplet({
+type ValueEntryState = {
+  id: string;
+  value: string;
+};
+
+type RangeEntryErrors = Partial<Record<"min" | "max", string>>;
+
+let nextEntryId = 0;
+
+function createEntryId(prefix: string) {
+  nextEntryId += 1;
+  return `${prefix}-${nextEntryId}`;
+}
+
+function createRangeEntry(
+  prefix: string,
+  initial?: Partial<RangeEntryState>,
+): RangeEntryState {
+  return {
+    id: createEntryId(prefix),
+    min: initial?.min ?? "",
+    max: initial?.max ?? "",
+  };
+}
+
+function createValueEntry(prefix: string, value = ""): ValueEntryState {
+  return {
+    id: createEntryId(prefix),
+    value,
+  };
+}
+
+function RangeEntryCard({
   label,
-  value,
+  entries,
+  onAdd,
   onChange,
+  onRemove,
   min,
   max,
   step,
   errors,
+  emptyMessage,
 }: {
   label: string;
-  value: RangeState;
-  onChange: (next: RangeState) => void;
+  entries: RangeEntryState[];
+  onAdd: () => void;
+  onChange: (id: string, field: "min" | "max", nextValue: string) => void;
+  onRemove: (id: string) => void;
   min?: number;
   max?: number;
   step: number;
-  errors: Partial<Record<keyof RangeState, string>>;
+  errors: Record<string, RangeEntryErrors>;
+  emptyMessage?: string;
 }) {
   return (
-    <div className="border-default-200 bg-content2/20 rounded-lg border p-4">
-      <div className="mb-3">
-        <h3 className="text-sm font-semibold text-neutral-200">{label}</h3>
+    <div className="border-default-200 bg-content2/20 rounded-xl border p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h3 className="text-sm font-semibold text-neutral-100">{label}</h3>
+        <Button
+          size="sm"
+          variant="flat"
+          color="primary"
+          aria-label={`Add ${label} range`}
+          onPress={onAdd}
+        >
+          + Add
+        </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <NumericInput
-          amount={value.min}
-          onChange={(next) => onChange({ ...value, min: next })}
-          label="Min"
-          min={min}
-          max={max}
-          step={step}
-          errorMessage={errors.min}
-          isInvalid={Boolean(errors.min)}
-        />
-        <NumericInput
-          amount={value.max}
-          onChange={(next) => onChange({ ...value, max: next })}
-          label="Max"
-          min={min}
-          max={max}
-          step={step}
-          errorMessage={errors.max}
-          isInvalid={Boolean(errors.max)}
-        />
-        <NumericInput
-          amount={value.gap}
-          onChange={(next) => onChange({ ...value, gap: next })}
-          label="Gap"
-          min={step}
-          step={step}
-          errorMessage={errors.gap}
-          isInvalid={Boolean(errors.gap)}
-        />
+      <div className="flex flex-col gap-4">
+        {entries.map((entry) => {
+          const entryErrors = errors[entry.id] ?? {};
+
+          return (
+            <div
+              key={entry.id}
+              className="border-default-100 bg-content1/60 rounded-lg border p-3"
+            >
+              <div className="mb-3 flex justify-end">
+                <Button
+                  size="sm"
+                  color="danger"
+                  variant="light"
+                  isDisabled={entries.length <= 1}
+                  aria-label={`Remove ${label} range`}
+                  onPress={() => onRemove(entry.id)}
+                >
+                  Remove
+                </Button>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <NumericInput
+                  amount={entry.min}
+                  onChange={(nextValue) =>
+                    onChange(entry.id, "min", nextValue)
+                  }
+                  label="Min"
+                  ariaLabel={`${label} minimum`}
+                  min={min}
+                  max={max}
+                  step={step}
+                  errorMessage={entryErrors.min}
+                  isInvalid={Boolean(entryErrors.min)}
+                />
+                <NumericInput
+                  amount={entry.max}
+                  onChange={(nextValue) =>
+                    onChange(entry.id, "max", nextValue)
+                  }
+                  label="Max"
+                  ariaLabel={`${label} maximum`}
+                  min={min}
+                  max={max}
+                  step={step}
+                  errorMessage={entryErrors.max}
+                  isInvalid={Boolean(entryErrors.max)}
+                />
+              </div>
+            </div>
+          );
+        })}
       </div>
+
+      {emptyMessage ? (
+        <p className="mt-3 text-xs text-danger-300">{emptyMessage}</p>
+      ) : null}
     </div>
   );
 }
 
-function parseRange(range: RangeState) {
-  return {
-    min: Number(range.min),
-    max: Number(range.max),
-    gap: Number(range.gap),
-  };
+function ValueEntryCard({
+  label,
+  entries,
+  onAdd,
+  onChange,
+  onRemove,
+  min,
+  max,
+  step,
+  errors,
+  emptyMessage,
+}: {
+  label: string;
+  entries: ValueEntryState[];
+  onAdd: () => void;
+  onChange: (id: string, nextValue: string) => void;
+  onRemove: (id: string) => void;
+  min?: number;
+  max?: number;
+  step: number;
+  errors: Record<string, string | undefined>;
+  emptyMessage?: string;
+}) {
+  return (
+    <div className="border-default-200 bg-content2/20 rounded-xl border p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h3 className="text-sm font-semibold text-neutral-100">{label}</h3>
+        <Button
+          size="sm"
+          variant="flat"
+          color="primary"
+          aria-label={`Add ${label} value`}
+          onPress={onAdd}
+        >
+          + Add
+        </Button>
+      </div>
+
+      <div className="flex flex-col gap-4">
+        {entries.map((entry) => (
+          <div
+            key={entry.id}
+            className="border-default-100 bg-content1/60 rounded-lg border p-3"
+          >
+            <div className="mb-3 flex justify-end">
+              <Button
+                size="sm"
+                color="danger"
+                variant="light"
+                isDisabled={entries.length <= 1}
+                aria-label={`Remove ${label} value`}
+                onPress={() => onRemove(entry.id)}
+              >
+                Remove
+              </Button>
+            </div>
+
+            <NumericInput
+              amount={entry.value}
+              onChange={(nextValue) => onChange(entry.id, nextValue)}
+              label="Value"
+              ariaLabel={label}
+              min={min}
+              max={max}
+              step={step}
+              errorMessage={errors[entry.id]}
+              isInvalid={Boolean(errors[entry.id])}
+            />
+          </div>
+        ))}
+      </div>
+
+      {emptyMessage ? (
+        <p className="mt-3 text-xs text-danger-300">{emptyMessage}</p>
+      ) : null}
+    </div>
+  );
 }
 
-function validateRange(
+function validateRangeEntries(
   label: string,
-  value: RangeState,
+  entries: RangeEntryState[],
   options: { minAllowed?: number; maxAllowed?: number; integer?: boolean } = {},
 ) {
-  const errors: Partial<Record<keyof RangeState, string>> = {};
-  const min = Number(value.min);
-  const max = Number(value.max);
-  const gap = Number(value.gap);
+  const errors: Record<string, RangeEntryErrors> = {};
 
-  if (value.min.trim() === "" || Number.isNaN(min)) {
-    errors.min = `${label} min is required`;
-  } else if (options.minAllowed !== undefined && min < options.minAllowed) {
-    errors.min = `${label} min must be at least ${options.minAllowed}`;
-  } else if (options.maxAllowed !== undefined && min > options.maxAllowed) {
-    errors.min = `${label} min must be at most ${options.maxAllowed}`;
-  } else if (options.integer && !Number.isInteger(min)) {
-    errors.min = `${label} min must be an integer`;
-  }
+  entries.forEach((entry) => {
+    const min = Number(entry.min);
+    const max = Number(entry.max);
+    const entryErrors: RangeEntryErrors = {};
 
-  if (value.max.trim() === "" || Number.isNaN(max)) {
-    errors.max = `${label} max is required`;
-  } else if (options.minAllowed !== undefined && max < options.minAllowed) {
-    errors.max = `${label} max must be at least ${options.minAllowed}`;
-  } else if (options.maxAllowed !== undefined && max > options.maxAllowed) {
-    errors.max = `${label} max must be at most ${options.maxAllowed}`;
-  } else if (options.integer && !Number.isInteger(max)) {
-    errors.max = `${label} max must be an integer`;
-  }
+    if (entry.min.trim() === "" || Number.isNaN(min)) {
+      entryErrors.min = `${label} min is required`;
+    } else {
+      if (options.minAllowed !== undefined && min < options.minAllowed) {
+        entryErrors.min = `${label} min must be at least ${options.minAllowed}`;
+      }
 
-  if (value.gap.trim() === "" || Number.isNaN(gap)) {
-    errors.gap = `${label} gap is required`;
-  } else if (gap <= 0) {
-    errors.gap = `${label} gap must be greater than 0`;
-  } else if (options.integer && !Number.isInteger(gap)) {
-    errors.gap = `${label} gap must be an integer`;
-  }
+      if (options.maxAllowed !== undefined && min > options.maxAllowed) {
+        entryErrors.min = `${label} min must be at most ${options.maxAllowed}`;
+      }
 
-  if (!errors.min && !errors.max && max < min) {
-    errors.max = `${label} max must be greater than or equal to min`;
-  }
+      if (options.integer && !Number.isInteger(min)) {
+        entryErrors.min = `${label} min must be an integer`;
+      }
+    }
+
+    if (entry.max.trim() === "" || Number.isNaN(max)) {
+      entryErrors.max = `${label} max is required`;
+    } else {
+      if (options.minAllowed !== undefined && max < options.minAllowed) {
+        entryErrors.max = `${label} max must be at least ${options.minAllowed}`;
+      }
+
+      if (options.maxAllowed !== undefined && max > options.maxAllowed) {
+        entryErrors.max = `${label} max must be at most ${options.maxAllowed}`;
+      }
+
+      if (options.integer && !Number.isInteger(max)) {
+        entryErrors.max = `${label} max must be an integer`;
+      }
+    }
+
+    if (!entryErrors.min && !entryErrors.max && max < min) {
+      entryErrors.max = `${label} max must be greater than or equal to min`;
+    }
+
+    if (Object.keys(entryErrors).length > 0) {
+      errors[entry.id] = entryErrors;
+    }
+  });
 
   return errors;
 }
 
-export function SimulationCreationPanel() {
+function validateValueEntries(
+  label: string,
+  entries: ValueEntryState[],
+  options: { minAllowed?: number; maxAllowed?: number } = {},
+) {
+  const errors: Record<string, string | undefined> = {};
+
+  entries.forEach((entry) => {
+    const value = Number(entry.value);
+
+    if (entry.value.trim() === "" || Number.isNaN(value)) {
+      errors[entry.id] = `${label} value is required`;
+      return;
+    }
+
+    if (options.minAllowed !== undefined && value < options.minAllowed) {
+      errors[entry.id] = `${label} value must be at least ${options.minAllowed}`;
+      return;
+    }
+
+    if (options.maxAllowed !== undefined && value > options.maxAllowed) {
+      errors[entry.id] = `${label} value must be at most ${options.maxAllowed}`;
+    }
+  });
+
+  return errors;
+}
+
+function normalizeRangeEntries(entries: RangeEntryState[]) {
+  return entries.map((entry) => ({
+    min: Number(entry.min),
+    max: Number(entry.max),
+  }));
+}
+
+function normalizeValueEntries(entries: ValueEntryState[]) {
+  return entries.map((entry) => Number(entry.value));
+}
+
+export function SimulationCreationPanel({
+  compactHeading = false,
+}: {
+  compactHeading?: boolean;
+}) {
   const router = useRouter();
   const { createSimulationResearch, loading } = useCreateSimulationResearch();
 
@@ -157,41 +356,18 @@ export function SimulationCreationPanel() {
       start: now(getServerTimezone()).subtract({ days: 30 }),
       end: now(getServerTimezone()).subtract({ days: 1 }),
     });
-  const [minTrades, setMinTrades] = useState<RangeState>({
-    min: "3",
-    max: "10",
-    gap: "1",
-  });
-  const [maxTrades, setMaxTrades] = useState<RangeState>({
-    min: "10",
-    max: "30",
-    gap: "5",
-  });
-  const [minR2, setMinR2] = useState<RangeState>({
-    min: "0.25",
-    max: "0.5",
-    gap: "0.05",
-  });
-  const [maxR2, setMaxR2] = useState<RangeState>({
-    min: "0.5",
-    max: "0.9",
-    gap: "0.1",
-  });
-  const [minSlope, setMinSlope] = useState<RangeState>({
-    min: "1",
-    max: "3",
-    gap: "1",
-  });
-  const [maxSlope, setMaxSlope] = useState<RangeState>({
-    min: "3",
-    max: "8",
-    gap: "1",
-  });
-  const [maxLeverage, setMaxLeverage] = useState<RangeState>({
-    min: "10",
-    max: "50",
-    gap: "10",
-  });
+  const [tradeRanges, setTradeRanges] = useState<RangeEntryState[]>([
+    createRangeEntry("trade", { min: "3", max: "10" }),
+  ]);
+  const [r2Ranges, setR2Ranges] = useState<RangeEntryState[]>([
+    createRangeEntry("r2", { min: "0.25", max: "0.5" }),
+  ]);
+  const [slopeRanges, setSlopeRanges] = useState<RangeEntryState[]>([
+    createRangeEntry("slope", { min: "1", max: "3" }),
+  ]);
+  const [maxLeverageValues, setMaxLeverageValues] = useState<ValueEntryState[]>(
+    [createValueEntry("leverage", "10")],
+  );
 
   const errors = useMemo(() => {
     const result: Record<string, string> = {};
@@ -208,47 +384,117 @@ export function SimulationCreationPanel() {
       result.scheduleRange = "Please select a valid date range";
     }
 
-    const rangeErrors = {
-      minTrades: validateRange("Min Trades", minTrades, {
-        minAllowed: 1,
-        integer: true,
-      }),
-      maxTrades: validateRange("Max Trades", maxTrades, {
-        minAllowed: 1,
-        integer: true,
-      }),
-      minR2: validateRange("Min R2", minR2, { minAllowed: 0, maxAllowed: 1 }),
-      maxR2: validateRange("Max R2", maxR2, { minAllowed: 0, maxAllowed: 1 }),
-      minSlope: validateRange("Min Slope", minSlope, { minAllowed: 0 }),
-      maxSlope: validateRange("Max Slope", maxSlope, { minAllowed: 0 }),
-      maxLeverage: validateRange("Max Leverage", maxLeverage, {
-        minAllowed: 0.01,
-      }),
-    };
+    if (tradeRanges.length === 0) {
+      result.tradeEmpty = "Add at least one trade range";
+    }
 
-    Object.entries(rangeErrors).forEach(([key, value]) => {
-      Object.entries(value).forEach(([field, message]) => {
+    if (r2Ranges.length === 0) {
+      result.r2Empty = "Add at least one R2 range";
+    }
+
+    if (slopeRanges.length === 0) {
+      result.slopeEmpty = "Add at least one slope range";
+    }
+
+    if (maxLeverageValues.length === 0) {
+      result.maxLeverageEmpty = "Add at least one max leverage value";
+    }
+
+    const tradeEntryErrors = validateRangeEntries("Trade", tradeRanges, {
+      minAllowed: 1,
+      integer: true,
+    });
+    const r2EntryErrors = validateRangeEntries("R2", r2Ranges, {
+      minAllowed: 0,
+      maxAllowed: 1,
+    });
+    const slopeEntryErrors = validateRangeEntries("Slope", slopeRanges, {
+      minAllowed: 0,
+    });
+    const leverageEntryErrors = validateValueEntries(
+      "Max Leverage",
+      maxLeverageValues,
+      {
+        minAllowed: 0.01,
+      },
+    );
+
+    Object.values(tradeEntryErrors).forEach((entryErrors) => {
+      Object.values(entryErrors).forEach((message) => {
         if (message) {
-          result[`${key}.${field}`] = message;
+          result[`trade-${message}`] = message;
         }
       });
     });
 
-    return result;
+    Object.values(r2EntryErrors).forEach((entryErrors) => {
+      Object.values(entryErrors).forEach((message) => {
+        if (message) {
+          result[`r2-${message}`] = message;
+        }
+      });
+    });
+
+    Object.values(slopeEntryErrors).forEach((entryErrors) => {
+      Object.values(entryErrors).forEach((message) => {
+        if (message) {
+          result[`slope-${message}`] = message;
+        }
+      });
+    });
+
+    Object.values(leverageEntryErrors).forEach((message) => {
+      if (message) {
+        result[`leverage-${message}`] = message;
+      }
+    });
+
+    return {
+      flat: result,
+      tradeEntryErrors,
+      r2EntryErrors,
+      slopeEntryErrors,
+      leverageEntryErrors,
+    };
   }, [
     description,
-    maxLeverage,
-    maxR2,
-    maxSlope,
-    maxTrades,
-    minR2,
-    minSlope,
-    minTrades,
+    maxLeverageValues,
+    r2Ranges,
     scheduleRange,
+    slopeRanges,
     title,
+    tradeRanges,
   ]);
 
-  const isDisabled = Object.keys(errors).length > 0;
+  const isDisabled = Object.keys(errors.flat).length > 0;
+
+  const handleRangeEntryChange = (
+    setter: Dispatch<SetStateAction<RangeEntryState[]>>,
+    id: string,
+    field: "min" | "max",
+    nextValue: string,
+  ) => {
+    setter((current) =>
+      current.map((entry) =>
+        entry.id === id ? { ...entry, [field]: nextValue } : entry,
+      ),
+    );
+  };
+
+  const handleRangeEntryRemove = (
+    setter: Dispatch<SetStateAction<RangeEntryState[]>>,
+    id: string,
+  ) => {
+    setter((current) => current.filter((entry) => entry.id !== id));
+  };
+
+  const handleValueEntryChange = (id: string, nextValue: string) => {
+    setMaxLeverageValues((current) =>
+      current.map((entry) =>
+        entry.id === id ? { ...entry, value: nextValue } : entry,
+      ),
+    );
+  };
 
   const handleSave = async () => {
     if (isDisabled || !scheduleRange) {
@@ -264,13 +510,10 @@ export function SimulationCreationPanel() {
           startAt: scheduleRange.start.toDate(getServerTimezone()),
           endAt: scheduleRange.end.toDate(getServerTimezone()),
           direction,
-          minTrades: parseRange(minTrades),
-          maxTrades: parseRange(maxTrades),
-          minR2: parseRange(minR2),
-          maxR2: parseRange(maxR2),
-          minSlope: parseRange(minSlope),
-          maxSlope: parseRange(maxSlope),
-          maxLeverage: parseRange(maxLeverage),
+          trade: normalizeRangeEntries(tradeRanges),
+          r2: normalizeRangeEntries(r2Ranges),
+          slope: normalizeRangeEntries(slopeRanges),
+          maxLeverage: normalizeValueEntries(maxLeverageValues),
         },
       },
     });
@@ -289,15 +532,17 @@ export function SimulationCreationPanel() {
 
   return (
     <div className="flex max-w-5xl flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
-          Create Simulation Research
-        </h1>
-        <p className="text-sm text-neutral-400">
-          Define one research and let the backend generate concrete simulations
-          for every valid parameter combination.
-        </p>
-      </div>
+      {!compactHeading ? (
+        <div className="flex flex-col gap-1">
+          <h1 className="text-base leading-loose font-bold text-white md:text-2xl md:leading-none">
+            Create Simulation Research
+          </h1>
+          <p className="text-sm text-neutral-400">
+            Define explicit research ranges and leverage values, then let the
+            backend generate simulations for every valid combination.
+          </p>
+        </div>
+      ) : null}
 
       <Card
         shadow="none"
@@ -310,13 +555,15 @@ export function SimulationCreationPanel() {
               value={title}
               onValueChange={setTitle}
               label="Title"
-              errorMessage={errors.title}
-              isInvalid={Boolean(errors.title)}
+              aria-label="Research title"
+              errorMessage={errors.flat.title}
+              isInvalid={Boolean(errors.flat.title)}
             />
 
             <Select
               variant="underlined"
               label="Platform"
+              aria-label="Research platform"
               selectedKeys={[platform]}
               onChange={(event) => setPlatform(event.target.value as Platform)}
             >
@@ -328,6 +575,7 @@ export function SimulationCreationPanel() {
             <Select
               variant="underlined"
               label="Direction"
+              aria-label="Research direction"
               selectedKeys={[direction]}
               onChange={(event) => setDirection(event.target.value as BotMode)}
             >
@@ -342,116 +590,104 @@ export function SimulationCreationPanel() {
             value={description}
             onValueChange={setDescription}
             label="Description"
-            errorMessage={errors.description}
-            isInvalid={Boolean(errors.description)}
+            aria-label="Research description"
+            errorMessage={errors.flat.description}
+            isInvalid={Boolean(errors.flat.description)}
           />
 
           <DateRangePicker
             label="Research Duration"
+            aria-label="Research duration"
             visibleMonths={2}
             value={scheduleRange as any}
             onChange={setScheduleRange as any}
             maxValue={now(getServerTimezone())}
             timeInputProps={{}}
-            errorMessage={errors.scheduleRange}
-            isInvalid={Boolean(errors.scheduleRange)}
+            errorMessage={errors.flat.scheduleRange}
+            isInvalid={Boolean(errors.flat.scheduleRange)}
           />
 
           <div className="grid gap-4 xl:grid-cols-2">
-            <RangeTriplet
-              label="Min Trades"
-              value={minTrades}
-              onChange={setMinTrades}
+            <RangeEntryCard
+              label="Trades"
+              entries={tradeRanges}
+              onAdd={() =>
+                setTradeRanges((current) => [
+                  ...current,
+                  createRangeEntry("trade"),
+                ])
+              }
+              onChange={(id, field, nextValue) =>
+                handleRangeEntryChange(setTradeRanges, id, field, nextValue)
+              }
+              onRemove={(id) => handleRangeEntryRemove(setTradeRanges, id)}
               min={1}
               step={1}
-              errors={{
-                min: errors["minTrades.min"],
-                max: errors["minTrades.max"],
-                gap: errors["minTrades.gap"],
-              }}
+              errors={errors.tradeEntryErrors}
+              emptyMessage={errors.flat.tradeEmpty}
             />
-            <RangeTriplet
-              label="Max Trades"
-              value={maxTrades}
-              onChange={setMaxTrades}
-              min={1}
-              step={1}
-              errors={{
-                min: errors["maxTrades.min"],
-                max: errors["maxTrades.max"],
-                gap: errors["maxTrades.gap"],
-              }}
-            />
-            <RangeTriplet
-              label="Min R2"
-              value={minR2}
-              onChange={setMinR2}
+            <RangeEntryCard
+              label="R2"
+              entries={r2Ranges}
+              onAdd={() =>
+                setR2Ranges((current) => [...current, createRangeEntry("r2")])
+              }
+              onChange={(id, field, nextValue) =>
+                handleRangeEntryChange(setR2Ranges, id, field, nextValue)
+              }
+              onRemove={(id) => handleRangeEntryRemove(setR2Ranges, id)}
               min={0}
               max={1}
               step={0.01}
-              errors={{
-                min: errors["minR2.min"],
-                max: errors["minR2.max"],
-                gap: errors["minR2.gap"],
-              }}
+              errors={errors.r2EntryErrors}
+              emptyMessage={errors.flat.r2Empty}
             />
-            <RangeTriplet
-              label="Max R2"
-              value={maxR2}
-              onChange={setMaxR2}
-              min={0}
-              max={1}
-              step={0.01}
-              errors={{
-                min: errors["maxR2.min"],
-                max: errors["maxR2.max"],
-                gap: errors["maxR2.gap"],
-              }}
-            />
-            <RangeTriplet
-              label={`Min Slope (${direction} input uses absolute values)`}
-              value={minSlope}
-              onChange={setMinSlope}
+            <RangeEntryCard
+              label={`Slope (${direction} uses signed execution behind the scenes)`}
+              entries={slopeRanges}
+              onAdd={() =>
+                setSlopeRanges((current) => [
+                  ...current,
+                  createRangeEntry("slope"),
+                ])
+              }
+              onChange={(id, field, nextValue) =>
+                handleRangeEntryChange(setSlopeRanges, id, field, nextValue)
+              }
+              onRemove={(id) => handleRangeEntryRemove(setSlopeRanges, id)}
               min={0}
               step={0.1}
-              errors={{
-                min: errors["minSlope.min"],
-                max: errors["minSlope.max"],
-                gap: errors["minSlope.gap"],
-              }}
+              errors={errors.slopeEntryErrors}
+              emptyMessage={errors.flat.slopeEmpty}
             />
-            <RangeTriplet
-              label={`Max Slope (${direction} input uses absolute values)`}
-              value={maxSlope}
-              onChange={setMaxSlope}
-              min={0}
-              step={0.1}
-              errors={{
-                min: errors["maxSlope.min"],
-                max: errors["maxSlope.max"],
-                gap: errors["maxSlope.gap"],
-              }}
-            />
-            <RangeTriplet
+            <ValueEntryCard
               label="Max Leverage"
-              value={maxLeverage}
-              onChange={setMaxLeverage}
+              entries={maxLeverageValues}
+              onAdd={() =>
+                setMaxLeverageValues((current) => [
+                  ...current,
+                  createValueEntry("leverage"),
+                ])
+              }
+              onChange={handleValueEntryChange}
+              onRemove={(id) =>
+                setMaxLeverageValues((current) =>
+                  current.filter((entry) => entry.id !== id),
+                )
+              }
               min={0.01}
               step={0.1}
-              errors={{
-                min: errors["maxLeverage.min"],
-                max: errors["maxLeverage.max"],
-                gap: errors["maxLeverage.gap"],
-              }}
+              errors={errors.leverageEntryErrors}
+              emptyMessage={errors.flat.maxLeverageEmpty}
             />
           </div>
 
-          <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-            Valid simulations are generated only when{" "}
-            <code>minTrades &lt;= maxTrades</code>,{" "}
-            <code>minR2 &lt;= maxR2</code>, and{" "}
-            <code>minSlope &lt;= maxSlope</code> after direction-based slope
-            signing.
+          <div className="rounded-xl border border-amber-500/45 bg-amber-50 px-4 py-4 text-sm text-amber-950 shadow-[0_10px_30px_rgba(245,158,11,0.10)]">
+            <p className="leading-6 font-medium">
+              Trades, R2, and slope always use range entries, and each section
+              must include at least one item. Max leverage uses exact values,
+              and every entry is combined into generated simulations.
+            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -459,21 +695,12 @@ export function SimulationCreationPanel() {
               variant="solid"
               color="primary"
               size="sm"
+              aria-label="Create research"
               isLoading={loading}
               isDisabled={isDisabled || loading}
               onPress={handleSave}
             >
               Create Research
-            </Button>
-
-            <Button
-              variant="light"
-              color="primary"
-              size="sm"
-              isDisabled={loading}
-              onPress={() => router.push("/simulations/create-plan")}
-            >
-              Create Manual Plan
             </Button>
           </div>
         </CardBody>

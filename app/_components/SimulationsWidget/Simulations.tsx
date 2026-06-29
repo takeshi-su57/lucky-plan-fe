@@ -31,24 +31,16 @@ export function Simulations() {
       <div className="flex items-center justify-between">
         <h1>Simulations</h1>
 
-        <div className="flex items-center gap-2">
-          <Link href="/simulations/create-plan">
-            <Button color="primary" variant="light" size="sm">
-              Manual Plan
-            </Button>
-          </Link>
-
-          <Link href="/simulations/create">
-            <Button
-              color="primary"
-              variant="flat"
-              size="sm"
-              startContent={<FaPlus />}
-            >
-              Auto Simulation
-            </Button>
-          </Link>
-        </div>
+        <Link href="/simulations/create">
+          <Button
+            color="primary"
+            variant="flat"
+            size="sm"
+            startContent={<FaPlus />}
+          >
+            Create Simulation
+          </Button>
+        </Link>
       </div>
 
       <Tabs

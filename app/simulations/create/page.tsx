@@ -3,12 +3,12 @@
 import { Suspense } from "react";
 import { Spinner } from "@heroui/react";
 
-import { SimulationCreationPanel } from "@/app/_components/SimulationsWidget/SimulationCreationPanel";
+import { SimulationCreateTabs } from "@/app/_components/SimulationsWidget/SimulationCreateTabs";
 
 export default function Page() {
   return (
     <Suspense fallback={<Spinner color="white" size="sm" />}>
-      <SimulationCreationPanel />
+      <SimulationCreateTabs />
     </Suspense>
   );
 }

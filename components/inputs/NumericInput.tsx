@@ -17,6 +17,7 @@ export type NumericInputProps = {
   errorMessage?: ReactNode;
   isInvalid?: boolean;
   labelPlacement?: "outside" | "outside-left" | "inside";
+  ariaLabel?: string;
 };
 
 export function NumericInput({
@@ -31,6 +32,7 @@ export function NumericInput({
   labelPlacement,
   errorMessage,
   isInvalid,
+  ariaLabel,
 }: NumericInputProps) {
   const handleChangeAmount = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replaceAll(",", "");
@@ -44,6 +46,7 @@ export function NumericInput({
     <NumericFormat
       variant="underlined"
       label={label}
+      aria-label={ariaLabel ?? label}
       labelPlacement={labelPlacement}
       placeholder="0.00"
       autoComplete="off"

@@ -251,16 +251,13 @@ input CreateSimulationResearchInput {
   description: String!
   direction: BotMode!
   endAt: Date!
-  maxLeverage: FloatRangeInput!
-  maxR2: FloatRangeInput!
-  maxSlope: FloatRangeInput!
-  maxTrades: IntRangeInput!
-  minR2: FloatRangeInput!
-  minSlope: FloatRangeInput!
-  minTrades: IntRangeInput!
+  maxLeverage: [Float!]!
   platform: Platform!
+  r2: [FloatMinMaxInput!]!
+  slope: [FloatMinMaxInput!]!
   startAt: Date!
   title: String!
+  trade: [IntMinMaxInput!]!
 }
 
 input CreateStrategyInput {
@@ -290,12 +287,6 @@ input DecreasePositionSizeInput {
 }
 
 input FloatMinMaxInput {
-  max: Float!
-  min: Float!
-}
-
-input FloatRangeInput {
-  gap: Float!
   max: Float!
   min: Float!
 }
@@ -372,12 +363,6 @@ input IncreasePositionSizeInput {
 }
 
 input IntMinMaxInput {
-  max: Int!
-  min: Int!
-}
-
-input IntRangeInput {
-  gap: Int!
   max: Int!
   min: Int!
 }
