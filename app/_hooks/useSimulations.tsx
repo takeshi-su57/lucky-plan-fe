@@ -16,6 +16,8 @@ import {
   SimulationBotDetails,
   SimulationPlan,
   SimulationPlanDetails,
+  SimulationResearch,
+  SimulationResearchDetails,
 } from "@/graphql/gql/graphql";
 
 export const SIMULATION_BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
@@ -72,18 +74,24 @@ export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
     createdAt
     cursor
     description
+    direction
     endAt
     error
     id
     maxDrawdownUsd
     maxLeverage
-    minNegativeR2
+    maxR2
+    maxSlope
+    maxTrades
+    minR2
+    minSlope
     minTrades
     platform
     profitFactor
     progressMessage
     progressPercent
     progressPhase
+    researchId
     selectedLeaderCount
     standardCollateralUsd
     startAt
@@ -97,6 +105,111 @@ export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
     tradeCount
     updatedAt
     winRate
+  }
+`);
+
+export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment SimulationResearchInfo on SimulationResearch {
+    completedSimulations
+    createdAt
+    description
+    direction
+    endAt
+    id
+    maxLeverageRange {
+      gap
+      max
+      min
+    }
+    maxR2Range {
+      gap
+      max
+      min
+    }
+    maxSlopeRange {
+      gap
+      max
+      min
+    }
+    maxTradesRange {
+      gap
+      max
+      min
+    }
+    minR2Range {
+      gap
+      max
+      min
+    }
+    minSlopeRange {
+      gap
+      max
+      min
+    }
+    minTradesRange {
+      gap
+      max
+      min
+    }
+    platform
+    startAt
+    title
+    totalSimulations
+    updatedAt
+  }
+`);
+
+export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
+  fragment SimulationResearchDetailsInfo on SimulationResearchDetails {
+    completedSimulations
+    createdAt
+    description
+    direction
+    endAt
+    id
+    maxLeverageRange {
+      gap
+      max
+      min
+    }
+    maxR2Range {
+      gap
+      max
+      min
+    }
+    maxSlopeRange {
+      gap
+      max
+      min
+    }
+    maxTradesRange {
+      gap
+      max
+      min
+    }
+    minR2Range {
+      gap
+      max
+      min
+    }
+    minSlopeRange {
+      gap
+      max
+      min
+    }
+    minTradesRange {
+      gap
+      max
+      min
+    }
+    platform
+    startAt
+    title
+    totalSimulations
+    updatedAt
+    simulations {
+      ...SimulationInfo
+    }
   }
 `);
 
@@ -214,9 +327,42 @@ export const GET_SIMULATIONS_DOCUMENT = graphql(`
   }
 `);
 
+export const GET_SIMULATION_RESEARCHES_DOCUMENT = graphql(`
+  query simulationResearches($after: Int, $first: Int!) {
+    simulationResearches(after: $after, first: $first) {
+      edges {
+        cursor
+        node {
+          ...SimulationResearchInfo
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+`);
+
 export const GET_SIMULATION_DOCUMENT = graphql(`
   query simulation($id: Int!) {
     simulation(id: $id) {
+      ...SimulationInfo
+    }
+  }
+`);
+
+export const GET_SIMULATION_RESEARCH_DOCUMENT = graphql(`
+  query simulationResearch($id: Int!) {
+    simulationResearch(id: $id) {
+      ...SimulationResearchDetailsInfo
+    }
+  }
+`);
+
+export const GET_SIMULATIONS_BY_RESEARCH_DOCUMENT = graphql(`
+  query simulationsByResearch($researchId: Int!) {
+    simulationsByResearch(researchId: $researchId) {
       ...SimulationInfo
     }
   }
@@ -258,6 +404,14 @@ export const CREATE_SIMULATION_DOCUMENT = graphql(`
   mutation createSimulation($input: CreateSimulationInput!) {
     createSimulation(input: $input) {
       ...SimulationInfo
+    }
+  }
+`);
+
+export const CREATE_SIMULATION_RESEARCH_DOCUMENT = graphql(`
+  mutation createSimulationResearch($input: CreateSimulationResearchInput!) {
+    createSimulationResearch(input: $input) {
+      ...SimulationResearchInfo
     }
   }
 `);
@@ -415,6 +569,48 @@ export function useGetSimulations() {
   };
 }
 
+export function useGetSimulationResearches() {
+  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
+    GET_SIMULATION_RESEARCHES_DOCUMENT,
+  );
+
+  useEffect(() => {
+    query({
+      variables: {
+        first: 20,
+      },
+    });
+  }, [query]);
+
+  const simulationResearches = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return data.simulationResearches.edges.map((edge) =>
+      getFragmentData(SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT, edge.node),
+    ) as SimulationResearch[];
+  }, [data]);
+
+  const handleFetchMore = useCallback(() => {
+    if (data && !error) {
+      fetchMore({
+        variables: {
+          first: 20,
+          after: data.simulationResearches.pageInfo.endCursor,
+        },
+      });
+    }
+  }, [data, error, fetchMore]);
+
+  return {
+    simulationResearches,
+    loading,
+    fetchMore: handleFetchMore,
+    hasMore: data?.simulationResearches.pageInfo.hasNextPage,
+  };
+}
+
 export function useGetSimulation(id: number) {
   const { data, loading } = useQuery(GET_SIMULATION_DOCUMENT, {
     variables: { id },
@@ -432,6 +628,43 @@ export function useGetSimulation(id: number) {
   }, [data]);
 
   return { simulation, loading };
+}
+
+export function useGetSimulationResearch(id: number) {
+  const { data, loading } = useQuery(GET_SIMULATION_RESEARCH_DOCUMENT, {
+    variables: { id },
+  });
+
+  const simulationResearch = useMemo(() => {
+    if (!data?.simulationResearch) {
+      return null;
+    }
+
+    return getFragmentData(
+      SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT,
+      data.simulationResearch,
+    ) as SimulationResearchDetails;
+  }, [data]);
+
+  return { simulationResearch, loading };
+}
+
+export function useGetSimulationsByResearch(researchId: number) {
+  const { data, loading } = useQuery(GET_SIMULATIONS_BY_RESEARCH_DOCUMENT, {
+    variables: { researchId },
+  });
+
+  const simulations = useMemo(() => {
+    if (!data) {
+      return [];
+    }
+
+    return data.simulationsByResearch.map((simulation) =>
+      getFragmentData(SIMULATION_INFO_FRAGMENT_DOCUMENT, simulation),
+    ) as Simulation[];
+  }, [data]);
+
+  return { simulations, loading };
 }
 
 export function useGetSimulationPlansBySimulation(simulationId: number) {
@@ -613,6 +846,41 @@ export function useCreateSimulation() {
   }, [newData]);
 
   return { createSimulation, simulation, loading };
+}
+
+export function useCreateSimulationResearch() {
+  const [createSimulationResearch, { data: newData, error, loading }] =
+    useMutation(CREATE_SIMULATION_RESEARCH_DOCUMENT);
+  const client = useApolloClient();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      enqueueSnackbar("Success at creating new simulation research!", {
+        variant: "success",
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at creating new simulation research!", {
+        variant: "error",
+      });
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  const simulationResearch = useMemo(() => {
+    if (!newData?.createSimulationResearch) {
+      return null;
+    }
+
+    return getFragmentData(
+      SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT,
+      newData.createSimulationResearch,
+    ) as SimulationResearch;
+  }, [newData]);
+
+  return { createSimulationResearch, simulationResearch, loading };
 }
 
 export function useUpdateSimulationBot() {

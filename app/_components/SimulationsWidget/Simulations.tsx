@@ -7,10 +7,10 @@ import { FaPlus } from "react-icons/fa";
 import { Virtuoso } from "react-virtuoso";
 
 import { SimulationPlanRow } from "./SimulationPlanRow";
-import { SimulationRow } from "./SimulationRow";
+import { SimulationResearchRow } from "./SimulationResearchRow";
 import {
   useGetSimulationPlans,
-  useGetSimulations,
+  useGetSimulationResearches,
 } from "@/app/_hooks/useSimulations";
 
 type SimulationTab = "auto" | "manual";
@@ -18,11 +18,11 @@ type SimulationTab = "auto" | "manual";
 export function Simulations() {
   const [selected, setSelected] = useState<SimulationTab>("auto");
   const {
-    simulations,
-    hasMore: hasMoreSimulations,
-    loading: simulationsLoading,
-    fetchMore: fetchMoreSimulations,
-  } = useGetSimulations();
+    simulationResearches,
+    hasMore: hasMoreResearches,
+    loading: researchesLoading,
+    fetchMore: fetchMoreResearches,
+  } = useGetSimulationResearches();
   const { simultionPlans, hasMore, loading, fetchMore } =
     useGetSimulationPlans();
 
@@ -60,34 +60,36 @@ export function Simulations() {
         <Tab key="manual" title="Manual Plans" />
       </Tabs>
 
-      {selected === "auto" && simulationsLoading ? (
+      {selected === "auto" && researchesLoading ? (
         <div className="flex h-75 w-full items-center justify-center">
           <Spinner size="lg" color="warning" />
         </div>
       ) : selected === "auto" ? (
         <Virtuoso
           style={{ height: "calc(100vh - 300px)", minHeight: 520 }}
-          data={simulations}
+          data={simulationResearches}
           endReached={() => {
-            if (hasMoreSimulations && !simulationsLoading) {
-              fetchMoreSimulations();
+            if (hasMoreResearches && !researchesLoading) {
+              fetchMoreResearches();
             }
           }}
           overscan={200}
-          itemContent={(_index, item) => <SimulationRow simulation={item} />}
+          itemContent={(_index, item) => (
+            <SimulationResearchRow simulationResearch={item} />
+          )}
           components={{
             Footer: () => (
               <div className="flex w-full items-center justify-center py-4">
-                {hasMoreSimulations === false ? (
+                {hasMoreResearches === false ? (
                   <span className="font-sans text-neutral-400/40">
                     No More Results Available
                   </span>
-                ) : hasMoreSimulations ? (
+                ) : hasMoreResearches ? (
                   <Button
                     variant="flat"
                     color="primary"
-                    isLoading={simulationsLoading}
-                    onPress={() => fetchMoreSimulations()}
+                    isLoading={researchesLoading}
+                    onPress={() => fetchMoreResearches()}
                   >
                     Load More
                   </Button>

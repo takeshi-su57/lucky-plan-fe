@@ -33,6 +33,20 @@ function formatPercent(value: number) {
   return `${(value * 100).toFixed(2)}%`;
 }
 
+function getEffectiveSlopeBounds(simulation: Simulation) {
+  if (simulation.direction === "Reversed") {
+    return {
+      minSlope: -Math.abs(simulation.maxSlope),
+      maxSlope: -Math.abs(simulation.minSlope),
+    };
+  }
+
+  return {
+    minSlope: Math.abs(simulation.minSlope),
+    maxSlope: Math.abs(simulation.maxSlope),
+  };
+}
+
 const SIMULATION_SYSTEM_CONFIG = {
   minCollateralUsd: 10,
   maxCollateralUsd: 500,
@@ -71,10 +85,15 @@ function DetailStat({
 }
 
 function SimulationConfigResults({ simulation }: { simulation: Simulation }) {
+  const effectiveSlopeBounds = getEffectiveSlopeBounds(simulation);
   const configItems = [
-    { label: "Leader Selection", value: "Uncapped" },
+    { label: "Direction", value: simulation.direction },
     { label: "Min Trades", value: simulation.minTrades },
-    { label: "Min R2", value: simulation.minNegativeR2.toFixed(2) },
+    { label: "Max Trades", value: simulation.maxTrades },
+    { label: "Min R2", value: simulation.minR2.toFixed(2) },
+    { label: "Max R2", value: simulation.maxR2.toFixed(2) },
+    { label: "Min Slope", value: effectiveSlopeBounds.minSlope.toFixed(2) },
+    { label: "Max Slope", value: effectiveSlopeBounds.maxSlope.toFixed(2) },
     {
       label: "Base Collateral",
       value: getPriceStr(simulation.standardCollateralUsd),

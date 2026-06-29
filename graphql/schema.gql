@@ -225,9 +225,14 @@ input CreateSimulationBotInput {
 
 input CreateSimulationInput {
   description: String!
+  direction: BotMode! = Reversed
   endAt: Date!
   maxLeverage: Float! = 50
-  minNegativeR2: Float! = 0.25
+  maxR2: Float! = 1
+  maxSlope: Float! = 999999
+  maxTrades: Int! = 999999
+  minR2: Float! = 0.25
+  minSlope: Float! = 0
   minTrades: Int! = 3
   platform: Platform!
   selectedLeaderCount: Int! = 10
@@ -239,6 +244,22 @@ input CreateSimulationInput {
 input CreateSimulationPlanInput {
   description: String!
   endAt: Date!
+  startAt: Date!
+  title: String!
+}
+
+input CreateSimulationResearchInput {
+  description: String!
+  direction: BotMode!
+  endAt: Date!
+  maxLeverage: FloatRangeInput!
+  maxR2: FloatRangeInput!
+  maxSlope: FloatRangeInput!
+  maxTrades: IntRangeInput!
+  minR2: FloatRangeInput!
+  minSlope: FloatRangeInput!
+  minTrades: IntRangeInput!
+  platform: Platform!
   startAt: Date!
   title: String!
 }
@@ -269,6 +290,12 @@ input DecreasePositionSizeInput {
   index: Int!
   leverageDelta: Int!
   pairIndex: Int!
+}
+
+input FloatRangeInput {
+  gap: Float!
+  max: Float!
+  min: Float!
 }
 
 type Follower {
@@ -340,6 +367,12 @@ input IncreasePositionSizeInput {
   index: Int!
   leverageDelta: Int!
   pairIndex: Int!
+}
+
+input IntRangeInput {
+  gap: Int!
+  max: Int!
+  min: Int!
 }
 
 """
@@ -504,6 +537,9 @@ type Mutation {
   createSLTP(input: SLTPRequestInput!): SLTPRequest!
   createSimulation(input: CreateSimulationInput!): Simulation!
   createSimulationPlan(input: CreateSimulationPlanInput!): SimulationPlan!
+  createSimulationResearch(
+    input: CreateSimulationResearchInput!
+  ): SimulationResearch!
   decreaseAllowanceToZero(
     collateralIndex: Int!
     contractId: Int!
@@ -839,7 +875,10 @@ type Query {
     simulationId: Int!
   ): [SimulationPlanDetails!]!
   simulationPlansBySimulation(simulationId: Int!): [SimulationPlan!]!
+  simulationResearch(id: Int!): SimulationResearchDetails
+  simulationResearches(after: Int, first: Int!): SimulationResearchConnection!
   simulations(after: Int, first: Int!): SimulationConnection!
+  simulationsByResearch(researchId: Int!): [Simulation!]!
   systemStatus: Boolean!
 }
 
@@ -874,18 +913,24 @@ type Simulation {
   createdAt: Date!
   cursor: Date
   description: String!
+  direction: BotMode!
   endAt: Date!
   error: String
   id: Int!
   maxDrawdownUsd: Float!
   maxLeverage: Float!
-  minNegativeR2: Float!
+  maxR2: Float!
+  maxSlope: Float!
+  maxTrades: Float!
+  minR2: Float!
+  minSlope: Float!
   minTrades: Int!
   platform: Platform!
   profitFactor: Float!
   progressMessage: String
   progressPercent: Float!
   progressPhase: String
+  researchId: Int
   selectedLeaderCount: Int!
   standardCollateralUsd: Float!
   startAt: Date!
@@ -973,6 +1018,18 @@ type SimulationEdge {
   node: Simulation!
 }
 
+type SimulationFloatRange {
+  gap: Float!
+  max: Float!
+  min: Float!
+}
+
+type SimulationIntRange {
+  gap: Int!
+  max: Int!
+  min: Int!
+}
+
 type SimulationLeaderSelection {
   createdAt: Date!
   date: Date!
@@ -1038,6 +1095,64 @@ type SimulationPlanEdge {
 }
 
 type SimulationPlanPageInfo {
+  endCursor: Int
+  hasNextPage: Boolean!
+}
+
+type SimulationResearch {
+  completedSimulations: Int!
+  createdAt: Date!
+  description: String!
+  direction: BotMode!
+  endAt: Date!
+  id: Int!
+  maxLeverageRange: SimulationFloatRange!
+  maxR2Range: SimulationFloatRange!
+  maxSlopeRange: SimulationFloatRange!
+  maxTradesRange: SimulationIntRange!
+  minR2Range: SimulationFloatRange!
+  minSlopeRange: SimulationFloatRange!
+  minTradesRange: SimulationIntRange!
+  platform: Platform!
+  startAt: Date!
+  title: String!
+  totalSimulations: Int!
+  updatedAt: Date!
+}
+
+type SimulationResearchConnection {
+  edges: [SimulationResearchEdge!]!
+  pageInfo: SimulationResearchPageInfo!
+}
+
+type SimulationResearchDetails {
+  completedSimulations: Int!
+  createdAt: Date!
+  description: String!
+  direction: BotMode!
+  endAt: Date!
+  id: Int!
+  maxLeverageRange: SimulationFloatRange!
+  maxR2Range: SimulationFloatRange!
+  maxSlopeRange: SimulationFloatRange!
+  maxTradesRange: SimulationIntRange!
+  minR2Range: SimulationFloatRange!
+  minSlopeRange: SimulationFloatRange!
+  minTradesRange: SimulationIntRange!
+  platform: Platform!
+  simulations: [Simulation!]!
+  startAt: Date!
+  title: String!
+  totalSimulations: Int!
+  updatedAt: Date!
+}
+
+type SimulationResearchEdge {
+  cursor: Int!
+  node: SimulationResearch!
+}
+
+type SimulationResearchPageInfo {
   endCursor: Int
   hasNextPage: Boolean!
 }
@@ -1153,9 +1268,14 @@ input UpdateSimulationBotInput {
 
 input UpdateSimulationInput {
   description: String
+  direction: BotMode
   id: Int!
   maxLeverage: Float
-  minNegativeR2: Float
+  maxR2: Float
+  maxSlope: Float
+  maxTrades: Int
+  minR2: Float
+  minSlope: Float
   minTrades: Int
   selectedLeaderCount: Int
   standardCollateralUsd: Float

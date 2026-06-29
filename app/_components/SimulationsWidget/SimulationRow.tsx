@@ -74,6 +74,9 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
                 <Chip variant="flat" size="sm" color="secondary">
                   {simulation.platform}
                 </Chip>
+                <Chip variant="flat" size="sm">
+                  {simulation.direction}
+                </Chip>
               </div>
 
               <p className="mt-2 line-clamp-2 text-sm text-neutral-500">
