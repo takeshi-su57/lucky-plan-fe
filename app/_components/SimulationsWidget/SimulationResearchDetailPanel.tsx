@@ -9,16 +9,12 @@ import {
 } from "@/app/_hooks/useSimulations";
 import { SimulationRow } from "./SimulationRow";
 
-function RangeStat({
+function RangeListStat({
   label,
-  min,
-  max,
-  gap,
+  values,
 }: {
   label: string;
-  min: number;
-  max: number;
-  gap: number;
+  values: string[];
 }) {
   return (
     <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
@@ -26,10 +22,18 @@ function RangeStat({
         {label}
       </span>
       <span className="mt-1 text-sm font-semibold text-neutral-300">
-        {min} - {max} / gap {gap}
+        {values.length > 0 ? values.join(", ") : "None"}
       </span>
     </div>
   );
+}
+
+function formatRangePairs(ranges: Array<{ min: number; max: number }>) {
+  return ranges.map((range) => `${range.min}-${range.max}`);
+}
+
+function formatLeverageValues(values: number[]) {
+  return values.map((value) => `${value}x`);
 }
 
 export function SimulationResearchDetailPanel({
@@ -80,47 +84,21 @@ export function SimulationResearchDetailPanel({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <RangeStat
-            label="Min Trades"
-            min={simulationResearch.minTradesRange.min}
-            max={simulationResearch.minTradesRange.max}
-            gap={simulationResearch.minTradesRange.gap}
+          <RangeListStat
+            label="Trade Ranges"
+            values={formatRangePairs(simulationResearch.trade)}
           />
-          <RangeStat
-            label="Max Trades"
-            min={simulationResearch.maxTradesRange.min}
-            max={simulationResearch.maxTradesRange.max}
-            gap={simulationResearch.maxTradesRange.gap}
+          <RangeListStat
+            label="R2 Ranges"
+            values={formatRangePairs(simulationResearch.r2)}
           />
-          <RangeStat
-            label="Min R2"
-            min={simulationResearch.minR2Range.min}
-            max={simulationResearch.minR2Range.max}
-            gap={simulationResearch.minR2Range.gap}
+          <RangeListStat
+            label="Slope Ranges"
+            values={formatRangePairs(simulationResearch.slope)}
           />
-          <RangeStat
-            label="Max R2"
-            min={simulationResearch.maxR2Range.min}
-            max={simulationResearch.maxR2Range.max}
-            gap={simulationResearch.maxR2Range.gap}
-          />
-          <RangeStat
-            label="Min Slope"
-            min={simulationResearch.minSlopeRange.min}
-            max={simulationResearch.minSlopeRange.max}
-            gap={simulationResearch.minSlopeRange.gap}
-          />
-          <RangeStat
-            label="Max Slope"
-            min={simulationResearch.maxSlopeRange.min}
-            max={simulationResearch.maxSlopeRange.max}
-            gap={simulationResearch.maxSlopeRange.gap}
-          />
-          <RangeStat
+          <RangeListStat
             label="Max Leverage"
-            min={simulationResearch.maxLeverageRange.min}
-            max={simulationResearch.maxLeverageRange.max}
-            gap={simulationResearch.maxLeverageRange.gap}
+            values={formatLeverageValues(simulationResearch.maxLeverage)}
           />
           <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
             <span className="text-[10px] font-semibold text-neutral-500 uppercase">

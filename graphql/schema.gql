@@ -228,17 +228,14 @@ input CreateSimulationInput {
   direction: BotMode! = Reversed
   endAt: Date!
   maxLeverage: Float! = 50
-  maxR2: Float! = 1
-  maxSlope: Float! = 999999
-  maxTrades: Int! = 999999
-  minR2: Float! = 0.25
-  minSlope: Float! = 0
-  minTrades: Int! = 3
   platform: Platform!
+  r2: FloatMinMaxInput! = { max: 1, min: 0.5 }
   selectedLeaderCount: Int! = 10
+  slope: FloatMinMaxInput! = { max: 1000000000, min: 0 }
   standardCollateralUsd: Float! = 100
   startAt: Date!
   title: String!
+  trade: IntMinMaxInput! = { max: 1000000, min: 3 }
 }
 
 input CreateSimulationPlanInput {
@@ -290,6 +287,11 @@ input DecreasePositionSizeInput {
   index: Int!
   leverageDelta: Int!
   pairIndex: Int!
+}
+
+input FloatMinMaxInput {
+  max: Float!
+  min: Float!
 }
 
 input FloatRangeInput {
@@ -367,6 +369,11 @@ input IncreasePositionSizeInput {
   index: Int!
   leverageDelta: Int!
   pairIndex: Int!
+}
+
+input IntMinMaxInput {
+  max: Int!
+  min: Int!
 }
 
 input IntRangeInput {
@@ -919,19 +926,15 @@ type Simulation {
   id: Int!
   maxDrawdownUsd: Float!
   maxLeverage: Float!
-  maxR2: Float!
-  maxSlope: Float!
-  maxTrades: Float!
-  minR2: Float!
-  minSlope: Float!
-  minTrades: Int!
   platform: Platform!
   profitFactor: Float!
   progressMessage: String
   progressPercent: Float!
   progressPhase: String
+  r2: SimulationValueRange!
   researchId: Int
   selectedLeaderCount: Int!
+  slope: SimulationValueRange!
   standardCollateralUsd: Float!
   startAt: Date!
   status: SimulationStatus!
@@ -941,6 +944,7 @@ type Simulation {
   totalLeaderPnl: Float!
   totalNetPnlUsd: Float!
   totalSimulationPlans: Int!
+  trade: SimulationTradeRange!
   tradeCount: Int!
   updatedAt: Date!
   winRate: Float!
@@ -1016,18 +1020,6 @@ type SimulationConnection {
 type SimulationEdge {
   cursor: Int!
   node: Simulation!
-}
-
-type SimulationFloatRange {
-  gap: Float!
-  max: Float!
-  min: Float!
-}
-
-type SimulationIntRange {
-  gap: Int!
-  max: Int!
-  min: Int!
 }
 
 type SimulationLeaderSelection {
@@ -1106,17 +1098,14 @@ type SimulationResearch {
   direction: BotMode!
   endAt: Date!
   id: Int!
-  maxLeverageRange: SimulationFloatRange!
-  maxR2Range: SimulationFloatRange!
-  maxSlopeRange: SimulationFloatRange!
-  maxTradesRange: SimulationIntRange!
-  minR2Range: SimulationFloatRange!
-  minSlopeRange: SimulationFloatRange!
-  minTradesRange: SimulationIntRange!
+  maxLeverage: [Float!]!
   platform: Platform!
+  r2: [SimulationValueRange!]!
+  slope: [SimulationValueRange!]!
   startAt: Date!
   title: String!
   totalSimulations: Int!
+  trade: [SimulationTradeRange!]!
   updatedAt: Date!
 }
 
@@ -1132,18 +1121,15 @@ type SimulationResearchDetails {
   direction: BotMode!
   endAt: Date!
   id: Int!
-  maxLeverageRange: SimulationFloatRange!
-  maxR2Range: SimulationFloatRange!
-  maxSlopeRange: SimulationFloatRange!
-  maxTradesRange: SimulationIntRange!
-  minR2Range: SimulationFloatRange!
-  minSlopeRange: SimulationFloatRange!
-  minTradesRange: SimulationIntRange!
+  maxLeverage: [Float!]!
   platform: Platform!
+  r2: [SimulationValueRange!]!
   simulations: [Simulation!]!
+  slope: [SimulationValueRange!]!
   startAt: Date!
   title: String!
   totalSimulations: Int!
+  trade: [SimulationTradeRange!]!
   updatedAt: Date!
 }
 
@@ -1175,6 +1161,16 @@ type SimulationTradePosition {
   followerPnl: Float!
   histories: [SimulationTradeHistory!]!
   leaderPnl: Float!
+}
+
+type SimulationTradeRange {
+  max: Int!
+  min: Int!
+}
+
+type SimulationValueRange {
+  max: Float!
+  min: Float!
 }
 
 type Strategy {
@@ -1271,15 +1267,12 @@ input UpdateSimulationInput {
   direction: BotMode
   id: Int!
   maxLeverage: Float
-  maxR2: Float
-  maxSlope: Float
-  maxTrades: Int
-  minR2: Float
-  minSlope: Float
-  minTrades: Int
+  r2: FloatMinMaxInput
   selectedLeaderCount: Int
+  slope: FloatMinMaxInput
   standardCollateralUsd: Float
   title: String
+  trade: IntMinMaxInput
 }
 
 input UpdateSlInput {

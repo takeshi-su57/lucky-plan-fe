@@ -80,19 +80,21 @@ export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
     id
     maxDrawdownUsd
     maxLeverage
-    maxR2
-    maxSlope
-    maxTrades
-    minR2
-    minSlope
-    minTrades
     platform
     profitFactor
     progressMessage
     progressPercent
     progressPhase
+    r2 {
+      max
+      min
+    }
     researchId
     selectedLeaderCount
+    slope {
+      max
+      min
+    }
     standardCollateralUsd
     startAt
     status
@@ -103,6 +105,10 @@ export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
     totalNetPnlUsd
     totalSimulationPlans
     tradeCount
+    trade {
+      max
+      min
+    }
     updatedAt
     winRate
   }
@@ -116,38 +122,12 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
     direction
     endAt
     id
-    maxLeverageRange {
-      gap
+    maxLeverage
+    r2 {
       max
       min
     }
-    maxR2Range {
-      gap
-      max
-      min
-    }
-    maxSlopeRange {
-      gap
-      max
-      min
-    }
-    maxTradesRange {
-      gap
-      max
-      min
-    }
-    minR2Range {
-      gap
-      max
-      min
-    }
-    minSlopeRange {
-      gap
-      max
-      min
-    }
-    minTradesRange {
-      gap
+    slope {
       max
       min
     }
@@ -155,6 +135,10 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
     startAt
     title
     totalSimulations
+    trade {
+      max
+      min
+    }
     updatedAt
   }
 `);
@@ -167,38 +151,12 @@ export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     direction
     endAt
     id
-    maxLeverageRange {
-      gap
+    maxLeverage
+    r2 {
       max
       min
     }
-    maxR2Range {
-      gap
-      max
-      min
-    }
-    maxSlopeRange {
-      gap
-      max
-      min
-    }
-    maxTradesRange {
-      gap
-      max
-      min
-    }
-    minR2Range {
-      gap
-      max
-      min
-    }
-    minSlopeRange {
-      gap
-      max
-      min
-    }
-    minTradesRange {
-      gap
+    slope {
       max
       min
     }
@@ -206,6 +164,10 @@ export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     startAt
     title
     totalSimulations
+    trade {
+      max
+      min
+    }
     updatedAt
     simulations {
       ...SimulationInfo

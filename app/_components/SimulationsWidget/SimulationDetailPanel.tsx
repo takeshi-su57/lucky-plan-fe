@@ -36,14 +36,14 @@ function formatPercent(value: number) {
 function getEffectiveSlopeBounds(simulation: Simulation) {
   if (simulation.direction === "Reversed") {
     return {
-      minSlope: -Math.abs(simulation.maxSlope),
-      maxSlope: -Math.abs(simulation.minSlope),
+      minSlope: -Math.abs(simulation.slope.max),
+      maxSlope: -Math.abs(simulation.slope.min),
     };
   }
 
   return {
-    minSlope: Math.abs(simulation.minSlope),
-    maxSlope: Math.abs(simulation.maxSlope),
+    minSlope: Math.abs(simulation.slope.min),
+    maxSlope: Math.abs(simulation.slope.max),
   };
 }
 
@@ -88,10 +88,10 @@ function SimulationConfigResults({ simulation }: { simulation: Simulation }) {
   const effectiveSlopeBounds = getEffectiveSlopeBounds(simulation);
   const configItems = [
     { label: "Direction", value: simulation.direction },
-    { label: "Min Trades", value: simulation.minTrades },
-    { label: "Max Trades", value: simulation.maxTrades },
-    { label: "Min R2", value: simulation.minR2.toFixed(2) },
-    { label: "Max R2", value: simulation.maxR2.toFixed(2) },
+    { label: "Min Trades", value: simulation.trade.min },
+    { label: "Max Trades", value: simulation.trade.max },
+    { label: "Min R2", value: simulation.r2.min.toFixed(2) },
+    { label: "Max R2", value: simulation.r2.max.toFixed(2) },
     { label: "Min Slope", value: effectiveSlopeBounds.minSlope.toFixed(2) },
     { label: "Max Slope", value: effectiveSlopeBounds.maxSlope.toFixed(2) },
     {
