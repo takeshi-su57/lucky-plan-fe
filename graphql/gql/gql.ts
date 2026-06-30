@@ -101,7 +101,7 @@ type Documents = {
     "\n  subscription planCreated($userId: String!) {\n    planCreated(userId: $userId) {\n      ...PlanInfo\n    }\n  }\n": typeof types.PlanCreatedDocument,
     "\n  subscription planUpdated($userId: String!) {\n    planUpdated(userId: $userId) {\n      ...PlanInfo\n    }\n  }\n": typeof types.PlanUpdatedDocument,
     "\n  fragment SimulationBotInfo on SimulationBot {\n    avgCollateral\n    avgDuration\n    avgLeverage\n    avgNegativePnl\n    avgPnl\n    avgPnlPercentageByCollateral\n    avgPnlPercentageBySize\n    avgPositivePnl\n    avgSize\n    id\n    leaderAddress\n    leaderContract {\n      ...ContractInfo\n    }\n    leaderContractId\n    maxDuration\n    mode\n    openedPositions\n    ratio\n    maxLeverage\n    simulationPlanId\n    startedAt\n    stoppedAt\n    totalPnl\n    totalPositions\n  }\n": typeof types.SimulationBotInfoFragmentDoc,
-    "\n  fragment SimulationPlanInfo on SimulationPlan {\n    cursor\n    description\n    endAt\n    id\n    openedPositions\n    startAt\n    title\n    totalFollowerPnl\n    totalLeaderPnl\n    totalPositions\n    simulationBots {\n      ...SimulationBotInfo\n    }\n  }\n": typeof types.SimulationPlanInfoFragmentDoc,
+    "\n  fragment SimulationPlanInfo on SimulationPlan {\n    cursor\n    description\n    endAt\n    id\n    openedPositions\n    startAt\n    title\n    totalFollowerPnl\n    totalLeaderPnl\n    totalPositions\n    simulationId\n    simulationBots {\n      ...SimulationBotInfo\n    }\n  }\n": typeof types.SimulationPlanInfoFragmentDoc,
     "\n  fragment SimulationInfo on Simulation {\n    completedPlans\n    createdAt\n    cursor\n    description\n    direction\n    endAt\n    error\n    id\n    maxDrawdownUsd\n    maxLeverage\n    platform\n    profitFactor\n    progressMessage\n    progressPercent\n    progressPhase\n    r2 {\n      max\n      min\n    }\n    researchId\n    selectedLeaderCount\n    slope {\n      max\n      min\n    }\n    standardCollateralUsd\n    startAt\n    status\n    title\n    totalCostUsd\n    totalFollowerPnl\n    totalLeaderPnl\n    totalNetPnlUsd\n    totalSimulationPlans\n    tradeCount\n    trade {\n      max\n      min\n    }\n    updatedAt\n    winRate\n  }\n": typeof types.SimulationInfoFragmentDoc,
     "\n  fragment SimulationResearchInfo on SimulationResearch {\n    completedSimulations\n    createdAt\n    description\n    direction\n    endAt\n    id\n    maxLeverage\n    r2 {\n      max\n      min\n    }\n    slope {\n      max\n      min\n    }\n    platform\n    startAt\n    title\n    totalSimulations\n    trade {\n      max\n      min\n    }\n    updatedAt\n  }\n": typeof types.SimulationResearchInfoFragmentDoc,
     "\n  fragment SimulationResearchDetailsInfo on SimulationResearchDetails {\n    completedSimulations\n    createdAt\n    description\n    direction\n    endAt\n    id\n    maxLeverage\n    r2 {\n      max\n      min\n    }\n    slope {\n      max\n      min\n    }\n    platform\n    startAt\n    title\n    totalSimulations\n    trade {\n      max\n      min\n    }\n    updatedAt\n    simulations {\n      ...SimulationInfo\n    }\n  }\n": typeof types.SimulationResearchDetailsInfoFragmentDoc,
@@ -129,6 +129,9 @@ type Documents = {
     "\n  mutation deleteSimulation($id: Int!) {\n    deleteSimulation(id: $id)\n  }\n": typeof types.DeleteSimulationDocument,
     "\n  mutation deleteSimulationPlan($id: Int!) {\n    deleteSimulationPlan(id: $id)\n  }\n": typeof types.DeleteSimulationPlanDocument,
     "\n  mutation stopSimulationBot($id: Int!) {\n    stopSimulationBot(id: $id) {\n      ...SimulationBotInfo\n    }\n  }\n": typeof types.StopSimulationBotDocument,
+    "\n  subscription simulationResearchUpdated {\n    simulationResearchUpdated {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.SimulationResearchUpdatedDocument,
+    "\n  subscription simulationUpdated {\n    simulationUpdated {\n      ...SimulationInfo\n    }\n  }\n": typeof types.SimulationUpdatedDocument,
+    "\n  subscription simulationPlanUpdated {\n    simulationPlanUpdated {\n      ...SimulationPlanInfo\n    }\n  }\n": typeof types.SimulationPlanUpdatedDocument,
     "\n  fragment StrategyInfo on Strategy {\n    id\n    lifeTime\n    maxCollateral\n    minCollateral\n    maxLeverage\n    minLeverage\n    tpPercentage\n    slPercentage\n    maxOpenMissions\n    selectedPairs\n    mode\n    ratio\n  }\n": typeof types.StrategyInfoFragmentDoc,
     "\n  query getAllStrategy {\n    getAllStrategy {\n      ...StrategyInfo\n    }\n  }\n": typeof types.GetAllStrategyDocument,
     "\n  mutation updateStrategy($id: Int!, $input: UpdateStrategyInput!) {\n    updateStrategy(id: $id, input: $input) {\n      ...StrategyInfo\n    }\n  }\n": typeof types.UpdateStrategyDocument,
@@ -244,7 +247,7 @@ const documents: Documents = {
     "\n  subscription planCreated($userId: String!) {\n    planCreated(userId: $userId) {\n      ...PlanInfo\n    }\n  }\n": types.PlanCreatedDocument,
     "\n  subscription planUpdated($userId: String!) {\n    planUpdated(userId: $userId) {\n      ...PlanInfo\n    }\n  }\n": types.PlanUpdatedDocument,
     "\n  fragment SimulationBotInfo on SimulationBot {\n    avgCollateral\n    avgDuration\n    avgLeverage\n    avgNegativePnl\n    avgPnl\n    avgPnlPercentageByCollateral\n    avgPnlPercentageBySize\n    avgPositivePnl\n    avgSize\n    id\n    leaderAddress\n    leaderContract {\n      ...ContractInfo\n    }\n    leaderContractId\n    maxDuration\n    mode\n    openedPositions\n    ratio\n    maxLeverage\n    simulationPlanId\n    startedAt\n    stoppedAt\n    totalPnl\n    totalPositions\n  }\n": types.SimulationBotInfoFragmentDoc,
-    "\n  fragment SimulationPlanInfo on SimulationPlan {\n    cursor\n    description\n    endAt\n    id\n    openedPositions\n    startAt\n    title\n    totalFollowerPnl\n    totalLeaderPnl\n    totalPositions\n    simulationBots {\n      ...SimulationBotInfo\n    }\n  }\n": types.SimulationPlanInfoFragmentDoc,
+    "\n  fragment SimulationPlanInfo on SimulationPlan {\n    cursor\n    description\n    endAt\n    id\n    openedPositions\n    startAt\n    title\n    totalFollowerPnl\n    totalLeaderPnl\n    totalPositions\n    simulationId\n    simulationBots {\n      ...SimulationBotInfo\n    }\n  }\n": types.SimulationPlanInfoFragmentDoc,
     "\n  fragment SimulationInfo on Simulation {\n    completedPlans\n    createdAt\n    cursor\n    description\n    direction\n    endAt\n    error\n    id\n    maxDrawdownUsd\n    maxLeverage\n    platform\n    profitFactor\n    progressMessage\n    progressPercent\n    progressPhase\n    r2 {\n      max\n      min\n    }\n    researchId\n    selectedLeaderCount\n    slope {\n      max\n      min\n    }\n    standardCollateralUsd\n    startAt\n    status\n    title\n    totalCostUsd\n    totalFollowerPnl\n    totalLeaderPnl\n    totalNetPnlUsd\n    totalSimulationPlans\n    tradeCount\n    trade {\n      max\n      min\n    }\n    updatedAt\n    winRate\n  }\n": types.SimulationInfoFragmentDoc,
     "\n  fragment SimulationResearchInfo on SimulationResearch {\n    completedSimulations\n    createdAt\n    description\n    direction\n    endAt\n    id\n    maxLeverage\n    r2 {\n      max\n      min\n    }\n    slope {\n      max\n      min\n    }\n    platform\n    startAt\n    title\n    totalSimulations\n    trade {\n      max\n      min\n    }\n    updatedAt\n  }\n": types.SimulationResearchInfoFragmentDoc,
     "\n  fragment SimulationResearchDetailsInfo on SimulationResearchDetails {\n    completedSimulations\n    createdAt\n    description\n    direction\n    endAt\n    id\n    maxLeverage\n    r2 {\n      max\n      min\n    }\n    slope {\n      max\n      min\n    }\n    platform\n    startAt\n    title\n    totalSimulations\n    trade {\n      max\n      min\n    }\n    updatedAt\n    simulations {\n      ...SimulationInfo\n    }\n  }\n": types.SimulationResearchDetailsInfoFragmentDoc,
@@ -272,6 +275,9 @@ const documents: Documents = {
     "\n  mutation deleteSimulation($id: Int!) {\n    deleteSimulation(id: $id)\n  }\n": types.DeleteSimulationDocument,
     "\n  mutation deleteSimulationPlan($id: Int!) {\n    deleteSimulationPlan(id: $id)\n  }\n": types.DeleteSimulationPlanDocument,
     "\n  mutation stopSimulationBot($id: Int!) {\n    stopSimulationBot(id: $id) {\n      ...SimulationBotInfo\n    }\n  }\n": types.StopSimulationBotDocument,
+    "\n  subscription simulationResearchUpdated {\n    simulationResearchUpdated {\n      ...SimulationResearchInfo\n    }\n  }\n": types.SimulationResearchUpdatedDocument,
+    "\n  subscription simulationUpdated {\n    simulationUpdated {\n      ...SimulationInfo\n    }\n  }\n": types.SimulationUpdatedDocument,
+    "\n  subscription simulationPlanUpdated {\n    simulationPlanUpdated {\n      ...SimulationPlanInfo\n    }\n  }\n": types.SimulationPlanUpdatedDocument,
     "\n  fragment StrategyInfo on Strategy {\n    id\n    lifeTime\n    maxCollateral\n    minCollateral\n    maxLeverage\n    minLeverage\n    tpPercentage\n    slPercentage\n    maxOpenMissions\n    selectedPairs\n    mode\n    ratio\n  }\n": types.StrategyInfoFragmentDoc,
     "\n  query getAllStrategy {\n    getAllStrategy {\n      ...StrategyInfo\n    }\n  }\n": types.GetAllStrategyDocument,
     "\n  mutation updateStrategy($id: Int!, $input: UpdateStrategyInput!) {\n    updateStrategy(id: $id, input: $input) {\n      ...StrategyInfo\n    }\n  }\n": types.UpdateStrategyDocument,
@@ -665,7 +671,7 @@ export function graphql(source: "\n  fragment SimulationBotInfo on SimulationBot
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  fragment SimulationPlanInfo on SimulationPlan {\n    cursor\n    description\n    endAt\n    id\n    openedPositions\n    startAt\n    title\n    totalFollowerPnl\n    totalLeaderPnl\n    totalPositions\n    simulationBots {\n      ...SimulationBotInfo\n    }\n  }\n"): (typeof documents)["\n  fragment SimulationPlanInfo on SimulationPlan {\n    cursor\n    description\n    endAt\n    id\n    openedPositions\n    startAt\n    title\n    totalFollowerPnl\n    totalLeaderPnl\n    totalPositions\n    simulationBots {\n      ...SimulationBotInfo\n    }\n  }\n"];
+export function graphql(source: "\n  fragment SimulationPlanInfo on SimulationPlan {\n    cursor\n    description\n    endAt\n    id\n    openedPositions\n    startAt\n    title\n    totalFollowerPnl\n    totalLeaderPnl\n    totalPositions\n    simulationId\n    simulationBots {\n      ...SimulationBotInfo\n    }\n  }\n"): (typeof documents)["\n  fragment SimulationPlanInfo on SimulationPlan {\n    cursor\n    description\n    endAt\n    id\n    openedPositions\n    startAt\n    title\n    totalFollowerPnl\n    totalLeaderPnl\n    totalPositions\n    simulationId\n    simulationBots {\n      ...SimulationBotInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -774,6 +780,18 @@ export function graphql(source: "\n  mutation deleteSimulationPlan($id: Int!) {\
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation stopSimulationBot($id: Int!) {\n    stopSimulationBot(id: $id) {\n      ...SimulationBotInfo\n    }\n  }\n"): (typeof documents)["\n  mutation stopSimulationBot($id: Int!) {\n    stopSimulationBot(id: $id) {\n      ...SimulationBotInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  subscription simulationResearchUpdated {\n    simulationResearchUpdated {\n      ...SimulationResearchInfo\n    }\n  }\n"): (typeof documents)["\n  subscription simulationResearchUpdated {\n    simulationResearchUpdated {\n      ...SimulationResearchInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  subscription simulationUpdated {\n    simulationUpdated {\n      ...SimulationInfo\n    }\n  }\n"): (typeof documents)["\n  subscription simulationUpdated {\n    simulationUpdated {\n      ...SimulationInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  subscription simulationPlanUpdated {\n    simulationPlanUpdated {\n      ...SimulationPlanInfo\n    }\n  }\n"): (typeof documents)["\n  subscription simulationPlanUpdated {\n    simulationPlanUpdated {\n      ...SimulationPlanInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

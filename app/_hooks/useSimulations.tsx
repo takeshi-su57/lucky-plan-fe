@@ -5,6 +5,7 @@ import {
   useLazyQuery,
   useMutation,
   useQuery,
+  useSubscription,
 } from "@apollo/client/react";
 
 import { getFragmentData, graphql } from "@/gql/index";
@@ -62,6 +63,7 @@ export const SIMULATION_PLAN_INFO_FRAGMENT_DOCUMENT = graphql(`
     totalFollowerPnl
     totalLeaderPnl
     totalPositions
+    simulationId
     simulationBots {
       ...SimulationBotInfo
     }
@@ -438,6 +440,388 @@ export const STOP_SIMULATION_BOT_DOCUMENT = graphql(`
   }
 `);
 
+export const SIMULATION_RESEARCH_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
+  subscription simulationResearchUpdated {
+    simulationResearchUpdated {
+      ...SimulationResearchInfo
+    }
+  }
+`);
+
+export const SIMULATION_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
+  subscription simulationUpdated {
+    simulationUpdated {
+      ...SimulationInfo
+    }
+  }
+`);
+
+export const SIMULATION_PLAN_UPDATED_SUBSCRIPTION_DOCUMENT = graphql(`
+  subscription simulationPlanUpdated {
+    simulationPlanUpdated {
+      ...SimulationPlanInfo
+    }
+  }
+`);
+
+function unwrapSimulationPlan(plan: {
+  __typename?: "SimulationPlan";
+  " $fragmentRefs"?: any;
+}): SimulationPlan {
+  const unwrapped = getFragmentData(
+    SIMULATION_PLAN_INFO_FRAGMENT_DOCUMENT,
+    plan,
+  );
+
+  return {
+    ...unwrapped,
+    simulationBots: unwrapped.simulationBots.map((simulationBot) =>
+      getFragmentData(SIMULATION_BOT_INFO_FRAGMENT_DOCUMENT, simulationBot),
+    ),
+  } as SimulationPlan;
+}
+
+function updateConnectionNodeById(
+  oldData: any,
+  connectionKey: string,
+  id: number,
+  node: any,
+) {
+  const connection = oldData?.[connectionKey];
+
+  if (!connection?.edges) {
+    return oldData;
+  }
+
+  return {
+    ...oldData,
+    [connectionKey]: {
+      ...connection,
+      edges: connection.edges.map((edge: any) =>
+        edge.cursor === id ? { ...edge, node } : edge,
+      ),
+    },
+  };
+}
+
+export function useSubscribeSimulation() {
+  const client = useApolloClient();
+  const { data: updatedResearchData } = useSubscription(
+    SIMULATION_RESEARCH_UPDATED_SUBSCRIPTION_DOCUMENT,
+  );
+  const { data: updatedSimulationData } = useSubscription(
+    SIMULATION_UPDATED_SUBSCRIPTION_DOCUMENT,
+  );
+  const { data: updatedSimulationPlanData } = useSubscription(
+    SIMULATION_PLAN_UPDATED_SUBSCRIPTION_DOCUMENT,
+  );
+
+  useEffect(() => {
+    if (!updatedResearchData?.simulationResearchUpdated) {
+      return;
+    }
+
+    const simulationResearch = getFragmentData(
+      SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT,
+      updatedResearchData.simulationResearchUpdated,
+    );
+
+    client.cache.writeFragment({
+      id: client.cache.identify({
+        __typename: "SimulationResearch",
+        id: simulationResearch.id,
+      }),
+      fragment: SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT,
+      fragmentName: "SimulationResearchInfo",
+      data: {
+        __typename: "SimulationResearch",
+        ...simulationResearch,
+      },
+    });
+
+    client.cache.updateQuery(
+      {
+        query: GET_SIMULATION_RESEARCHES_DOCUMENT,
+        variables: { first: 20 },
+      },
+      (oldData: any) =>
+        updateConnectionNodeById(
+          oldData,
+          "simulationResearches",
+          simulationResearch.id,
+          {
+            __typename: "SimulationResearch",
+            ...simulationResearch,
+          },
+        ),
+    );
+
+    client.cache.updateQuery(
+      {
+        query: GET_SIMULATION_RESEARCH_DOCUMENT,
+        variables: { id: simulationResearch.id },
+      },
+      (oldData: any) => {
+        if (!oldData?.simulationResearch) {
+          return oldData;
+        }
+
+        return {
+          ...oldData,
+          simulationResearch: {
+            ...oldData.simulationResearch,
+            ...simulationResearch,
+            __typename: "SimulationResearchDetails" as const,
+          },
+        };
+      },
+    );
+  }, [client.cache, updatedResearchData]);
+
+  useEffect(() => {
+    if (!updatedSimulationData?.simulationUpdated) {
+      return;
+    }
+
+    const simulation = getFragmentData(
+      SIMULATION_INFO_FRAGMENT_DOCUMENT,
+      updatedSimulationData.simulationUpdated,
+    );
+
+    client.cache.writeFragment({
+      id: client.cache.identify({
+        __typename: "Simulation",
+        id: simulation.id,
+      }),
+      fragment: SIMULATION_INFO_FRAGMENT_DOCUMENT,
+      fragmentName: "SimulationInfo",
+      data: {
+        __typename: "Simulation",
+        ...simulation,
+      },
+    });
+
+    client.cache.updateQuery(
+      {
+        query: GET_SIMULATIONS_DOCUMENT,
+        variables: { first: 20 },
+      },
+      (oldData: any) =>
+        updateConnectionNodeById(oldData, "simulations", simulation.id, {
+          __typename: "Simulation",
+          ...simulation,
+        }),
+    );
+
+    client.cache.updateQuery(
+      {
+        query: GET_SIMULATION_DOCUMENT,
+        variables: { id: simulation.id },
+      },
+      (oldData: any) => {
+        if (!oldData?.simulation) {
+          return oldData;
+        }
+
+        return {
+          ...oldData,
+          simulation: {
+            __typename: "Simulation" as const,
+            ...simulation,
+          },
+        };
+      },
+    );
+
+    if (simulation.researchId) {
+      client.cache.updateQuery(
+        {
+          query: GET_SIMULATIONS_BY_RESEARCH_DOCUMENT,
+          variables: { researchId: simulation.researchId },
+        },
+        (oldData: any) => {
+          if (!oldData?.simulationsByResearch) {
+            return oldData;
+          }
+
+          return {
+            ...oldData,
+            simulationsByResearch: oldData.simulationsByResearch.map(
+              (item: any) =>
+                item.id === simulation.id
+                  ? {
+                      __typename: "Simulation" as const,
+                      ...simulation,
+                    }
+                  : item,
+            ),
+          };
+        },
+      );
+
+      client.cache.updateQuery(
+        {
+          query: GET_SIMULATION_RESEARCH_DOCUMENT,
+          variables: { id: simulation.researchId },
+        },
+        (oldData: any) => {
+          if (!oldData?.simulationResearch?.simulations) {
+            return oldData;
+          }
+
+          return {
+            ...oldData,
+            simulationResearch: {
+              ...oldData.simulationResearch,
+              simulations: oldData.simulationResearch.simulations.map(
+                (item: any) =>
+                  item.id === simulation.id
+                    ? {
+                        __typename: "Simulation" as const,
+                        ...simulation,
+                      }
+                    : item,
+              ),
+            },
+          };
+        },
+      );
+    }
+  }, [client.cache, updatedSimulationData]);
+
+  useEffect(() => {
+    if (!updatedSimulationPlanData?.simulationPlanUpdated) {
+      return;
+    }
+
+    const simulationPlan = unwrapSimulationPlan(
+      updatedSimulationPlanData.simulationPlanUpdated,
+    );
+
+    client.cache.writeFragment({
+      id: client.cache.identify({
+        __typename: "SimulationPlan",
+        id: simulationPlan.id,
+      }),
+      fragment: SIMULATION_PLAN_INFO_FRAGMENT_DOCUMENT,
+      fragmentName: "SimulationPlanInfo",
+      data: {
+        __typename: "SimulationPlan",
+        ...simulationPlan,
+      },
+    });
+
+    client.cache.updateQuery(
+      {
+        query: GET_SIMULATION_PLANS_DOCUMENT,
+        variables: { first: 20 },
+      },
+      (oldData: any) =>
+        updateConnectionNodeById(
+          oldData,
+          "getSimulationPlans",
+          simulationPlan.id,
+          {
+            __typename: "SimulationPlan",
+            ...simulationPlan,
+          },
+        ),
+    );
+
+    if (simulationPlan.simulationId) {
+      client.cache.updateQuery(
+        {
+          query: GET_SIMULATION_PLANS_BY_SIMULATION_DOCUMENT,
+          variables: { simulationId: simulationPlan.simulationId },
+        },
+        (oldData: any) => {
+          if (!oldData?.simulationPlansBySimulation) {
+            return oldData;
+          }
+
+          const exists = oldData.simulationPlansBySimulation.some(
+            (item: any) => item.id === simulationPlan.id,
+          );
+          const updatedPlan = {
+            __typename: "SimulationPlan" as const,
+            ...simulationPlan,
+          };
+
+          return {
+            ...oldData,
+            simulationPlansBySimulation: exists
+              ? oldData.simulationPlansBySimulation.map((item: any) =>
+                  item.id === simulationPlan.id ? updatedPlan : item,
+                )
+              : [...oldData.simulationPlansBySimulation, updatedPlan],
+          };
+        },
+      );
+
+      client.cache.updateQuery(
+        {
+          query: GET_SIMULATION_PLAN_DETAILS_BY_SIMULATION_DOCUMENT,
+          variables: { simulationId: simulationPlan.simulationId },
+        },
+        (oldData: any) => {
+          if (!oldData?.simulationPlanDetailsBySimulation) {
+            return oldData;
+          }
+
+          return {
+            ...oldData,
+            simulationPlanDetailsBySimulation:
+              oldData.simulationPlanDetailsBySimulation.map((item: any) =>
+                item.id === simulationPlan.id
+                  ? {
+                      ...item,
+                      cursor: simulationPlan.cursor,
+                      description: simulationPlan.description,
+                      endAt: simulationPlan.endAt,
+                      openedPositions: simulationPlan.openedPositions,
+                      startAt: simulationPlan.startAt,
+                      title: simulationPlan.title,
+                      totalFollowerPnl: simulationPlan.totalFollowerPnl,
+                      totalLeaderPnl: simulationPlan.totalLeaderPnl,
+                      totalPositions: simulationPlan.totalPositions,
+                    }
+                  : item,
+              ),
+          };
+        },
+      );
+    }
+
+    client.cache.updateQuery(
+      {
+        query: GET_SIMULATION_PLAN_BY_ID_DOCUMENT,
+        variables: { id: simulationPlan.id },
+      },
+      (oldData: any) => {
+        if (!oldData?.getSimulationPlanById) {
+          return oldData;
+        }
+
+        return {
+          ...oldData,
+          getSimulationPlanById: {
+            ...oldData.getSimulationPlanById,
+            cursor: simulationPlan.cursor,
+            description: simulationPlan.description,
+            endAt: simulationPlan.endAt,
+            openedPositions: simulationPlan.openedPositions,
+            startAt: simulationPlan.startAt,
+            title: simulationPlan.title,
+            totalFollowerPnl: simulationPlan.totalFollowerPnl,
+            totalLeaderPnl: simulationPlan.totalLeaderPnl,
+            totalPositions: simulationPlan.totalPositions,
+          },
+        };
+      },
+    );
+  }, [client.cache, updatedSimulationPlanData]);
+}
+
 export function useGetSimulationPlans() {
   const [query, { data, fetchMore, loading, error }] = useLazyQuery(
     GET_SIMULATION_PLANS_DOCUMENT,
@@ -455,19 +839,9 @@ export function useGetSimulationPlans() {
     if (!data) {
       return [];
     }
-    return data.getSimulationPlans.edges.map((edge) => {
-      const unwrapped = getFragmentData(
-        SIMULATION_PLAN_INFO_FRAGMENT_DOCUMENT,
-        edge.node,
-      );
-
-      return {
-        ...unwrapped,
-        simulationBots: unwrapped.simulationBots.map((simulationBot) =>
-          getFragmentData(SIMULATION_BOT_INFO_FRAGMENT_DOCUMENT, simulationBot),
-        ),
-      } as SimulationPlan;
-    });
+    return data.getSimulationPlans.edges.map((edge) =>
+      unwrapSimulationPlan(edge.node),
+    );
   }, [data]);
 
   const handleFetchMore = useCallback(() => {
@@ -642,19 +1016,7 @@ export function useGetSimulationPlansBySimulation(simulationId: number) {
       return [];
     }
 
-    return data.simulationPlansBySimulation.map((plan) => {
-      const unwrapped = getFragmentData(
-        SIMULATION_PLAN_INFO_FRAGMENT_DOCUMENT,
-        plan,
-      );
-
-      return {
-        ...unwrapped,
-        simulationBots: unwrapped.simulationBots.map((simulationBot) =>
-          getFragmentData(SIMULATION_BOT_INFO_FRAGMENT_DOCUMENT, simulationBot),
-        ),
-      } as SimulationPlan;
-    });
+    return data.simulationPlansBySimulation.map(unwrapSimulationPlan);
   }, [data]);
 
   return { simulationPlans, loading };
@@ -997,8 +1359,9 @@ export function useDeleteSimulation() {
 }
 
 export function useDeleteSimulationPlan() {
-  const [deleteSimulationPlan, { data: newData, error, loading }] =
-    useMutation(DELETE_SIMULATION_PLAN_DOCUMENT);
+  const [deleteSimulationPlan, { data: newData, error, loading }] = useMutation(
+    DELETE_SIMULATION_PLAN_DOCUMENT,
+  );
   const client = useApolloClient();
 
   const { enqueueSnackbar } = useSnackbar();

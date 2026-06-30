@@ -40,6 +40,7 @@ import {
 } from "@/components/snackbars";
 import { useSubscribeBot } from "@/app-hooks/useAutomation";
 import { useSubscribePlan } from "@/app-hooks/usePlan";
+import { useSubscribeSimulation } from "@/app-hooks/useSimulations";
 import { LOCAL_USER_JWT_KEY } from "@/app-hooks/useUserJWT";
 import dynamic from "next/dynamic";
 import { OperationTypeNode } from "graphql";
@@ -286,6 +287,7 @@ export function SubscriptionWrapper({ children }: { children: ReactNode }) {
   useSubscribeTask();
   useSubscribeMission();
   useSubscribeBot();
+  useSubscribeSimulation();
 
   useEffect(() => {
     requestNotificationPermission();

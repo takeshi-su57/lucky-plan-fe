@@ -1086,6 +1086,9 @@ type Subscription {
   newLog(checked: Boolean!, severity: LogSeverity): Log!
   planCreated(userId: String!): Plan!
   planUpdated(userId: String!): Plan!
+  simulationPlanUpdated: SimulationPlan!
+  simulationResearchUpdated: SimulationResearch!
+  simulationUpdated: Simulation!
   taskCreated(userId: String!): [TaskBackwardDetails!]!
   taskUpdated(userId: String!): [TaskBackwardDetails!]!
 }
