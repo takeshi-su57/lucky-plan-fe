@@ -220,6 +220,7 @@ input CreateSimulationBotInput {
   leaderAddress: String!
   leaderPlatform: Platform!
   maxLeverage: Float!
+  minLeverage: Float! = 0
   mode: BotMode!
   ratio: Float!
   simulationPlanId: Int!
@@ -231,10 +232,10 @@ input CreateSimulationInput {
   direction: BotMode! = Reversed
   endAt: Date!
   gapDays: Int! = 0
-  maxLeverage: Float! = 50
+  leverage: FloatMinMaxInput! = {max: 50, min: 0}
   platform: Platform!
   r2: FloatMinMaxInput! = {max: 1, min: 0.5}
-  score: Float! = 0
+  score: FloatMinMaxInput! = {max: 1, min: 0}
   selectedLeaderCount: Int! = 10
   slope: FloatMinMaxInput! = {max: 1000000000, min: 0}
   standardCollateralUsd: Float! = 100
@@ -256,10 +257,10 @@ input CreateSimulationResearchInput {
   direction: BotMode!
   endAt: Date!
   gapDays: Int! = 0
-  maxLeverage: [Float!]!
+  leverage: [FloatMinMaxInput!]!
   platform: Platform!
   r2: [FloatMinMaxInput!]!
-  score: [Float!]!
+  score: [FloatMinMaxInput!]!
   slope: [FloatMinMaxInput!]!
   startAt: Date!
   title: String!
@@ -816,8 +817,8 @@ type Simulation {
   error: String
   gapDays: Int!
   id: Int!
+  leverage: SimulationValueRange!
   maxDrawdownUsd: Float!
-  maxLeverage: Float!
   platform: Platform!
   profitFactor: Float!
   progressMessage: String
@@ -825,7 +826,7 @@ type Simulation {
   progressPhase: String
   r2: SimulationValueRange!
   researchId: Int
-  score: Float!
+  score: SimulationValueRange!
   selectedLeaderCount: Int!
   slope: SimulationValueRange!
   standardCollateralUsd: Float!
@@ -858,6 +859,7 @@ type SimulationBot {
   leaderPlatform: Platform!
   maxDuration: Float!
   maxLeverage: Float!
+  minLeverage: Float!
   mode: BotMode!
   openedPositions: Int!
   ratio: Float!
@@ -893,6 +895,7 @@ type SimulationBotDetails {
   leaderPlatform: Platform!
   maxDuration: Float!
   maxLeverage: Float!
+  minLeverage: Float!
   mode: BotMode!
   openedPositions: Int!
   positions: [SimulationTradePosition!]!
@@ -974,10 +977,10 @@ type SimulationResearch {
   endAt: Date!
   gapDays: Int!
   id: Int!
-  maxLeverage: [Float!]!
+  leverage: [SimulationValueRange!]!
   platform: Platform!
   r2: [SimulationValueRange!]!
-  score: [Float!]!
+  score: [SimulationValueRange!]!
   slope: [SimulationValueRange!]!
   startAt: Date!
   title: String!
@@ -1000,10 +1003,10 @@ type SimulationResearchDetails {
   endAt: Date!
   gapDays: Int!
   id: Int!
-  maxLeverage: [Float!]!
+  leverage: [SimulationValueRange!]!
   platform: Platform!
   r2: [SimulationValueRange!]!
-  score: [Float!]!
+  score: [SimulationValueRange!]!
   simulations: [Simulation!]!
   slope: [SimulationValueRange!]!
   startAt: Date!
@@ -1141,6 +1144,7 @@ input UpdatePlanInput {
 input UpdateSimulationBotInput {
   id: Int!
   maxLeverage: Float
+  minLeverage: Float
   mode: BotMode
   ratio: Float
 }
@@ -1149,9 +1153,9 @@ input UpdateSimulationInput {
   description: String
   direction: BotMode
   id: Int!
-  maxLeverage: Float
+  leverage: FloatMinMaxInput
   r2: FloatMinMaxInput
-  score: Float
+  score: FloatMinMaxInput
   selectedLeaderCount: Int
   slope: FloatMinMaxInput
   standardCollateralUsd: Float

@@ -28,16 +28,13 @@ function RangeListStat({
   );
 }
 
-function formatRangePairs(ranges: Array<{ min: number; max: number }>) {
-  return ranges.map((range) => `${range.min}-${range.max}`);
-}
-
-function formatLeverageValues(values: number[]) {
-  return values.map((value) => `${value}x`);
-}
-
-function formatScoreValues(values: number[]) {
-  return values.map((value) => value.toFixed(2));
+function formatRangePairs(
+  ranges: Array<{ min: number; max: number }>,
+  formatter: (value: number) => string = (value) => `${value}`,
+) {
+  return ranges.map(
+    (range) => `${formatter(range.min)}-${formatter(range.max)}`,
+  );
 }
 
 export function SimulationResearchDetailPanel({
@@ -111,12 +108,17 @@ export function SimulationResearchDetailPanel({
             ]}
           />
           <RangeListStat
-            label="Max Leverage"
-            values={formatLeverageValues(simulationResearch.maxLeverage)}
+            label="Leverage Ranges"
+            values={formatRangePairs(
+              simulationResearch.leverage,
+              (value) => `${value}x`,
+            )}
           />
           <RangeListStat
             label="Score"
-            values={formatScoreValues(simulationResearch.score)}
+            values={formatRangePairs(simulationResearch.score, (value) =>
+              value.toFixed(2),
+            )}
           />
           <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
             <span className="text-[10px] font-semibold text-neutral-500 uppercase">

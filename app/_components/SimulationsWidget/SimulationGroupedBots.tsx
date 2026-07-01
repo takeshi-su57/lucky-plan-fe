@@ -1,7 +1,7 @@
 "use client";
 
-import { memo } from "react";
-import { Chip, Spinner } from "@heroui/react";
+import { memo, useState } from "react";
+import { Button, Chip, Spinner } from "@heroui/react";
 import { Address } from "viem";
 
 import { useGetPerpTradePositions } from "@/app/_hooks/useHistory";
@@ -10,6 +10,7 @@ import { Platform, SimulationBotDetails } from "@/graphql/gql/graphql";
 import { PerpEventLogPnlChart } from "../LeaderboardWidgets/PerpEventLogPnlChart/PerpEventLogPnlChart";
 import { SimulationBotModaledItem } from "./SimulationBotModaledItem";
 import dayjs from "dayjs";
+import { FaChevronDown } from "react-icons/fa";
 
 export type SimulationGroupedBotsProps = {
   cursor: Date;
@@ -24,6 +25,8 @@ export const SimulationGroupedBots = memo(function SimulationGroupedBots({
   leaderAddress,
   platform,
 }: SimulationGroupedBotsProps) {
+  const [isChartOpen, setIsChartOpen] = useState(false);
+
   const { data, loading } = useGetPerpTradePositions(
     leaderAddress,
     platform,
@@ -31,6 +34,7 @@ export const SimulationGroupedBots = memo(function SimulationGroupedBots({
     null,
     null,
     cursor,
+    { skip: !isChartOpen },
   );
 
   return (
@@ -46,25 +50,47 @@ export const SimulationGroupedBots = memo(function SimulationGroupedBots({
           <Chip size="sm" variant="flat">
             {simulationBots.length} bots
           </Chip>
+
+          <span className="text-xs text-neutral-500">
+            {simulationBots[0].score}
+          </span>
         </div>
+
+        <Button
+          size="sm"
+          variant="flat"
+          color="primary"
+          endContent={
+            <FaChevronDown
+              className={`text-[10px] transition-transform ${
+                isChartOpen ? "rotate-180" : ""
+              }`}
+            />
+          }
+          onPress={() => setIsChartOpen((value) => !value)}
+        >
+          {isChartOpen ? "Hide chart" : "Show chart"}
+        </Button>
       </div>
 
-      {loading ? (
-        <div className="flex w-full items-center justify-center py-12">
-          <Spinner color="warning" size="lg" />
-        </div>
-      ) : (
-        <PerpEventLogPnlChart
-          address={leaderAddress as Address}
-          platform={platform}
-          positionsWithSummary={data || undefined}
-          mode="lightweight"
-          className="mb-0"
-          startedAt={null}
-          stoppedAt={null}
-          endedAt={dayjs(cursor).subtract(1, "day").toDate()}
-        />
-      )}
+      {isChartOpen ? (
+        loading ? (
+          <div className="flex w-full items-center justify-center py-12">
+            <Spinner color="warning" size="lg" />
+          </div>
+        ) : (
+          <PerpEventLogPnlChart
+            address={leaderAddress as Address}
+            platform={platform}
+            positionsWithSummary={data || undefined}
+            mode="lightweight"
+            className="mb-0"
+            startedAt={null}
+            stoppedAt={null}
+            endedAt={dayjs(cursor).subtract(1, "day").toDate()}
+          />
+        )
+      ) : null}
 
       <div className="flex min-w-0 flex-col gap-4">
         <section className="border-default-200 bg-content1 flex min-w-0 flex-col gap-2 rounded-lg border p-3">

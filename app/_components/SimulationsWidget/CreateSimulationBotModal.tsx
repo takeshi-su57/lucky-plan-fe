@@ -41,6 +41,7 @@ export function CreateSimulationBotModal({
   const [leaderAddress, setLeaderAddress] = useState<string>("");
 
   const [ratio, setRatio] = useState("0.1");
+  const [minLeverage, setMinLeverage] = useState("0");
   const [maxLeverage, setMaxLeverage] = useState("40");
 
   const handleChangePlatform: ChangeEventHandler<HTMLSelectElement> = (
@@ -64,20 +65,34 @@ export function CreateSimulationBotModal({
   };
 
   let ratioHelper = "";
+  let minLeverageHelper = "";
   let maxLeverageHelper = "";
 
   if (Number.isNaN(+ratio)) {
     ratioHelper = "Invalid ratio";
   }
 
+  if (Number.isNaN(+minLeverage)) {
+    minLeverageHelper = "Invalid min leverage";
+  }
+
   if (Number.isNaN(+maxLeverage)) {
     maxLeverageHelper = "Invalid max leverage";
+  }
+
+  if (
+    minLeverageHelper === "" &&
+    maxLeverageHelper === "" &&
+    +minLeverage > +maxLeverage
+  ) {
+    minLeverageHelper = "Min leverage must be <= max leverage";
   }
 
   const isDisabled =
     !isAddress(leaderAddress) ||
     createBotsLoading ||
     ratioHelper !== "" ||
+    minLeverageHelper !== "" ||
     maxLeverageHelper !== "";
 
   const handleConfirm = () => {
@@ -85,7 +100,11 @@ export function CreateSimulationBotModal({
       return;
     }
 
-    if (ratio.trim() === "" || maxLeverage.trim() === "") {
+    if (
+      ratio.trim() === "" ||
+      minLeverage.trim() === "" ||
+      maxLeverage.trim() === ""
+    ) {
       return;
     }
 
@@ -97,6 +116,7 @@ export function CreateSimulationBotModal({
             simulationPlanId: simulationPlan.id,
             leaderPlatform: platform,
             ratio: +ratio,
+            minLeverage: +minLeverage,
             maxLeverage: +maxLeverage,
             mode: direction,
           },
@@ -162,6 +182,14 @@ export function CreateSimulationBotModal({
                 label="Ratio"
                 errorMessage={ratioHelper}
                 isInvalid={ratioHelper.trim() !== ""}
+              />
+
+              <NumericInput
+                amount={minLeverage}
+                onChange={setMinLeverage}
+                label="Min Leverage"
+                errorMessage={minLeverageHelper}
+                isInvalid={minLeverageHelper.trim() !== ""}
               />
 
               <NumericInput

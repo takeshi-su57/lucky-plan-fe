@@ -306,7 +306,7 @@ export function SimulationPlanDetailPanel({
           cacheSummary.queued > 0 ||
           cacheSummary.failed > 0 ||
           cacheSummary.pending > 0) && (
-          <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
+          <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-800">
             Cached bot results are still syncing for this plan. Some overview
             charts or position details may be partial until rebuilding finishes.
           </div>

@@ -33,11 +33,6 @@ type RangeEntryState = {
   max: string;
 };
 
-type ValueEntryState = {
-  id: string;
-  value: string;
-};
-
 type RangeEntryErrors = Partial<Record<"min" | "max", string>>;
 
 let nextEntryId = 0;
@@ -55,13 +50,6 @@ function createRangeEntry(
     id: createEntryId(prefix),
     min: initial?.min ?? "",
     max: initial?.max ?? "",
-  };
-}
-
-function createValueEntry(prefix: string, value = ""): ValueEntryState {
-  return {
-    id: createEntryId(prefix),
-    value,
   };
 }
 
@@ -165,85 +153,6 @@ function RangeEntryCard({
   );
 }
 
-function ValueEntryCard({
-  label,
-  entries,
-  onAdd,
-  onChange,
-  onRemove,
-  min,
-  max,
-  step,
-  errors,
-  emptyMessage,
-}: {
-  label: string;
-  entries: ValueEntryState[];
-  onAdd: () => void;
-  onChange: (id: string, nextValue: string) => void;
-  onRemove: (id: string) => void;
-  min?: number;
-  max?: number;
-  step: number;
-  errors: Record<string, string | undefined>;
-  emptyMessage?: string;
-}) {
-  return (
-    <div className="border-default-200 bg-content2/20 rounded-xl border p-4">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h3 className="text-sm font-semibold text-neutral-100">{label}</h3>
-        <Button
-          size="sm"
-          variant="flat"
-          color="primary"
-          aria-label={`Add ${label} value`}
-          onPress={onAdd}
-        >
-          + Add
-        </Button>
-      </div>
-
-      <div className="flex flex-col gap-4">
-        {entries.map((entry) => (
-          <div
-            key={entry.id}
-            className="border-default-100 bg-content1/60 rounded-lg border p-3"
-          >
-            <div className="mb-3 flex justify-end">
-              <Button
-                size="sm"
-                color="danger"
-                variant="light"
-                isDisabled={entries.length <= 1}
-                aria-label={`Remove ${label} value`}
-                onPress={() => onRemove(entry.id)}
-              >
-                Remove
-              </Button>
-            </div>
-
-            <NumericInput
-              amount={entry.value}
-              onChange={(nextValue) => onChange(entry.id, nextValue)}
-              label="Value"
-              ariaLabel={label}
-              min={min}
-              max={max}
-              step={step}
-              errorMessage={errors[entry.id]}
-              isInvalid={Boolean(errors[entry.id])}
-            />
-          </div>
-        ))}
-      </div>
-
-      {emptyMessage ? (
-        <p className="mt-3 text-xs text-danger-300">{emptyMessage}</p>
-      ) : null}
-    </div>
-  );
-}
-
 function validateRangeEntries(
   label: string,
   entries: RangeEntryState[],
@@ -300,43 +209,11 @@ function validateRangeEntries(
   return errors;
 }
 
-function validateValueEntries(
-  label: string,
-  entries: ValueEntryState[],
-  options: { minAllowed?: number; maxAllowed?: number } = {},
-) {
-  const errors: Record<string, string | undefined> = {};
-
-  entries.forEach((entry) => {
-    const value = Number(entry.value);
-
-    if (entry.value.trim() === "" || Number.isNaN(value)) {
-      errors[entry.id] = `${label} value is required`;
-      return;
-    }
-
-    if (options.minAllowed !== undefined && value < options.minAllowed) {
-      errors[entry.id] = `${label} value must be at least ${options.minAllowed}`;
-      return;
-    }
-
-    if (options.maxAllowed !== undefined && value > options.maxAllowed) {
-      errors[entry.id] = `${label} value must be at most ${options.maxAllowed}`;
-    }
-  });
-
-  return errors;
-}
-
 function normalizeRangeEntries(entries: RangeEntryState[]) {
   return entries.map((entry) => ({
     min: Number(entry.min),
     max: Number(entry.max),
   }));
-}
-
-function normalizeValueEntries(entries: ValueEntryState[]) {
-  return entries.map((entry) => Number(entry.value));
 }
 
 export function SimulationCreationPanel({
@@ -367,11 +244,11 @@ export function SimulationCreationPanel({
   const [slopeRanges, setSlopeRanges] = useState<RangeEntryState[]>([
     createRangeEntry("slope", { min: "1", max: "3" }),
   ]);
-  const [maxLeverageValues, setMaxLeverageValues] = useState<ValueEntryState[]>(
-    [createValueEntry("leverage", "10")],
-  );
-  const [scoreValues, setScoreValues] = useState<ValueEntryState[]>([
-    createValueEntry("score", "0.5"),
+  const [leverageRanges, setLeverageRanges] = useState<RangeEntryState[]>([
+    createRangeEntry("leverage", { min: "10", max: "50" }),
+  ]);
+  const [scoreRanges, setScoreRanges] = useState<RangeEntryState[]>([
+    createRangeEntry("score", { min: "0.5", max: "0.8" }),
   ]);
 
   const errors = useMemo(() => {
@@ -422,12 +299,12 @@ export function SimulationCreationPanel({
       result.slopeEmpty = "Add at least one slope range";
     }
 
-    if (maxLeverageValues.length === 0) {
-      result.maxLeverageEmpty = "Add at least one max leverage value";
+    if (leverageRanges.length === 0) {
+      result.leverageEmpty = "Add at least one leverage range";
     }
 
-    if (scoreValues.length === 0) {
-      result.scoreEmpty = "Add at least one score value";
+    if (scoreRanges.length === 0) {
+      result.scoreEmpty = "Add at least one score range";
     }
 
     const tradeEntryErrors = validateRangeEntries("Trade", tradeRanges, {
@@ -441,14 +318,10 @@ export function SimulationCreationPanel({
     const slopeEntryErrors = validateRangeEntries("Slope", slopeRanges, {
       minAllowed: 0,
     });
-    const leverageEntryErrors = validateValueEntries(
-      "Max Leverage",
-      maxLeverageValues,
-      {
-        minAllowed: 0.01,
-      },
-    );
-    const scoreEntryErrors = validateValueEntries("Score", scoreValues, {
+    const leverageEntryErrors = validateRangeEntries("Leverage", leverageRanges, {
+      minAllowed: 0,
+    });
+    const scoreEntryErrors = validateRangeEntries("Score", scoreRanges, {
       minAllowed: 0,
       maxAllowed: 1,
     });
@@ -477,16 +350,20 @@ export function SimulationCreationPanel({
       });
     });
 
-    Object.values(leverageEntryErrors).forEach((message) => {
-      if (message) {
-        result[`leverage-${message}`] = message;
-      }
+    Object.values(leverageEntryErrors).forEach((entryErrors) => {
+      Object.values(entryErrors).forEach((message) => {
+        if (message) {
+          result[`leverage-${message}`] = message;
+        }
+      });
     });
 
-    Object.values(scoreEntryErrors).forEach((message) => {
-      if (message) {
-        result[`score-${message}`] = message;
-      }
+    Object.values(scoreEntryErrors).forEach((entryErrors) => {
+      Object.values(entryErrors).forEach((message) => {
+        if (message) {
+          result[`score-${message}`] = message;
+        }
+      });
     });
 
     return {
@@ -501,10 +378,10 @@ export function SimulationCreationPanel({
     days,
     description,
     gapDays,
-    maxLeverageValues,
+    leverageRanges,
     r2Ranges,
     scheduleRange,
-    scoreValues,
+    scoreRanges,
     slopeRanges,
     title,
     tradeRanges,
@@ -532,18 +409,6 @@ export function SimulationCreationPanel({
     setter((current) => current.filter((entry) => entry.id !== id));
   };
 
-  const handleValueEntryChange = (
-    setter: Dispatch<SetStateAction<ValueEntryState[]>>,
-    id: string,
-    nextValue: string,
-  ) => {
-    setter((current) =>
-      current.map((entry) =>
-        entry.id === id ? { ...entry, value: nextValue } : entry,
-      ),
-    );
-  };
-
   const handleSave = async () => {
     if (isDisabled || !scheduleRange) {
       return;
@@ -563,8 +428,8 @@ export function SimulationCreationPanel({
           trade: normalizeRangeEntries(tradeRanges),
           r2: normalizeRangeEntries(r2Ranges),
           slope: normalizeRangeEntries(slopeRanges),
-          maxLeverage: normalizeValueEntries(maxLeverageValues),
-          score: normalizeValueEntries(scoreValues),
+          leverage: normalizeRangeEntries(leverageRanges),
+          score: normalizeRangeEntries(scoreRanges),
         },
       },
     });
@@ -734,45 +599,42 @@ export function SimulationCreationPanel({
               errors={errors.slopeEntryErrors}
               emptyMessage={errors.flat.slopeEmpty}
             />
-            <ValueEntryCard
-              label="Max Leverage"
-              entries={maxLeverageValues}
+            <RangeEntryCard
+              label="Leverage"
+              entries={leverageRanges}
               onAdd={() =>
-                setMaxLeverageValues((current) => [
+                setLeverageRanges((current) => [
                   ...current,
-                  createValueEntry("leverage"),
+                  createRangeEntry("leverage"),
                 ])
               }
-              onChange={(id, nextValue) =>
-                handleValueEntryChange(setMaxLeverageValues, id, nextValue)
-              }
-              onRemove={(id) =>
-                setMaxLeverageValues((current) =>
-                  current.filter((entry) => entry.id !== id),
+              onChange={(id, field, nextValue) =>
+                handleRangeEntryChange(
+                  setLeverageRanges,
+                  id,
+                  field,
+                  nextValue,
                 )
               }
-              min={0.01}
+              onRemove={(id) => handleRangeEntryRemove(setLeverageRanges, id)}
+              min={0}
               step={0.1}
               errors={errors.leverageEntryErrors}
-              emptyMessage={errors.flat.maxLeverageEmpty}
+              emptyMessage={errors.flat.leverageEmpty}
             />
-            <ValueEntryCard
+            <RangeEntryCard
               label="Score"
-              entries={scoreValues}
+              entries={scoreRanges}
               onAdd={() =>
-                setScoreValues((current) => [
+                setScoreRanges((current) => [
                   ...current,
-                  createValueEntry("score"),
+                  createRangeEntry("score"),
                 ])
               }
-              onChange={(id, nextValue) =>
-                handleValueEntryChange(setScoreValues, id, nextValue)
+              onChange={(id, field, nextValue) =>
+                handleRangeEntryChange(setScoreRanges, id, field, nextValue)
               }
-              onRemove={(id) =>
-                setScoreValues((current) =>
-                  current.filter((entry) => entry.id !== id),
-                )
-              }
+              onRemove={(id) => handleRangeEntryRemove(setScoreRanges, id)}
               min={0}
               max={1}
               step={0.01}
@@ -784,8 +646,9 @@ export function SimulationCreationPanel({
           <div className="rounded-xl border border-amber-500/45 bg-amber-50 px-4 py-4 text-sm text-amber-950 shadow-[0_10px_30px_rgba(245,158,11,0.10)]">
             <p className="leading-6 font-medium">
               Trades, R2, and slope always use range entries, and each section
-              must include at least one item. Max leverage and score use exact
-              values, and every entry is combined into generated simulations.
+              must include at least one item. Leverage and score now use
+              min/max ranges, and every range is combined into generated
+              simulations.
             </p>
           </div>
 

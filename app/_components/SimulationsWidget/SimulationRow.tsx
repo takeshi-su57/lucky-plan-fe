@@ -112,13 +112,13 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
                 <LabeledChip
                   size="sm"
                   variant="flat"
-                  value={`${simulation.maxLeverage}x`}
-                  unit="Max Lev"
+                  value={`${formatRange(simulation.leverage)}x`}
+                  unit="Leverage"
                 />
                 <LabeledChip
                   size="sm"
                   variant="flat"
-                  value={simulation.score.toFixed(2)}
+                  value={formatRange(simulation.score)}
                   unit="Score"
                 />
               </div>

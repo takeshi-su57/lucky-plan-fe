@@ -330,6 +330,7 @@ export function useGetPerpTradePositions(
   startedAt: Date | null,
   stoppedAt: Date | null,
   endedAt: Date | null,
+  options: { skip?: boolean } = {},
 ) {
   const { data, loading } = useQuery(GET_PERP_TRADE_POSITIONS_DOCUMENT, {
     variables: {
@@ -340,6 +341,7 @@ export function useGetPerpTradePositions(
       stoppedAt,
       endedAt,
     },
+    skip: options.skip,
   });
 
   const result = useMemo(() => {

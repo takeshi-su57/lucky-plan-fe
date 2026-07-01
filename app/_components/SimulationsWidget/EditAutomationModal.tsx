@@ -21,6 +21,9 @@ export function EditSimulationBot({ simulationBot }: EditSimulationBotProps) {
   const [direction, setDirection] = useState<BotMode>(simulationBot.mode);
 
   const [ratio, setRatio] = useState(simulationBot.ratio.toString());
+  const [minLeverage, setMinLeverage] = useState(
+    simulationBot.minLeverage.toString(),
+  );
   const [maxLeverage, setMaxLeverage] = useState(
     simulationBot.maxLeverage.toString(),
   );
@@ -36,24 +39,44 @@ export function EditSimulationBot({ simulationBot }: EditSimulationBotProps) {
   };
 
   let ratioHelper = "";
+  let minLeverageHelper = "";
   let maxLeverageHelper = "";
 
   if (Number.isNaN(+ratio)) {
     ratioHelper = "Invalid ratio";
   }
 
+  if (Number.isNaN(+minLeverage)) {
+    minLeverageHelper = "Invalid min leverage";
+  }
+
   if (Number.isNaN(+maxLeverage)) {
     maxLeverageHelper = "Invalid max leverage";
   }
 
-  const isDisabled = ratioHelper !== "" || maxLeverageHelper !== "";
+  if (
+    minLeverageHelper === "" &&
+    maxLeverageHelper === "" &&
+    +minLeverage > +maxLeverage
+  ) {
+    minLeverageHelper = "Min leverage must be <= max leverage";
+  }
+
+  const isDisabled =
+    ratioHelper !== "" ||
+    minLeverageHelper !== "" ||
+    maxLeverageHelper !== "";
 
   const handleConfirm = () => {
     if (isDisabled) {
       return;
     }
 
-    if (ratio.trim() === "" || maxLeverage.trim() === "") {
+    if (
+      ratio.trim() === "" ||
+      minLeverage.trim() === "" ||
+      maxLeverage.trim() === ""
+    ) {
       return;
     }
 
@@ -62,6 +85,7 @@ export function EditSimulationBot({ simulationBot }: EditSimulationBotProps) {
         input: {
           id: simulationBot.id,
           ratio: +ratio,
+          minLeverage: +minLeverage,
           maxLeverage: +maxLeverage,
           mode: direction,
         },
@@ -110,11 +134,19 @@ export function EditSimulationBot({ simulationBot }: EditSimulationBotProps) {
           />
 
           <NumericInput
+            amount={minLeverage}
+            onChange={setMinLeverage}
+            label="Min Leverage"
+            errorMessage={minLeverageHelper}
+            isInvalid={minLeverageHelper.trim() !== ""}
+          />
+
+          <NumericInput
             amount={maxLeverage}
             onChange={setMaxLeverage}
             label="Max Leverage"
-            errorMessage={ratioHelper}
-            isInvalid={ratioHelper.trim() !== ""}
+            errorMessage={maxLeverageHelper}
+            isInvalid={maxLeverageHelper.trim() !== ""}
           />
 
           <Button

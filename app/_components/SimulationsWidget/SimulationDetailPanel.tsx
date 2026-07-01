@@ -112,8 +112,14 @@ function SimulationConfigResults({ simulation }: { simulation: Simulation }) {
       label: "Ratio",
       value: `${SIMULATION_SYSTEM_CONFIG.minRatio}x - ${SIMULATION_SYSTEM_CONFIG.maxRatio}x`,
     },
-    { label: "Max Leverage", value: `${simulation.maxLeverage}x` },
-    { label: "Score", value: simulation.score.toFixed(2) },
+    {
+      label: "Leverage",
+      value: `${simulation.leverage.min}x - ${simulation.leverage.max}x`,
+    },
+    {
+      label: "Score",
+      value: `${simulation.score.min.toFixed(2)} - ${simulation.score.max.toFixed(2)}`,
+    },
   ];
 
   const resultItems: Array<{

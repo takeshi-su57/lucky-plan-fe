@@ -40,6 +40,7 @@ export const SIMULATION_BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
     openedPositions
     ratio
     score
+    minLeverage
     maxLeverage
     simulationPlanId
     startedAt
@@ -81,7 +82,10 @@ export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
     gapDays
     id
     maxDrawdownUsd
-    maxLeverage
+    leverage {
+      max
+      min
+    }
     platform
     profitFactor
     progressMessage
@@ -92,7 +96,10 @@ export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
       min
     }
     researchId
-    score
+    score {
+      max
+      min
+    }
     selectedLeaderCount
     slope {
       max
@@ -127,8 +134,14 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
     endAt
     gapDays
     id
-    maxLeverage
-    score
+    leverage {
+      max
+      min
+    }
+    score {
+      max
+      min
+    }
     r2 {
       max
       min
@@ -159,8 +172,14 @@ export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     endAt
     gapDays
     id
-    maxLeverage
-    score
+    leverage {
+      max
+      min
+    }
+    score {
+      max
+      min
+    }
     r2 {
       max
       min
@@ -229,6 +248,7 @@ export const SIMULATION_BOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     stoppedAt
     totalPnl
     totalPositions
+    minLeverage
     maxLeverage
     cacheState {
       completed

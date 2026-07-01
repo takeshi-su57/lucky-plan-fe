@@ -12,6 +12,7 @@ import { SimulationPositionView } from "./SimulationPositionView";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import { useStopSimulationBot } from "@/app/_hooks/useSimulations";
 import { EditSimulationBot } from "./EditAutomationModal";
+import { getPriceStr } from "@/utils/price";
 
 export type SimulationBotDetailsViewProps = {
   simulationBot: SimulationBotDetails;
@@ -114,13 +115,13 @@ export function SimulationBotDetailsView({
         </div>
 
         {cacheState?.lastError ? (
-          <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
+          <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-700">
             {cacheState.lastError}
           </div>
         ) : null}
 
         {!hasPositions ? (
-          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
+          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-800">
             {cacheState?.completed
               ? "This bot has no cached positions for the current simulation window yet."
               : "Position details will appear here after the backend finishes building the cached simulation result."}
@@ -131,14 +132,37 @@ export function SimulationBotDetailsView({
       <Card className={twMerge("mb-4 w-full shrink-0")} isBlurred>
         <CardBody>
           <Accordion isCompact variant="splitted">
-            {simulationBot.positions.map(({ histories }, positionIndex) => {
+            {simulationBot.positions.map((position, positionIndex) => {
+              const { followerPnl, histories, leaderPnl } = position;
               const positionKey =
                 histories[0]?.leader.positionKey || `position-${positionIndex}`;
+              const leaderPnlColor = leaderPnl >= 0 ? "success" : "danger";
+              const followerPnlColor = followerPnl >= 0 ? "success" : "danger";
 
               return (
                 <AccordionItem
                   key={positionKey}
-                  title={<Chip>Position {positionKey}</Chip>}
+                  title={
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                      <Chip>Position {positionKey}</Chip>
+                      <Chip
+                        size="sm"
+                        variant="flat"
+                        color={leaderPnlColor}
+                        className="font-mono"
+                      >
+                        Leader {getPriceStr(leaderPnl)}
+                      </Chip>
+                      <Chip
+                        size="sm"
+                        variant="flat"
+                        color={followerPnlColor}
+                        className="font-mono"
+                      >
+                        Follower {getPriceStr(followerPnl)}
+                      </Chip>
+                    </div>
+                  }
                 >
                   <Accordion isCompact variant="splitted">
                     {histories.map(({ leader, follower }, index) => (

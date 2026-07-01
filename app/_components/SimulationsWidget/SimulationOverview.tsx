@@ -260,7 +260,7 @@ export function SimulationOverview({
   return (
     <div className="flex w-full flex-col gap-4">
       {!hasAnyPositions ? (
-        <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+        <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-800">
           No cached simulation positions are available for this plan yet. Once
           the backend finishes building bot results, the overview charts will
           populate automatically.

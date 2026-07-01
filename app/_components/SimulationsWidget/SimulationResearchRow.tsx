@@ -21,18 +21,6 @@ function formatRangePairs(
   return ranges.length > 2 ? `${preview.join(", ")} +${ranges.length - 2}` : preview.join(", ");
 }
 
-function formatValueList(
-  values: number[],
-  formatter: (value: number) => string = (value) => `${value}`,
-) {
-  if (values.length === 0) {
-    return "None";
-  }
-
-  const preview = values.slice(0, 3).map(formatter);
-  return values.length > 3 ? `${preview.join(", ")} +${values.length - 3}` : preview.join(", ");
-}
-
 export function SimulationResearchRow({
   simulationResearch,
 }: {
@@ -140,10 +128,10 @@ export function SimulationResearchRow({
             </div>
             <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
               <span className="text-[10px] font-semibold text-neutral-500 uppercase">
-                Max Leverage
+                Leverage Ranges
               </span>
               <span className="mt-1 text-sm font-semibold text-neutral-300">
-                {formatValueList(simulationResearch.maxLeverage, (value) => `${value}x`)}
+                {formatRangePairs(simulationResearch.leverage, (value) => `${value}x`)}
               </span>
             </div>
             <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
@@ -151,7 +139,7 @@ export function SimulationResearchRow({
                 Score
               </span>
               <span className="mt-1 text-sm font-semibold text-neutral-300">
-                {formatValueList(simulationResearch.score, (value) =>
+                {formatRangePairs(simulationResearch.score, (value) =>
                   value.toFixed(2),
                 )}
               </span>
