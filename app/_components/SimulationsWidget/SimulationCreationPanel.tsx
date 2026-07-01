@@ -356,6 +356,8 @@ export function SimulationCreationPanel({
       start: now(getServerTimezone()).subtract({ days: 30 }),
       end: now(getServerTimezone()).subtract({ days: 1 }),
     });
+  const [days, setDays] = useState("1");
+  const [gapDays, setGapDays] = useState("0");
   const [tradeRanges, setTradeRanges] = useState<RangeEntryState[]>([
     createRangeEntry("trade", { min: "3", max: "10" }),
   ]);
@@ -368,6 +370,9 @@ export function SimulationCreationPanel({
   const [maxLeverageValues, setMaxLeverageValues] = useState<ValueEntryState[]>(
     [createValueEntry("leverage", "10")],
   );
+  const [scoreValues, setScoreValues] = useState<ValueEntryState[]>([
+    createValueEntry("score", "0.5"),
+  ]);
 
   const errors = useMemo(() => {
     const result: Record<string, string> = {};
@@ -384,6 +389,27 @@ export function SimulationCreationPanel({
       result.scheduleRange = "Please select a valid date range";
     }
 
+    const parsedDays = Number(days);
+    const parsedGapDays = Number(gapDays);
+
+    if (
+      days.trim() === "" ||
+      Number.isNaN(parsedDays) ||
+      !Number.isInteger(parsedDays) ||
+      parsedDays <= 0
+    ) {
+      result.days = "Days must be a positive integer";
+    }
+
+    if (
+      gapDays.trim() === "" ||
+      Number.isNaN(parsedGapDays) ||
+      !Number.isInteger(parsedGapDays) ||
+      parsedGapDays < 0
+    ) {
+      result.gapDays = "Gap days must be a non-negative integer";
+    }
+
     if (tradeRanges.length === 0) {
       result.tradeEmpty = "Add at least one trade range";
     }
@@ -398,6 +424,10 @@ export function SimulationCreationPanel({
 
     if (maxLeverageValues.length === 0) {
       result.maxLeverageEmpty = "Add at least one max leverage value";
+    }
+
+    if (scoreValues.length === 0) {
+      result.scoreEmpty = "Add at least one score value";
     }
 
     const tradeEntryErrors = validateRangeEntries("Trade", tradeRanges, {
@@ -418,6 +448,10 @@ export function SimulationCreationPanel({
         minAllowed: 0.01,
       },
     );
+    const scoreEntryErrors = validateValueEntries("Score", scoreValues, {
+      minAllowed: 0,
+      maxAllowed: 1,
+    });
 
     Object.values(tradeEntryErrors).forEach((entryErrors) => {
       Object.values(entryErrors).forEach((message) => {
@@ -449,18 +483,28 @@ export function SimulationCreationPanel({
       }
     });
 
+    Object.values(scoreEntryErrors).forEach((message) => {
+      if (message) {
+        result[`score-${message}`] = message;
+      }
+    });
+
     return {
       flat: result,
       tradeEntryErrors,
       r2EntryErrors,
       slopeEntryErrors,
       leverageEntryErrors,
+      scoreEntryErrors,
     };
   }, [
+    days,
     description,
+    gapDays,
     maxLeverageValues,
     r2Ranges,
     scheduleRange,
+    scoreValues,
     slopeRanges,
     title,
     tradeRanges,
@@ -488,8 +532,12 @@ export function SimulationCreationPanel({
     setter((current) => current.filter((entry) => entry.id !== id));
   };
 
-  const handleValueEntryChange = (id: string, nextValue: string) => {
-    setMaxLeverageValues((current) =>
+  const handleValueEntryChange = (
+    setter: Dispatch<SetStateAction<ValueEntryState[]>>,
+    id: string,
+    nextValue: string,
+  ) => {
+    setter((current) =>
       current.map((entry) =>
         entry.id === id ? { ...entry, value: nextValue } : entry,
       ),
@@ -509,11 +557,14 @@ export function SimulationCreationPanel({
           platform,
           startAt: scheduleRange.start.toDate(getServerTimezone()),
           endAt: scheduleRange.end.toDate(getServerTimezone()),
+          days: Number(days),
+          gapDays: Number(gapDays),
           direction,
           trade: normalizeRangeEntries(tradeRanges),
           r2: normalizeRangeEntries(r2Ranges),
           slope: normalizeRangeEntries(slopeRanges),
           maxLeverage: normalizeValueEntries(maxLeverageValues),
+          score: normalizeValueEntries(scoreValues),
         },
       },
     });
@@ -607,6 +658,29 @@ export function SimulationCreationPanel({
             isInvalid={Boolean(errors.flat.scheduleRange)}
           />
 
+          <div className="grid gap-4 md:grid-cols-2">
+            <NumericInput
+              amount={days}
+              onChange={setDays}
+              label="Plan Days"
+              ariaLabel="Plan days"
+              min={1}
+              step={1}
+              errorMessage={errors.flat.days}
+              isInvalid={Boolean(errors.flat.days)}
+            />
+            <NumericInput
+              amount={gapDays}
+              onChange={setGapDays}
+              label="Gap Days"
+              ariaLabel="Gap days"
+              min={0}
+              step={1}
+              errorMessage={errors.flat.gapDays}
+              isInvalid={Boolean(errors.flat.gapDays)}
+            />
+          </div>
+
           <div className="grid gap-4 xl:grid-cols-2">
             <RangeEntryCard
               label="Trades"
@@ -669,7 +743,9 @@ export function SimulationCreationPanel({
                   createValueEntry("leverage"),
                 ])
               }
-              onChange={handleValueEntryChange}
+              onChange={(id, nextValue) =>
+                handleValueEntryChange(setMaxLeverageValues, id, nextValue)
+              }
               onRemove={(id) =>
                 setMaxLeverageValues((current) =>
                   current.filter((entry) => entry.id !== id),
@@ -680,13 +756,36 @@ export function SimulationCreationPanel({
               errors={errors.leverageEntryErrors}
               emptyMessage={errors.flat.maxLeverageEmpty}
             />
+            <ValueEntryCard
+              label="Score"
+              entries={scoreValues}
+              onAdd={() =>
+                setScoreValues((current) => [
+                  ...current,
+                  createValueEntry("score"),
+                ])
+              }
+              onChange={(id, nextValue) =>
+                handleValueEntryChange(setScoreValues, id, nextValue)
+              }
+              onRemove={(id) =>
+                setScoreValues((current) =>
+                  current.filter((entry) => entry.id !== id),
+                )
+              }
+              min={0}
+              max={1}
+              step={0.01}
+              errors={errors.scoreEntryErrors}
+              emptyMessage={errors.flat.scoreEmpty}
+            />
           </div>
 
           <div className="rounded-xl border border-amber-500/45 bg-amber-50 px-4 py-4 text-sm text-amber-950 shadow-[0_10px_30px_rgba(245,158,11,0.10)]">
             <p className="leading-6 font-medium">
               Trades, R2, and slope always use range entries, and each section
-              must include at least one item. Max leverage uses exact values,
-              and every entry is combined into generated simulations.
+              must include at least one item. Max leverage and score use exact
+              values, and every entry is combined into generated simulations.
             </p>
           </div>
 

@@ -226,12 +226,15 @@ input CreateSimulationBotInput {
 }
 
 input CreateSimulationInput {
+  days: Int! = 1
   description: String!
   direction: BotMode! = Reversed
   endAt: Date!
+  gapDays: Int! = 0
   maxLeverage: Float! = 50
   platform: Platform!
   r2: FloatMinMaxInput! = {max: 1, min: 0.5}
+  score: Float! = 0
   selectedLeaderCount: Int! = 10
   slope: FloatMinMaxInput! = {max: 1000000000, min: 0}
   standardCollateralUsd: Float! = 100
@@ -248,12 +251,15 @@ input CreateSimulationPlanInput {
 }
 
 input CreateSimulationResearchInput {
+  days: Int! = 1
   description: String!
   direction: BotMode!
   endAt: Date!
+  gapDays: Int! = 0
   maxLeverage: [Float!]!
   platform: Platform!
   r2: [FloatMinMaxInput!]!
+  score: [Float!]!
   slope: [FloatMinMaxInput!]!
   startAt: Date!
   title: String!
@@ -764,7 +770,6 @@ type Query {
   isPnlSnapshotV2Initialized(dateStr: String!, platform: Platform!): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   simulation(id: Int!): Simulation
-  simulationLeaderSelections(simulationId: Int!, simulationPlanId: Int): [SimulationLeaderSelection!]!
   simulationPlanDetailsBySimulation(simulationId: Int!): [SimulationPlanDetails!]!
   simulationPlansBySimulation(simulationId: Int!): [SimulationPlan!]!
   simulationResearch(id: Int!): SimulationResearchDetails
@@ -804,10 +809,12 @@ type Simulation {
   completedPlans: Int!
   createdAt: Date!
   cursor: Date
+  days: Int!
   description: String!
   direction: BotMode!
   endAt: Date!
   error: String
+  gapDays: Int!
   id: Int!
   maxDrawdownUsd: Float!
   maxLeverage: Float!
@@ -818,6 +825,7 @@ type Simulation {
   progressPhase: String
   r2: SimulationValueRange!
   researchId: Int
+  score: Float!
   selectedLeaderCount: Int!
   slope: SimulationValueRange!
   standardCollateralUsd: Float!
@@ -853,6 +861,7 @@ type SimulationBot {
   mode: BotMode!
   openedPositions: Int!
   ratio: Float!
+  score: Float!
   simulationPlanId: Int!
   startedAt: Date!
   stoppedAt: Date
@@ -888,6 +897,7 @@ type SimulationBotDetails {
   openedPositions: Int!
   positions: [SimulationTradePosition!]!
   ratio: Float!
+  score: Float!
   simulationPlanId: Int!
   startedAt: Date!
   stoppedAt: Date
@@ -903,25 +913,6 @@ type SimulationConnection {
 type SimulationEdge {
   cursor: Int!
   node: Simulation!
-}
-
-type SimulationLeaderSelection {
-  createdAt: Date!
-  date: Date!
-  id: Int!
-  leaderAddress: String!
-  rawR2: Float!
-  rawSlope: Float!
-  rawTotalPnlUsd: Float!
-  rawTradeCount: Int!
-  reverseDrawdownUsd: Float!
-  reverseNetPnlUsd: Float!
-  score: Float!
-  simulationId: Int!
-  simulationPlanId: Int
-  suggestedCollateralUsd: Float!
-  suggestedRatio: Float!
-  updatedAt: Date!
 }
 
 type SimulationPageInfo {
@@ -977,13 +968,16 @@ type SimulationPlanPageInfo {
 type SimulationResearch {
   completedSimulations: Int!
   createdAt: Date!
+  days: Int!
   description: String!
   direction: BotMode!
   endAt: Date!
+  gapDays: Int!
   id: Int!
   maxLeverage: [Float!]!
   platform: Platform!
   r2: [SimulationValueRange!]!
+  score: [Float!]!
   slope: [SimulationValueRange!]!
   startAt: Date!
   title: String!
@@ -1000,13 +994,16 @@ type SimulationResearchConnection {
 type SimulationResearchDetails {
   completedSimulations: Int!
   createdAt: Date!
+  days: Int!
   description: String!
   direction: BotMode!
   endAt: Date!
+  gapDays: Int!
   id: Int!
   maxLeverage: [Float!]!
   platform: Platform!
   r2: [SimulationValueRange!]!
+  score: [Float!]!
   simulations: [Simulation!]!
   slope: [SimulationValueRange!]!
   startAt: Date!
@@ -1154,6 +1151,7 @@ input UpdateSimulationInput {
   id: Int!
   maxLeverage: Float
   r2: FloatMinMaxInput
+  score: Float
   selectedLeaderCount: Int
   slope: FloatMinMaxInput
   standardCollateralUsd: Float

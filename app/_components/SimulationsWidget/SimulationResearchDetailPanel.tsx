@@ -36,6 +36,10 @@ function formatLeverageValues(values: number[]) {
   return values.map((value) => `${value}x`);
 }
 
+function formatScoreValues(values: number[]) {
+  return values.map((value) => value.toFixed(2));
+}
+
 export function SimulationResearchDetailPanel({
   researchId,
 }: {
@@ -69,6 +73,9 @@ export function SimulationResearchDetailPanel({
                 {simulationResearch.platform}
               </Chip>
               <Chip variant="flat">{simulationResearch.direction}</Chip>
+              <Chip variant="flat">
+                {simulationResearch.days}d / {simulationResearch.gapDays}g
+              </Chip>
             </div>
 
             <p className="mt-2 max-w-4xl text-sm text-neutral-400">
@@ -97,8 +104,19 @@ export function SimulationResearchDetailPanel({
             values={formatRangePairs(simulationResearch.slope)}
           />
           <RangeListStat
+            label="Plan Cadence"
+            values={[
+              `${simulationResearch.days} days`,
+              `${simulationResearch.gapDays} gap days`,
+            ]}
+          />
+          <RangeListStat
             label="Max Leverage"
             values={formatLeverageValues(simulationResearch.maxLeverage)}
+          />
+          <RangeListStat
+            label="Score"
+            values={formatScoreValues(simulationResearch.score)}
           />
           <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
             <span className="text-[10px] font-semibold text-neutral-500 uppercase">

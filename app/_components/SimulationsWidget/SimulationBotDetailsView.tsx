@@ -68,6 +68,10 @@ export function SimulationBotDetailsView({
             Ratio:
             {`${simulationBot.ratio} x`}
           </span>
+          <span className="text-xs">
+            Score:
+            {` ${simulationBot.score.toFixed(2)}`}
+          </span>
         </div>
 
         <div className="flex flex-col gap-2 font-mono">

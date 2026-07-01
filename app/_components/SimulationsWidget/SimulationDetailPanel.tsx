@@ -88,6 +88,8 @@ function SimulationConfigResults({ simulation }: { simulation: Simulation }) {
   const effectiveSlopeBounds = getEffectiveSlopeBounds(simulation);
   const configItems = [
     { label: "Direction", value: simulation.direction },
+    { label: "Plan Days", value: simulation.days },
+    { label: "Gap Days", value: simulation.gapDays },
     { label: "Min Trades", value: simulation.trade.min },
     { label: "Max Trades", value: simulation.trade.max },
     { label: "Min R2", value: simulation.r2.min.toFixed(2) },
@@ -111,6 +113,7 @@ function SimulationConfigResults({ simulation }: { simulation: Simulation }) {
       value: `${SIMULATION_SYSTEM_CONFIG.minRatio}x - ${SIMULATION_SYSTEM_CONFIG.maxRatio}x`,
     },
     { label: "Max Leverage", value: `${simulation.maxLeverage}x` },
+    { label: "Score", value: simulation.score.toFixed(2) },
   ];
 
   const resultItems: Array<{

@@ -81,6 +81,9 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
                 <Chip variant="flat" size="sm">
                   {simulation.direction}
                 </Chip>
+                <Chip variant="flat" size="sm">
+                  {simulation.days}d / {simulation.gapDays}g
+                </Chip>
               </div>
 
               <p className="mt-2 line-clamp-2 text-sm text-neutral-500">
@@ -111,6 +114,12 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
                   variant="flat"
                   value={`${simulation.maxLeverage}x`}
                   unit="Max Lev"
+                />
+                <LabeledChip
+                  size="sm"
+                  variant="flat"
+                  value={simulation.score.toFixed(2)}
+                  unit="Score"
                 />
               </div>
             </div>
@@ -212,10 +221,10 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
 
             <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
               <span className="text-[10px] font-semibold text-neutral-500 uppercase">
-                Leader Selection
+                Cadence
               </span>
               <span className="mt-1 text-sm font-semibold text-neutral-300">
-                Uncapped
+                {simulation.days}d + {simulation.gapDays}g
               </span>
             </div>
           </div>

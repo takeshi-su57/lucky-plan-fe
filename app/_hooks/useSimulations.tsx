@@ -39,6 +39,7 @@ export const SIMULATION_BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
     mode
     openedPositions
     ratio
+    score
     maxLeverage
     simulationPlanId
     startedAt
@@ -72,10 +73,12 @@ export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
     completedPlans
     createdAt
     cursor
+    days
     description
     direction
     endAt
     error
+    gapDays
     id
     maxDrawdownUsd
     maxLeverage
@@ -89,6 +92,7 @@ export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
       min
     }
     researchId
+    score
     selectedLeaderCount
     slope {
       max
@@ -117,11 +121,14 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment SimulationResearchInfo on SimulationResearch {
     completedSimulations
     createdAt
+    days
     description
     direction
     endAt
+    gapDays
     id
     maxLeverage
+    score
     r2 {
       max
       min
@@ -146,11 +153,14 @@ export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment SimulationResearchDetailsInfo on SimulationResearchDetails {
     completedSimulations
     createdAt
+    days
     description
     direction
     endAt
+    gapDays
     id
     maxLeverage
+    score
     r2 {
       max
       min
@@ -213,6 +223,7 @@ export const SIMULATION_BOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     mode
     openedPositions
     ratio
+    score
     simulationPlanId
     startedAt
     stoppedAt

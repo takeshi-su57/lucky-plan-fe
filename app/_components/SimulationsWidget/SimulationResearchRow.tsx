@@ -67,6 +67,9 @@ export function SimulationResearchRow({
                 <Chip variant="flat" size="sm">
                   {simulationResearch.direction}
                 </Chip>
+                <Chip variant="flat" size="sm">
+                  {simulationResearch.days}d / {simulationResearch.gapDays}g
+                </Chip>
               </div>
 
               <p className="mt-2 line-clamp-2 text-sm text-neutral-500">
@@ -121,6 +124,14 @@ export function SimulationResearchRow({
             </div>
             <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
               <span className="text-[10px] font-semibold text-neutral-500 uppercase">
+                Cadence
+              </span>
+              <span className="mt-1 text-sm font-semibold text-neutral-300">
+                {simulationResearch.days}d + {simulationResearch.gapDays}g
+              </span>
+            </div>
+            <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
+              <span className="text-[10px] font-semibold text-neutral-500 uppercase">
                 Trade Ranges
               </span>
               <span className="mt-1 text-sm font-semibold text-neutral-300">
@@ -133,6 +144,16 @@ export function SimulationResearchRow({
               </span>
               <span className="mt-1 text-sm font-semibold text-neutral-300">
                 {formatValueList(simulationResearch.maxLeverage, (value) => `${value}x`)}
+              </span>
+            </div>
+            <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
+              <span className="text-[10px] font-semibold text-neutral-500 uppercase">
+                Score
+              </span>
+              <span className="mt-1 text-sm font-semibold text-neutral-300">
+                {formatValueList(simulationResearch.score, (value) =>
+                  value.toFixed(2),
+                )}
               </span>
             </div>
           </div>

@@ -64,6 +64,9 @@ export const SimulationBotSummary = memo(function SimulationBotSummary({
         <div className="grid min-w-0 grid-cols-[minmax(160px,1fr)_minmax(180px,1fr)_120px] items-center gap-4 font-mono text-xs">
           <div className="flex min-w-0 flex-col">
             <span className="truncate">Ratio {simulationBot.ratio}x</span>
+            <span className="truncate">
+              Score {simulationBot.score.toFixed(2)}
+            </span>
             <span className="truncate">Direction {simulationBot.mode}</span>
           </div>
         </div>
