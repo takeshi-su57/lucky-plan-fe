@@ -60,7 +60,7 @@ export function SimulationBotDetailsView({
             address={simulationBot.leaderAddress as Address}
             className="text-sm"
           />
-          <span>{simulationBot.leaderContract.chainId}</span>
+          <span>{simulationBot.leaderPlatform}</span>
         </div>
 
         <div className="flex flex-col gap-2 font-mono">

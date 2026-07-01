@@ -34,6 +34,10 @@ const STATUS_COLOR: Partial<
   [SimulationStatus.Cancelled]: "danger",
 };
 
+function formatRange(range: { min: number; max: number }) {
+  return `${range.min}-${range.max}`;
+}
+
 export function SimulationRow({ simulation }: SimulationRowProps) {
   const { playAutoSimulation, loading: playLoading } = usePlayAutoSimulation();
   const { cancelSimulation, loading: cancelLoading } = useCancelSimulation();
@@ -82,6 +86,33 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
               <p className="mt-2 line-clamp-2 text-sm text-neutral-500">
                 {simulation.description}
               </p>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2 font-mono">
+                <LabeledChip
+                  size="sm"
+                  variant="flat"
+                  value={formatRange(simulation.trade)}
+                  unit="Trades"
+                />
+                <LabeledChip
+                  size="sm"
+                  variant="flat"
+                  value={formatRange(simulation.r2)}
+                  unit="R2"
+                />
+                <LabeledChip
+                  size="sm"
+                  variant="flat"
+                  value={formatRange(simulation.slope)}
+                  unit="Slope"
+                />
+                <LabeledChip
+                  size="sm"
+                  variant="flat"
+                  value={`${simulation.maxLeverage}x`}
+                  unit="Max Lev"
+                />
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">

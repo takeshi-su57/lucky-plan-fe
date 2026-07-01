@@ -6,15 +6,9 @@ import { Address, isAddress } from "viem";
 
 import { RightDrawer } from "@/components/modals/RightDrawer";
 
-import { useGetAllContracts } from "@/app-hooks/useContract";
-
 import { NumericInput } from "@/components/inputs/NumericInput";
 
-import {
-  ContractStatus,
-  Platform,
-  SimulationPlanDetails,
-} from "@/graphql/gql/graphql";
+import { Platform, SimulationPlanDetails } from "@/graphql/gql/graphql";
 import {
   PerpEventLogPnlChart,
   PerpEventLogPnlChartHandle,
@@ -38,8 +32,6 @@ export function CreateSimulationBotModal({
 }: CreateSimulationBotModalProps) {
   const { batchCreateSimulationBots, loading: createBotsLoading } =
     useBatchCreateSimulationBots();
-
-  const allContracts = useGetAllContracts();
 
   const chartRef = useRef<PerpEventLogPnlChartHandle | null>(null);
 
@@ -97,20 +89,18 @@ export function CreateSimulationBotModal({
       return;
     }
 
-    const availableContracts = allContracts
-      .filter((contract) => contract.status === ContractStatus.Live)
-      .filter((contract) => contract.platform === platform);
-
     batchCreateSimulationBots({
       variables: {
-        inputs: availableContracts.map((contract) => ({
-          leaderAddress,
-          simulationPlanId: simulationPlan.id,
-          leaderContractId: contract.id,
-          ratio: +ratio,
-          maxLeverage: +maxLeverage,
-          mode: direction,
-        })),
+        inputs: [
+          {
+            leaderAddress,
+            simulationPlanId: simulationPlan.id,
+            leaderPlatform: platform,
+            ratio: +ratio,
+            maxLeverage: +maxLeverage,
+            mode: direction,
+          },
+        ],
       },
     });
 

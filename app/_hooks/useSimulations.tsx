@@ -34,10 +34,7 @@ export const SIMULATION_BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
     avgSize
     id
     leaderAddress
-    leaderContract {
-      ...ContractInfo
-    }
-    leaderContractId
+    leaderPlatform
     maxDuration
     mode
     openedPositions
@@ -211,10 +208,7 @@ export const SIMULATION_BOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     avgSize
     id
     leaderAddress
-    leaderContract {
-      ...ContractInfo
-    }
-    leaderContractId
+    leaderPlatform
     maxDuration
     mode
     openedPositions

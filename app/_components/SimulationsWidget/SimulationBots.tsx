@@ -30,7 +30,7 @@ export function SimulationBots({
     >();
 
     for (const simulationBot of simulationBots) {
-      const key = `${simulationBot.leaderAddress.toLowerCase()}${simulationBot.leaderContract.platform}`;
+      const key = `${simulationBot.leaderAddress.toLowerCase()}${simulationBot.leaderPlatform}`;
       const existing = groupMap.get(key);
 
       if (existing) {
@@ -38,7 +38,7 @@ export function SimulationBots({
       } else {
         groupMap.set(key, {
           leaderAddress: simulationBot.leaderAddress,
-          platform: simulationBot.leaderContract.platform,
+          platform: simulationBot.leaderPlatform,
           simulatoinBots: [simulationBot],
         });
       }

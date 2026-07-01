@@ -216,7 +216,7 @@ input CreatePlanInput {
 
 input CreateSimulationBotInput {
   leaderAddress: String!
-  leaderContractId: Int!
+  leaderPlatform: Platform!
   maxLeverage: Float!
   mode: BotMode!
   ratio: Float!
@@ -947,8 +947,7 @@ type SimulationBot {
   avgSize: Float!
   id: Int!
   leaderAddress: String!
-  leaderContract: Contract!
-  leaderContractId: Int!
+  leaderPlatform: Platform!
   maxDuration: Float!
   maxLeverage: Float!
   mode: BotMode!
@@ -982,8 +981,7 @@ type SimulationBotDetails {
   cacheState: SimulationBotCacheState
   id: Int!
   leaderAddress: String!
-  leaderContract: Contract!
-  leaderContractId: Int!
+  leaderPlatform: Platform!
   maxDuration: Float!
   maxLeverage: Float!
   mode: BotMode!

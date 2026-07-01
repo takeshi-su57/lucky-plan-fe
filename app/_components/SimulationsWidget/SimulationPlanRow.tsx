@@ -31,6 +31,10 @@ export function SimulationPlanRow({ simulationPlan }: SimulationPlanRowProps) {
       value: dayjs(simulationPlan.endAt).format("MMM D, H:m"),
     },
   ];
+  const followerPnlColor =
+    simulationPlan.totalFollowerPnl >= 0 ? "success" : "danger";
+  const leaderPnlColor =
+    simulationPlan.totalLeaderPnl >= 0 ? "success" : "danger";
 
   return (
     <div className="pb-3 select-none">
@@ -38,20 +42,21 @@ export function SimulationPlanRow({ simulationPlan }: SimulationPlanRowProps) {
         shadow="none"
         className="border-default-200 bg-content1 mb-4 w-full shrink-0 rounded-lg border"
       >
-        <CardBody>
-          <div className="flex items-start justify-between">
-            <div className="flex h-full items-start gap-2">
-              <div className="flex w-75 flex-col gap-2 border-r border-neutral-800">
-                <div className="flex gap-4">
-                  <span className="text-sm text-gray-400">
+        <CardBody className="gap-4">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+            <div className="flex min-w-0 flex-1 flex-col gap-3 lg:flex-row lg:items-start">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="truncate text-sm font-semibold text-neutral-300">
                     {simulationPlan.title}
                   </span>
-                  <Chip variant="flat">
+                  <Chip variant="flat" size="sm">
                     Simulation Plan {simulationPlan.id}
                   </Chip>
                 </div>
-                <div className="flex gap-4">
-                  <span className="text-sm text-gray-400">
+
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className="line-clamp-2 text-sm text-neutral-500">
                     {simulationPlan.description}
                   </span>
                   <Chip variant="flat" size="sm" color="primary">
@@ -60,7 +65,7 @@ export function SimulationPlanRow({ simulationPlan }: SimulationPlanRowProps) {
                 </div>
               </div>
 
-              <div className="flex h-full w-43 flex-col gap-2 border-r border-neutral-800">
+              <div className="border-default-200 flex min-w-40 flex-col gap-2 lg:border-l lg:pl-4">
                 {items.map(
                   (item) =>
                     item.value !== null && (
@@ -77,49 +82,45 @@ export function SimulationPlanRow({ simulationPlan }: SimulationPlanRowProps) {
               </div>
             </div>
 
-            <div className="flex flex-row items-center gap-3 font-mono">
-              {simulationPlan.openedPositions > 0 ? (
-                <LabeledChip
-                  size="sm"
-                  variant="flat"
-                  color="secondary"
-                  value={simulationPlan.openedPositions}
-                  unit="Opened Positions"
-                />
-              ) : null}
-
-              {simulationPlan.totalPositions !== 0 ? (
-                <LabeledChip
-                  size="sm"
-                  variant="flat"
-                  color="warning"
-                  value={simulationPlan.totalPositions}
-                  unit="Total Positions"
-                />
-              ) : null}
-
-              {simulationPlan.totalLeaderPnl !== 0 ? (
-                <LabeledChip
-                  size="sm"
-                  variant="flat"
-                  color="success"
-                  value={getPriceStr(simulationPlan.totalLeaderPnl)}
-                  unit="Follower PnL"
-                />
-              ) : null}
-
-              {simulationPlan.totalFollowerPnl !== 0 ? (
-                <LabeledChip
-                  size="sm"
-                  variant="flat"
-                  color="success"
-                  value={getPriceStr(simulationPlan.totalFollowerPnl)}
-                  unit="Follower PnL"
-                />
-              ) : null}
+            <div className="flex flex-wrap items-center gap-2 font-mono xl:justify-end">
+              <LabeledChip
+                size="sm"
+                variant="flat"
+                color={followerPnlColor}
+                value={getPriceStr(simulationPlan.totalFollowerPnl)}
+                unit="Follower PnL"
+              />
+              <LabeledChip
+                size="sm"
+                variant="flat"
+                color={leaderPnlColor}
+                value={getPriceStr(simulationPlan.totalLeaderPnl)}
+                unit="Leader PnL"
+              />
+              <LabeledChip
+                size="sm"
+                variant="flat"
+                color="secondary"
+                value={simulationPlan.totalPositions}
+                unit="Trades"
+              />
+              <LabeledChip
+                size="sm"
+                variant="flat"
+                color="warning"
+                value={simulationPlan.openedPositions}
+                unit="Opened"
+              />
+              <LabeledChip
+                size="sm"
+                variant="flat"
+                color="primary"
+                value={simulationPlan.simulationBots.length}
+                unit="Bots"
+              />
             </div>
 
-            <div className="flex flex-row items-center gap-2">
+            <div className="flex flex-row items-center gap-2 xl:justify-end">
               <Link href={`/simulations/${simulationPlan.id}`}>
                 <Button size="sm" variant="flat" color="primary">
                   Show Details
