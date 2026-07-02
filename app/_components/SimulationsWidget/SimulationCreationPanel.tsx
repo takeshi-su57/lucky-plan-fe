@@ -17,7 +17,12 @@ import type { DateValue } from "@react-types/datepicker";
 
 import { NumericInput } from "@/components/inputs/NumericInput";
 import { getServerTimezone } from "@/utils";
-import { BotMode, Platform } from "@/graphql/gql/graphql";
+import {
+  BotMode,
+  Platform,
+  SimulationScoreFormular,
+  SimulationSizingFormular,
+} from "@/graphql/gql/graphql";
 import {
   SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT,
   useCreateSimulationResearch,
@@ -26,6 +31,10 @@ import { getFragmentData } from "@/graphql/gql";
 
 const PLATFORM_OPTIONS = [Platform.Gns, Platform.Gmx, Platform.Avnt];
 const DIRECTION_OPTIONS = [BotMode.Default, BotMode.Reversed];
+const SCORE_FORMULAR_OPTIONS = [SimulationScoreFormular.RiskAdjustedCopyScore];
+const SIZING_FORMULAR_OPTIONS = [
+  SimulationSizingFormular.ScoreScaledCollateralSizing,
+];
 
 type RangeEntryState = {
   id: string;
@@ -228,6 +237,13 @@ export function SimulationCreationPanel({
   const [description, setDescription] = useState("");
   const [platform, setPlatform] = useState<Platform>(Platform.Gns);
   const [direction, setDirection] = useState<BotMode>(BotMode.Reversed);
+  const [scoreFormular, setScoreFormular] = useState<SimulationScoreFormular>(
+    SimulationScoreFormular.RiskAdjustedCopyScore,
+  );
+  const [sizingFormular, setSizingFormular] =
+    useState<SimulationSizingFormular>(
+      SimulationSizingFormular.ScoreScaledCollateralSizing,
+    );
   const [scheduleRange, setScheduleRange] =
     useState<RangeValue<DateValue> | null>({
       start: now(getServerTimezone()).subtract({ days: 30 }),
@@ -430,6 +446,8 @@ export function SimulationCreationPanel({
           slope: normalizeRangeEntries(slopeRanges),
           leverage: normalizeRangeEntries(leverageRanges),
           score: normalizeRangeEntries(scoreRanges),
+          scoreFormular,
+          sizingFormular,
         },
       },
     });
@@ -544,6 +562,40 @@ export function SimulationCreationPanel({
               errorMessage={errors.flat.gapDays}
               isInvalid={Boolean(errors.flat.gapDays)}
             />
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Select
+              variant="underlined"
+              label="Score Formula"
+              aria-label="Score formula"
+              selectedKeys={[scoreFormular]}
+              onChange={(event) =>
+                setScoreFormular(
+                  event.target.value as SimulationScoreFormular,
+                )
+              }
+            >
+              {SCORE_FORMULAR_OPTIONS.map((item) => (
+                <SelectItem key={item}>{item}</SelectItem>
+              ))}
+            </Select>
+
+            <Select
+              variant="underlined"
+              label="Sizing Formula"
+              aria-label="Sizing formula"
+              selectedKeys={[sizingFormular]}
+              onChange={(event) =>
+                setSizingFormular(
+                  event.target.value as SimulationSizingFormular,
+                )
+              }
+            >
+              {SIZING_FORMULAR_OPTIONS.map((item) => (
+                <SelectItem key={item}>{item}</SelectItem>
+              ))}
+            </Select>
           </div>
 
           <div className="grid gap-4 xl:grid-cols-2">

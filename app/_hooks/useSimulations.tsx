@@ -100,7 +100,9 @@ export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
       max
       min
     }
+    scoreFormular
     selectedLeaderCount
+    sizingFormular
     slope {
       max
       min
@@ -142,6 +144,8 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
       max
       min
     }
+    scoreFormular
+    sizingFormular
     r2 {
       max
       min
@@ -180,6 +184,8 @@ export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
       max
       min
     }
+    scoreFormular
+    sizingFormular
     r2 {
       max
       min
