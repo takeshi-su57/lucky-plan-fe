@@ -73,6 +73,16 @@ export function SimulationBotDetailsView({
             Score:
             {` ${simulationBot.score.toFixed(2)}`}
           </span>
+          <span className="text-xs">
+            Collateral:
+            {` ${getPriceStr(simulationBot.minCollateral)} - ${getPriceStr(
+              simulationBot.maxCollateral,
+            )}`}
+          </span>
+          <span className="text-xs">
+            Leverage:
+            {` ${simulationBot.minLeverage}x - ${simulationBot.maxLeverage}x`}
+          </span>
         </div>
 
         <div className="flex flex-col gap-2 font-mono">

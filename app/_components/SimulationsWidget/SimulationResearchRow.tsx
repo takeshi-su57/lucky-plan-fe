@@ -5,6 +5,7 @@ import { Card, CardBody, Chip, Progress } from "@heroui/react";
 import dayjs from "dayjs";
 
 import { SimulationResearch } from "@/graphql/gql/graphql";
+import { getPriceStr } from "@/utils/price";
 
 function formatRangePairs(
   ranges: Array<{ min: number; max: number }>,
@@ -124,6 +125,14 @@ export function SimulationResearchRow({
               </span>
               <span className="mt-1 text-sm font-semibold text-neutral-300">
                 {formatRangePairs(simulationResearch.trade)}
+              </span>
+            </div>
+            <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
+              <span className="text-[10px] font-semibold text-neutral-500 uppercase">
+                Collateral Ranges
+              </span>
+              <span className="mt-1 text-sm font-semibold text-neutral-300">
+                {formatRangePairs(simulationResearch.collateral, getPriceStr)}
               </span>
             </div>
             <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">

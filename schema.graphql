@@ -219,7 +219,9 @@ input CreatePlanInput {
 input CreateSimulationBotInput {
   leaderAddress: String!
   leaderPlatform: Platform!
+  maxCollateral: Float! = 1000000000
   maxLeverage: Float!
+  minCollateral: Float! = 0
   minLeverage: Float! = 0
   mode: BotMode!
   ratio: Float!
@@ -227,6 +229,7 @@ input CreateSimulationBotInput {
 }
 
 input CreateSimulationInput {
+  collateral: FloatMinMaxInput! = {max: 1000000000, min: 0}
   days: Int! = 1
   description: String!
   direction: BotMode! = Reversed
@@ -254,6 +257,7 @@ input CreateSimulationPlanInput {
 }
 
 input CreateSimulationResearchInput {
+  collateral: [FloatMinMaxInput!]!
   days: Int! = 1
   description: String!
   direction: BotMode!
@@ -811,6 +815,7 @@ type SeverityCount {
 }
 
 type Simulation {
+  collateral: SimulationValueRange!
   completedPlans: Int!
   createdAt: Date!
   cursor: Date
@@ -863,8 +868,10 @@ type SimulationBot {
   id: Int!
   leaderAddress: String!
   leaderPlatform: Platform!
+  maxCollateral: Float!
   maxDuration: Float!
   maxLeverage: Float!
+  minCollateral: Float!
   minLeverage: Float!
   mode: BotMode!
   openedPositions: Int!
@@ -899,8 +906,10 @@ type SimulationBotDetails {
   id: Int!
   leaderAddress: String!
   leaderPlatform: Platform!
+  maxCollateral: Float!
   maxDuration: Float!
   maxLeverage: Float!
+  minCollateral: Float!
   minLeverage: Float!
   mode: BotMode!
   openedPositions: Int!
@@ -975,6 +984,7 @@ type SimulationPlanPageInfo {
 }
 
 type SimulationResearch {
+  collateral: [SimulationValueRange!]!
   completedSimulations: Int!
   createdAt: Date!
   days: Int!
@@ -1003,6 +1013,7 @@ type SimulationResearchConnection {
 }
 
 type SimulationResearchDetails {
+  collateral: [SimulationValueRange!]!
   completedSimulations: Int!
   createdAt: Date!
   days: Int!
@@ -1161,13 +1172,16 @@ input UpdatePlanInput {
 
 input UpdateSimulationBotInput {
   id: Int!
+  maxCollateral: Float
   maxLeverage: Float
+  minCollateral: Float
   minLeverage: Float
   mode: BotMode
   ratio: Float
 }
 
 input UpdateSimulationInput {
+  collateral: FloatMinMaxInput
   description: String
   direction: BotMode
   id: Int!

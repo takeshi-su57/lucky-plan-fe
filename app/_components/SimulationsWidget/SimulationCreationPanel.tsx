@@ -263,6 +263,9 @@ export function SimulationCreationPanel({
   const [leverageRanges, setLeverageRanges] = useState<RangeEntryState[]>([
     createRangeEntry("leverage", { min: "10", max: "50" }),
   ]);
+  const [collateralRanges, setCollateralRanges] = useState<RangeEntryState[]>([
+    createRangeEntry("collateral", { min: "10", max: "500" }),
+  ]);
   const [scoreRanges, setScoreRanges] = useState<RangeEntryState[]>([
     createRangeEntry("score", { min: "0.5", max: "0.8" }),
   ]);
@@ -319,6 +322,10 @@ export function SimulationCreationPanel({
       result.leverageEmpty = "Add at least one leverage range";
     }
 
+    if (collateralRanges.length === 0) {
+      result.collateralEmpty = "Add at least one collateral range";
+    }
+
     if (scoreRanges.length === 0) {
       result.scoreEmpty = "Add at least one score range";
     }
@@ -337,6 +344,13 @@ export function SimulationCreationPanel({
     const leverageEntryErrors = validateRangeEntries("Leverage", leverageRanges, {
       minAllowed: 0,
     });
+    const collateralEntryErrors = validateRangeEntries(
+      "Collateral",
+      collateralRanges,
+      {
+        minAllowed: 0,
+      },
+    );
     const scoreEntryErrors = validateRangeEntries("Score", scoreRanges, {
       minAllowed: 0,
       maxAllowed: 1,
@@ -374,6 +388,14 @@ export function SimulationCreationPanel({
       });
     });
 
+    Object.values(collateralEntryErrors).forEach((entryErrors) => {
+      Object.values(entryErrors).forEach((message) => {
+        if (message) {
+          result[`collateral-${message}`] = message;
+        }
+      });
+    });
+
     Object.values(scoreEntryErrors).forEach((entryErrors) => {
       Object.values(entryErrors).forEach((message) => {
         if (message) {
@@ -388,9 +410,11 @@ export function SimulationCreationPanel({
       r2EntryErrors,
       slopeEntryErrors,
       leverageEntryErrors,
+      collateralEntryErrors,
       scoreEntryErrors,
     };
   }, [
+    collateralRanges,
     days,
     description,
     gapDays,
@@ -444,6 +468,7 @@ export function SimulationCreationPanel({
           trade: normalizeRangeEntries(tradeRanges),
           r2: normalizeRangeEntries(r2Ranges),
           slope: normalizeRangeEntries(slopeRanges),
+          collateral: normalizeRangeEntries(collateralRanges),
           leverage: normalizeRangeEntries(leverageRanges),
           score: normalizeRangeEntries(scoreRanges),
           scoreFormular,
@@ -472,8 +497,9 @@ export function SimulationCreationPanel({
             Create Simulation Research
           </h1>
           <p className="text-sm text-neutral-400">
-            Define explicit research ranges and leverage values, then let the
-            backend generate simulations for every valid combination.
+            Define explicit research ranges, collateral, and leverage values,
+            then let the backend generate simulations for every valid
+            combination.
           </p>
         </div>
       ) : null}
@@ -675,6 +701,29 @@ export function SimulationCreationPanel({
               emptyMessage={errors.flat.leverageEmpty}
             />
             <RangeEntryCard
+              label="Collateral"
+              entries={collateralRanges}
+              onAdd={() =>
+                setCollateralRanges((current) => [
+                  ...current,
+                  createRangeEntry("collateral"),
+                ])
+              }
+              onChange={(id, field, nextValue) =>
+                handleRangeEntryChange(
+                  setCollateralRanges,
+                  id,
+                  field,
+                  nextValue,
+                )
+              }
+              onRemove={(id) => handleRangeEntryRemove(setCollateralRanges, id)}
+              min={0}
+              step={1}
+              errors={errors.collateralEntryErrors}
+              emptyMessage={errors.flat.collateralEmpty}
+            />
+            <RangeEntryCard
               label="Score"
               entries={scoreRanges}
               onAdd={() =>
@@ -697,9 +746,8 @@ export function SimulationCreationPanel({
 
           <div className="rounded-xl border border-amber-500/45 bg-amber-50 px-4 py-4 text-sm text-amber-950 shadow-[0_10px_30px_rgba(245,158,11,0.10)]">
             <p className="leading-6 font-medium">
-              Trades, R2, and slope always use range entries, and each section
-              must include at least one item. Leverage and score now use
-              min/max ranges, and every range is combined into generated
+              Trades, R2, slope, collateral, leverage, and score each use
+              min/max ranges. Every range is combined into generated
               simulations.
             </p>
           </div>

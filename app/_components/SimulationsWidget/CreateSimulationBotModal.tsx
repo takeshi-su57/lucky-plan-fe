@@ -41,6 +41,8 @@ export function CreateSimulationBotModal({
   const [leaderAddress, setLeaderAddress] = useState<string>("");
 
   const [ratio, setRatio] = useState("0.1");
+  const [minCollateral, setMinCollateral] = useState("0");
+  const [maxCollateral, setMaxCollateral] = useState("1000000000");
   const [minLeverage, setMinLeverage] = useState("0");
   const [maxLeverage, setMaxLeverage] = useState("40");
 
@@ -65,11 +67,29 @@ export function CreateSimulationBotModal({
   };
 
   let ratioHelper = "";
+  let minCollateralHelper = "";
+  let maxCollateralHelper = "";
   let minLeverageHelper = "";
   let maxLeverageHelper = "";
 
   if (Number.isNaN(+ratio)) {
     ratioHelper = "Invalid ratio";
+  }
+
+  if (Number.isNaN(+minCollateral)) {
+    minCollateralHelper = "Invalid min collateral";
+  }
+
+  if (Number.isNaN(+maxCollateral)) {
+    maxCollateralHelper = "Invalid max collateral";
+  }
+
+  if (
+    minCollateralHelper === "" &&
+    maxCollateralHelper === "" &&
+    +minCollateral > +maxCollateral
+  ) {
+    minCollateralHelper = "Min collateral must be <= max collateral";
   }
 
   if (Number.isNaN(+minLeverage)) {
@@ -92,6 +112,8 @@ export function CreateSimulationBotModal({
     !isAddress(leaderAddress) ||
     createBotsLoading ||
     ratioHelper !== "" ||
+    minCollateralHelper !== "" ||
+    maxCollateralHelper !== "" ||
     minLeverageHelper !== "" ||
     maxLeverageHelper !== "";
 
@@ -102,6 +124,8 @@ export function CreateSimulationBotModal({
 
     if (
       ratio.trim() === "" ||
+      minCollateral.trim() === "" ||
+      maxCollateral.trim() === "" ||
       minLeverage.trim() === "" ||
       maxLeverage.trim() === ""
     ) {
@@ -116,6 +140,8 @@ export function CreateSimulationBotModal({
             simulationPlanId: simulationPlan.id,
             leaderPlatform: platform,
             ratio: +ratio,
+            minCollateral: +minCollateral,
+            maxCollateral: +maxCollateral,
             minLeverage: +minLeverage,
             maxLeverage: +maxLeverage,
             mode: direction,
@@ -182,6 +208,22 @@ export function CreateSimulationBotModal({
                 label="Ratio"
                 errorMessage={ratioHelper}
                 isInvalid={ratioHelper.trim() !== ""}
+              />
+
+              <NumericInput
+                amount={minCollateral}
+                onChange={setMinCollateral}
+                label="Min Collateral"
+                errorMessage={minCollateralHelper}
+                isInvalid={minCollateralHelper.trim() !== ""}
+              />
+
+              <NumericInput
+                amount={maxCollateral}
+                onChange={setMaxCollateral}
+                label="Max Collateral"
+                errorMessage={maxCollateralHelper}
+                isInvalid={maxCollateralHelper.trim() !== ""}
               />
 
               <NumericInput

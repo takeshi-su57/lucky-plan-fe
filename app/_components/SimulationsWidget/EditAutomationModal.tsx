@@ -21,6 +21,12 @@ export function EditSimulationBot({ simulationBot }: EditSimulationBotProps) {
   const [direction, setDirection] = useState<BotMode>(simulationBot.mode);
 
   const [ratio, setRatio] = useState(simulationBot.ratio.toString());
+  const [minCollateral, setMinCollateral] = useState(
+    simulationBot.minCollateral.toString(),
+  );
+  const [maxCollateral, setMaxCollateral] = useState(
+    simulationBot.maxCollateral.toString(),
+  );
   const [minLeverage, setMinLeverage] = useState(
     simulationBot.minLeverage.toString(),
   );
@@ -39,11 +45,29 @@ export function EditSimulationBot({ simulationBot }: EditSimulationBotProps) {
   };
 
   let ratioHelper = "";
+  let minCollateralHelper = "";
+  let maxCollateralHelper = "";
   let minLeverageHelper = "";
   let maxLeverageHelper = "";
 
   if (Number.isNaN(+ratio)) {
     ratioHelper = "Invalid ratio";
+  }
+
+  if (Number.isNaN(+minCollateral)) {
+    minCollateralHelper = "Invalid min collateral";
+  }
+
+  if (Number.isNaN(+maxCollateral)) {
+    maxCollateralHelper = "Invalid max collateral";
+  }
+
+  if (
+    minCollateralHelper === "" &&
+    maxCollateralHelper === "" &&
+    +minCollateral > +maxCollateral
+  ) {
+    minCollateralHelper = "Min collateral must be <= max collateral";
   }
 
   if (Number.isNaN(+minLeverage)) {
@@ -64,6 +88,8 @@ export function EditSimulationBot({ simulationBot }: EditSimulationBotProps) {
 
   const isDisabled =
     ratioHelper !== "" ||
+    minCollateralHelper !== "" ||
+    maxCollateralHelper !== "" ||
     minLeverageHelper !== "" ||
     maxLeverageHelper !== "";
 
@@ -74,6 +100,8 @@ export function EditSimulationBot({ simulationBot }: EditSimulationBotProps) {
 
     if (
       ratio.trim() === "" ||
+      minCollateral.trim() === "" ||
+      maxCollateral.trim() === "" ||
       minLeverage.trim() === "" ||
       maxLeverage.trim() === ""
     ) {
@@ -85,6 +113,8 @@ export function EditSimulationBot({ simulationBot }: EditSimulationBotProps) {
         input: {
           id: simulationBot.id,
           ratio: +ratio,
+          minCollateral: +minCollateral,
+          maxCollateral: +maxCollateral,
           minLeverage: +minLeverage,
           maxLeverage: +maxLeverage,
           mode: direction,
@@ -131,6 +161,22 @@ export function EditSimulationBot({ simulationBot }: EditSimulationBotProps) {
             label="Ratio"
             errorMessage={ratioHelper}
             isInvalid={ratioHelper.trim() !== ""}
+          />
+
+          <NumericInput
+            amount={minCollateral}
+            onChange={setMinCollateral}
+            label="Min Collateral"
+            errorMessage={minCollateralHelper}
+            isInvalid={minCollateralHelper.trim() !== ""}
+          />
+
+          <NumericInput
+            amount={maxCollateral}
+            onChange={setMaxCollateral}
+            label="Max Collateral"
+            errorMessage={maxCollateralHelper}
+            isInvalid={maxCollateralHelper.trim() !== ""}
           />
 
           <NumericInput

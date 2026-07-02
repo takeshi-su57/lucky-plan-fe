@@ -101,7 +101,13 @@ function SimulationConfigResults({ simulation }: { simulation: Simulation }) {
       value: getPriceStr(simulation.standardCollateralUsd),
     },
     {
-      label: "Collateral",
+      label: "Collateral Filter",
+      value: `${getPriceStr(simulation.collateral.min)} - ${getPriceStr(
+        simulation.collateral.max,
+      )}`,
+    },
+    {
+      label: "Sizing Bounds",
       value: `${getPriceStr(
         SIMULATION_SYSTEM_CONFIG.minCollateralUsd,
       )} - ${getPriceStr(

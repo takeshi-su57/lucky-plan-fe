@@ -112,6 +112,14 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
                 <LabeledChip
                   size="sm"
                   variant="flat"
+                  value={`${getPriceStr(simulation.collateral.min)}-${getPriceStr(
+                    simulation.collateral.max,
+                  )}`}
+                  unit="Collateral"
+                />
+                <LabeledChip
+                  size="sm"
+                  variant="flat"
                   value={`${formatRange(simulation.leverage)}x`}
                   unit="Leverage"
                 />

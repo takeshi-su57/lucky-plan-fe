@@ -67,6 +67,13 @@ export const SimulationBotSummary = memo(function SimulationBotSummary({
             <span className="truncate">
               Score {simulationBot.score.toFixed(2)}
             </span>
+            <span className="truncate">
+              Collateral {getPriceStr(simulationBot.minCollateral)}-
+              {getPriceStr(simulationBot.maxCollateral)}
+            </span>
+            <span className="truncate">
+              Leverage {simulationBot.minLeverage}x-{simulationBot.maxLeverage}x
+            </span>
             <span className="truncate">Direction {simulationBot.mode}</span>
           </div>
         </div>

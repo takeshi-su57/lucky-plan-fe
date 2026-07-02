@@ -8,6 +8,7 @@ import {
   useGetSimulationsByResearch,
 } from "@/app/_hooks/useSimulations";
 import { SimulationRow } from "./SimulationRow";
+import { getPriceStr } from "@/utils/price";
 
 function RangeListStat({
   label,
@@ -113,6 +114,10 @@ export function SimulationResearchDetailPanel({
               simulationResearch.leverage,
               (value) => `${value}x`,
             )}
+          />
+          <RangeListStat
+            label="Collateral Ranges"
+            values={formatRangePairs(simulationResearch.collateral, getPriceStr)}
           />
           <RangeListStat
             label="Score"
