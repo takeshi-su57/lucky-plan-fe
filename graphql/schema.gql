@@ -1133,6 +1133,14 @@ type SimulationResearchPageInfo {
   hasNextPage: Boolean!
 }
 
+enum SimulationScoreFormular {
+  RiskAdjustedCopyScore
+}
+
+enum SimulationSizingFormular {
+  ScoreScaledCollateralSizing
+}
+
 enum SimulationStatus {
   Cancelled
   Completed
@@ -1140,14 +1148,6 @@ enum SimulationStatus {
   Failed
   Paused
   Running
-}
-
-enum SimulationScoreFormular {
-  RiskAdjustedCopyScore
-}
-
-enum SimulationSizingFormular {
-  ScoreScaledCollateralSizing
 }
 
 type SimulationTradeHistory {
