@@ -560,7 +560,9 @@ type Mutation {
   deletePlan(id: Int!): Int!
   deleteSLTP(id: Int!): SLTPRequest!
   deleteSimulation(id: Int!): Int!
+  deleteSimulationBot(id: Int!): Int!
   deleteSimulationPlan(id: Int!): Int!
+  deleteSimulationResearch(id: Int!): Int!
   depositAsset(input: AssetInput!): Boolean!
   disableContract(contractId: Int!): Contract!
   dynamicSnapshotBuildV2(dateStr: String!, platform: Platform!): Boolean!

@@ -127,7 +127,9 @@ type Documents = {
     "\n  mutation playAutoSimulation($id: Int!) {\n    playAutoSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": typeof types.PlayAutoSimulationDocument,
     "\n  mutation cancelSimulation($id: Int!) {\n    cancelSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": typeof types.CancelSimulationDocument,
     "\n  mutation deleteSimulation($id: Int!) {\n    deleteSimulation(id: $id)\n  }\n": typeof types.DeleteSimulationDocument,
+    "\n  mutation deleteSimulationResearch($id: Int!) {\n    deleteSimulationResearch(id: $id)\n  }\n": typeof types.DeleteSimulationResearchDocument,
     "\n  mutation deleteSimulationPlan($id: Int!) {\n    deleteSimulationPlan(id: $id)\n  }\n": typeof types.DeleteSimulationPlanDocument,
+    "\n  mutation deleteSimulationBot($id: Int!) {\n    deleteSimulationBot(id: $id)\n  }\n": typeof types.DeleteSimulationBotDocument,
     "\n  mutation stopSimulationBot($id: Int!) {\n    stopSimulationBot(id: $id) {\n      ...SimulationBotInfo\n    }\n  }\n": typeof types.StopSimulationBotDocument,
     "\n  subscription simulationResearchUpdated {\n    simulationResearchUpdated {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.SimulationResearchUpdatedDocument,
     "\n  subscription simulationUpdated {\n    simulationUpdated {\n      ...SimulationInfo\n    }\n  }\n": typeof types.SimulationUpdatedDocument,
@@ -273,7 +275,9 @@ const documents: Documents = {
     "\n  mutation playAutoSimulation($id: Int!) {\n    playAutoSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": types.PlayAutoSimulationDocument,
     "\n  mutation cancelSimulation($id: Int!) {\n    cancelSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": types.CancelSimulationDocument,
     "\n  mutation deleteSimulation($id: Int!) {\n    deleteSimulation(id: $id)\n  }\n": types.DeleteSimulationDocument,
+    "\n  mutation deleteSimulationResearch($id: Int!) {\n    deleteSimulationResearch(id: $id)\n  }\n": types.DeleteSimulationResearchDocument,
     "\n  mutation deleteSimulationPlan($id: Int!) {\n    deleteSimulationPlan(id: $id)\n  }\n": types.DeleteSimulationPlanDocument,
+    "\n  mutation deleteSimulationBot($id: Int!) {\n    deleteSimulationBot(id: $id)\n  }\n": types.DeleteSimulationBotDocument,
     "\n  mutation stopSimulationBot($id: Int!) {\n    stopSimulationBot(id: $id) {\n      ...SimulationBotInfo\n    }\n  }\n": types.StopSimulationBotDocument,
     "\n  subscription simulationResearchUpdated {\n    simulationResearchUpdated {\n      ...SimulationResearchInfo\n    }\n  }\n": types.SimulationResearchUpdatedDocument,
     "\n  subscription simulationUpdated {\n    simulationUpdated {\n      ...SimulationInfo\n    }\n  }\n": types.SimulationUpdatedDocument,
@@ -775,7 +779,15 @@ export function graphql(source: "\n  mutation deleteSimulation($id: Int!) {\n   
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
+export function graphql(source: "\n  mutation deleteSimulationResearch($id: Int!) {\n    deleteSimulationResearch(id: $id)\n  }\n"): (typeof documents)["\n  mutation deleteSimulationResearch($id: Int!) {\n    deleteSimulationResearch(id: $id)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
 export function graphql(source: "\n  mutation deleteSimulationPlan($id: Int!) {\n    deleteSimulationPlan(id: $id)\n  }\n"): (typeof documents)["\n  mutation deleteSimulationPlan($id: Int!) {\n    deleteSimulationPlan(id: $id)\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation deleteSimulationBot($id: Int!) {\n    deleteSimulationBot(id: $id)\n  }\n"): (typeof documents)["\n  mutation deleteSimulationBot($id: Int!) {\n    deleteSimulationBot(id: $id)\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

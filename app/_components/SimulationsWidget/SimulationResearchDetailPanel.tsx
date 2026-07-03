@@ -1,22 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button, Chip, Spinner } from "@heroui/react";
 
 import {
+  useDeleteSimulationResearch,
   useGetSimulationResearch,
   useGetSimulationsByResearch,
 } from "@/app/_hooks/useSimulations";
 import { SimulationRow } from "./SimulationRow";
 import { getPriceStr } from "@/utils/price";
+import { useUserJWT } from "@/app/_hooks/useUserJWT";
+import { UserPermission } from "@/graphql/gql/graphql";
+import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 
-function RangeListStat({
-  label,
-  values,
-}: {
-  label: string;
-  values: string[];
-}) {
+function RangeListStat({ label, values }: { label: string; values: string[] }) {
   return (
     <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
       <span className="text-[10px] font-semibold text-neutral-500 uppercase">
@@ -44,10 +43,14 @@ export function SimulationResearchDetailPanel({
   researchId: string;
 }) {
   const id = Number(researchId);
+  const router = useRouter();
   const { simulationResearch, loading: researchLoading } =
     useGetSimulationResearch(id);
   const { simulations, loading: simulationsLoading } =
     useGetSimulationsByResearch(id);
+  const { deleteSimulationResearch, loading: deleteLoading } =
+    useDeleteSimulationResearch();
+  const { userJwtQuery } = useUserJWT();
 
   if (researchLoading) {
     return <Spinner size="sm" label="Loading Research..." />;
@@ -56,6 +59,8 @@ export function SimulationResearchDetailPanel({
   if (!simulationResearch) {
     return <div>There is no simulation research</div>;
   }
+
+  const isAdmin = userJwtQuery.data?.permission === UserPermission.Admin;
 
   return (
     <div className="flex flex-col gap-6">
@@ -81,11 +86,31 @@ export function SimulationResearchDetailPanel({
             </p>
           </div>
 
-          <Link href="/simulations">
-            <Button color="primary" variant="light" size="sm">
-              Back to Researches
-            </Button>
-          </Link>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {isAdmin ? (
+              <ButtonWithConfirm
+                color="danger"
+                variant="solid"
+                size="sm"
+                isLoading={deleteLoading}
+                isDisabled={deleteLoading}
+                onPress={async () => {
+                  await deleteSimulationResearch({
+                    variables: { id: simulationResearch.id },
+                  });
+                  router.push("/simulations");
+                }}
+              >
+                Remove
+              </ButtonWithConfirm>
+            ) : null}
+
+            <Link href="/simulations">
+              <Button color="primary" variant="light" size="sm">
+                Back to Researches
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -117,7 +142,10 @@ export function SimulationResearchDetailPanel({
           />
           <RangeListStat
             label="Collateral Ranges"
-            values={formatRangePairs(simulationResearch.collateral, getPriceStr)}
+            values={formatRangePairs(
+              simulationResearch.collateral,
+              getPriceStr,
+            )}
           />
           <RangeListStat
             label="Score"

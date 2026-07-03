@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Card, CardBody, Chip, Progress } from "@heroui/react";
+import { Button, Card, CardBody, Chip, Progress } from "@heroui/react";
 import dayjs from "dayjs";
 
-import { SimulationResearch } from "@/graphql/gql/graphql";
+import { SimulationResearch, UserPermission } from "@/graphql/gql/graphql";
 import { getPriceStr } from "@/utils/price";
+import { useDeleteSimulationResearch } from "@/app/_hooks/useSimulations";
+import { useUserJWT } from "@/app/_hooks/useUserJWT";
+import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 
 function formatRangePairs(
   ranges: Array<{ min: number; max: number }>,
@@ -19,7 +22,9 @@ function formatRangePairs(
     .slice(0, 2)
     .map((range) => `${formatter(range.min)}-${formatter(range.max)}`);
 
-  return ranges.length > 2 ? `${preview.join(", ")} +${ranges.length - 2}` : preview.join(", ");
+  return ranges.length > 2
+    ? `${preview.join(", ")} +${ranges.length - 2}`
+    : preview.join(", ");
 }
 
 export function SimulationResearchRow({
@@ -27,6 +32,10 @@ export function SimulationResearchRow({
 }: {
   simulationResearch: SimulationResearch;
 }) {
+  const { deleteSimulationResearch, loading: deleteLoading } =
+    useDeleteSimulationResearch();
+  const { userJwtQuery } = useUserJWT();
+  const isAdmin = userJwtQuery.data?.permission === UserPermission.Admin;
   const progress =
     simulationResearch.totalSimulations > 0
       ? (simulationResearch.completedSimulations /
@@ -66,16 +75,30 @@ export function SimulationResearchRow({
               </p>
             </div>
 
-            <Link href={`/simulations/research/${simulationResearch.id}`}>
-              <Chip
-                as="span"
-                variant="flat"
-                color="primary"
-                className="cursor-pointer"
-              >
-                Open Research
-              </Chip>
-            </Link>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link href={`/simulations/research/${simulationResearch.id}`}>
+                <Button size="sm" color="primary" variant="flat">
+                  Open Research
+                </Button>
+              </Link>
+
+              {isAdmin ? (
+                <ButtonWithConfirm
+                  size="sm"
+                  color="danger"
+                  variant="solid"
+                  isLoading={deleteLoading}
+                  isDisabled={deleteLoading}
+                  onPress={() =>
+                    deleteSimulationResearch({
+                      variables: { id: simulationResearch.id },
+                    })
+                  }
+                >
+                  Remove
+                </ButtonWithConfirm>
+              ) : null}
+            </div>
           </div>
 
           <div className="grid gap-3 md:grid-cols-4 xl:grid-cols-6">
@@ -140,7 +163,10 @@ export function SimulationResearchRow({
                 Leverage Ranges
               </span>
               <span className="mt-1 text-sm font-semibold text-neutral-300">
-                {formatRangePairs(simulationResearch.leverage, (value) => `${value}x`)}
+                {formatRangePairs(
+                  simulationResearch.leverage,
+                  (value) => `${value}x`,
+                )}
               </span>
             </div>
             <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">

@@ -473,9 +473,21 @@ export const DELETE_SIMULATION_DOCUMENT = graphql(`
   }
 `);
 
+export const DELETE_SIMULATION_RESEARCH_DOCUMENT = graphql(`
+  mutation deleteSimulationResearch($id: Int!) {
+    deleteSimulationResearch(id: $id)
+  }
+`);
+
 export const DELETE_SIMULATION_PLAN_DOCUMENT = graphql(`
   mutation deleteSimulationPlan($id: Int!) {
     deleteSimulationPlan(id: $id)
+  }
+`);
+
+export const DELETE_SIMULATION_BOT_DOCUMENT = graphql(`
+  mutation deleteSimulationBot($id: Int!) {
+    deleteSimulationBot(id: $id)
   }
 `);
 
@@ -1405,6 +1417,34 @@ export function useDeleteSimulation() {
   return { deleteSimulation, loading };
 }
 
+export function useDeleteSimulationResearch() {
+  const [deleteSimulationResearch, { data: newData, error, loading }] =
+    useMutation(DELETE_SIMULATION_RESEARCH_DOCUMENT);
+  const client = useApolloClient();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      client.cache.evict({
+        id: `SimulationResearch:${newData.deleteSimulationResearch}`,
+      });
+      client.cache.gc();
+      enqueueSnackbar("Simulation research removed!", {
+        variant: "success",
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at removing simulation research!", {
+        variant: "error",
+      });
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return { deleteSimulationResearch, loading };
+}
+
 export function useDeleteSimulationPlan() {
   const [deleteSimulationPlan, { data: newData, error, loading }] = useMutation(
     DELETE_SIMULATION_PLAN_DOCUMENT,
@@ -1432,6 +1472,35 @@ export function useDeleteSimulationPlan() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return { deleteSimulationPlan, loading };
+}
+
+export function useDeleteSimulationBot() {
+  const [deleteSimulationBot, { data: newData, error, loading }] = useMutation(
+    DELETE_SIMULATION_BOT_DOCUMENT,
+  );
+  const client = useApolloClient();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      client.cache.evict({
+        id: `SimulationBot:${newData.deleteSimulationBot}`,
+      });
+      client.cache.gc();
+      enqueueSnackbar("Simulation bot removed!", {
+        variant: "success",
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at removing simulation bot!", {
+        variant: "error",
+      });
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return { deleteSimulationBot, loading };
 }
 
 export function useStopSimulationBot() {
