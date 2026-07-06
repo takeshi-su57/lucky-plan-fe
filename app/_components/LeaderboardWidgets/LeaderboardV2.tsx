@@ -46,6 +46,8 @@ export function LeaderboardV2({
     PAGE_SIZE,
   );
 
+  console.log(pnlSnapshots?.length);
+
   const {
     data: isPnlSnapshotInitialized,
     loading: isPnlSnapshotInitializedLoading,

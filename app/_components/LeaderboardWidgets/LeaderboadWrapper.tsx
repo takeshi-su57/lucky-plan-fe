@@ -58,17 +58,15 @@ export function LeaderboadWrapper() {
       draft.platform !== applied.platform ||
       draft.isDesc !== applied.isDesc ||
       dayjs(draft.date).format("YYYY-MM-DD") !==
-        dayjs(applied.date).format("YYYY-MM-DD")
+        dayjs(applied.date).format("YYYY-MM-DD") ||
+      draft.hideDegens !== applied.hideDegens ||
+      draft.isAppliedFilter !== applied.isAppliedFilter
     );
   }, [draft, applied]);
 
   const handleApply = useCallback(() => {
     setApplied(draft);
-
-    const platformQuery = draft.platform ? `platform=${draft.platform}` : null;
-
-    router.push(`/leaderboards?${platformQuery || ""}`);
-  }, [draft, router]);
+  }, [draft]);
 
   const handleChangePlatform: ChangeEventHandler<HTMLSelectElement> = (
     event,
