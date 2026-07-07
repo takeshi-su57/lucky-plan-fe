@@ -515,6 +515,7 @@ type Mutation {
   batchCreateSimulationBots(inputs: [CreateSimulationBotInput!]!): [SimulationBot!]!
   buildPnlSnapshotsV2(dateStr: String!, isForceBuild: Boolean!, platform: Platform!): Boolean!
   cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
+  cancelResearch(id: Int!): SimulationResearch!
   cancelSimulation(id: Int!): Simulation!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
@@ -553,7 +554,9 @@ type Mutation {
   liveContract(contractId: Int!, fromBlock: Int): Contract!
   makeSafeApp(password: String!): Boolean!
   openTradeMarket(input: OpenTradeInput!): ContractExecutionResult!
+  pauseResearch(id: Int!): SimulationResearch!
   pauseSystem: Boolean!
+  playAutoResearch(id: Int!): SimulationResearch!
   playAutoSimulation(id: Int!): Simulation!
   playSimulationPlan(id: Int!): SimulationPlan!
   resumeSystem(password: String): Boolean!
@@ -1084,6 +1087,7 @@ enum SimulationStatus {
   Created
   Failed
   Paused
+  Queued
   Running
 }
 

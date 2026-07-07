@@ -126,6 +126,9 @@ type Documents = {
     "\n  mutation playSimulationPlan($id: Int!) {\n    playSimulationPlan(id: $id) {\n      ...SimulationPlanInfo\n    }\n  }\n": typeof types.PlaySimulationPlanDocument,
     "\n  mutation playAutoSimulation($id: Int!) {\n    playAutoSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": typeof types.PlayAutoSimulationDocument,
     "\n  mutation cancelSimulation($id: Int!) {\n    cancelSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": typeof types.CancelSimulationDocument,
+    "\n  mutation playAutoResearch($id: Int!) {\n    playAutoResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.PlayAutoResearchDocument,
+    "\n  mutation pauseResearch($id: Int!) {\n    pauseResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.PauseResearchDocument,
+    "\n  mutation cancelResearch($id: Int!) {\n    cancelResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.CancelResearchDocument,
     "\n  mutation deleteSimulation($id: Int!) {\n    deleteSimulation(id: $id)\n  }\n": typeof types.DeleteSimulationDocument,
     "\n  mutation deleteSimulationResearch($id: Int!) {\n    deleteSimulationResearch(id: $id)\n  }\n": typeof types.DeleteSimulationResearchDocument,
     "\n  mutation deleteSimulationPlan($id: Int!) {\n    deleteSimulationPlan(id: $id)\n  }\n": typeof types.DeleteSimulationPlanDocument,
@@ -274,6 +277,9 @@ const documents: Documents = {
     "\n  mutation playSimulationPlan($id: Int!) {\n    playSimulationPlan(id: $id) {\n      ...SimulationPlanInfo\n    }\n  }\n": types.PlaySimulationPlanDocument,
     "\n  mutation playAutoSimulation($id: Int!) {\n    playAutoSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": types.PlayAutoSimulationDocument,
     "\n  mutation cancelSimulation($id: Int!) {\n    cancelSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": types.CancelSimulationDocument,
+    "\n  mutation playAutoResearch($id: Int!) {\n    playAutoResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": types.PlayAutoResearchDocument,
+    "\n  mutation pauseResearch($id: Int!) {\n    pauseResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": types.PauseResearchDocument,
+    "\n  mutation cancelResearch($id: Int!) {\n    cancelResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": types.CancelResearchDocument,
     "\n  mutation deleteSimulation($id: Int!) {\n    deleteSimulation(id: $id)\n  }\n": types.DeleteSimulationDocument,
     "\n  mutation deleteSimulationResearch($id: Int!) {\n    deleteSimulationResearch(id: $id)\n  }\n": types.DeleteSimulationResearchDocument,
     "\n  mutation deleteSimulationPlan($id: Int!) {\n    deleteSimulationPlan(id: $id)\n  }\n": types.DeleteSimulationPlanDocument,
@@ -772,6 +778,18 @@ export function graphql(source: "\n  mutation playAutoSimulation($id: Int!) {\n 
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation cancelSimulation($id: Int!) {\n    cancelSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n"): (typeof documents)["\n  mutation cancelSimulation($id: Int!) {\n    cancelSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation playAutoResearch($id: Int!) {\n    playAutoResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n"): (typeof documents)["\n  mutation playAutoResearch($id: Int!) {\n    playAutoResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation pauseResearch($id: Int!) {\n    pauseResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n"): (typeof documents)["\n  mutation pauseResearch($id: Int!) {\n    pauseResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation cancelResearch($id: Int!) {\n    cancelResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n"): (typeof documents)["\n  mutation cancelResearch($id: Int!) {\n    cancelResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

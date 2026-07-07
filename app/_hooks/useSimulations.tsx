@@ -487,6 +487,30 @@ export const CANCEL_SIMULATION_DOCUMENT = graphql(`
   }
 `);
 
+export const PLAY_AUTO_RESEARCH_DOCUMENT = graphql(`
+  mutation playAutoResearch($id: Int!) {
+    playAutoResearch(id: $id) {
+      ...SimulationResearchInfo
+    }
+  }
+`);
+
+export const PAUSE_RESEARCH_DOCUMENT = graphql(`
+  mutation pauseResearch($id: Int!) {
+    pauseResearch(id: $id) {
+      ...SimulationResearchInfo
+    }
+  }
+`);
+
+export const CANCEL_RESEARCH_DOCUMENT = graphql(`
+  mutation cancelResearch($id: Int!) {
+    cancelResearch(id: $id) {
+      ...SimulationResearchInfo
+    }
+  }
+`);
+
 export const DELETE_SIMULATION_DOCUMENT = graphql(`
   mutation deleteSimulation($id: Int!) {
     deleteSimulation(id: $id)
@@ -1408,6 +1432,81 @@ export function useCancelSimulation() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return { cancelSimulation, loading };
+}
+
+export function usePlayAutoResearch() {
+  const [playAutoResearch, { data: newData, error, loading }] = useMutation(
+    PLAY_AUTO_RESEARCH_DOCUMENT,
+  );
+  const client = useApolloClient();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      enqueueSnackbar("Research queued!", {
+        variant: "success",
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at queueing research!", {
+        variant: "error",
+      });
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return { playAutoResearch, loading };
+}
+
+export function usePauseResearch() {
+  const [pauseResearch, { data: newData, error, loading }] = useMutation(
+    PAUSE_RESEARCH_DOCUMENT,
+  );
+  const client = useApolloClient();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      enqueueSnackbar("Research paused!", {
+        variant: "success",
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at pausing research!", {
+        variant: "error",
+      });
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return { pauseResearch, loading };
+}
+
+export function useCancelResearch() {
+  const [cancelResearch, { data: newData, error, loading }] = useMutation(
+    CANCEL_RESEARCH_DOCUMENT,
+  );
+  const client = useApolloClient();
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      enqueueSnackbar("Research cancelled!", {
+        variant: "success",
+      });
+    }
+
+    if (newData && error) {
+      enqueueSnackbar("Error at cancelling research!", {
+        variant: "error",
+      });
+    }
+  }, [client.cache, newData, error, enqueueSnackbar]);
+
+  return { cancelResearch, loading };
 }
 
 export function useDeleteSimulation() {
