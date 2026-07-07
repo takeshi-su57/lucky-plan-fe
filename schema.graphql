@@ -988,23 +988,33 @@ type SimulationPlanPageInfo {
 
 type SimulationResearch {
   collateral: [SimulationValueRange!]!
+  completedRanges: Int!
   completedSimulations: Int!
   createdAt: Date!
+  cursor: Date
   days: Int!
   description: String!
   direction: BotMode!
   endAt: Date!
+  finishedAt: Date
   gapDays: Int!
   id: Int!
+  lastError: String
   leverage: [SimulationValueRange!]!
   platform: Platform!
+  progressMessage: String
+  progressPercent: Float!
+  progressPhase: String
   r2: [SimulationValueRange!]!
   score: [SimulationValueRange!]!
   scoreFormular: SimulationScoreFormular!
   sizingFormular: SimulationSizingFormular!
   slope: [SimulationValueRange!]!
   startAt: Date!
+  startedAt: Date
+  status: SimulationStatus!
   title: String!
+  totalRanges: Int!
   totalSimulations: Int!
   trade: [SimulationTradeRange!]!
   updatedAt: Date!
@@ -1017,16 +1027,23 @@ type SimulationResearchConnection {
 
 type SimulationResearchDetails {
   collateral: [SimulationValueRange!]!
+  completedRanges: Int!
   completedSimulations: Int!
   createdAt: Date!
+  cursor: Date
   days: Int!
   description: String!
   direction: BotMode!
   endAt: Date!
+  finishedAt: Date
   gapDays: Int!
   id: Int!
+  lastError: String
   leverage: [SimulationValueRange!]!
   platform: Platform!
+  progressMessage: String
+  progressPercent: Float!
+  progressPhase: String
   r2: [SimulationValueRange!]!
   score: [SimulationValueRange!]!
   scoreFormular: SimulationScoreFormular!
@@ -1034,7 +1051,10 @@ type SimulationResearchDetails {
   sizingFormular: SimulationSizingFormular!
   slope: [SimulationValueRange!]!
   startAt: Date!
+  startedAt: Date
+  status: SimulationStatus!
   title: String!
+  totalRanges: Int!
   totalSimulations: Int!
   trade: [SimulationTradeRange!]!
   updatedAt: Date!

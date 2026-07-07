@@ -156,6 +156,16 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
     }
     scoreFormular
     sizingFormular
+    status
+    cursor
+    progressPhase
+    progressMessage
+    progressPercent
+    totalRanges
+    completedRanges
+    startedAt
+    finishedAt
+    lastError
     r2 {
       max
       min
@@ -200,6 +210,16 @@ export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     }
     scoreFormular
     sizingFormular
+    status
+    cursor
+    progressPhase
+    progressMessage
+    progressPercent
+    totalRanges
+    completedRanges
+    startedAt
+    finishedAt
+    lastError
     r2 {
       max
       min
