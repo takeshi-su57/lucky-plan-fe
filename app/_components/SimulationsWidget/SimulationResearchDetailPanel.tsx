@@ -5,14 +5,17 @@ import { useRouter } from "next/navigation";
 import { Button, Chip, Spinner } from "@heroui/react";
 
 import {
+  useCancelResearch,
   useDeleteSimulationResearch,
   useGetSimulationResearch,
   useGetSimulationsByResearch,
+  usePauseResearch,
+  usePlayAutoResearch,
 } from "@/app/_hooks/useSimulations";
 import { SimulationRow } from "./SimulationRow";
 import { getPriceStr } from "@/utils/price";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
-import { UserPermission } from "@/graphql/gql/graphql";
+import { SimulationStatus, UserPermission } from "@/graphql/gql/graphql";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 
 function RangeListStat({ label, values }: { label: string; values: string[] }) {
@@ -50,6 +53,9 @@ export function SimulationResearchDetailPanel({
     useGetSimulationsByResearch(id);
   const { deleteSimulationResearch, loading: deleteLoading } =
     useDeleteSimulationResearch();
+  const { playAutoResearch, loading: playLoading } = usePlayAutoResearch();
+  const { pauseResearch, loading: pauseLoading } = usePauseResearch();
+  const { cancelResearch, loading: cancelLoading } = useCancelResearch();
   const { userJwtQuery } = useUserJWT();
 
   if (researchLoading) {
@@ -61,6 +67,17 @@ export function SimulationResearchDetailPanel({
   }
 
   const isAdmin = userJwtQuery.data?.permission === UserPermission.Admin;
+  const actionLoading =
+    playLoading || pauseLoading || cancelLoading || deleteLoading;
+  const canQueue =
+    simulationResearch.status === SimulationStatus.Created ||
+    simulationResearch.status === SimulationStatus.Paused;
+  const canPause =
+    simulationResearch.status === SimulationStatus.Queued ||
+    simulationResearch.status === SimulationStatus.Running;
+  const canCancel =
+    simulationResearch.status !== SimulationStatus.Completed &&
+    simulationResearch.status !== SimulationStatus.Cancelled;
 
   return (
     <div className="flex flex-col gap-6">
@@ -87,13 +104,58 @@ export function SimulationResearchDetailPanel({
           </div>
 
           <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {canQueue ? (
+              <Button
+                color="primary"
+                variant="flat"
+                size="sm"
+                isLoading={playLoading}
+                isDisabled={actionLoading}
+                onPress={() =>
+                  playAutoResearch({ variables: { id: simulationResearch.id } })
+                }
+              >
+                Queue Research
+              </Button>
+            ) : null}
+
+            {canPause ? (
+              <Button
+                color="warning"
+                variant="flat"
+                size="sm"
+                isLoading={pauseLoading}
+                isDisabled={actionLoading}
+                onPress={() =>
+                  pauseResearch({ variables: { id: simulationResearch.id } })
+                }
+              >
+                Pause
+              </Button>
+            ) : null}
+
+            {canCancel ? (
+              <ButtonWithConfirm
+                color="danger"
+                variant="flat"
+                size="sm"
+                isLoading={cancelLoading}
+                isDisabled={actionLoading}
+                onPress={() =>
+                  cancelResearch({ variables: { id: simulationResearch.id } })
+                }
+              >
+                Cancel
+              </ButtonWithConfirm>
+            ) : null}
+
             {isAdmin ? (
               <ButtonWithConfirm
                 color="danger"
                 variant="solid"
                 size="sm"
                 isLoading={deleteLoading}
-                isDisabled={deleteLoading}
+                isDisabled={actionLoading}
                 onPress={async () => {
                   await deleteSimulationResearch({
                     variables: { id: simulationResearch.id },
@@ -160,6 +222,23 @@ export function SimulationResearchDetailPanel({
             <span className="mt-1 text-sm font-semibold text-neutral-300">
               {simulationResearch.completedSimulations} /{" "}
               {simulationResearch.totalSimulations}
+            </span>
+          </div>
+          <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
+            <span className="text-[10px] font-semibold text-neutral-500 uppercase">
+              Ranges
+            </span>
+            <span className="mt-1 text-sm font-semibold text-neutral-300">
+              {simulationResearch.completedRanges} /{" "}
+              {simulationResearch.totalRanges}
+            </span>
+          </div>
+          <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
+            <span className="text-[10px] font-semibold text-neutral-500 uppercase">
+              Status
+            </span>
+            <span className="mt-1 text-sm font-semibold text-neutral-300">
+              {simulationResearch.status}
             </span>
           </div>
         </div>

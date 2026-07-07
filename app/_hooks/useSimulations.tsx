@@ -431,14 +431,6 @@ export const CREATE_SIMULATION_PLAN_DOCUMENT = graphql(`
   }
 `);
 
-export const CREATE_SIMULATION_DOCUMENT = graphql(`
-  mutation createSimulation($input: CreateSimulationInput!) {
-    createSimulation(input: $input) {
-      ...SimulationInfo
-    }
-  }
-`);
-
 export const CREATE_SIMULATION_RESEARCH_DOCUMENT = graphql(`
   mutation createSimulationResearch($input: CreateSimulationResearchInput!) {
     createSimulationResearch(input: $input) {
@@ -467,14 +459,6 @@ export const PLAY_SIMULATION_PLAN_DOCUMENT = graphql(`
   mutation playSimulationPlan($id: Int!) {
     playSimulationPlan(id: $id) {
       ...SimulationPlanInfo
-    }
-  }
-`);
-
-export const PLAY_AUTO_SIMULATION_DOCUMENT = graphql(`
-  mutation playAutoSimulation($id: Int!) {
-    playAutoSimulation(id: $id) {
-      ...SimulationInfo
     }
   }
 `);
@@ -1239,42 +1223,6 @@ export function useCreateSimulationPlan() {
   return { createSimulationPlan, loading };
 }
 
-export function useCreateSimulation() {
-  const [createSimulation, { data: newData, error, loading }] = useMutation(
-    CREATE_SIMULATION_DOCUMENT,
-  );
-  const client = useApolloClient();
-
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (newData && !error) {
-      enqueueSnackbar("Success at creating new auto simulation!", {
-        variant: "success",
-      });
-    }
-
-    if (newData && error) {
-      enqueueSnackbar("Error at creating new auto simulation!", {
-        variant: "error",
-      });
-    }
-  }, [client.cache, newData, error, enqueueSnackbar]);
-
-  const simulation = useMemo(() => {
-    if (!newData?.createSimulation) {
-      return null;
-    }
-
-    return getFragmentData(
-      SIMULATION_INFO_FRAGMENT_DOCUMENT,
-      newData.createSimulation,
-    ) as Simulation;
-  }, [newData]);
-
-  return { createSimulation, simulation, loading };
-}
-
 export function useCreateSimulationResearch() {
   const [createSimulationResearch, { data: newData, error, loading }] =
     useMutation(CREATE_SIMULATION_RESEARCH_DOCUMENT);
@@ -1384,31 +1332,6 @@ export function usePlaySimulationPlan() {
   return { playSimulationPlan, loading };
 }
 
-export function usePlayAutoSimulation() {
-  const [playAutoSimulation, { data: newData, error, loading }] = useMutation(
-    PLAY_AUTO_SIMULATION_DOCUMENT,
-  );
-  const client = useApolloClient();
-
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (newData && !error) {
-      enqueueSnackbar("Auto simulation started!", {
-        variant: "success",
-      });
-    }
-
-    if (newData && error) {
-      enqueueSnackbar("Error at starting auto simulation!", {
-        variant: "error",
-      });
-    }
-  }, [client.cache, newData, error, enqueueSnackbar]);
-
-  return { playAutoSimulation, loading };
-}
-
 export function useCancelSimulation() {
   const [cancelSimulation, { data: newData, error, loading }] = useMutation(
     CANCEL_SIMULATION_DOCUMENT,
@@ -1419,13 +1342,13 @@ export function useCancelSimulation() {
 
   useEffect(() => {
     if (newData && !error) {
-      enqueueSnackbar("Auto simulation cancelled!", {
+      enqueueSnackbar("Simulation cancelled!", {
         variant: "success",
       });
     }
 
     if (newData && error) {
-      enqueueSnackbar("Error at cancelling auto simulation!", {
+      enqueueSnackbar("Error at cancelling simulation!", {
         variant: "error",
       });
     }
@@ -1521,13 +1444,13 @@ export function useDeleteSimulation() {
     if (newData && !error) {
       client.cache.evict({ id: `Simulation:${newData.deleteSimulation}` });
       client.cache.gc();
-      enqueueSnackbar("Auto simulation removed!", {
+      enqueueSnackbar("Simulation removed!", {
         variant: "success",
       });
     }
 
     if (newData && error) {
-      enqueueSnackbar("Error at removing auto simulation!", {
+      enqueueSnackbar("Error at removing simulation!", {
         variant: "error",
       });
     }

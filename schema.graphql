@@ -228,27 +228,6 @@ input CreateSimulationBotInput {
   simulationPlanId: Int!
 }
 
-input CreateSimulationInput {
-  collateral: FloatMinMaxInput! = {max: 1000000000, min: 0}
-  days: Int! = 1
-  description: String!
-  direction: BotMode! = Reversed
-  endAt: Date!
-  gapDays: Int! = 0
-  leverage: FloatMinMaxInput! = {max: 50, min: 0}
-  platform: Platform!
-  r2: FloatMinMaxInput! = {max: 1, min: 0.5}
-  score: FloatMinMaxInput! = {max: 1, min: 0}
-  scoreFormular: SimulationScoreFormular! = RiskAdjustedCopyScore
-  selectedLeaderCount: Int! = 10
-  sizingFormular: SimulationSizingFormular! = ScoreScaledCollateralSizing
-  slope: FloatMinMaxInput! = {max: 1000000000, min: 0}
-  standardCollateralUsd: Float! = 100
-  startAt: Date!
-  title: String!
-  trade: IntMinMaxInput! = {max: 1000000, min: 3}
-}
-
 input CreateSimulationPlanInput {
   description: String!
   endAt: Date!
@@ -527,7 +506,6 @@ type Mutation {
   createBot(input: CreateBotInput!): BotBackwardDetails!
   createPlan(createPlanInput: CreatePlanInput!): Plan!
   createSLTP(input: SLTPRequestInput!): SLTPRequest!
-  createSimulation(input: CreateSimulationInput!): Simulation!
   createSimulationPlan(input: CreateSimulationPlanInput!): SimulationPlan!
   createSimulationResearch(input: CreateSimulationResearchInput!): SimulationResearch!
   decreaseAllowanceToZero(collateralIndex: Int!, contractId: Int!, followerAddress: String!, password: String!): Boolean!
@@ -557,7 +535,6 @@ type Mutation {
   pauseResearch(id: Int!): SimulationResearch!
   pauseSystem: Boolean!
   playAutoResearch(id: Int!): SimulationResearch!
-  playAutoSimulation(id: Int!): Simulation!
   playSimulationPlan(id: Int!): SimulationPlan!
   resumeSystem(password: String): Boolean!
   startAdaption(contractId: Int!, shouldRestart: Boolean!): Boolean!

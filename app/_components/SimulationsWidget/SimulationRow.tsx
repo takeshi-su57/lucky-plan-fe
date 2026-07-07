@@ -9,9 +9,7 @@ import { UserPermission } from "@/graphql/gql/graphql";
 import { LabeledChip } from "@/components/chips/LabeledChip";
 import { getPriceStr } from "@/utils/price";
 import {
-  useCancelSimulation,
   useDeleteSimulation,
-  usePlayAutoSimulation,
 } from "@/app/_hooks/useSimulations";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
@@ -39,17 +37,9 @@ function formatRange(range: { min: number; max: number }) {
 }
 
 export function SimulationRow({ simulation }: SimulationRowProps) {
-  const { playAutoSimulation, loading: playLoading } = usePlayAutoSimulation();
-  const { cancelSimulation, loading: cancelLoading } = useCancelSimulation();
   const { deleteSimulation, loading: deleteLoading } = useDeleteSimulation();
   const { userJwtQuery } = useUserJWT();
 
-  const canPlay =
-    simulation.status === SimulationStatus.Created ||
-    simulation.status === SimulationStatus.Paused ||
-    simulation.status === SimulationStatus.Failed ||
-    simulation.status === SimulationStatus.Running;
-  const canCancel = simulation.status === SimulationStatus.Running;
   const isAdmin = userJwtQuery.data?.permission === UserPermission.Admin;
 
   return (
@@ -135,41 +125,9 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
             <div className="flex flex-wrap items-center gap-2">
               <Link href={`/simulations/auto/${simulation.id}`}>
                 <Button size="sm" color="primary" variant="light">
-                  Show Plans
+                  Show Results
                 </Button>
               </Link>
-
-              {canPlay ? (
-                <Button
-                  size="sm"
-                  color="primary"
-                  variant="flat"
-                  isLoading={playLoading}
-                  isDisabled={playLoading || cancelLoading || deleteLoading}
-                  onPress={() =>
-                    playAutoSimulation({ variables: { id: simulation.id } })
-                  }
-                >
-                  {simulation.status === SimulationStatus.Running
-                    ? "Resume"
-                    : "Play Auto"}
-                </Button>
-              ) : null}
-
-              {canCancel ? (
-                <Button
-                  size="sm"
-                  color="danger"
-                  variant="flat"
-                  isLoading={cancelLoading}
-                  isDisabled={playLoading || cancelLoading || deleteLoading}
-                  onPress={() =>
-                    cancelSimulation({ variables: { id: simulation.id } })
-                  }
-                >
-                  Cancel
-                </Button>
-              ) : null}
 
               {isAdmin ? (
                 <ButtonWithConfirm
@@ -177,7 +135,7 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
                   color="danger"
                   variant="solid"
                   isLoading={deleteLoading}
-                  isDisabled={playLoading || cancelLoading || deleteLoading}
+                  isDisabled={deleteLoading}
                   onPress={() =>
                     deleteSimulation({ variables: { id: simulation.id } })
                   }

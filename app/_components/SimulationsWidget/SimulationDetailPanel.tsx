@@ -7,12 +7,10 @@ import { Button, Chip, Progress, Spinner, Tab, Tabs } from "@heroui/react";
 import dayjs from "dayjs";
 
 import {
-  useCancelSimulation,
   useDeleteSimulation,
   useGetSimulation,
   useGetSimulationPlanDetailsBySimulation,
   useGetSimulationPlansBySimulation,
-  usePlayAutoSimulation,
 } from "@/app/_hooks/useSimulations";
 import { LabeledChip } from "@/components/chips/LabeledChip";
 import { getPriceStr } from "@/utils/price";
@@ -216,8 +214,6 @@ export function SimulationDetailPanel({
     useGetSimulationPlansBySimulation(id);
   const { simulationPlanDetails, loading: detailsLoading } =
     useGetSimulationPlanDetailsBySimulation(id);
-  const { playAutoSimulation, loading: playLoading } = usePlayAutoSimulation();
-  const { cancelSimulation, loading: cancelLoading } = useCancelSimulation();
   const { deleteSimulation, loading: deleteLoading } = useDeleteSimulation();
   const { userJwtQuery } = useUserJWT();
 
@@ -229,12 +225,6 @@ export function SimulationDetailPanel({
     return <div>There is no simulation</div>;
   }
 
-  const canPlay =
-    simulation.status === SimulationStatus.Created ||
-    simulation.status === SimulationStatus.Paused ||
-    simulation.status === SimulationStatus.Failed ||
-    simulation.status === SimulationStatus.Running;
-  const canCancel = simulation.status === SimulationStatus.Running;
   const isAdmin = userJwtQuery.data?.permission === UserPermission.Admin;
 
   return (
@@ -272,45 +262,13 @@ export function SimulationDetailPanel({
           </div>
 
           <div className="flex shrink-0 flex-wrap items-center gap-2">
-            {canPlay ? (
-              <Button
-                color="primary"
-                variant="flat"
-                size="sm"
-                isLoading={playLoading}
-                isDisabled={playLoading || cancelLoading || deleteLoading}
-                onPress={() =>
-                  playAutoSimulation({ variables: { id: simulation.id } })
-                }
-              >
-                {simulation.status === SimulationStatus.Running
-                  ? "Resume"
-                  : "Play Auto"}
-              </Button>
-            ) : null}
-
-            {canCancel ? (
-              <Button
-                color="danger"
-                variant="flat"
-                size="sm"
-                isLoading={cancelLoading}
-                isDisabled={playLoading || cancelLoading || deleteLoading}
-                onPress={() =>
-                  cancelSimulation({ variables: { id: simulation.id } })
-                }
-              >
-                Cancel
-              </Button>
-            ) : null}
-
             {isAdmin ? (
               <ButtonWithConfirm
                 color="danger"
                 variant="solid"
                 size="sm"
                 isLoading={deleteLoading}
-                isDisabled={playLoading || cancelLoading || deleteLoading}
+                isDisabled={deleteLoading}
                 onPress={async () => {
                   await deleteSimulation({
                     variables: { id: simulation.id },
@@ -324,7 +282,7 @@ export function SimulationDetailPanel({
 
             <Link href="/simulations">
               <Button color="primary" variant="light" size="sm">
-                Back to Simulations
+                Back to Researches
               </Button>
             </Link>
           </div>
@@ -462,7 +420,7 @@ export function SimulationDetailPanel({
             </div>
           ) : (
             <div className="border-default-200 bg-content1 rounded-lg border p-6 text-sm text-neutral-400">
-              No generated plans yet. Start the auto simulation to create daily
+              No generated plans yet. Queue the parent research to create daily
               plans.
             </div>
           )}
