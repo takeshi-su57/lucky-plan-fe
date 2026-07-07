@@ -35,6 +35,8 @@ const SCORE_FORMULAR_OPTIONS = [SimulationScoreFormular.RiskAdjustedCopyScore];
 const SIZING_FORMULAR_OPTIONS = [
   SimulationSizingFormular.ScoreScaledCollateralSizing,
 ];
+const MAX_SIMULATIONS_PER_RESEARCH = 30;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 type RangeEntryState = {
   id: string;
@@ -125,9 +127,7 @@ function RangeEntryCard({
               <div className="grid gap-3 md:grid-cols-2">
                 <NumericInput
                   amount={entry.min}
-                  onChange={(nextValue) =>
-                    onChange(entry.id, "min", nextValue)
-                  }
+                  onChange={(nextValue) => onChange(entry.id, "min", nextValue)}
                   label="Min"
                   ariaLabel={`${label} minimum`}
                   min={min}
@@ -138,9 +138,7 @@ function RangeEntryCard({
                 />
                 <NumericInput
                   amount={entry.max}
-                  onChange={(nextValue) =>
-                    onChange(entry.id, "max", nextValue)
-                  }
+                  onChange={(nextValue) => onChange(entry.id, "max", nextValue)}
                   label="Max"
                   ariaLabel={`${label} maximum`}
                   min={min}
@@ -156,7 +154,7 @@ function RangeEntryCard({
       </div>
 
       {emptyMessage ? (
-        <p className="mt-3 text-xs text-danger-300">{emptyMessage}</p>
+        <p className="text-danger-300 mt-3 text-xs">{emptyMessage}</p>
       ) : null}
     </div>
   );
@@ -225,6 +223,36 @@ function normalizeRangeEntries(entries: RangeEntryState[]) {
   }));
 }
 
+function countPlanWindows(
+  startAt: Date,
+  endAt: Date,
+  days: number,
+  gapDays: number,
+) {
+  if (days <= 0 || gapDays < 0 || startAt.getTime() >= endAt.getTime()) {
+    return 0;
+  }
+
+  let count = 0;
+  let cursor = startAt.getTime();
+  const end = endAt.getTime();
+  const windowMs = days * DAY_MS;
+  const gapMs = gapDays * DAY_MS;
+
+  while (cursor < end) {
+    const nextCursor = cursor + windowMs;
+
+    if (nextCursor > end) {
+      break;
+    }
+
+    count += 1;
+    cursor = nextCursor + gapMs;
+  }
+
+  return count;
+}
+
 export function SimulationCreationPanel({
   compactHeading = false,
 }: {
@@ -269,6 +297,38 @@ export function SimulationCreationPanel({
   const [scoreRanges, setScoreRanges] = useState<RangeEntryState[]>([
     createRangeEntry("score", { min: "0.5", max: "0.8" }),
   ]);
+
+  const generatedSimulationCount =
+    tradeRanges.length *
+    r2Ranges.length *
+    slopeRanges.length *
+    collateralRanges.length *
+    leverageRanges.length *
+    scoreRanges.length;
+
+  const planWindowCount = useMemo(() => {
+    const parsedDays = Number(days);
+    const parsedGapDays = Number(gapDays);
+
+    if (
+      !scheduleRange ||
+      Number.isNaN(parsedDays) ||
+      Number.isNaN(parsedGapDays) ||
+      !Number.isInteger(parsedDays) ||
+      !Number.isInteger(parsedGapDays)
+    ) {
+      return 0;
+    }
+
+    return countPlanWindows(
+      scheduleRange.start.toDate(getServerTimezone()),
+      scheduleRange.end.toDate(getServerTimezone()),
+      parsedDays,
+      parsedGapDays,
+    );
+  }, [days, gapDays, scheduleRange]);
+
+  const estimatedPlanCount = generatedSimulationCount * planWindowCount;
 
   const errors = useMemo(() => {
     const result: Record<string, string> = {};
@@ -330,6 +390,10 @@ export function SimulationCreationPanel({
       result.scoreEmpty = "Add at least one score range";
     }
 
+    if (generatedSimulationCount > MAX_SIMULATIONS_PER_RESEARCH) {
+      result.simulationCount = `This research would generate ${generatedSimulationCount} simulations. Maximum allowed is ${MAX_SIMULATIONS_PER_RESEARCH}. Please reduce grid search combinations.`;
+    }
+
     const tradeEntryErrors = validateRangeEntries("Trade", tradeRanges, {
       minAllowed: 1,
       integer: true,
@@ -341,9 +405,13 @@ export function SimulationCreationPanel({
     const slopeEntryErrors = validateRangeEntries("Slope", slopeRanges, {
       minAllowed: 0,
     });
-    const leverageEntryErrors = validateRangeEntries("Leverage", leverageRanges, {
-      minAllowed: 0,
-    });
+    const leverageEntryErrors = validateRangeEntries(
+      "Leverage",
+      leverageRanges,
+      {
+        minAllowed: 0,
+      },
+    );
     const collateralEntryErrors = validateRangeEntries(
       "Collateral",
       collateralRanges,
@@ -418,6 +486,7 @@ export function SimulationCreationPanel({
     days,
     description,
     gapDays,
+    generatedSimulationCount,
     leverageRanges,
     r2Ranges,
     scheduleRange,
@@ -597,9 +666,7 @@ export function SimulationCreationPanel({
               aria-label="Score formula"
               selectedKeys={[scoreFormular]}
               onChange={(event) =>
-                setScoreFormular(
-                  event.target.value as SimulationScoreFormular,
-                )
+                setScoreFormular(event.target.value as SimulationScoreFormular)
               }
             >
               {SCORE_FORMULAR_OPTIONS.map((item) => (
@@ -687,12 +754,7 @@ export function SimulationCreationPanel({
                 ])
               }
               onChange={(id, field, nextValue) =>
-                handleRangeEntryChange(
-                  setLeverageRanges,
-                  id,
-                  field,
-                  nextValue,
-                )
+                handleRangeEntryChange(setLeverageRanges, id, field, nextValue)
               }
               onRemove={(id) => handleRangeEntryRemove(setLeverageRanges, id)}
               min={0}
@@ -750,6 +812,38 @@ export function SimulationCreationPanel({
               min/max ranges. Every range is combined into generated
               simulations.
             </p>
+          </div>
+
+          <div
+            className={`rounded-xl border px-4 py-4 text-sm shadow-[0_10px_30px_rgba(15,23,42,0.12)] ${
+              generatedSimulationCount > MAX_SIMULATIONS_PER_RESEARCH
+                ? "border-danger-400/60 bg-danger-50 text-danger-950"
+                : "border-emerald-500/35 bg-emerald-50 text-emerald-950"
+            }`}
+          >
+            <div className="grid gap-3 md:grid-cols-3">
+              <div>
+                <p className="text-xs font-medium uppercase">
+                  Generated simulations
+                </p>
+                <p className="text-lg font-semibold">
+                  {generatedSimulationCount} / {MAX_SIMULATIONS_PER_RESEARCH}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase">Ranges</p>
+                <p className="text-lg font-semibold">{planWindowCount}</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase">Estimated plans</p>
+                <p className="text-lg font-semibold">{estimatedPlanCount}</p>
+              </div>
+            </div>
+            {errors.flat.simulationCount ? (
+              <p className="mt-3 leading-6 font-medium">
+                {errors.flat.simulationCount}
+              </p>
+            ) : null}
           </div>
 
           <div className="flex flex-wrap items-center gap-2">

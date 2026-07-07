@@ -986,6 +986,7 @@ export type OpenTradeInput = {
 export type PerpTradeHistory = {
   __typename?: 'PerpTradeHistory';
   address: Scalars['String']['output'];
+  chainId: Scalars['Int']['output'];
   collateralDeltaUsd: Scalars['Float']['output'];
   collateralInUsd: Scalars['Float']['output'];
   collateralUsdPrice: Scalars['Float']['output'];
