@@ -510,6 +510,7 @@ type Mutation {
   cancelOrderAfterTimeout(
     input: CancelOrderAfterTimeoutInput!
   ): ContractExecutionResult!
+  cancelResearch(id: Int!): SimulationResearch!
   cancelSimulation(id: Int!): Simulation!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
@@ -571,9 +572,8 @@ type Mutation {
   liveContract(contractId: Int!, fromBlock: Int): Contract!
   makeSafeApp(password: String!): Boolean!
   openTradeMarket(input: OpenTradeInput!): ContractExecutionResult!
-  pauseSystem: Boolean!
-  cancelResearch(id: Int!): SimulationResearch!
   pauseResearch(id: Int!): SimulationResearch!
+  pauseSystem: Boolean!
   playAutoResearch(id: Int!): SimulationResearch!
   playSimulationPlan(id: Int!): SimulationPlan!
   resumeSystem(password: String): Boolean!
@@ -1065,33 +1065,33 @@ type SimulationPlanPageInfo {
 
 type SimulationResearch {
   collateral: [SimulationValueRange!]!
+  completedRanges: Int!
   completedSimulations: Int!
   createdAt: Date!
+  cursor: Date
   days: Int!
   description: String!
   direction: BotMode!
   endAt: Date!
+  finishedAt: Date
   gapDays: Int!
   id: Int!
+  lastError: String
   leverage: [SimulationValueRange!]!
   platform: Platform!
+  progressMessage: String
+  progressPercent: Float!
+  progressPhase: String
   r2: [SimulationValueRange!]!
   score: [SimulationValueRange!]!
   scoreFormular: SimulationScoreFormular!
   sizingFormular: SimulationSizingFormular!
-  status: SimulationStatus!
-  cursor: Date
-  progressPhase: String
-  progressMessage: String
-  progressPercent: Float!
-  totalRanges: Int!
-  completedRanges: Int!
-  startedAt: Date
-  finishedAt: Date
-  lastError: String
   slope: [SimulationValueRange!]!
   startAt: Date!
+  startedAt: Date
+  status: SimulationStatus!
   title: String!
+  totalRanges: Int!
   totalSimulations: Int!
   trade: [SimulationTradeRange!]!
   updatedAt: Date!
@@ -1104,34 +1104,34 @@ type SimulationResearchConnection {
 
 type SimulationResearchDetails {
   collateral: [SimulationValueRange!]!
+  completedRanges: Int!
   completedSimulations: Int!
   createdAt: Date!
+  cursor: Date
   days: Int!
   description: String!
   direction: BotMode!
   endAt: Date!
+  finishedAt: Date
   gapDays: Int!
   id: Int!
+  lastError: String
   leverage: [SimulationValueRange!]!
   platform: Platform!
+  progressMessage: String
+  progressPercent: Float!
+  progressPhase: String
   r2: [SimulationValueRange!]!
   score: [SimulationValueRange!]!
   scoreFormular: SimulationScoreFormular!
   simulations: [Simulation!]!
   sizingFormular: SimulationSizingFormular!
-  status: SimulationStatus!
-  cursor: Date
-  progressPhase: String
-  progressMessage: String
-  progressPercent: Float!
-  totalRanges: Int!
-  completedRanges: Int!
-  startedAt: Date
-  finishedAt: Date
-  lastError: String
   slope: [SimulationValueRange!]!
   startAt: Date!
+  startedAt: Date
+  status: SimulationStatus!
   title: String!
+  totalRanges: Int!
   totalSimulations: Int!
   trade: [SimulationTradeRange!]!
   updatedAt: Date!
