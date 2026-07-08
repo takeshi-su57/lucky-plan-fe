@@ -251,12 +251,20 @@ export function SimulationResearchDetailPanel({
             ariaLabel={`Simulation research ${simulationResearch.id} progress`}
             status={simulationResearch.status}
           />
-          <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
+          <div
+            aria-live="polite"
+            className="flex flex-wrap items-center gap-2 text-xs text-neutral-500"
+          >
             <span>{simulationResearch.progressMessage || "Waiting to run"}</span>
             <span className="text-neutral-600">
               {simulationResearch.progressPhase || "created"}
             </span>
           </div>
+          {simulationResearch.lastError ? (
+            <div className="border-danger-500/30 bg-danger-500/10 text-danger-200 rounded-lg border px-3 py-2 text-xs">
+              {simulationResearch.lastError}
+            </div>
+          ) : null}
         </div>
       </div>
 

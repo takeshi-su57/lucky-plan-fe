@@ -626,6 +626,28 @@ export function useSubscribeSimulation() {
       },
     });
 
+    client.cache.modify({
+      id: client.cache.identify({
+        __typename: "SimulationResearchDetails",
+        id: simulationResearch.id,
+      }),
+      fields: {
+        completedRanges: () => simulationResearch.completedRanges,
+        completedSimulations: () => simulationResearch.completedSimulations,
+        cursor: () => simulationResearch.cursor,
+        finishedAt: () => simulationResearch.finishedAt,
+        lastError: () => simulationResearch.lastError,
+        progressMessage: () => simulationResearch.progressMessage,
+        progressPercent: () => simulationResearch.progressPercent,
+        progressPhase: () => simulationResearch.progressPhase,
+        startedAt: () => simulationResearch.startedAt,
+        status: () => simulationResearch.status,
+        totalRanges: () => simulationResearch.totalRanges,
+        totalSimulations: () => simulationResearch.totalSimulations,
+        updatedAt: () => simulationResearch.updatedAt,
+      },
+    });
+
     client.cache.updateQuery(
       {
         query: GET_SIMULATION_RESEARCHES_DOCUMENT,
