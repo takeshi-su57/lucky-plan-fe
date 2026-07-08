@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button, Chip, Progress, Spinner, Tab, Tabs } from "@heroui/react";
+import { Button, Chip, Spinner, Tab, Tabs } from "@heroui/react";
 import dayjs from "dayjs";
 
 import {
@@ -23,6 +23,7 @@ import {
 import { SimulationAutoOverview } from "./SimulationAutoOverview";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
+import { SimulationProgressBar } from "./SimulationProgressBar";
 
 type DetailTab = "overview" | "plans";
 type DetailStatTone = "default" | "success" | "danger" | "warning";
@@ -329,15 +330,15 @@ export function SimulationDetailPanel({
         </div>
 
         <div className="flex flex-col gap-2">
-          <Progress
-            size="sm"
+          <SimulationProgressBar
             value={simulation.progressPercent}
             color={
               simulation.status === SimulationStatus.Failed
                 ? "danger"
                 : "primary"
             }
-            aria-label={`Simulation ${simulation.id} progress`}
+            ariaLabel={`Simulation ${simulation.id} progress`}
+            status={simulation.status}
           />
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
             <span>{simulation.progressMessage || "Waiting to run"}</span>

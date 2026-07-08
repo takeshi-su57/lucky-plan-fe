@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Button, Card, CardBody, Chip, Progress } from "@heroui/react";
+import { Button, Card, CardBody, Chip } from "@heroui/react";
 import dayjs from "dayjs";
 
 import { Simulation, SimulationStatus } from "@/graphql/gql/graphql";
@@ -13,6 +13,7 @@ import {
 } from "@/app/_hooks/useSimulations";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
+import { SimulationProgressBar } from "./SimulationProgressBar";
 
 export type SimulationRowProps = {
   simulation: Simulation;
@@ -196,15 +197,15 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Progress
-              size="sm"
+            <SimulationProgressBar
               value={simulation.progressPercent}
               color={
                 simulation.status === SimulationStatus.Failed
                   ? "danger"
                   : "primary"
               }
-              aria-label={`Simulation ${simulation.id} progress`}
+              ariaLabel={`Simulation ${simulation.id} progress`}
+              status={simulation.status}
             />
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
               <span>{simulation.progressMessage || "Waiting to run"}</span>

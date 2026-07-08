@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { twMerge } from "tailwind-merge";
 import "@/styles/globals.css";
 
+import ogImage from "@/assets/og-image.png";
 import { Providers } from "./providers";
 
 const geistSans = localFont({
@@ -15,6 +16,7 @@ const geistMono = localFont({
   variable: "--font-geist-mono",
   weight: "100 900",
 });
+const appUrl = "https://app.luckyplans.xyz";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -24,8 +26,39 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Lucky Plan",
-  description: "This is a UI for Lucky Plan",
+  metadataBase: new URL(appUrl),
+  title: "LuckyPlans",
+  description: "Simulate copy-trading plans before risking capital.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "LuckyPlans",
+    description: "Simulate copy-trading plans before risking capital.",
+    url: "/",
+    siteName: "LuckyPlans",
+    type: "website",
+    locale: "en_US",
+    images: [
+      {
+        url: ogImage.src,
+        width: ogImage.width,
+        height: ogImage.height,
+        alt: "LuckyPlans",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "LuckyPlans",
+    description: "Simulate copy-trading plans before risking capital.",
+    images: [
+      {
+        url: ogImage.src,
+        alt: "LuckyPlans",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -52,7 +85,7 @@ export default function RootLayout({
           <div className="bg-background text-foreground flex h-screen w-screen flex-col overflow-hidden font-sans">
             <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(135deg,#fafafa,#f4f4f5_52%,#e4e4e7)]" />
             <div className="relative flex min-h-0 flex-1">
-              <div className="border-default-200 bg-content1/90 hidden h-full w-[214px] shrink-0 flex-col overflow-auto border-r backdrop-blur-xl lg:flex">
+              <div className="border-default-200 bg-content1/90 hidden h-full w-53.5 shrink-0 flex-col overflow-auto border-r backdrop-blur-xl lg:flex">
                 {sidebar}
               </div>
 

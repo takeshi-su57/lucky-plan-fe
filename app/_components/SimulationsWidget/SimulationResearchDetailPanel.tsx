@@ -17,6 +17,7 @@ import { getPriceStr } from "@/utils/price";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { SimulationStatus, UserPermission } from "@/graphql/gql/graphql";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
+import { SimulationProgressBar } from "./SimulationProgressBar";
 
 function RangeListStat({ label, values }: { label: string; values: string[] }) {
   return (
@@ -239,6 +240,21 @@ export function SimulationResearchDetailPanel({
             </span>
             <span className="mt-1 text-sm font-semibold text-neutral-300">
               {simulationResearch.status}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <SimulationProgressBar
+            value={simulationResearch.progressPercent}
+            color="primary"
+            ariaLabel={`Simulation research ${simulationResearch.id} progress`}
+            status={simulationResearch.status}
+          />
+          <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
+            <span>{simulationResearch.progressMessage || "Waiting to run"}</span>
+            <span className="text-neutral-600">
+              {simulationResearch.progressPhase || "created"}
             </span>
           </div>
         </div>

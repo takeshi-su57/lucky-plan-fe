@@ -1,14 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { Button, Card, CardBody, Chip, Progress } from "@heroui/react";
+import { Button, Card, CardBody, Chip } from "@heroui/react";
 import dayjs from "dayjs";
 
-import { SimulationResearch, UserPermission } from "@/graphql/gql/graphql";
+import {
+  SimulationResearch,
+  SimulationStatus,
+  UserPermission,
+} from "@/graphql/gql/graphql";
 import { getPriceStr } from "@/utils/price";
 import { useDeleteSimulationResearch } from "@/app/_hooks/useSimulations";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
+import { SimulationProgressBar } from "./SimulationProgressBar";
 
 function formatRangePairs(
   ranges: Array<{ min: number; max: number }>,
@@ -36,12 +41,7 @@ export function SimulationResearchRow({
     useDeleteSimulationResearch();
   const { userJwtQuery } = useUserJWT();
   const isAdmin = userJwtQuery.data?.permission === UserPermission.Admin;
-  const progress =
-    simulationResearch.totalSimulations > 0
-      ? (simulationResearch.completedSimulations /
-          simulationResearch.totalSimulations) *
-        100
-      : 0;
+  const progress = simulationResearch.progressPercent;
 
   return (
     <div className="pb-3 select-none">
@@ -182,15 +182,17 @@ export function SimulationResearchRow({
           </div>
 
           <div className="flex flex-col gap-2">
-            <Progress
-              size="sm"
+            <SimulationProgressBar
               value={progress}
               color="primary"
-              aria-label={`Simulation research ${simulationResearch.id} progress`}
+              ariaLabel={`Simulation research ${simulationResearch.id} progress`}
+              status={simulationResearch.status as SimulationStatus}
             />
             <div className="text-xs text-neutral-500">
-              {simulationResearch.completedSimulations} /{" "}
-              {simulationResearch.totalSimulations} child simulations completed
+              <span>{simulationResearch.progressMessage || "Waiting to run"}</span>
+              <span className="ml-2 text-neutral-600">
+                {simulationResearch.progressPhase || "created"}
+              </span>
             </div>
           </div>
         </CardBody>
