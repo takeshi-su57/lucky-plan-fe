@@ -33,8 +33,8 @@ const STATUS_COLOR: Partial<
   [SimulationStatus.Cancelled]: "danger",
 };
 
-function formatRange(range: { min: number; max: number }) {
-  return `${range.min}-${range.max}`;
+function formatRanges(ranges: Array<{ min: number; max: number }>) {
+  return ranges.map((range) => `${range.min}-${range.max}`).join(", ");
 }
 
 export function SimulationRow({ simulation }: SimulationRowProps) {
@@ -85,39 +85,39 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
                 <LabeledChip
                   size="sm"
                   variant="flat"
-                  value={formatRange(simulation.trade)}
+                  value={formatRanges(simulation.trade)}
                   unit="Trades"
                 />
                 <LabeledChip
                   size="sm"
                   variant="flat"
-                  value={formatRange(simulation.r2)}
+                  value={formatRanges(simulation.r2)}
                   unit="R2"
                 />
                 <LabeledChip
                   size="sm"
                   variant="flat"
-                  value={formatRange(simulation.slope)}
+                  value={formatRanges(simulation.slope)}
                   unit="Slope"
                 />
                 <LabeledChip
                   size="sm"
                   variant="flat"
-                  value={`${getPriceStr(simulation.collateral.min)}-${getPriceStr(
-                    simulation.collateral.max,
-                  )}`}
+                  value={simulation.collateral
+                    .map((range) => `${getPriceStr(range.min)}-${getPriceStr(range.max)}`)
+                    .join(", ")}
                   unit="Collateral"
                 />
                 <LabeledChip
                   size="sm"
                   variant="flat"
-                  value={`${formatRange(simulation.leverage)}x`}
+                  value={`${formatRanges(simulation.leverage)}x`}
                   unit="Leverage"
                 />
                 <LabeledChip
                   size="sm"
                   variant="flat"
-                  value={formatRange(simulation.score)}
+                  value={formatRanges(simulation.score)}
                   unit="Score"
                 />
               </div>

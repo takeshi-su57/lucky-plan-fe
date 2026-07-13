@@ -611,6 +611,7 @@ enum PerpTradeHistoryOperation {
   INCREASE_LEVERAGE
   INCREASE_SIZE
   OPEN
+  PNL_WITHDRAW
 }
 
 type PerpTradePosition {
@@ -806,7 +807,7 @@ type SeverityCount {
 }
 
 type Simulation {
-  collateral: SimulationValueRange!
+  collateral: [SimulationValueRange!]!
   completedPlans: Int!
   createdAt: Date!
   cursor: Date
@@ -817,20 +818,20 @@ type Simulation {
   error: String
   gapDays: Int!
   id: Int!
-  leverage: SimulationValueRange!
+  leverage: [SimulationValueRange!]!
   maxDrawdownUsd: Float!
   platform: Platform!
   profitFactor: Float!
   progressMessage: String
   progressPercent: Float!
   progressPhase: String
-  r2: SimulationValueRange!
+  r2: [SimulationValueRange!]!
   researchId: Int
-  score: SimulationValueRange!
+  score: [SimulationValueRange!]!
   scoreFormular: SimulationScoreFormular!
   selectedLeaderCount: Int!
   sizingFormular: SimulationSizingFormular!
-  slope: SimulationValueRange!
+  slope: [SimulationValueRange!]!
   standardCollateralUsd: Float!
   startAt: Date!
   status: SimulationStatus!
@@ -840,7 +841,7 @@ type Simulation {
   totalLeaderPnl: Float!
   totalNetPnlUsd: Float!
   totalSimulationPlans: Int!
-  trade: SimulationTradeRange!
+  trade: [SimulationTradeRange!]!
   tradeCount: Int!
   updatedAt: Date!
   winRate: Float!
@@ -1027,24 +1028,24 @@ type SimulationResearchDetails {
   gapDays: Int!
   id: Int!
   lastError: String
-  leverage: [SimulationValueRange!]!
+  leverage: [SimulationValueRangeGroup!]!
   platform: Platform!
   progressMessage: String
   progressPercent: Float!
   progressPhase: String
-  r2: [SimulationValueRange!]!
-  score: [SimulationValueRange!]!
+  r2: [SimulationValueRangeGroup!]!
+  score: [SimulationValueRangeGroup!]!
   scoreFormular: SimulationScoreFormular!
   simulations: [Simulation!]!
   sizingFormular: SimulationSizingFormular!
-  slope: [SimulationValueRange!]!
+  slope: [SimulationValueRangeGroup!]!
   startAt: Date!
   startedAt: Date
   status: SimulationStatus!
   title: String!
   totalRanges: Int!
   totalSimulations: Int!
-  trade: [SimulationTradeRange!]!
+  trade: [SimulationTradeRangeGroup!]!
   updatedAt: Date!
 }
 

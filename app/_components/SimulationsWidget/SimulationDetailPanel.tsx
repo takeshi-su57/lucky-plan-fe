@@ -32,17 +32,25 @@ function formatPercent(value: number) {
   return `${(value * 100).toFixed(2)}%`;
 }
 
+function getRangeEnvelope(ranges: Array<{ min: number; max: number }>) {
+  return {
+    min: Math.min(...ranges.map((range) => range.min)),
+    max: Math.max(...ranges.map((range) => range.max)),
+  };
+}
+
 function getEffectiveSlopeBounds(simulation: Simulation) {
+  const slope = getRangeEnvelope(simulation.slope);
   if (simulation.direction === "Reversed") {
     return {
-      minSlope: -Math.abs(simulation.slope.max),
-      maxSlope: -Math.abs(simulation.slope.min),
+      minSlope: -Math.abs(slope.max),
+      maxSlope: -Math.abs(slope.min),
     };
   }
 
   return {
-    minSlope: Math.abs(simulation.slope.min),
-    maxSlope: Math.abs(simulation.slope.max),
+    minSlope: Math.abs(slope.min),
+    maxSlope: Math.abs(slope.max),
   };
 }
 
@@ -85,14 +93,19 @@ function DetailStat({
 
 function SimulationConfigResults({ simulation }: { simulation: Simulation }) {
   const effectiveSlopeBounds = getEffectiveSlopeBounds(simulation);
+  const trade = getRangeEnvelope(simulation.trade);
+  const r2 = getRangeEnvelope(simulation.r2);
+  const collateral = getRangeEnvelope(simulation.collateral);
+  const leverage = getRangeEnvelope(simulation.leverage);
+  const score = getRangeEnvelope(simulation.score);
   const configItems = [
     { label: "Direction", value: simulation.direction },
     { label: "Plan Days", value: simulation.days },
     { label: "Gap Days", value: simulation.gapDays },
-    { label: "Min Trades", value: simulation.trade.min },
-    { label: "Max Trades", value: simulation.trade.max },
-    { label: "Min R2", value: simulation.r2.min.toFixed(2) },
-    { label: "Max R2", value: simulation.r2.max.toFixed(2) },
+    { label: "Min Trades", value: trade.min },
+    { label: "Max Trades", value: trade.max },
+    { label: "Min R2", value: r2.min.toFixed(2) },
+    { label: "Max R2", value: r2.max.toFixed(2) },
     { label: "Min Slope", value: effectiveSlopeBounds.minSlope.toFixed(2) },
     { label: "Max Slope", value: effectiveSlopeBounds.maxSlope.toFixed(2) },
     {
@@ -101,8 +114,8 @@ function SimulationConfigResults({ simulation }: { simulation: Simulation }) {
     },
     {
       label: "Collateral Filter",
-      value: `${getPriceStr(simulation.collateral.min)} - ${getPriceStr(
-        simulation.collateral.max,
+      value: `${getPriceStr(collateral.min)} - ${getPriceStr(
+        collateral.max,
       )}`,
     },
     {
@@ -119,11 +132,11 @@ function SimulationConfigResults({ simulation }: { simulation: Simulation }) {
     },
     {
       label: "Leverage",
-      value: `${simulation.leverage.min}x - ${simulation.leverage.max}x`,
+      value: `${leverage.min}x - ${leverage.max}x`,
     },
     {
       label: "Score",
-      value: `${simulation.score.min.toFixed(2)} - ${simulation.score.max.toFixed(2)}`,
+      value: `${score.min.toFixed(2)} - ${score.max.toFixed(2)}`,
     },
   ];
 

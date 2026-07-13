@@ -32,19 +32,18 @@ function RangeListStat({ label, values }: { label: string; values: string[] }) {
   );
 }
 
+type Range = { min: number; max: number };
+type RangeOrGroup = Range | { ranges: Range[] };
+
 function formatRangePairs(
-  ranges: Array<{ min: number; max: number }>,
+  ranges: RangeOrGroup[],
   formatter: (value: number) => string = (value) => `${value}`,
 ) {
-  return ranges.map(
+  return ranges
+    .flatMap((range) => ("ranges" in range ? range.ranges : [range]))
+    .map(
     (range) => `${formatter(range.min)}-${formatter(range.max)}`,
   );
-}
-
-function flattenRangeGroups(
-  groups: Array<{ ranges: Array<{ min: number; max: number }> }>,
-) {
-  return groups.flatMap((group) => group.ranges);
 }
 
 export function SimulationResearchDetailPanel({
@@ -212,7 +211,7 @@ export function SimulationResearchDetailPanel({
           <RangeListStat
             label="Collateral Ranges"
             values={formatRangePairs(
-              flattenRangeGroups(simulationResearch.collateral),
+              simulationResearch.collateral,
               getPriceStr,
             )}
           />

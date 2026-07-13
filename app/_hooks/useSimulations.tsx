@@ -179,8 +179,8 @@ export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     gapDays
     id
     collateral { ranges { max min } }
-    leverage { max min }
-    score { max min }
+    leverage { ranges { max min } }
+    score { ranges { max min } }
     scoreFormular
     sizingFormular
     status
@@ -193,13 +193,13 @@ export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     startedAt
     finishedAt
     lastError
-    r2 { max min }
-    slope { max min }
+    r2 { ranges { max min } }
+    slope { ranges { max min } }
     platform
     startAt
     title
     totalSimulations
-    trade { max min }
+    trade { ranges { max min } }
     updatedAt
     simulations {
       ...SimulationInfo
