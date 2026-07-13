@@ -70,6 +70,8 @@ function RangeEntryCard({
   onAdd,
   onChange,
   onRemove,
+  rangesAreAlternatives,
+  onToggleAlternatives,
   min,
   max,
   step,
@@ -81,6 +83,8 @@ function RangeEntryCard({
   onAdd: () => void;
   onChange: (id: string, field: "min" | "max", nextValue: string) => void;
   onRemove: (id: string) => void;
+  rangesAreAlternatives: boolean;
+  onToggleAlternatives: () => void;
   min?: number;
   max?: number;
   step: number;
@@ -91,15 +95,22 @@ function RangeEntryCard({
     <div className="border-default-200 bg-content2/20 rounded-xl border p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h3 className="text-sm font-semibold text-neutral-100">{label}</h3>
-        <Button
-          size="sm"
-          variant="flat"
-          color="primary"
-          aria-label={`Add ${label} range`}
-          onPress={onAdd}
-        >
-          + Add
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="flat" onPress={onToggleAlternatives}>
+            {rangesAreAlternatives
+              ? "Ranges match together"
+              : "Ranges are variants"}
+          </Button>
+          <Button
+            size="sm"
+            variant="flat"
+            color="primary"
+            aria-label={`Add ${label} range`}
+            onPress={onAdd}
+          >
+            + Add
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col gap-4">
@@ -223,6 +234,16 @@ function normalizeRangeEntries(entries: RangeEntryState[]) {
   }));
 }
 
+function normalizeRangeGroups(
+  entries: RangeEntryState[],
+  rangesAreAlternatives: boolean,
+) {
+  const ranges = normalizeRangeEntries(entries);
+  return rangesAreAlternatives
+    ? [{ ranges }]
+    : ranges.map((range) => ({ ranges: [range] }));
+}
+
 function countPlanWindows(
   startAt: Date,
   endAt: Date,
@@ -297,14 +318,17 @@ export function SimulationCreationPanel({
   const [scoreRanges, setScoreRanges] = useState<RangeEntryState[]>([
     createRangeEntry("score", { min: "0.5", max: "0.8" }),
   ]);
+  const [alternatives, setAlternatives] = useState<Record<string, boolean>>({});
+  const toggleAlternatives = (field: string) =>
+    setAlternatives((current) => ({ ...current, [field]: !current[field] }));
 
   const generatedSimulationCount =
-    tradeRanges.length *
-    r2Ranges.length *
-    slopeRanges.length *
-    collateralRanges.length *
-    leverageRanges.length *
-    scoreRanges.length;
+    (alternatives.trade ? 1 : tradeRanges.length) *
+    (alternatives.r2 ? 1 : r2Ranges.length) *
+    (alternatives.slope ? 1 : slopeRanges.length) *
+    (alternatives.collateral ? 1 : collateralRanges.length) *
+    (alternatives.leverage ? 1 : leverageRanges.length) *
+    (alternatives.score ? 1 : scoreRanges.length);
 
   const planWindowCount = useMemo(() => {
     const parsedDays = Number(days);
@@ -534,12 +558,18 @@ export function SimulationCreationPanel({
           days: Number(days),
           gapDays: Number(gapDays),
           direction,
-          trade: normalizeRangeEntries(tradeRanges),
-          r2: normalizeRangeEntries(r2Ranges),
-          slope: normalizeRangeEntries(slopeRanges),
-          collateral: normalizeRangeEntries(collateralRanges),
-          leverage: normalizeRangeEntries(leverageRanges),
-          score: normalizeRangeEntries(scoreRanges),
+          trade: normalizeRangeGroups(tradeRanges, Boolean(alternatives.trade)),
+          r2: normalizeRangeGroups(r2Ranges, Boolean(alternatives.r2)),
+          slope: normalizeRangeGroups(slopeRanges, Boolean(alternatives.slope)),
+          collateral: normalizeRangeGroups(
+            collateralRanges,
+            Boolean(alternatives.collateral),
+          ),
+          leverage: normalizeRangeGroups(
+            leverageRanges,
+            Boolean(alternatives.leverage),
+          ),
+          score: normalizeRangeGroups(scoreRanges, Boolean(alternatives.score)),
           scoreFormular,
           sizingFormular,
         },
@@ -709,6 +739,8 @@ export function SimulationCreationPanel({
               step={1}
               errors={errors.tradeEntryErrors}
               emptyMessage={errors.flat.tradeEmpty}
+              rangesAreAlternatives={Boolean(alternatives.trade)}
+              onToggleAlternatives={() => toggleAlternatives("trade")}
             />
             <RangeEntryCard
               label="R2"
@@ -725,6 +757,8 @@ export function SimulationCreationPanel({
               step={0.01}
               errors={errors.r2EntryErrors}
               emptyMessage={errors.flat.r2Empty}
+              rangesAreAlternatives={Boolean(alternatives.r2)}
+              onToggleAlternatives={() => toggleAlternatives("r2")}
             />
             <RangeEntryCard
               label={`Slope (${direction} uses signed execution behind the scenes)`}
@@ -743,6 +777,8 @@ export function SimulationCreationPanel({
               step={0.1}
               errors={errors.slopeEntryErrors}
               emptyMessage={errors.flat.slopeEmpty}
+              rangesAreAlternatives={Boolean(alternatives.slope)}
+              onToggleAlternatives={() => toggleAlternatives("slope")}
             />
             <RangeEntryCard
               label="Leverage"
@@ -761,6 +797,8 @@ export function SimulationCreationPanel({
               step={0.1}
               errors={errors.leverageEntryErrors}
               emptyMessage={errors.flat.leverageEmpty}
+              rangesAreAlternatives={Boolean(alternatives.leverage)}
+              onToggleAlternatives={() => toggleAlternatives("leverage")}
             />
             <RangeEntryCard
               label="Collateral"
@@ -784,6 +822,8 @@ export function SimulationCreationPanel({
               step={1}
               errors={errors.collateralEntryErrors}
               emptyMessage={errors.flat.collateralEmpty}
+              rangesAreAlternatives={Boolean(alternatives.collateral)}
+              onToggleAlternatives={() => toggleAlternatives("collateral")}
             />
             <RangeEntryCard
               label="Score"
@@ -803,6 +843,8 @@ export function SimulationCreationPanel({
               step={0.01}
               errors={errors.scoreEntryErrors}
               emptyMessage={errors.flat.scoreEmpty}
+              rangesAreAlternatives={Boolean(alternatives.score)}
+              onToggleAlternatives={() => toggleAlternatives("score")}
             />
           </div>
 

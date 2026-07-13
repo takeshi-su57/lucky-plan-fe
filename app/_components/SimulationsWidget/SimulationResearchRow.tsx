@@ -32,6 +32,12 @@ function formatRangePairs(
     : preview.join(", ");
 }
 
+function flattenRangeGroups(
+  groups: Array<{ ranges: Array<{ min: number; max: number }> }>,
+) {
+  return groups.flatMap((group) => group.ranges);
+}
+
 export function SimulationResearchRow({
   simulationResearch,
 }: {
@@ -147,7 +153,7 @@ export function SimulationResearchRow({
                 Trade Ranges
               </span>
               <span className="mt-1 text-sm font-semibold text-neutral-300">
-                {formatRangePairs(simulationResearch.trade)}
+                {formatRangePairs(flattenRangeGroups(simulationResearch.trade))}
               </span>
             </div>
             <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
@@ -155,7 +161,10 @@ export function SimulationResearchRow({
                 Collateral Ranges
               </span>
               <span className="mt-1 text-sm font-semibold text-neutral-300">
-                {formatRangePairs(simulationResearch.collateral, getPriceStr)}
+                {formatRangePairs(
+                  flattenRangeGroups(simulationResearch.collateral),
+                  getPriceStr,
+                )}
               </span>
             </div>
             <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
@@ -164,7 +173,7 @@ export function SimulationResearchRow({
               </span>
               <span className="mt-1 text-sm font-semibold text-neutral-300">
                 {formatRangePairs(
-                  simulationResearch.leverage,
+                  flattenRangeGroups(simulationResearch.leverage),
                   (value) => `${value}x`,
                 )}
               </span>
@@ -174,7 +183,7 @@ export function SimulationResearchRow({
                 Score
               </span>
               <span className="mt-1 text-sm font-semibold text-neutral-300">
-                {formatRangePairs(simulationResearch.score, (value) =>
+                {formatRangePairs(flattenRangeGroups(simulationResearch.score), (value) =>
                   value.toFixed(2),
                 )}
               </span>

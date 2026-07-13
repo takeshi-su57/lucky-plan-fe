@@ -41,6 +41,12 @@ function formatRangePairs(
   );
 }
 
+function flattenRangeGroups(
+  groups: Array<{ ranges: Array<{ min: number; max: number }> }>,
+) {
+  return groups.flatMap((group) => group.ranges);
+}
+
 export function SimulationResearchDetailPanel({
   researchId,
 }: {
@@ -206,7 +212,7 @@ export function SimulationResearchDetailPanel({
           <RangeListStat
             label="Collateral Ranges"
             values={formatRangePairs(
-              simulationResearch.collateral,
+              flattenRangeGroups(simulationResearch.collateral),
               getPriceStr,
             )}
           />

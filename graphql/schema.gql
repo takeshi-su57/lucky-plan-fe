@@ -234,22 +234,22 @@ input CreateSimulationPlanInput {
 }
 
 input CreateSimulationResearchInput {
-  collateral: [FloatMinMaxInput!]!
+  collateral: [FloatRangeGroupInput!]!
   days: Int! = 1
   description: String!
   direction: BotMode!
   endAt: Date!
   gapDays: Int! = 0
-  leverage: [FloatMinMaxInput!]!
+  leverage: [FloatRangeGroupInput!]!
   platform: Platform!
-  r2: [FloatMinMaxInput!]!
-  score: [FloatMinMaxInput!]!
+  r2: [FloatRangeGroupInput!]!
+  score: [FloatRangeGroupInput!]!
   scoreFormular: SimulationScoreFormular! = RiskAdjustedCopyScore
   sizingFormular: SimulationSizingFormular! = ScoreScaledCollateralSizing
-  slope: [FloatMinMaxInput!]!
+  slope: [FloatRangeGroupInput!]!
   startAt: Date!
   title: String!
-  trade: [IntMinMaxInput!]!
+  trade: [IntRangeGroupInput!]!
 }
 
 input CreateStrategyInput {
@@ -283,6 +283,10 @@ input DecreasePositionSizeInput {
 input FloatMinMaxInput {
   max: Float!
   min: Float!
+}
+
+input FloatRangeGroupInput {
+  ranges: [FloatMinMaxInput!]!
 }
 
 type Follower {
@@ -359,6 +363,10 @@ input IncreasePositionSizeInput {
 input IntMinMaxInput {
   max: Int!
   min: Int!
+}
+
+input IntRangeGroupInput {
+  ranges: [IntMinMaxInput!]!
 }
 
 """
@@ -1064,7 +1072,7 @@ type SimulationPlanPageInfo {
 }
 
 type SimulationResearch {
-  collateral: [SimulationValueRange!]!
+  collateral: [SimulationValueRangeGroup!]!
   completedRanges: Int!
   completedSimulations: Int!
   createdAt: Date!
@@ -1077,23 +1085,23 @@ type SimulationResearch {
   gapDays: Int!
   id: Int!
   lastError: String
-  leverage: [SimulationValueRange!]!
+  leverage: [SimulationValueRangeGroup!]!
   platform: Platform!
   progressMessage: String
   progressPercent: Float!
   progressPhase: String
-  r2: [SimulationValueRange!]!
-  score: [SimulationValueRange!]!
+  r2: [SimulationValueRangeGroup!]!
+  score: [SimulationValueRangeGroup!]!
   scoreFormular: SimulationScoreFormular!
   sizingFormular: SimulationSizingFormular!
-  slope: [SimulationValueRange!]!
+  slope: [SimulationValueRangeGroup!]!
   startAt: Date!
   startedAt: Date
   status: SimulationStatus!
   title: String!
   totalRanges: Int!
   totalSimulations: Int!
-  trade: [SimulationTradeRange!]!
+  trade: [SimulationTradeRangeGroup!]!
   updatedAt: Date!
 }
 
@@ -1103,7 +1111,7 @@ type SimulationResearchConnection {
 }
 
 type SimulationResearchDetails {
-  collateral: [SimulationValueRange!]!
+  collateral: [SimulationValueRangeGroup!]!
   completedRanges: Int!
   completedSimulations: Int!
   createdAt: Date!
@@ -1181,9 +1189,17 @@ type SimulationTradeRange {
   min: Int!
 }
 
+type SimulationTradeRangeGroup {
+  ranges: [SimulationTradeRange!]!
+}
+
 type SimulationValueRange {
   max: Float!
   min: Float!
+}
+
+type SimulationValueRangeGroup {
+  ranges: [SimulationValueRange!]!
 }
 
 type Strategy {
