@@ -11,8 +11,8 @@ export type HistoryChartBucket = {
   startLabel: string;
 };
 
-const MIN_SAMPLES = 256;
-const MAX_SAMPLES = 512;
+const MIN_SAMPLES = 512;
+const MAX_SAMPLES = 1024;
 
 export function compressHistoryChartData(
   data: HistoryChartPoint[],

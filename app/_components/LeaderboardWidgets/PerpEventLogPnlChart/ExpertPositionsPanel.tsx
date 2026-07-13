@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Pagination } from "@heroui/react";
+import { Button } from "@heroui/react";
 
 import {
   PerpTradeHistory,
@@ -39,9 +39,10 @@ function PositionSection({
   emptyLabel: string;
 }) {
   const totalPages = Math.max(1, Math.ceil(histories.length / pageSize));
+  const safePage = Math.min(page, totalPages);
   const visibleHistories = histories.slice(
-    (page - 1) * pageSize,
-    page * pageSize,
+    (safePage - 1) * pageSize,
+    safePage * pageSize,
   );
 
   return (
@@ -52,13 +53,27 @@ function PositionSection({
         </h3>
 
         {histories.length > pageSize ? (
-          <Pagination
-            size="sm"
-            color="secondary"
-            page={page}
-            total={totalPages}
-            onChange={onChangePage}
-          />
+          <div className="mt-2 flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="flat"
+              onPress={() => onChangePage(safePage - 1)}
+              isDisabled={safePage === 1}
+            >
+              Previous
+            </Button>
+            <span className="text-default-500 text-xs tabular-nums">
+              Page {safePage} / {totalPages}
+            </span>
+            <Button
+              size="sm"
+              variant="flat"
+              onPress={() => onChangePage(safePage + 1)}
+              isDisabled={safePage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
         ) : null}
       </div>
 
@@ -87,12 +102,16 @@ export function ExpertPositionsPanel({
   const [closedPage, setClosedPage] = useState(1);
 
   const { openedPositions, closedPositions } = useMemo(() => {
-    return {
-      openedPositions: missionHistories.filter(
-        (histories) => !hasCloseOperation(histories),
-      ),
-      closedPositions: missionHistories.filter(hasCloseOperation),
-    };
+    const openedPositions: PerpTradeHistory[][] = [];
+    const closedPositions: PerpTradeHistory[][] = [];
+
+    for (const histories of missionHistories) {
+      (hasCloseOperation(histories) ? closedPositions : openedPositions).push(
+        histories,
+      );
+    }
+
+    return { openedPositions, closedPositions };
   }, [missionHistories]);
 
   return (
