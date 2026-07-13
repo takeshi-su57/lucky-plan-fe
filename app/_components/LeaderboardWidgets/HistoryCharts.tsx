@@ -1,5 +1,4 @@
-import BarChart from "@/components/charts/BarChart";
-import LineChart from "@/components/charts/LineChart";
+import { HistoryExtremaChart } from "@/components/charts/HistoryExtremaChart";
 import { twMerge } from "tailwind-merge";
 import dayjs from "dayjs";
 import { memo, useMemo } from "react";
@@ -40,18 +39,10 @@ export const HistoryCharts = memo(function HistoryCharts({
 }: HistoryChartsProps) {
   const chartDataArr = useMemo(
     () => [
-      {
-        data: formatChartData(pnlAccChartData),
-        title: "ACC PNL",
-        type: "line",
-      },
-      {
-        data: formatChartData(inOutAccChartData),
-        title: "ACC In/Out",
-        type: "line",
-      },
-      { data: formatChartData(pnlChartData), title: "PNL", type: "bar" },
-      { data: formatChartData(inOutChartData), title: "In/Out", type: "bar" },
+      { data: formatChartData(pnlAccChartData), title: "ACC PNL" },
+      { data: formatChartData(inOutAccChartData), title: "ACC In/Out" },
+      { data: formatChartData(pnlChartData), title: "PNL" },
+      { data: formatChartData(inOutChartData), title: "In/Out" },
     ],
     [inOutAccChartData, inOutChartData, pnlAccChartData, pnlChartData],
   );
@@ -67,29 +58,15 @@ export const HistoryCharts = memo(function HistoryCharts({
     >
       {chartDataArr.map((item) => (
         <div key={item.title} className="flex-1">
-          {item.type === "line" ? (
-            <LineChart
-              title={item.title}
-              data={item.data}
-              initialSelected={["y"]}
-              className={twMerge(
-                "border-default-200 bg-content1 rounded-lg border",
-                cols === 1 ? "h-40" : "h-80",
-              )}
-            />
-          ) : null}
-
-          {item.type === "bar" ? (
-            <BarChart
-              title={item.title}
-              data={item.data}
-              initialSelected={["y"]}
-              className={twMerge(
-                "border-default-200 bg-content1 w-full rounded-lg border",
-                cols === 1 ? "h-40" : "h-80",
-              )}
-            />
-          ) : null}
+          <HistoryExtremaChart
+            title={item.title}
+            data={item.data}
+            initialSelected={["y"]}
+            className={twMerge(
+              "border-default-200 bg-content1 rounded-lg border",
+              cols === 1 ? "h-40" : "h-80",
+            )}
+          />
         </div>
       ))}
     </div>
