@@ -14,8 +14,7 @@ import {
   getPairKey,
   getTradePairs,
 } from "../LeaderboardWidgets/PerpEventLogPnlChart/utils";
-import LineChart from "@/components/charts/LineChart";
-import BarChart from "@/components/charts/BarChart";
+import { HistoryExtremaChart } from "@/components/charts/HistoryExtremaChart";
 
 export type SimulationOverviewProps = {
   simulationPlan: SimulationPlanDetails;
@@ -244,15 +243,13 @@ export function SimulationOverview({
       {
         data: formatChartData(pnlAccChartData),
         title: "ACC PNL",
-        type: "line",
       },
       {
         data: formatChartData(inOutAccChartData),
         title: "ACC In/Out",
-        type: "line",
       },
-      { data: formatChartData(pnlChartData), title: "PNL", type: "bar" },
-      { data: formatChartData(inOutChartData), title: "In/Out", type: "bar" },
+      { data: formatChartData(pnlChartData), title: "PNL" },
+      { data: formatChartData(inOutChartData), title: "In/Out" },
     ],
     [inOutAccChartData, inOutChartData, pnlAccChartData, pnlChartData],
   );
@@ -289,27 +286,14 @@ export function SimulationOverview({
         <div className={"grid w-full grid-cols-1 gap-4"}>
           {chartDataArr.map((item) => (
             <div key={item.title} className="flex-1">
-              {item.type === "line" ? (
-                <LineChart
-                  title={item.title}
-                  data={item.data}
-                  initialSelected={["y"]}
-                  className={
-                    "border-default-200 bg-content1 h-50 rounded-lg border"
-                  }
-                />
-              ) : null}
-
-              {item.type === "bar" ? (
-                <BarChart
-                  title={item.title}
-                  data={item.data}
-                  initialSelected={["y"]}
-                  className={
-                    "border-default-200 bg-content1 h-50 rounded-lg border"
-                  }
-                />
-              ) : null}
+              <HistoryExtremaChart
+                title={item.title}
+                data={item.data}
+                initialSelected={["y"]}
+                className={
+                  "border-default-200 bg-content1 h-50 rounded-lg border"
+                }
+              />
             </div>
           ))}
         </div>

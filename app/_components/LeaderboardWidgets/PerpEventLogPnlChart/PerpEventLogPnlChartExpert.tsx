@@ -232,7 +232,7 @@ export function PerpEventLogPnlChartExpert({
   }
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-[300px_minmax(0,1fr)] items-start gap-4 p-3">
+    <div className="grid h-full min-h-0 grid-cols-[300px_minmax(0,1fr)] items-stretch gap-4 p-3">
       <div className="border-default-200 bg-content1 flex h-full min-h-0 flex-col gap-4 rounded-lg border p-5">
         <Tabs
           aria-label="users-table-tabs"

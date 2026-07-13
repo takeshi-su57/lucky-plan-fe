@@ -15,6 +15,7 @@ export type HistoryExtremaChartProps = {
   data: HistoryChartPoint[];
   className?: string;
   initialSelected?: string[];
+  initialVisibleLines?: string[];
 };
 
 const EMPTY_CHART_DATA = [
@@ -27,11 +28,15 @@ export const HistoryExtremaChart = memo(function HistoryExtremaChart({
   data,
   className,
   initialSelected,
+  initialVisibleLines,
 }: HistoryExtremaChartProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<Chart | null>(null);
   const [selected, setSelected] = useState<string[]>(initialSelected ?? []);
+  const [visibleLines, setVisibleLines] = useState<string[]>(
+    initialVisibleLines ?? ["avg"],
+  );
   const [width, setWidth] = useState(0);
 
   useEffect(() => {
@@ -58,34 +63,45 @@ export const HistoryExtremaChart = memo(function HistoryExtremaChart({
     if (!canvas) return;
 
     const labels = chartData.map((point) => point.endLabel);
-    const datasets = [
-      {
+    const datasets: Chart<"line">["data"]["datasets"] = [];
+
+    if (visibleLines.includes("max")) {
+      datasets.push({
         label: "Max",
         data: chartData.map((point) => point.max),
         borderColor: "rgb(34 197 94)",
-        backgroundColor: "rgb(34 197 94 / 0.08)",
         borderWidth: 1,
         fill: false,
         pointRadius: 0,
-      },
-      {
+      });
+    }
+
+    if (visibleLines.includes("min")) {
+      datasets.push({
         label: "Min",
         data: chartData.map((point) => point.min),
-        backgroundColor: "rgb(239 68 68 / 0.08)",
         borderColor: "rgb(239 68 68)",
         borderWidth: 1,
-        fill: "-1",
-        pointRadius: 0,
-      },
-      {
-        label: "Average",
-        data: chartData.map((point) => point.avg),
-        borderColor: "#525252",
-        borderWidth: 2,
         fill: false,
         pointRadius: 0,
-      },
-    ];
+      });
+    }
+
+    if (visibleLines.includes("avg")) {
+      datasets.push({
+        label: "Average",
+        data: chartData.map((point) => point.avg),
+        backgroundColor: "rgb(34 197 94 / 0.08)",
+        borderColor: "rgb(115 115 115)",
+        borderWidth: 1,
+        fill: {
+          target: "origin",
+          above: "rgb(34 197 94 / 0.08)",
+          below: "rgb(239 68 68 / 0.08)",
+        },
+        pointRadius: 0,
+      });
+    }
 
     instanceRef.current?.destroy();
     instanceRef.current = new Chart(canvas, {
@@ -119,7 +135,7 @@ export const HistoryExtremaChart = memo(function HistoryExtremaChart({
       instanceRef.current?.destroy();
       instanceRef.current = null;
     };
-  }, [chartData, selected]);
+  }, [chartData, selected, visibleLines]);
 
   return (
     <div className="relative flex w-full flex-col gap-3">
@@ -127,7 +143,18 @@ export const HistoryExtremaChart = memo(function HistoryExtremaChart({
         <span className="text-xs font-semibold">{title}</span>
       </div>
 
-      <div className="absolute right-4 bottom-4 z-1000 flex flex-row items-center justify-between gap-0">
+      <div className="absolute right-4 bottom-4 z-1000 flex flex-row items-center justify-between gap-3 bg-white">
+        <CheckboxGroup
+          color="success"
+          value={visibleLines}
+          onValueChange={setVisibleLines}
+          orientation="horizontal"
+        >
+          <Checkbox value="avg">Avg</Checkbox>
+          <Checkbox value="min">Min</Checkbox>
+          <Checkbox value="max">Max</Checkbox>
+        </CheckboxGroup>
+
         <CheckboxGroup
           color="warning"
           value={selected}
