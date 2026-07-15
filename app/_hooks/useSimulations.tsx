@@ -142,9 +142,24 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
     endAt
     gapDays
     id
-    collateral { ranges { max min } }
-    leverage { ranges { max min } }
-    score { ranges { max min } }
+    collateral {
+      ranges {
+        max
+        min
+      }
+    }
+    leverage {
+      ranges {
+        max
+        min
+      }
+    }
+    score {
+      ranges {
+        max
+        min
+      }
+    }
     scoreFormular
     sizingFormular
     status
@@ -157,13 +172,28 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
     startedAt
     finishedAt
     lastError
-    r2 { ranges { max min } }
-    slope { ranges { max min } }
+    r2 {
+      ranges {
+        max
+        min
+      }
+    }
+    slope {
+      ranges {
+        max
+        min
+      }
+    }
     platform
     startAt
     title
     totalSimulations
-    trade { ranges { max min } }
+    trade {
+      ranges {
+        max
+        min
+      }
+    }
     updatedAt
   }
 `);
@@ -178,9 +208,24 @@ export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     endAt
     gapDays
     id
-    collateral { ranges { max min } }
-    leverage { ranges { max min } }
-    score { ranges { max min } }
+    collateral {
+      ranges {
+        max
+        min
+      }
+    }
+    leverage {
+      ranges {
+        max
+        min
+      }
+    }
+    score {
+      ranges {
+        max
+        min
+      }
+    }
     scoreFormular
     sizingFormular
     status
@@ -193,13 +238,28 @@ export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     startedAt
     finishedAt
     lastError
-    r2 { ranges { max min } }
-    slope { ranges { max min } }
+    r2 {
+      ranges {
+        max
+        min
+      }
+    }
+    slope {
+      ranges {
+        max
+        min
+      }
+    }
     platform
     startAt
     title
     totalSimulations
-    trade { ranges { max min } }
+    trade {
+      ranges {
+        max
+        min
+      }
+    }
     updatedAt
     simulations {
       ...SimulationInfo
@@ -398,6 +458,14 @@ export const CREATE_SIMULATION_PLAN_DOCUMENT = graphql(`
 export const CREATE_SIMULATION_RESEARCH_DOCUMENT = graphql(`
   mutation createSimulationResearch($input: CreateSimulationResearchInput!) {
     createSimulationResearch(input: $input) {
+      ...SimulationResearchInfo
+    }
+  }
+`);
+
+export const UPDATE_SIMULATION_RESEARCH_DOCUMENT = graphql(`
+  mutation updateSimulationResearch($input: UpdateSimulationResearchInput!) {
+    updateSimulationResearch(input: $input) {
       ...SimulationResearchInfo
     }
   }
@@ -1242,6 +1310,28 @@ export function useCreateSimulationResearch() {
   }, [newData]);
 
   return { createSimulationResearch, simulationResearch, loading };
+}
+
+export function useUpdateSimulationResearch() {
+  const [updateSimulationResearch, { data: newData, error, loading }] =
+    useMutation(UPDATE_SIMULATION_RESEARCH_DOCUMENT);
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      enqueueSnackbar("Simulation research details updated!", {
+        variant: "success",
+      });
+    }
+
+    if (error) {
+      enqueueSnackbar("Error updating simulation research details!", {
+        variant: "error",
+      });
+    }
+  }, [newData, error, enqueueSnackbar]);
+
+  return { updateSimulationResearch, loading };
 }
 
 export function useUpdateSimulationBot() {

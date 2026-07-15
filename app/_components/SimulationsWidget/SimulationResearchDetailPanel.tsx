@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button, Chip, Spinner } from "@heroui/react";
+import { useState } from "react";
+import { Button, Chip, Input, Spinner, Textarea } from "@heroui/react";
 
 import {
   useCancelResearch,
@@ -11,6 +12,7 @@ import {
   useGetSimulationsByResearch,
   usePauseResearch,
   usePlayAutoResearch,
+  useUpdateSimulationResearch,
 } from "@/app/_hooks/useSimulations";
 import { SimulationRow } from "./SimulationRow";
 import { getPriceStr } from "@/utils/price";
@@ -18,6 +20,8 @@ import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { SimulationStatus, UserPermission } from "@/graphql/gql/graphql";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import { SimulationProgressBar } from "./SimulationProgressBar";
+import { LOCAL_USER_JWT_KEY } from "@/app/_hooks/useUserJWT";
+import { StandardModal } from "@/components/modals/StandardModal";
 
 function RangeListStat({ label, values }: { label: string; values: string[] }) {
   return (
@@ -41,9 +45,7 @@ function formatRangePairs(
 ) {
   return ranges
     .flatMap((range) => ("ranges" in range ? range.ranges : [range]))
-    .map(
-    (range) => `${formatter(range.min)}-${formatter(range.max)}`,
-  );
+    .map((range) => `${formatter(range.min)}-${formatter(range.max)}`);
 }
 
 export function SimulationResearchDetailPanel({
@@ -62,7 +64,12 @@ export function SimulationResearchDetailPanel({
   const { playAutoResearch, loading: playLoading } = usePlayAutoResearch();
   const { pauseResearch, loading: pauseLoading } = usePauseResearch();
   const { cancelResearch, loading: cancelLoading } = useCancelResearch();
+  const { updateSimulationResearch, loading: updateLoading } =
+    useUpdateSimulationResearch();
   const { userJwtQuery } = useUserJWT();
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
 
   if (researchLoading) {
     return <Spinner size="sm" label="Loading Research..." />;
@@ -73,6 +80,9 @@ export function SimulationResearchDetailPanel({
   }
 
   const isAdmin = userJwtQuery.data?.permission === UserPermission.Admin;
+  const canEdit =
+    userJwtQuery.data?.permission === UserPermission.Admin ||
+    userJwtQuery.data?.permission === UserPermission.Trader;
   const actionLoading =
     playLoading || pauseLoading || cancelLoading || deleteLoading;
   const canQueue =
@@ -84,6 +94,34 @@ export function SimulationResearchDetailPanel({
   const canCancel =
     simulationResearch.status !== SimulationStatus.Completed &&
     simulationResearch.status !== SimulationStatus.Cancelled;
+  const canExport = simulationResearch.status === SimulationStatus.Completed;
+
+  const openEditModal = () => {
+    setTitle(simulationResearch.title);
+    setDescription(simulationResearch.description);
+    setIsEditOpen(true);
+  };
+
+  const downloadAiReport = async () => {
+    const token = window.localStorage.getItem(LOCAL_USER_JWT_KEY);
+    const apiBase = process.env.NEXT_PUBLIC_LUCKY_PLAN_GRAPHQL_API.replace(
+      /\/graphql$/,
+      "",
+    );
+    const response = await fetch(
+      `${apiBase}/simulation-researches/${simulationResearch.id}/reports/ai`,
+      {
+        headers: token ? { Authorization: `Bearer ${JSON.parse(token)}` } : {},
+      },
+    );
+    if (!response.ok) throw new Error("Unable to export this research report");
+    const url = URL.createObjectURL(await response.blob());
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `simulation-research-${simulationResearch.id}-ai-standard.zip`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -110,6 +148,26 @@ export function SimulationResearchDetailPanel({
           </div>
 
           <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <Button
+              color="secondary"
+              variant="flat"
+              size="sm"
+              isDisabled={!canExport}
+              onPress={() => void downloadAiReport()}
+            >
+              Export AI Report
+            </Button>
+
+            {canEdit ? (
+              <Button
+                color="primary"
+                variant="flat"
+                size="sm"
+                onPress={openEditModal}
+              >
+                Edit Research
+              </Button>
+            ) : null}
             {canQueue ? (
               <Button
                 color="primary"
@@ -260,7 +318,9 @@ export function SimulationResearchDetailPanel({
             aria-live="polite"
             className="flex flex-wrap items-center gap-2 text-xs text-neutral-500"
           >
-            <span>{simulationResearch.progressMessage || "Waiting to run"}</span>
+            <span>
+              {simulationResearch.progressMessage || "Waiting to run"}
+            </span>
             <span className="text-neutral-600">
               {simulationResearch.progressPhase || "created"}
             </span>
@@ -272,6 +332,57 @@ export function SimulationResearchDetailPanel({
           ) : null}
         </div>
       </div>
+
+      <StandardModal
+        isOpen={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        classNames={{ base: "max-w-xl" }}
+      >
+        <h1>Edit Simulation Research</h1>
+        <p className="text-sm text-neutral-400">
+          This also updates the title and description of all child simulations
+          and their generated plans, so future AI exports remain coherent.
+        </p>
+        <Input
+          label="Title"
+          value={title}
+          onValueChange={setTitle}
+          isRequired
+        />
+        <Textarea
+          label="Description"
+          value={description}
+          onValueChange={setDescription}
+          minRows={4}
+          isRequired
+        />
+        <div className="flex justify-end gap-2">
+          <Button variant="light" onPress={() => setIsEditOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            color="primary"
+            isLoading={updateLoading}
+            isDisabled={!title.trim() || !description.trim()}
+            onPress={async () => {
+              const result = await updateSimulationResearch({
+                variables: {
+                  input: {
+                    id: simulationResearch.id,
+                    title: title.trim(),
+                    description: description.trim(),
+                  },
+                },
+              });
+              if (result.data?.updateSimulationResearch) {
+                setIsEditOpen(false);
+              }
+            }}
+          >
+            Save Research Details
+          </Button>
+        </div>
+      </StandardModal>
 
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">

@@ -556,6 +556,7 @@ type Mutation {
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
   updateSimulation(input: UpdateSimulationInput!): Simulation!
   updateSimulationBot(input: UpdateSimulationBotInput!): SimulationBot!
+  updateSimulationResearch(input: UpdateSimulationResearchInput!): SimulationResearch!
   updateSl(input: UpdateSlInput!): ContractExecutionResult!
   updateStrategy(id: Int!, input: UpdateStrategyInput!): Strategy!
   updateTp(input: UpdateTpInput!): ContractExecutionResult!
@@ -1216,6 +1217,12 @@ input UpdateSimulationInput {
   standardCollateralUsd: Float
   title: String
   trade: IntMinMaxInput
+}
+
+input UpdateSimulationResearchInput {
+  description: String!
+  id: Int!
+  title: String!
 }
 
 input UpdateSlInput {
