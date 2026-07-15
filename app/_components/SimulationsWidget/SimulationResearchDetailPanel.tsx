@@ -274,6 +274,10 @@ export function SimulationResearchDetailPanel({
             )}
           />
           <RangeListStat
+            label="Size Ranges"
+            values={formatRangePairs(simulationResearch.size, getPriceStr)}
+          />
+          <RangeListStat
             label="Score"
             values={formatRangePairs(simulationResearch.score, (value) =>
               value.toFixed(2),

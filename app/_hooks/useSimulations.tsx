@@ -88,6 +88,10 @@ export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
       max
       min
     }
+    size {
+      max
+      min
+    }
     leverage {
       max
       min
@@ -143,6 +147,12 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
     gapDays
     id
     collateral {
+      ranges {
+        max
+        min
+      }
+    }
+    size {
       ranges {
         max
         min
@@ -209,6 +219,12 @@ export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     gapDays
     id
     collateral {
+      ranges {
+        max
+        min
+      }
+    }
+    size {
       ranges {
         max
         min

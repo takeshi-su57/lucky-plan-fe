@@ -315,6 +315,9 @@ export function SimulationCreationPanel({
   const [collateralRanges, setCollateralRanges] = useState<RangeEntryState[]>([
     createRangeEntry("collateral", { min: "10", max: "500" }),
   ]);
+  const [sizeRanges, setSizeRanges] = useState<RangeEntryState[]>([
+    createRangeEntry("size", { min: "0", max: "1000000000" }),
+  ]);
   const [scoreRanges, setScoreRanges] = useState<RangeEntryState[]>([
     createRangeEntry("score", { min: "0.5", max: "0.8" }),
   ]);
@@ -327,6 +330,7 @@ export function SimulationCreationPanel({
     (alternatives.r2 ? 1 : r2Ranges.length) *
     (alternatives.slope ? 1 : slopeRanges.length) *
     (alternatives.collateral ? 1 : collateralRanges.length) *
+    (alternatives.size ? 1 : sizeRanges.length) *
     (alternatives.leverage ? 1 : leverageRanges.length) *
     (alternatives.score ? 1 : scoreRanges.length);
 
@@ -410,6 +414,10 @@ export function SimulationCreationPanel({
       result.collateralEmpty = "Add at least one collateral range";
     }
 
+    if (sizeRanges.length === 0) {
+      result.sizeEmpty = "Add at least one size range";
+    }
+
     if (scoreRanges.length === 0) {
       result.scoreEmpty = "Add at least one score range";
     }
@@ -443,6 +451,9 @@ export function SimulationCreationPanel({
         minAllowed: 0,
       },
     );
+    const sizeEntryErrors = validateRangeEntries("Size", sizeRanges, {
+      minAllowed: 0,
+    });
     const scoreEntryErrors = validateRangeEntries("Score", scoreRanges, {
       minAllowed: 0,
       maxAllowed: 1,
@@ -487,6 +498,13 @@ export function SimulationCreationPanel({
         }
       });
     });
+    Object.values(sizeEntryErrors).forEach((entryErrors) => {
+      Object.values(entryErrors).forEach((message) => {
+        if (message) {
+          result[`size-${message}`] = message;
+        }
+      });
+    });
 
     Object.values(scoreEntryErrors).forEach((entryErrors) => {
       Object.values(entryErrors).forEach((message) => {
@@ -503,10 +521,12 @@ export function SimulationCreationPanel({
       slopeEntryErrors,
       leverageEntryErrors,
       collateralEntryErrors,
+      sizeEntryErrors,
       scoreEntryErrors,
     };
   }, [
     collateralRanges,
+    sizeRanges,
     days,
     description,
     gapDays,
@@ -565,6 +585,7 @@ export function SimulationCreationPanel({
             collateralRanges,
             Boolean(alternatives.collateral),
           ),
+          size: normalizeRangeGroups(sizeRanges, Boolean(alternatives.size)),
           leverage: normalizeRangeGroups(
             leverageRanges,
             Boolean(alternatives.leverage),
@@ -826,6 +847,26 @@ export function SimulationCreationPanel({
               onToggleAlternatives={() => toggleAlternatives("collateral")}
             />
             <RangeEntryCard
+              label="Size (USD)"
+              entries={sizeRanges}
+              onAdd={() =>
+                setSizeRanges((current) => [
+                  ...current,
+                  createRangeEntry("size"),
+                ])
+              }
+              onChange={(id, field, nextValue) =>
+                handleRangeEntryChange(setSizeRanges, id, field, nextValue)
+              }
+              onRemove={(id) => handleRangeEntryRemove(setSizeRanges, id)}
+              min={0}
+              step={1}
+              errors={errors.sizeEntryErrors}
+              emptyMessage={errors.flat.sizeEmpty}
+              rangesAreAlternatives={Boolean(alternatives.size)}
+              onToggleAlternatives={() => toggleAlternatives("size")}
+            />
+            <RangeEntryCard
               label="Score"
               entries={scoreRanges}
               onAdd={() =>
@@ -850,7 +891,7 @@ export function SimulationCreationPanel({
 
           <div className="rounded-xl border border-amber-500/45 bg-amber-50 px-4 py-4 text-sm text-amber-950 shadow-[0_10px_30px_rgba(245,158,11,0.10)]">
             <p className="leading-6 font-medium">
-              Trades, R2, slope, collateral, leverage, and score each use
+              Trades, R2, slope, collateral, size, leverage, and score each use
               min/max ranges. Every range is combined into generated
               simulations.
             </p>

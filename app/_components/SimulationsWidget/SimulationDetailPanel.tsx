@@ -84,9 +84,7 @@ function DetailStat({
       <span className="text-[10px] font-semibold text-neutral-500 uppercase">
         {label}
       </span>
-      <span className={`mt-1 text-sm font-semibold ${toneClass}`}>
-        {value}
-      </span>
+      <span className={`mt-1 text-sm font-semibold ${toneClass}`}>{value}</span>
     </div>
   );
 }
@@ -96,6 +94,7 @@ function SimulationConfigResults({ simulation }: { simulation: Simulation }) {
   const trade = getRangeEnvelope(simulation.trade);
   const r2 = getRangeEnvelope(simulation.r2);
   const collateral = getRangeEnvelope(simulation.collateral);
+  const size = getRangeEnvelope(simulation.size);
   const leverage = getRangeEnvelope(simulation.leverage);
   const score = getRangeEnvelope(simulation.score);
   const configItems = [
@@ -114,17 +113,17 @@ function SimulationConfigResults({ simulation }: { simulation: Simulation }) {
     },
     {
       label: "Collateral Filter",
-      value: `${getPriceStr(collateral.min)} - ${getPriceStr(
-        collateral.max,
-      )}`,
+      value: `${getPriceStr(collateral.min)} - ${getPriceStr(collateral.max)}`,
+    },
+    {
+      label: "Size Filter",
+      value: `${getPriceStr(size.min)} - ${getPriceStr(size.max)}`,
     },
     {
       label: "Sizing Bounds",
       value: `${getPriceStr(
         SIMULATION_SYSTEM_CONFIG.minCollateralUsd,
-      )} - ${getPriceStr(
-        SIMULATION_SYSTEM_CONFIG.maxCollateralUsd,
-      )}`,
+      )} - ${getPriceStr(SIMULATION_SYSTEM_CONFIG.maxCollateralUsd)}`,
     },
     {
       label: "Ratio",

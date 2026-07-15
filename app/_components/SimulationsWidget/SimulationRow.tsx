@@ -8,9 +8,7 @@ import { Simulation, SimulationStatus } from "@/graphql/gql/graphql";
 import { UserPermission } from "@/graphql/gql/graphql";
 import { LabeledChip } from "@/components/chips/LabeledChip";
 import { getPriceStr } from "@/utils/price";
-import {
-  useDeleteSimulation,
-} from "@/app/_hooks/useSimulations";
+import { useDeleteSimulation } from "@/app/_hooks/useSimulations";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import { SimulationProgressBar } from "./SimulationProgressBar";
@@ -104,9 +102,23 @@ export function SimulationRow({ simulation }: SimulationRowProps) {
                   size="sm"
                   variant="flat"
                   value={simulation.collateral
-                    .map((range) => `${getPriceStr(range.min)}-${getPriceStr(range.max)}`)
+                    .map(
+                      (range) =>
+                        `${getPriceStr(range.min)}-${getPriceStr(range.max)}`,
+                    )
                     .join(", ")}
                   unit="Collateral"
+                />
+                <LabeledChip
+                  size="sm"
+                  variant="flat"
+                  value={simulation.size
+                    .map(
+                      (range) =>
+                        `${getPriceStr(range.min)}-${getPriceStr(range.max)}`,
+                    )
+                    .join(", ")}
+                  unit="Size"
                 />
                 <LabeledChip
                   size="sm"
