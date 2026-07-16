@@ -499,6 +499,7 @@ enum MissionStatus {
 
 type Mutation {
   allowAuto(address: String!, allowAuto: Boolean!, budget: Float!, followerContractId: Int!, ratio: Float!): User!
+  approveSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
   batchCreateSimulationBots(inputs: [CreateSimulationBotInput!]!): [SimulationBot!]!
   buildPnlSnapshotsV2(dateStr: String!, isForceBuild: Boolean!, platform: Platform!): Boolean!
@@ -545,6 +546,9 @@ type Mutation {
   pauseSystem: Boolean!
   playAutoResearch(id: Int!): SimulationResearch!
   playSimulationPlan(id: Int!): SimulationPlan!
+  prebuildSimulationEvaluatorWorker(endedAt: String!, platform: String!, startedAt: String!, workerId: String!): String!
+  rejectSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
+  removeRejectedSimulationEvaluatorWorker(workerId: String!): Boolean!
   resumeSystem(password: String): Boolean!
   startAdaption(contractId: Int!, shouldRestart: Boolean!): Boolean!
   startPlan(id: Int!): Boolean!
@@ -773,6 +777,7 @@ type Query {
   isPnlSnapshotV2Initialized(dateStr: String!, platform: Platform!): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   simulation(id: Int!): Simulation
+  simulationEvaluatorWorkers: [SimulationEvaluatorWorkerView!]!
   simulationPlanDetailsBySimulation(simulationId: Int!): [SimulationPlanDetails!]!
   simulationPlansBySimulation(simulationId: Int!): [SimulationPlan!]!
   simulationResearch(id: Int!): SimulationResearchDetails
@@ -926,6 +931,33 @@ type SimulationConnection {
 type SimulationEdge {
   cursor: Int!
   node: Simulation!
+}
+
+type SimulationEvaluatorWorkerCacheView {
+  coveredEndAt: String
+  coveredStartAt: String
+  lastError: String
+  platform: String!
+  status: String!
+}
+
+type SimulationEvaluatorWorkerPrebuildProgressView {
+  bytes: String!
+  message: String!
+  records: String!
+  taskId: String!
+}
+
+type SimulationEvaluatorWorkerView {
+  authorizationStatus: String!
+  displayName: String!
+  id: String!
+  lastError: String
+  lastHeartbeatAt: String
+  lastTaskAt: String
+  platformCaches: [SimulationEvaluatorWorkerCacheView!]!
+  prebuildProgress: SimulationEvaluatorWorkerPrebuildProgressView
+  runtimeStatus: String!
 }
 
 type SimulationPageInfo {
