@@ -507,6 +507,9 @@ type Mutation {
     followerContractId: Int!
     ratio: Float!
   ): User!
+  approveSimulationEvaluatorWorker(
+    workerId: String!
+  ): SimulationEvaluatorWorkerView!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
   batchCreateSimulationBots(
     inputs: [CreateSimulationBotInput!]!
@@ -585,6 +588,15 @@ type Mutation {
   pauseSystem: Boolean!
   playAutoResearch(id: Int!): SimulationResearch!
   playSimulationPlan(id: Int!): SimulationPlan!
+  prebuildSimulationEvaluatorWorker(
+    endedAt: String!
+    platform: String!
+    startedAt: String!
+    workerId: String!
+  ): String!
+  rejectSimulationEvaluatorWorker(
+    workerId: String!
+  ): SimulationEvaluatorWorkerView!
   resumeSystem(password: String): Boolean!
   startAdaption(contractId: Int!, shouldRestart: Boolean!): Boolean!
   startPlan(id: Int!): Boolean!
@@ -870,6 +882,7 @@ type Query {
   ): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   simulation(id: Int!): Simulation
+  simulationEvaluatorWorkers: [SimulationEvaluatorWorkerView!]!
   simulationPlanDetailsBySimulation(
     simulationId: Int!
   ): [SimulationPlanDetails!]!
@@ -1025,6 +1038,32 @@ type SimulationConnection {
 type SimulationEdge {
   cursor: Int!
   node: Simulation!
+}
+
+type SimulationEvaluatorWorkerCacheView {
+  coveredEndAt: String
+  coveredStartAt: String
+  lastError: String
+  platform: String!
+  status: String!
+}
+
+type SimulationEvaluatorWorkerPrebuildProgressView {
+  bytes: String!
+  message: String!
+  records: String!
+  taskId: String!
+}
+
+type SimulationEvaluatorWorkerView {
+  authorizationStatus: String!
+  id: String!
+  lastError: String
+  lastHeartbeatAt: String
+  lastTaskAt: String
+  platformCaches: [SimulationEvaluatorWorkerCacheView!]!
+  prebuildProgress: SimulationEvaluatorWorkerPrebuildProgressView
+  runtimeStatus: String!
 }
 
 type SimulationPageInfo {

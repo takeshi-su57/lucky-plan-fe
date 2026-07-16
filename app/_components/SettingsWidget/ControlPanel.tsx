@@ -10,6 +10,8 @@ import {
   useKillSubService,
   usePauseSystem,
   useStartSubService,
+  useSimulationEvaluatorWorkerActions,
+  useSimulationEvaluatorWorkers,
 } from "@/app-hooks/useSystem";
 import { useUserJWT } from "@/app-hooks/useUserJWT";
 import { UserPermission } from "@/graphql/gql/graphql";
@@ -39,8 +41,10 @@ export function ControlPanel() {
   const { data: systemStatus } = useGetSystemStatus();
   const { data: isSafeApp } = useIsSafeApp();
   const microserviceStatus = useGetMicroserviceStatus();
-
   const { userJwtQuery } = useUserJWT();
+  const isAdmin = userJwtQuery?.data?.permission === UserPermission.Admin;
+  const { workers, refetch: refetchWorkers } =
+    useSimulationEvaluatorWorkers(isAdmin);
 
   const pauseSystem = usePauseSystem();
   const { killSubService, loading: killSubServiceLoading } =
@@ -48,6 +52,92 @@ export function ControlPanel() {
   const { startSubService, loading: startSubServiceLoading } =
     useStartSubService();
   const { cleanDB, loading: cleanDBLoading } = useCleanDB();
+  const {
+    approve,
+    reject,
+    prebuild,
+    loading: workerActionLoading,
+  } = useSimulationEvaluatorWorkerActions();
+
+  const workerRows = useMemo(
+    () =>
+      workers.map((worker) => ({
+        id: worker.id,
+        data: {
+          service: {
+            component: <div className="max-w-64 break-all">{worker.id}</div>,
+          },
+          pids: {
+            component: `${worker.authorizationStatus} / ${worker.runtimeStatus}`,
+          },
+          action: {
+            component: (
+              <div className="flex flex-wrap items-center gap-2">
+                {worker.authorizationStatus === "Pending" ? (
+                  <>
+                    <Button
+                      size="sm"
+                      color="primary"
+                      isLoading={workerActionLoading}
+                      onPress={async () => {
+                        await approve({ variables: { workerId: worker.id } });
+                        refetchWorkers();
+                      }}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      color="danger"
+                      isLoading={workerActionLoading}
+                      onPress={async () => {
+                        await reject({ variables: { workerId: worker.id } });
+                        refetchWorkers();
+                      }}
+                    >
+                      Reject
+                    </Button>
+                  </>
+                ) : null}
+                {worker.authorizationStatus === "Approved" ? (
+                  <Button
+                    size="sm"
+                    variant="flat"
+                    isLoading={workerActionLoading}
+                    onPress={async () => {
+                      const platform = window.prompt(
+                        "Platform (GNS, GMX, or AVNT)",
+                        "GNS",
+                      );
+                      const startedAt = window.prompt("Cache start (ISO-8601)");
+                      const endedAt = window.prompt("Cache end (ISO-8601)");
+                      if (!platform || !startedAt || !endedAt) return;
+                      await prebuild({
+                        variables: {
+                          workerId: worker.id,
+                          platform,
+                          startedAt,
+                          endedAt,
+                        },
+                      });
+                      refetchWorkers();
+                    }}
+                  >
+                    Prebuild cache
+                  </Button>
+                ) : null}
+                <span className="text-default-500 text-xs">
+                  {worker.prebuildProgress ? `${worker.prebuildProgress.message}: ${Number(worker.prebuildProgress.records).toLocaleString()} logs (${(Number(worker.prebuildProgress.bytes) / 1024 / 1024).toFixed(1)} MB)` : worker.platformCaches
+                    .map((cache) => `${cache.platform}: ${cache.status}`)
+                    .join(" · ") || "No platform cache"}
+                </span>
+              </div>
+            ),
+          },
+        },
+      })),
+    [workers, approve, reject, prebuild, refetchWorkers, workerActionLoading],
+  );
 
   const rows = useMemo(() => {
     if (!microserviceStatus) {
@@ -106,7 +196,7 @@ export function ControlPanel() {
       <Card>
         <CardBody>
           <div className="flex flex-col gap-6 p-4">
-            {userJwtQuery?.data?.permission === UserPermission.Admin ? (
+            {isAdmin ? (
               <>
                 {isSafeApp?.isSafeApp ? (
                   <p className="text-green-400">
@@ -149,7 +239,7 @@ export function ControlPanel() {
         </CardBody>
       </Card>
 
-      {userJwtQuery?.data?.permission === UserPermission.Admin ? (
+      {isAdmin ? (
         <Card>
           <CardBody>
             <div className="flex flex-col gap-6 p-4">
@@ -161,6 +251,25 @@ export function ControlPanel() {
                   tr: "font-mono cursor-pointer",
                   td: "py-3 ",
                   th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
+                }}
+              />
+            </div>
+          </CardBody>
+        </Card>
+      ) : null}
+
+      {isAdmin ? (
+        <Card>
+          <CardBody>
+            <div className="flex flex-col gap-6 p-4">
+              <h6 className="text-lg">Simulation Evaluator Workers</h6>
+              <DataTable
+                columns={columns}
+                rows={workerRows}
+                classNames={{
+                  tr: "font-mono",
+                  td: "py-3",
+                  th: "text-sm leading-tight tracking-widest font-normal uppercase",
                 }}
               />
             </div>

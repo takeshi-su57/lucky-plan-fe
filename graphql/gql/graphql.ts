@@ -541,6 +541,7 @@ export enum MissionStatus {
 export type Mutation = {
   __typename?: 'Mutation';
   allowAuto: User;
+  approveSimulationEvaluatorWorker: SimulationEvaluatorWorkerView;
   batchCreateBots: Array<BotBackwardDetails>;
   batchCreateSimulationBots: Array<SimulationBot>;
   buildPnlSnapshotsV2: Scalars['Boolean']['output'];
@@ -587,6 +588,8 @@ export type Mutation = {
   pauseSystem: Scalars['Boolean']['output'];
   playAutoResearch: SimulationResearch;
   playSimulationPlan: SimulationPlan;
+  prebuildSimulationEvaluatorWorker: Scalars['String']['output'];
+  rejectSimulationEvaluatorWorker: SimulationEvaluatorWorkerView;
   resumeSystem: Scalars['Boolean']['output'];
   startAdaption: Scalars['Boolean']['output'];
   startPlan: Scalars['Boolean']['output'];
@@ -618,6 +621,11 @@ export type MutationAllowAutoArgs = {
   budget: Scalars['Float']['input'];
   followerContractId: Scalars['Int']['input'];
   ratio: Scalars['Float']['input'];
+};
+
+
+export type MutationApproveSimulationEvaluatorWorkerArgs = {
+  workerId: Scalars['String']['input'];
 };
 
 
@@ -851,6 +859,19 @@ export type MutationPlayAutoResearchArgs = {
 
 export type MutationPlaySimulationPlanArgs = {
   id: Scalars['Int']['input'];
+};
+
+
+export type MutationPrebuildSimulationEvaluatorWorkerArgs = {
+  endedAt: Scalars['String']['input'];
+  platform: Scalars['String']['input'];
+  startedAt: Scalars['String']['input'];
+  workerId: Scalars['String']['input'];
+};
+
+
+export type MutationRejectSimulationEvaluatorWorkerArgs = {
+  workerId: Scalars['String']['input'];
 };
 
 
@@ -1190,6 +1211,7 @@ export type Query = {
   isPnlSnapshotV2Initialized?: Maybe<PnlSnapshotV2InitializedFlag>;
   isSafeApp: Scalars['Boolean']['output'];
   simulation?: Maybe<Simulation>;
+  simulationEvaluatorWorkers: Array<SimulationEvaluatorWorkerView>;
   simulationPlanDetailsBySimulation: Array<SimulationPlanDetails>;
   simulationPlansBySimulation: Array<SimulationPlan>;
   simulationResearch?: Maybe<SimulationResearchDetails>;
@@ -1496,6 +1518,35 @@ export type SimulationEdge = {
   __typename?: 'SimulationEdge';
   cursor: Scalars['Int']['output'];
   node: Simulation;
+};
+
+export type SimulationEvaluatorWorkerCacheView = {
+  __typename?: 'SimulationEvaluatorWorkerCacheView';
+  coveredEndAt?: Maybe<Scalars['String']['output']>;
+  coveredStartAt?: Maybe<Scalars['String']['output']>;
+  lastError?: Maybe<Scalars['String']['output']>;
+  platform: Scalars['String']['output'];
+  status: Scalars['String']['output'];
+};
+
+export type SimulationEvaluatorWorkerPrebuildProgressView = {
+  __typename?: 'SimulationEvaluatorWorkerPrebuildProgressView';
+  bytes: Scalars['String']['output'];
+  message: Scalars['String']['output'];
+  records: Scalars['String']['output'];
+  taskId: Scalars['String']['output'];
+};
+
+export type SimulationEvaluatorWorkerView = {
+  __typename?: 'SimulationEvaluatorWorkerView';
+  authorizationStatus: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  lastError?: Maybe<Scalars['String']['output']>;
+  lastHeartbeatAt?: Maybe<Scalars['String']['output']>;
+  lastTaskAt?: Maybe<Scalars['String']['output']>;
+  platformCaches: Array<SimulationEvaluatorWorkerCacheView>;
+  prebuildProgress?: Maybe<SimulationEvaluatorWorkerPrebuildProgressView>;
+  runtimeStatus: Scalars['String']['output'];
 };
 
 export type SimulationPageInfo = {
@@ -2969,6 +3020,35 @@ export type GetMicroserviceStatusQueryVariables = Exact<{ [key: string]: never; 
 
 export type GetMicroserviceStatusQuery = { __typename?: 'Query', getMicroserviceStatus: Array<{ __typename?: 'MicroserviceStatus', pids: Array<number>, service: string }> };
 
+export type SimulationEvaluatorWorkersQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type SimulationEvaluatorWorkersQuery = { __typename?: 'Query', simulationEvaluatorWorkers: Array<{ __typename?: 'SimulationEvaluatorWorkerView', id: string, authorizationStatus: string, runtimeStatus: string, lastHeartbeatAt?: string | null, lastError?: string | null, platformCaches: Array<{ __typename?: 'SimulationEvaluatorWorkerCacheView', platform: string, status: string, coveredStartAt?: string | null, coveredEndAt?: string | null, lastError?: string | null }>, prebuildProgress?: { __typename?: 'SimulationEvaluatorWorkerPrebuildProgressView', taskId: string, message: string, records: string, bytes: string } | null }> };
+
+export type ApproveSimulationEvaluatorWorkerMutationVariables = Exact<{
+  workerId: Scalars['String']['input'];
+}>;
+
+
+export type ApproveSimulationEvaluatorWorkerMutation = { __typename?: 'Mutation', approveSimulationEvaluatorWorker: { __typename?: 'SimulationEvaluatorWorkerView', id: string } };
+
+export type RejectSimulationEvaluatorWorkerMutationVariables = Exact<{
+  workerId: Scalars['String']['input'];
+}>;
+
+
+export type RejectSimulationEvaluatorWorkerMutation = { __typename?: 'Mutation', rejectSimulationEvaluatorWorker: { __typename?: 'SimulationEvaluatorWorkerView', id: string } };
+
+export type PrebuildSimulationEvaluatorWorkerMutationVariables = Exact<{
+  workerId: Scalars['String']['input'];
+  platform: Scalars['String']['input'];
+  startedAt: Scalars['String']['input'];
+  endedAt: Scalars['String']['input'];
+}>;
+
+
+export type PrebuildSimulationEvaluatorWorkerMutation = { __typename?: 'Mutation', prebuildSimulationEvaluatorWorker: string };
+
 export type MakeSafeAppMutationVariables = Exact<{
   password: Scalars['String']['input'];
 }>;
@@ -3232,6 +3312,10 @@ export const ResumeSystemDocument = {"kind":"Document","definitions":[{"kind":"O
 export const KillSubServiceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"killSubService"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"service"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"killSubService"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"service"},"value":{"kind":"Variable","name":{"kind":"Name","value":"service"}}}]}]}}]} as unknown as DocumentNode<KillSubServiceMutation, KillSubServiceMutationVariables>;
 export const StartSubServiceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"startSubService"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"service"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startSubService"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"service"},"value":{"kind":"Variable","name":{"kind":"Name","value":"service"}}}]}]}}]} as unknown as DocumentNode<StartSubServiceMutation, StartSubServiceMutationVariables>;
 export const GetMicroserviceStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getMicroserviceStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getMicroserviceStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pids"}},{"kind":"Field","name":{"kind":"Name","value":"service"}}]}}]}}]} as unknown as DocumentNode<GetMicroserviceStatusQuery, GetMicroserviceStatusQueryVariables>;
+export const SimulationEvaluatorWorkersDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"simulationEvaluatorWorkers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"simulationEvaluatorWorkers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"authorizationStatus"}},{"kind":"Field","name":{"kind":"Name","value":"runtimeStatus"}},{"kind":"Field","name":{"kind":"Name","value":"lastHeartbeatAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastError"}},{"kind":"Field","name":{"kind":"Name","value":"platformCaches"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"coveredStartAt"}},{"kind":"Field","name":{"kind":"Name","value":"coveredEndAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastError"}}]}},{"kind":"Field","name":{"kind":"Name","value":"prebuildProgress"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"taskId"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"records"}},{"kind":"Field","name":{"kind":"Name","value":"bytes"}}]}}]}}]}}]} as unknown as DocumentNode<SimulationEvaluatorWorkersQuery, SimulationEvaluatorWorkersQueryVariables>;
+export const ApproveSimulationEvaluatorWorkerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"approveSimulationEvaluatorWorker"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workerId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"approveSimulationEvaluatorWorker"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"workerId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workerId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<ApproveSimulationEvaluatorWorkerMutation, ApproveSimulationEvaluatorWorkerMutationVariables>;
+export const RejectSimulationEvaluatorWorkerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"rejectSimulationEvaluatorWorker"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workerId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rejectSimulationEvaluatorWorker"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"workerId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workerId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<RejectSimulationEvaluatorWorkerMutation, RejectSimulationEvaluatorWorkerMutationVariables>;
+export const PrebuildSimulationEvaluatorWorkerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"prebuildSimulationEvaluatorWorker"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"workerId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"platform"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"startedAt"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"endedAt"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"prebuildSimulationEvaluatorWorker"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"workerId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"workerId"}}},{"kind":"Argument","name":{"kind":"Name","value":"platform"},"value":{"kind":"Variable","name":{"kind":"Name","value":"platform"}}},{"kind":"Argument","name":{"kind":"Name","value":"startedAt"},"value":{"kind":"Variable","name":{"kind":"Name","value":"startedAt"}}},{"kind":"Argument","name":{"kind":"Name","value":"endedAt"},"value":{"kind":"Variable","name":{"kind":"Name","value":"endedAt"}}}]}]}}]} as unknown as DocumentNode<PrebuildSimulationEvaluatorWorkerMutation, PrebuildSimulationEvaluatorWorkerMutationVariables>;
 export const MakeSafeAppDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"makeSafeApp"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"password"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"makeSafeApp"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"password"},"value":{"kind":"Variable","name":{"kind":"Name","value":"password"}}}]}]}}]} as unknown as DocumentNode<MakeSafeAppMutation, MakeSafeAppMutationVariables>;
 export const ChangePasswordDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"changePassword"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newPassword"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"oldPassword"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"changePassword"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"newPassword"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newPassword"}}},{"kind":"Argument","name":{"kind":"Name","value":"oldPassword"},"value":{"kind":"Variable","name":{"kind":"Name","value":"oldPassword"}}}]}]}}]} as unknown as DocumentNode<ChangePasswordMutation, ChangePasswordMutationVariables>;
 export const GetSystemStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getSystemStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"systemStatus"}}]}}]} as unknown as DocumentNode<GetSystemStatusQuery, GetSystemStatusQueryVariables>;

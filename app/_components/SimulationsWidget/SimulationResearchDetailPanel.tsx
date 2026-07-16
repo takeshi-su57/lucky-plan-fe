@@ -119,8 +119,10 @@ export function SimulationResearchDetailPanel({
     const link = document.createElement("a");
     link.href = url;
     link.download = `simulation-research-${simulationResearch.id}-ai-standard.zip`;
+    document.body.appendChild(link);
     link.click();
-    URL.revokeObjectURL(url);
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
   };
 
   return (

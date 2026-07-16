@@ -144,6 +144,10 @@ type Documents = {
     "\n  mutation killSubService($service: String!) {\n    killSubService(service: $service)\n  }\n": typeof types.KillSubServiceDocument,
     "\n  mutation startSubService($service: String!) {\n    startSubService(service: $service)\n  }\n": typeof types.StartSubServiceDocument,
     "\n  query getMicroserviceStatus {\n    getMicroserviceStatus {\n      pids\n      service\n    }\n  }\n": typeof types.GetMicroserviceStatusDocument,
+    "\n  query simulationEvaluatorWorkers {\n    simulationEvaluatorWorkers {\n      id\n      authorizationStatus\n      runtimeStatus\n      lastHeartbeatAt\n      lastError\n      platformCaches {\n        platform\n        status\n        coveredStartAt\n        coveredEndAt\n        lastError\n      }\n      prebuildProgress { taskId message records bytes }\n    }\n  }\n": typeof types.SimulationEvaluatorWorkersDocument,
+    "\n  mutation approveSimulationEvaluatorWorker($workerId: String!) {\n    approveSimulationEvaluatorWorker(workerId: $workerId) {\n      id\n    }\n  }\n": typeof types.ApproveSimulationEvaluatorWorkerDocument,
+    "\n  mutation rejectSimulationEvaluatorWorker($workerId: String!) {\n    rejectSimulationEvaluatorWorker(workerId: $workerId) {\n      id\n    }\n  }\n": typeof types.RejectSimulationEvaluatorWorkerDocument,
+    "\n  mutation prebuildSimulationEvaluatorWorker(\n    $workerId: String!\n    $platform: String!\n    $startedAt: String!\n    $endedAt: String!\n  ) {\n    prebuildSimulationEvaluatorWorker(\n      workerId: $workerId\n      platform: $platform\n      startedAt: $startedAt\n      endedAt: $endedAt\n    )\n  }\n": typeof types.PrebuildSimulationEvaluatorWorkerDocument,
     "\n  mutation makeSafeApp($password: String!) {\n    makeSafeApp(password: $password)\n  }\n": typeof types.MakeSafeAppDocument,
     "\n  mutation changePassword($newPassword: String!, $oldPassword: String!) {\n    changePassword(newPassword: $newPassword, oldPassword: $oldPassword)\n  }\n": typeof types.ChangePasswordDocument,
     "\n  query getSystemStatus {\n    systemStatus\n  }\n": typeof types.GetSystemStatusDocument,
@@ -294,6 +298,10 @@ const documents: Documents = {
     "\n  mutation killSubService($service: String!) {\n    killSubService(service: $service)\n  }\n": types.KillSubServiceDocument,
     "\n  mutation startSubService($service: String!) {\n    startSubService(service: $service)\n  }\n": types.StartSubServiceDocument,
     "\n  query getMicroserviceStatus {\n    getMicroserviceStatus {\n      pids\n      service\n    }\n  }\n": types.GetMicroserviceStatusDocument,
+    "\n  query simulationEvaluatorWorkers {\n    simulationEvaluatorWorkers {\n      id\n      authorizationStatus\n      runtimeStatus\n      lastHeartbeatAt\n      lastError\n      platformCaches {\n        platform\n        status\n        coveredStartAt\n        coveredEndAt\n        lastError\n      }\n      prebuildProgress { taskId message records bytes }\n    }\n  }\n": types.SimulationEvaluatorWorkersDocument,
+    "\n  mutation approveSimulationEvaluatorWorker($workerId: String!) {\n    approveSimulationEvaluatorWorker(workerId: $workerId) {\n      id\n    }\n  }\n": types.ApproveSimulationEvaluatorWorkerDocument,
+    "\n  mutation rejectSimulationEvaluatorWorker($workerId: String!) {\n    rejectSimulationEvaluatorWorker(workerId: $workerId) {\n      id\n    }\n  }\n": types.RejectSimulationEvaluatorWorkerDocument,
+    "\n  mutation prebuildSimulationEvaluatorWorker(\n    $workerId: String!\n    $platform: String!\n    $startedAt: String!\n    $endedAt: String!\n  ) {\n    prebuildSimulationEvaluatorWorker(\n      workerId: $workerId\n      platform: $platform\n      startedAt: $startedAt\n      endedAt: $endedAt\n    )\n  }\n": types.PrebuildSimulationEvaluatorWorkerDocument,
     "\n  mutation makeSafeApp($password: String!) {\n    makeSafeApp(password: $password)\n  }\n": types.MakeSafeAppDocument,
     "\n  mutation changePassword($newPassword: String!, $oldPassword: String!) {\n    changePassword(newPassword: $newPassword, oldPassword: $oldPassword)\n  }\n": types.ChangePasswordDocument,
     "\n  query getSystemStatus {\n    systemStatus\n  }\n": types.GetSystemStatusDocument,
@@ -848,6 +856,22 @@ export function graphql(source: "\n  mutation startSubService($service: String!)
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  query getMicroserviceStatus {\n    getMicroserviceStatus {\n      pids\n      service\n    }\n  }\n"): (typeof documents)["\n  query getMicroserviceStatus {\n    getMicroserviceStatus {\n      pids\n      service\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  query simulationEvaluatorWorkers {\n    simulationEvaluatorWorkers {\n      id\n      authorizationStatus\n      runtimeStatus\n      lastHeartbeatAt\n      lastError\n      platformCaches {\n        platform\n        status\n        coveredStartAt\n        coveredEndAt\n        lastError\n      }\n      prebuildProgress { taskId message records bytes }\n    }\n  }\n"): (typeof documents)["\n  query simulationEvaluatorWorkers {\n    simulationEvaluatorWorkers {\n      id\n      authorizationStatus\n      runtimeStatus\n      lastHeartbeatAt\n      lastError\n      platformCaches {\n        platform\n        status\n        coveredStartAt\n        coveredEndAt\n        lastError\n      }\n      prebuildProgress { taskId message records bytes }\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation approveSimulationEvaluatorWorker($workerId: String!) {\n    approveSimulationEvaluatorWorker(workerId: $workerId) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation approveSimulationEvaluatorWorker($workerId: String!) {\n    approveSimulationEvaluatorWorker(workerId: $workerId) {\n      id\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation rejectSimulationEvaluatorWorker($workerId: String!) {\n    rejectSimulationEvaluatorWorker(workerId: $workerId) {\n      id\n    }\n  }\n"): (typeof documents)["\n  mutation rejectSimulationEvaluatorWorker($workerId: String!) {\n    rejectSimulationEvaluatorWorker(workerId: $workerId) {\n      id\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation prebuildSimulationEvaluatorWorker(\n    $workerId: String!\n    $platform: String!\n    $startedAt: String!\n    $endedAt: String!\n  ) {\n    prebuildSimulationEvaluatorWorker(\n      workerId: $workerId\n      platform: $platform\n      startedAt: $startedAt\n      endedAt: $endedAt\n    )\n  }\n"): (typeof documents)["\n  mutation prebuildSimulationEvaluatorWorker(\n    $workerId: String!\n    $platform: String!\n    $startedAt: String!\n    $endedAt: String!\n  ) {\n    prebuildSimulationEvaluatorWorker(\n      workerId: $workerId\n      platform: $platform\n      startedAt: $startedAt\n      endedAt: $endedAt\n    )\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

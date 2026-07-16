@@ -40,6 +40,58 @@ export const GET_MICROSERVICE_STATUS_DOCUMENT = graphql(`
   }
 `);
 
+export const SIMULATION_EVALUATOR_WORKERS_DOCUMENT = graphql(`
+  query simulationEvaluatorWorkers {
+    simulationEvaluatorWorkers {
+      id
+      authorizationStatus
+      runtimeStatus
+      lastHeartbeatAt
+      lastError
+      platformCaches {
+        platform
+        status
+        coveredStartAt
+        coveredEndAt
+        lastError
+      }
+      prebuildProgress { taskId message records bytes }
+    }
+  }
+`);
+
+export const APPROVE_SIMULATION_EVALUATOR_WORKER_DOCUMENT = graphql(`
+  mutation approveSimulationEvaluatorWorker($workerId: String!) {
+    approveSimulationEvaluatorWorker(workerId: $workerId) {
+      id
+    }
+  }
+`);
+
+export const REJECT_SIMULATION_EVALUATOR_WORKER_DOCUMENT = graphql(`
+  mutation rejectSimulationEvaluatorWorker($workerId: String!) {
+    rejectSimulationEvaluatorWorker(workerId: $workerId) {
+      id
+    }
+  }
+`);
+
+export const PREBUILD_SIMULATION_EVALUATOR_WORKER_DOCUMENT = graphql(`
+  mutation prebuildSimulationEvaluatorWorker(
+    $workerId: String!
+    $platform: String!
+    $startedAt: String!
+    $endedAt: String!
+  ) {
+    prebuildSimulationEvaluatorWorker(
+      workerId: $workerId
+      platform: $platform
+      startedAt: $startedAt
+      endedAt: $endedAt
+    )
+  }
+`);
+
 export const MAKE_SAFE_APP_DOCUMENT = graphql(`
   mutation makeSafeApp($password: String!) {
     makeSafeApp(password: $password)
@@ -254,6 +306,43 @@ export function useGetMicroserviceStatus() {
   });
 
   return query.data || [];
+}
+
+export function useSimulationEvaluatorWorkers(enabled: boolean) {
+  const client = useApolloClient();
+  // eslint-disable-next-line @tanstack/query/exhaustive-deps
+  const query = useTanstackQuery({
+    queryKey: ["SIMULATION_EVALUATOR_WORKERS"],
+    queryFn: async () =>
+      (
+        await client.query({
+          query: SIMULATION_EVALUATOR_WORKERS_DOCUMENT,
+          fetchPolicy: "network-only",
+        })
+      ).data?.simulationEvaluatorWorkers || [],
+    refetchInterval: 10_000,
+    enabled,
+  });
+  return { workers: query.data || [], refetch: query.refetch };
+}
+
+export function useSimulationEvaluatorWorkerActions() {
+  const [approve, approveState] = useMutation(
+    APPROVE_SIMULATION_EVALUATOR_WORKER_DOCUMENT,
+  );
+  const [reject, rejectState] = useMutation(
+    REJECT_SIMULATION_EVALUATOR_WORKER_DOCUMENT,
+  );
+  const [prebuild, prebuildState] = useMutation(
+    PREBUILD_SIMULATION_EVALUATOR_WORKER_DOCUMENT,
+  );
+  return {
+    approve,
+    reject,
+    prebuild,
+    loading:
+      approveState.loading || rejectState.loading || prebuildState.loading,
+  };
 }
 
 export function useKillSubService() {
