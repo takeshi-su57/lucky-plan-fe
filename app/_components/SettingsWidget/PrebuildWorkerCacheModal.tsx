@@ -68,8 +68,16 @@ export function PrebuildWorkerCacheModal({
         ))}
       </Select>
       <div className="flex gap-3">
-        <DatePicker label="From" value={startedAt} onChange={setStartedAt} />
-        <DatePicker label="To" value={endedAt} onChange={setEndedAt} />
+        <DatePicker
+          label="From"
+          value={startedAt}
+          onChange={(value) => value && setStartedAt(value)}
+        />
+        <DatePicker
+          label="To"
+          value={endedAt}
+          onChange={(value) => value && setEndedAt(value)}
+        />
       </div>
       <ModalFooter className="px-0">
         <Button variant="light" onPress={() => onOpenChange(false)}>
