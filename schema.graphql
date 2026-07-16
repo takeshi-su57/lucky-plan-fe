@@ -548,6 +548,7 @@ type Mutation {
   playSimulationPlan(id: Int!): SimulationPlan!
   prebuildSimulationEvaluatorWorker(endedAt: String!, platform: String!, startedAt: String!, workerId: String!): String!
   rejectSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
+  removeRejectedSimulationEvaluatorWorker(workerId: String!): Boolean!
   resumeSystem(password: String): Boolean!
   startAdaption(contractId: Int!, shouldRestart: Boolean!): Boolean!
   startPlan(id: Int!): Boolean!
@@ -949,6 +950,7 @@ type SimulationEvaluatorWorkerPrebuildProgressView {
 
 type SimulationEvaluatorWorkerView {
   authorizationStatus: String!
+  displayName: String!
   id: String!
   lastError: String
   lastHeartbeatAt: String
