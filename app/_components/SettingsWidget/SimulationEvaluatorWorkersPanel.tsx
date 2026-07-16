@@ -46,6 +46,11 @@ const formatBytes = (value: string) => {
   return `${(bytes / 1_048_576).toFixed(1)} MB`;
 };
 
+const formatCount = (value: string) => {
+  const count = Number(value);
+  return Number.isFinite(count) ? count.toLocaleString() : value;
+};
+
 export function SimulationEvaluatorWorkersPanel() {
   const { data, loading } = useSimulationEvaluatorWorkers();
   const [approve, { loading: approving }] = useApproveSimulationEvaluatorWorker();
@@ -133,14 +138,22 @@ export function SimulationEvaluatorWorkersPanel() {
                             <p className="font-medium">Prebuilding cache</p>
                             <p className="truncate text-default-600">{worker.prebuildProgress.message}</p>
                           </div>
-                          <span className="shrink-0 text-xs text-default-500">
-                            {Number(worker.prebuildProgress.records).toLocaleString()} records
+                          <span className="shrink-0 text-lg font-semibold text-primary">
+                            {worker.prebuildProgress.percent.toFixed(1)}%
                           </span>
                         </div>
-                        <Progress isIndeterminate aria-label="Prebuild in progress" size="sm" className="mt-3" />
-                        <p className="mt-2 text-xs text-default-500">
-                          {formatBytes(worker.prebuildProgress.bytes)} downloaded
-                        </p>
+                        <Progress
+                          aria-label="Prebuild progress"
+                          value={worker.prebuildProgress.percent}
+                          size="sm"
+                          className="mt-3"
+                        />
+                        <div className="mt-2 flex flex-wrap justify-between gap-x-4 gap-y-1 text-xs text-default-500">
+                          <span>
+                            {formatCount(worker.prebuildProgress.records)} / {formatCount(worker.prebuildProgress.totalRecords)} event logs
+                          </span>
+                          <span>{formatBytes(worker.prebuildProgress.bytes)} downloaded</span>
+                        </div>
                       </div>
                     )}
 
@@ -151,7 +164,7 @@ export function SimulationEvaluatorWorkersPanel() {
                       {worker.platformCaches.length ? (
                         <div className="flex flex-wrap gap-2">
                           {worker.platformCaches.map((cache) => (
-                            <div key={cache.platform} className="rounded-lg border border-default-200 px-2.5 py-2 text-xs">
+                            <div key={`${cache.platform}-${cache.coveredStartAt}-${cache.coveredEndAt}-${cache.status}`} className="rounded-lg border border-default-200 px-2.5 py-2 text-xs">
                               <div className="flex items-center gap-2">
                                 <span className="font-medium">{cache.platform}</span>
                                 <Chip size="sm" variant="flat" color={cache.status === "Ready" ? "success" : cache.status === "Failed" ? "danger" : "default"}>

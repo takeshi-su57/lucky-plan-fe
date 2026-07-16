@@ -24,7 +24,9 @@ export const SIMULATION_EVALUATOR_WORKERS_DOCUMENT = graphql(`
       prebuildProgress {
         taskId
         message
+        percent
         records
+        totalRecords
         bytes
       }
     }
