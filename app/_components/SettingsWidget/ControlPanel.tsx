@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { Button, Card, CardBody } from "@heroui/react";
+import { useMemo, useState } from "react";
+import { Button, Card, CardBody, useDisclosure } from "@heroui/react";
 import {
   useCleanDB,
   useGetMicroserviceStatus,
@@ -21,6 +21,8 @@ import { SetupPasswordButton } from "./SetupPasswordButton";
 import { ChangePasswordButton } from "./ChangePasswordButton";
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 import { MaxMissionPanel } from "./MaxMisssionPanel";
+import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
+import { PrebuildWorkerCacheModal } from "./PrebuildWorkerCacheModal";
 
 const columns: TableColumnProps[] = [
   {
@@ -55,9 +57,14 @@ export function ControlPanel() {
   const {
     approve,
     reject,
-    prebuild,
+    remove,
     loading: workerActionLoading,
   } = useSimulationEvaluatorWorkerActions();
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [prebuildWorker, setPrebuildWorker] = useState<{
+    id: string;
+    displayName: string;
+  } | null>(null);
 
   const workerRows = useMemo(
     () =>
@@ -104,27 +111,30 @@ export function ControlPanel() {
                     size="sm"
                     variant="flat"
                     isLoading={workerActionLoading}
-                    onPress={async () => {
-                      const platform = window.prompt(
-                        "Platform (GNS, GMX, or AVNT)",
-                        "GNS",
-                      );
-                      const startedAt = window.prompt("Cache start (ISO-8601)");
-                      const endedAt = window.prompt("Cache end (ISO-8601)");
-                      if (!platform || !startedAt || !endedAt) return;
-                      await prebuild({
-                        variables: {
-                          workerId: worker.id,
-                          platform,
-                          startedAt,
-                          endedAt,
-                        },
+                    onPress={() => {
+                      setPrebuildWorker({
+                        id: worker.id,
+                        displayName: worker.id,
                       });
-                      refetchWorkers();
+                      onOpen();
                     }}
                   >
                     Prebuild cache
                   </Button>
+                ) : null}
+                {worker.authorizationStatus === "Rejected" ? (
+                  <ButtonWithConfirm
+                    size="sm"
+                    color="danger"
+                    variant="flat"
+                    isLoading={workerActionLoading}
+                    onPress={async () => {
+                      await remove({ variables: { workerId: worker.id } });
+                      refetchWorkers();
+                    }}
+                  >
+                    Remove
+                  </ButtonWithConfirm>
                 ) : null}
                 <span className="text-default-500 text-xs">
                   {worker.prebuildProgress ? `${worker.prebuildProgress.message}: ${Number(worker.prebuildProgress.records).toLocaleString()} logs (${(Number(worker.prebuildProgress.bytes) / 1024 / 1024).toFixed(1)} MB)` : worker.platformCaches
@@ -136,7 +146,15 @@ export function ControlPanel() {
           },
         },
       })),
-    [workers, approve, reject, prebuild, refetchWorkers, workerActionLoading],
+    [
+      workers,
+      approve,
+      reject,
+      remove,
+      refetchWorkers,
+      workerActionLoading,
+      onOpen,
+    ],
   );
 
   const rows = useMemo(() => {
@@ -275,6 +293,14 @@ export function ControlPanel() {
             </div>
           </CardBody>
         </Card>
+      ) : null}
+
+      {prebuildWorker ? (
+        <PrebuildWorkerCacheModal
+          worker={prebuildWorker}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+        />
       ) : null}
     </>
   );

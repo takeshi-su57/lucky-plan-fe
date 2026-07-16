@@ -76,6 +76,12 @@ export const REJECT_SIMULATION_EVALUATOR_WORKER_DOCUMENT = graphql(`
   }
 `);
 
+export const REMOVE_REJECTED_SIMULATION_EVALUATOR_WORKER_DOCUMENT = graphql(`
+  mutation removeRejectedSimulationEvaluatorWorker($workerId: String!) {
+    removeRejectedSimulationEvaluatorWorker(workerId: $workerId)
+  }
+`);
+
 export const PREBUILD_SIMULATION_EVALUATOR_WORKER_DOCUMENT = graphql(`
   mutation prebuildSimulationEvaluatorWorker(
     $workerId: String!
@@ -333,15 +339,22 @@ export function useSimulationEvaluatorWorkerActions() {
   const [reject, rejectState] = useMutation(
     REJECT_SIMULATION_EVALUATOR_WORKER_DOCUMENT,
   );
+  const [remove, removeState] = useMutation(
+    REMOVE_REJECTED_SIMULATION_EVALUATOR_WORKER_DOCUMENT,
+  );
   const [prebuild, prebuildState] = useMutation(
     PREBUILD_SIMULATION_EVALUATOR_WORKER_DOCUMENT,
   );
   return {
     approve,
     reject,
+    remove,
     prebuild,
     loading:
-      approveState.loading || rejectState.loading || prebuildState.loading,
+      approveState.loading ||
+      rejectState.loading ||
+      removeState.loading ||
+      prebuildState.loading,
   };
 }
 
