@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Button, Card, CardBody, useDisclosure } from "@heroui/react";
+import { useMemo } from "react";
+import { Button, Card, CardBody } from "@heroui/react";
 import {
   useCleanDB,
   useGetMicroserviceStatus,
@@ -10,8 +10,6 @@ import {
   useKillSubService,
   usePauseSystem,
   useStartSubService,
-  useSimulationEvaluatorWorkerActions,
-  useSimulationEvaluatorWorkers,
 } from "@/app-hooks/useSystem";
 import { useUserJWT } from "@/app-hooks/useUserJWT";
 import { UserPermission } from "@/graphql/gql/graphql";
@@ -21,8 +19,7 @@ import { SetupPasswordButton } from "./SetupPasswordButton";
 import { ChangePasswordButton } from "./ChangePasswordButton";
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 import { MaxMissionPanel } from "./MaxMisssionPanel";
-import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
-import { PrebuildWorkerCacheModal } from "./PrebuildWorkerCacheModal";
+import { SimulationEvaluatorWorkersPanel } from "./SimulationEvaluatorWorkersPanel";
 
 const columns: TableColumnProps[] = [
   {
@@ -45,8 +42,6 @@ export function ControlPanel() {
   const microserviceStatus = useGetMicroserviceStatus();
   const { userJwtQuery } = useUserJWT();
   const isAdmin = userJwtQuery?.data?.permission === UserPermission.Admin;
-  const { workers, refetch: refetchWorkers } =
-    useSimulationEvaluatorWorkers(isAdmin);
 
   const pauseSystem = usePauseSystem();
   const { killSubService, loading: killSubServiceLoading } =
@@ -54,109 +49,6 @@ export function ControlPanel() {
   const { startSubService, loading: startSubServiceLoading } =
     useStartSubService();
   const { cleanDB, loading: cleanDBLoading } = useCleanDB();
-  const {
-    approve,
-    reject,
-    remove,
-    loading: workerActionLoading,
-  } = useSimulationEvaluatorWorkerActions();
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [prebuildWorker, setPrebuildWorker] = useState<{
-    id: string;
-    displayName: string;
-  } | null>(null);
-
-  const workerRows = useMemo(
-    () =>
-      workers.map((worker) => ({
-        id: worker.id,
-        data: {
-          service: {
-            component: <div className="max-w-64 break-all">{worker.id}</div>,
-          },
-          pids: {
-            component: `${worker.authorizationStatus} / ${worker.runtimeStatus}`,
-          },
-          action: {
-            component: (
-              <div className="flex flex-wrap items-center gap-2">
-                {worker.authorizationStatus === "Pending" ? (
-                  <>
-                    <Button
-                      size="sm"
-                      color="primary"
-                      isLoading={workerActionLoading}
-                      onPress={async () => {
-                        await approve({ variables: { workerId: worker.id } });
-                        refetchWorkers();
-                      }}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      size="sm"
-                      color="danger"
-                      isLoading={workerActionLoading}
-                      onPress={async () => {
-                        await reject({ variables: { workerId: worker.id } });
-                        refetchWorkers();
-                      }}
-                    >
-                      Reject
-                    </Button>
-                  </>
-                ) : null}
-                {worker.authorizationStatus === "Approved" ? (
-                  <Button
-                    size="sm"
-                    variant="flat"
-                    isLoading={workerActionLoading}
-                    onPress={() => {
-                      setPrebuildWorker({
-                        id: worker.id,
-                        displayName: worker.id,
-                      });
-                      onOpen();
-                    }}
-                  >
-                    Prebuild cache
-                  </Button>
-                ) : null}
-                {worker.authorizationStatus === "Rejected" ? (
-                  <ButtonWithConfirm
-                    size="sm"
-                    color="danger"
-                    variant="flat"
-                    isLoading={workerActionLoading}
-                    onPress={async () => {
-                      await remove({ variables: { workerId: worker.id } });
-                      refetchWorkers();
-                    }}
-                  >
-                    Remove
-                  </ButtonWithConfirm>
-                ) : null}
-                <span className="text-default-500 text-xs">
-                  {worker.prebuildProgress ? `${worker.prebuildProgress.message}: ${Number(worker.prebuildProgress.records).toLocaleString()} logs (${(Number(worker.prebuildProgress.bytes) / 1024 / 1024).toFixed(1)} MB)` : worker.platformCaches
-                    .map((cache) => `${cache.platform}: ${cache.status}`)
-                    .join(" · ") || "No platform cache"}
-                </span>
-              </div>
-            ),
-          },
-        },
-      })),
-    [
-      workers,
-      approve,
-      reject,
-      remove,
-      refetchWorkers,
-      workerActionLoading,
-      onOpen,
-    ],
-  );
-
   const rows = useMemo(() => {
     if (!microserviceStatus) {
       return [];
@@ -276,32 +168,7 @@ export function ControlPanel() {
         </Card>
       ) : null}
 
-      {isAdmin ? (
-        <Card>
-          <CardBody>
-            <div className="flex flex-col gap-6 p-4">
-              <h6 className="text-lg">Simulation Evaluator Workers</h6>
-              <DataTable
-                columns={columns}
-                rows={workerRows}
-                classNames={{
-                  tr: "font-mono",
-                  td: "py-3",
-                  th: "text-sm leading-tight tracking-widest font-normal uppercase",
-                }}
-              />
-            </div>
-          </CardBody>
-        </Card>
-      ) : null}
-
-      {prebuildWorker ? (
-        <PrebuildWorkerCacheModal
-          worker={prebuildWorker}
-          isOpen={isOpen}
-          onOpenChange={onOpenChange}
-        />
-      ) : null}
+      {isAdmin ? <SimulationEvaluatorWorkersPanel /> : null}
     </>
   );
 }

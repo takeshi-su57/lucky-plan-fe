@@ -74,6 +74,9 @@ const refetchWorkers = [SIMULATION_EVALUATOR_WORKERS_DOCUMENT];
 export function useSimulationEvaluatorWorkers() {
   return useQuery(SIMULATION_EVALUATOR_WORKERS_DOCUMENT, {
     pollInterval: 15_000,
+    fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
+    notifyOnNetworkStatusChange: false,
   });
 }
 

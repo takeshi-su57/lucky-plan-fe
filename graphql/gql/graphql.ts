@@ -1528,8 +1528,8 @@ export type SimulationEdge = {
 
 export type SimulationEvaluatorWorkerCacheView = {
   __typename?: 'SimulationEvaluatorWorkerCacheView';
-  coveredEndAt?: Maybe<Scalars['String']['output']>;
-  coveredStartAt?: Maybe<Scalars['String']['output']>;
+  coveredEndAt?: Maybe<Scalars['Date']['output']>;
+  coveredStartAt?: Maybe<Scalars['Date']['output']>;
   lastError?: Maybe<Scalars['String']['output']>;
   platform: Scalars['String']['output'];
   status: Scalars['String']['output'];
@@ -1549,8 +1549,8 @@ export type SimulationEvaluatorWorkerView = {
   displayName: Scalars['String']['output'];
   id: Scalars['String']['output'];
   lastError?: Maybe<Scalars['String']['output']>;
-  lastHeartbeatAt?: Maybe<Scalars['String']['output']>;
-  lastTaskAt?: Maybe<Scalars['String']['output']>;
+  lastHeartbeatAt?: Maybe<Scalars['Date']['output']>;
+  lastTaskAt?: Maybe<Scalars['Date']['output']>;
   platformCaches: Array<SimulationEvaluatorWorkerCacheView>;
   prebuildProgress?: Maybe<SimulationEvaluatorWorkerPrebuildProgressView>;
   runtimeStatus: Scalars['String']['output'];
@@ -2684,7 +2684,7 @@ export type PlanUpdatedSubscription = { __typename?: 'Subscription', planUpdated
 export type GetSimulationEvaluatorWorkersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetSimulationEvaluatorWorkersQuery = { __typename?: 'Query', simulationEvaluatorWorkers: Array<{ __typename?: 'SimulationEvaluatorWorkerView', id: string, displayName: string, authorizationStatus: string, runtimeStatus: string, lastHeartbeatAt?: string | null, lastTaskAt?: string | null, lastError?: string | null, platformCaches: Array<{ __typename?: 'SimulationEvaluatorWorkerCacheView', platform: string, status: string, coveredStartAt?: string | null, coveredEndAt?: string | null, lastError?: string | null }>, prebuildProgress?: { __typename?: 'SimulationEvaluatorWorkerPrebuildProgressView', taskId: string, message: string, records: string, bytes: string } | null }> };
+export type GetSimulationEvaluatorWorkersQuery = { __typename?: 'Query', simulationEvaluatorWorkers: Array<{ __typename?: 'SimulationEvaluatorWorkerView', id: string, displayName: string, authorizationStatus: string, runtimeStatus: string, lastHeartbeatAt?: any | null, lastTaskAt?: any | null, lastError?: string | null, platformCaches: Array<{ __typename?: 'SimulationEvaluatorWorkerCacheView', platform: string, status: string, coveredStartAt?: any | null, coveredEndAt?: any | null, lastError?: string | null }>, prebuildProgress?: { __typename?: 'SimulationEvaluatorWorkerPrebuildProgressView', taskId: string, message: string, records: string, bytes: string } | null }> };
 
 export type ApproveSimulationEvaluatorWorkerMutationVariables = Exact<{
   workerId: Scalars['String']['input'];
@@ -3066,7 +3066,7 @@ export type GetMicroserviceStatusQuery = { __typename?: 'Query', getMicroservice
 export type SimulationEvaluatorWorkersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type SimulationEvaluatorWorkersQuery = { __typename?: 'Query', simulationEvaluatorWorkers: Array<{ __typename?: 'SimulationEvaluatorWorkerView', id: string, authorizationStatus: string, runtimeStatus: string, lastHeartbeatAt?: string | null, lastError?: string | null, platformCaches: Array<{ __typename?: 'SimulationEvaluatorWorkerCacheView', platform: string, status: string, coveredStartAt?: string | null, coveredEndAt?: string | null, lastError?: string | null }>, prebuildProgress?: { __typename?: 'SimulationEvaluatorWorkerPrebuildProgressView', taskId: string, message: string, records: string, bytes: string } | null }> };
+export type SimulationEvaluatorWorkersQuery = { __typename?: 'Query', simulationEvaluatorWorkers: Array<{ __typename?: 'SimulationEvaluatorWorkerView', id: string, authorizationStatus: string, runtimeStatus: string, lastHeartbeatAt?: any | null, lastError?: string | null, platformCaches: Array<{ __typename?: 'SimulationEvaluatorWorkerCacheView', platform: string, status: string, coveredStartAt?: any | null, coveredEndAt?: any | null, lastError?: string | null }>, prebuildProgress?: { __typename?: 'SimulationEvaluatorWorkerPrebuildProgressView', taskId: string, message: string, records: string, bytes: string } | null }> };
 
 export type MakeSafeAppMutationVariables = Exact<{
   password: Scalars['String']['input'];

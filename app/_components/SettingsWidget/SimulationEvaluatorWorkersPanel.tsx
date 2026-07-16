@@ -29,7 +29,7 @@ const runtimeColor = (status: string) =>
 
 const formatDate = (value?: string | null) => {
   if (!value) return "Never";
-  const date = new Date(value);
+  const date = /^\d+$/.test(value) ? new Date(Number(value)) : new Date(value);
   if (Number.isNaN(date.getTime())) return "Unknown";
   const seconds = Math.max(0, Math.round((Date.now() - date.getTime()) / 1_000));
   if (seconds < 60) return `${seconds}s ago`;
@@ -62,7 +62,7 @@ export function SimulationEvaluatorWorkersPanel() {
     (worker) => worker.runtimeStatus === "Busy" || worker.runtimeStatus === "Prebuilding",
   ).length;
 
-  if (loading) return <Spinner />;
+  if (loading && !data) return <Spinner />;
 
   return (
     <Card>
