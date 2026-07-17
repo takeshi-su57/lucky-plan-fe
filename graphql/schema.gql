@@ -239,6 +239,7 @@ input CreateSimulationResearchInput {
   description: String!
   direction: BotMode!
   endAt: Date!
+  executionFlow: SimulationResearchExecutionFlow! = Centralized
   gapDays: Int! = 0
   leverage: [FloatRangeGroupInput!]!
   platform: Platform!
@@ -585,6 +586,9 @@ type Mutation {
   makeSafeApp(password: String!): Boolean!
   openTradeMarket(input: OpenTradeInput!): ContractExecutionResult!
   pauseResearch(id: Int!): SimulationResearch!
+  pauseSimulationEvaluatorWorker(
+    workerId: String!
+  ): SimulationEvaluatorWorkerView!
   pauseSystem: Boolean!
   playAutoResearch(id: Int!): SimulationResearch!
   playSimulationPlan(id: Int!): SimulationPlan!
@@ -598,7 +602,14 @@ type Mutation {
     workerId: String!
   ): SimulationEvaluatorWorkerView!
   removeRejectedSimulationEvaluatorWorker(workerId: String!): Boolean!
+  resumeSimulationEvaluatorWorker(
+    workerId: String!
+  ): SimulationEvaluatorWorkerView!
   resumeSystem(password: String): Boolean!
+  setSimulationEvaluatorWorkerCapacity(
+    capacity: Float!
+    workerId: String!
+  ): String!
   startAdaption(contractId: Int!, shouldRestart: Boolean!): Boolean!
   startPlan(id: Int!): Boolean!
   startSubService(service: String!): Boolean!
@@ -1059,7 +1070,10 @@ type SimulationEvaluatorWorkerPrebuildProgressView {
 }
 
 type SimulationEvaluatorWorkerView {
+  activeCapacity: Int!
   authorizationStatus: String!
+  desiredCapacity: Int!
+  desiredState: String!
   displayName: String!
   id: String!
   lastError: String
@@ -1130,6 +1144,7 @@ type SimulationResearch {
   description: String!
   direction: BotMode!
   endAt: Date!
+  executionFlow: SimulationResearchExecutionFlow!
   finishedAt: Date
   gapDays: Int!
   id: Int!
@@ -1170,6 +1185,7 @@ type SimulationResearchDetails {
   description: String!
   direction: BotMode!
   endAt: Date!
+  executionFlow: SimulationResearchExecutionFlow!
   finishedAt: Date
   gapDays: Int!
   id: Int!
@@ -1199,6 +1215,11 @@ type SimulationResearchDetails {
 type SimulationResearchEdge {
   cursor: Int!
   node: SimulationResearch!
+}
+
+enum SimulationResearchExecutionFlow {
+  Centralized
+  DynamicExperimental
 }
 
 type SimulationResearchPageInfo {

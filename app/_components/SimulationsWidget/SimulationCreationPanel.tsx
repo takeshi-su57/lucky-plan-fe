@@ -21,6 +21,7 @@ import {
   BotMode,
   Platform,
   SimulationScoreFormular,
+  SimulationResearchExecutionFlow,
   SimulationSizingFormular,
 } from "@/graphql/gql/graphql";
 import {
@@ -286,6 +287,10 @@ export function SimulationCreationPanel({
   const [description, setDescription] = useState("");
   const [platform, setPlatform] = useState<Platform>(Platform.Gns);
   const [direction, setDirection] = useState<BotMode>(BotMode.Reversed);
+  const [executionFlow, setExecutionFlow] =
+    useState<SimulationResearchExecutionFlow>(
+      SimulationResearchExecutionFlow.Centralized,
+    );
   const [scoreFormular, setScoreFormular] = useState<SimulationScoreFormular>(
     SimulationScoreFormular.RiskAdjustedCopyScore,
   );
@@ -578,6 +583,7 @@ export function SimulationCreationPanel({
           days: Number(days),
           gapDays: Number(gapDays),
           direction,
+          executionFlow,
           trade: normalizeRangeGroups(tradeRanges, Boolean(alternatives.trade)),
           r2: normalizeRangeGroups(r2Ranges, Boolean(alternatives.r2)),
           slope: normalizeRangeGroups(slopeRanges, Boolean(alternatives.slope)),
@@ -662,6 +668,32 @@ export function SimulationCreationPanel({
               {DIRECTION_OPTIONS.map((item) => (
                 <SelectItem key={item}>{item}</SelectItem>
               ))}
+            </Select>
+
+            <Select
+              variant="underlined"
+              label="Execution Flow"
+              aria-label="Research execution flow"
+              selectedKeys={[executionFlow]}
+              onChange={(event) =>
+                setExecutionFlow(
+                  event.target.value as SimulationResearchExecutionFlow,
+                )
+              }
+              description={
+                executionFlow === SimulationResearchExecutionFlow.Centralized
+                  ? "Stable: centralized, sequential evaluation."
+                  : "Experimental: uses ready evaluator workers concurrently."
+              }
+            >
+              <SelectItem key={SimulationResearchExecutionFlow.Centralized}>
+                Centralized (stable)
+              </SelectItem>
+              <SelectItem
+                key={SimulationResearchExecutionFlow.DynamicExperimental}
+              >
+                Dynamic workers (experimental)
+              </SelectItem>
             </Select>
           </div>
 

@@ -11,6 +11,9 @@ export const SIMULATION_EVALUATOR_WORKERS_DOCUMENT = graphql(`
       displayName
       authorizationStatus
       runtimeStatus
+      desiredState
+      desiredCapacity
+      activeCapacity
       lastHeartbeatAt
       lastTaskAt
       lastError
@@ -71,6 +74,34 @@ const PREBUILD_SIMULATION_EVALUATOR_WORKER_DOCUMENT = graphql(`
   }
 `);
 
+const PAUSE_SIMULATION_EVALUATOR_WORKER_DOCUMENT = graphql(`
+  mutation pauseSimulationEvaluatorWorker($workerId: String!) {
+    pauseSimulationEvaluatorWorker(workerId: $workerId) {
+      id
+    }
+  }
+`);
+
+const RESUME_SIMULATION_EVALUATOR_WORKER_DOCUMENT = graphql(`
+  mutation resumeSimulationEvaluatorWorker($workerId: String!) {
+    resumeSimulationEvaluatorWorker(workerId: $workerId) {
+      id
+    }
+  }
+`);
+
+const SET_SIMULATION_EVALUATOR_WORKER_CAPACITY_DOCUMENT = graphql(`
+  mutation setSimulationEvaluatorWorkerCapacity(
+    $workerId: String!
+    $capacity: Float!
+  ) {
+    setSimulationEvaluatorWorkerCapacity(
+      workerId: $workerId
+      capacity: $capacity
+    )
+  }
+`);
+
 const refetchWorkers = [SIMULATION_EVALUATOR_WORKERS_DOCUMENT];
 
 export function useSimulationEvaluatorWorkers() {
@@ -102,6 +133,24 @@ export function useRemoveRejectedSimulationEvaluatorWorker() {
 
 export function usePrebuildSimulationEvaluatorWorker() {
   return useMutation(PREBUILD_SIMULATION_EVALUATOR_WORKER_DOCUMENT, {
+    refetchQueries: refetchWorkers,
+  });
+}
+
+export function usePauseSimulationEvaluatorWorker() {
+  return useMutation(PAUSE_SIMULATION_EVALUATOR_WORKER_DOCUMENT, {
+    refetchQueries: refetchWorkers,
+  });
+}
+
+export function useResumeSimulationEvaluatorWorker() {
+  return useMutation(RESUME_SIMULATION_EVALUATOR_WORKER_DOCUMENT, {
+    refetchQueries: refetchWorkers,
+  });
+}
+
+export function useSetSimulationEvaluatorWorkerCapacity() {
+  return useMutation(SET_SIMULATION_EVALUATOR_WORKER_CAPACITY_DOCUMENT, {
     refetchQueries: refetchWorkers,
   });
 }
