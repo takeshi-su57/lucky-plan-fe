@@ -241,6 +241,7 @@ input CreateSimulationResearchInput {
   description: String!
   direction: BotMode!
   endAt: Date!
+  executionFlow: SimulationResearchExecutionFlow! = Centralized
   gapDays: Int! = 0
   leverage: [FloatRangeGroupInput!]!
   platform: Platform!
@@ -1022,6 +1023,7 @@ type SimulationResearch {
   description: String!
   direction: BotMode!
   endAt: Date!
+  executionFlow: SimulationResearchExecutionFlow!
   finishedAt: Date
   gapDays: Int!
   id: Int!
@@ -1062,6 +1064,7 @@ type SimulationResearchDetails {
   description: String!
   direction: BotMode!
   endAt: Date!
+  executionFlow: SimulationResearchExecutionFlow!
   finishedAt: Date
   gapDays: Int!
   id: Int!
@@ -1091,6 +1094,11 @@ type SimulationResearchDetails {
 type SimulationResearchEdge {
   cursor: Int!
   node: SimulationResearch!
+}
+
+enum SimulationResearchExecutionFlow {
+  Centralized
+  DynamicExperimental
 }
 
 type SimulationResearchPageInfo {
