@@ -1,6 +1,13 @@
 "use client";
 
-import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
+import {
+  type ChangeEvent,
+  type Dispatch,
+  type SetStateAction,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
 import {
   Button,
@@ -11,8 +18,9 @@ import {
   RangeValue,
   Select,
   SelectItem,
+  Textarea,
 } from "@heroui/react";
-import { now } from "@internationalized/date";
+import { now, parseDate } from "@internationalized/date";
 import type { DateValue } from "@react-types/datepicker";
 
 import { NumericInput } from "@/components/inputs/NumericInput";
@@ -45,6 +53,52 @@ type RangeEntryState = {
 };
 
 type RangeEntryErrors = Partial<Record<"min" | "max", string>>;
+
+type ImportedRange = { min: number; max: number };
+type ImportedRangeGroup = { ranges: ImportedRange[] };
+type ImportedResearchConfiguration = {
+  version: 1;
+  title: string;
+  description: string;
+  platform: Platform;
+  startAt: string;
+  endAt: string;
+  days: number;
+  gapDays: number;
+  direction: BotMode;
+  trade: ImportedRangeGroup[];
+  r2: ImportedRangeGroup[];
+  slope: ImportedRangeGroup[];
+  collateral: ImportedRangeGroup[];
+  size: ImportedRangeGroup[];
+  leverage: ImportedRangeGroup[];
+  score: ImportedRangeGroup[];
+  scoreFormular: SimulationScoreFormular;
+  sizingFormular: SimulationSizingFormular;
+};
+
+const EXPERT_CONFIGURATION_TEMPLATE = {
+  version: 1,
+  title: "GNS reversed momentum refinement",
+  description: "Refined after reviewing a previous simulation research report.",
+  platform: Platform.Gns,
+  startAt: "2026-01-01",
+  endAt: "2026-06-30",
+  days: 7,
+  gapDays: 1,
+  direction: BotMode.Reversed,
+  trade: [{ ranges: [{ min: 3, max: 10 }] }],
+  r2: [{ ranges: [{ min: 0.25, max: 0.5 }] }],
+  slope: [{ ranges: [{ min: 1, max: 3 }] }],
+  collateral: [{ ranges: [{ min: 10, max: 500 }] }],
+  size: [{ ranges: [{ min: 0, max: 1000000000 }] }],
+  leverage: [{ ranges: [{ min: 10, max: 50 }] }],
+  score: [{ ranges: [{ min: 0.5, max: 0.8 }] }],
+  scoreFormular: SimulationScoreFormular.RiskAdjustedCopyScore,
+  sizingFormular: SimulationSizingFormular.ScoreScaledCollateralSizing,
+  guide:
+    "Each field is a list of range groups. One group containing multiple ranges means variants; multiple groups with one range each means the ranges match together across fields.",
+} as const;
 
 let nextEntryId = 0;
 
@@ -244,6 +298,214 @@ function normalizeRangeGroups(
     : ranges.map((range) => ({ ranges: [range] }));
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parseImportedRangeGroups(
+  value: unknown,
+  field: string,
+): ImportedRangeGroup[] {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error(`${field} must contain at least one range group`);
+  }
+
+  const groups = value.map((group, groupIndex) => {
+    if (
+      !isRecord(group) ||
+      !Array.isArray(group.ranges) ||
+      group.ranges.length === 0
+    ) {
+      throw new Error(
+        `${field}[${groupIndex}].ranges must contain at least one range`,
+      );
+    }
+
+    return {
+      ranges: group.ranges.map((range, rangeIndex) => {
+        if (
+          !isRecord(range) ||
+          typeof range.min !== "number" ||
+          typeof range.max !== "number" ||
+          !Number.isFinite(range.min) ||
+          !Number.isFinite(range.max)
+        ) {
+          throw new Error(
+            `${field}[${groupIndex}].ranges[${rangeIndex}] must have numeric min and max values`,
+          );
+        }
+
+        return { min: range.min, max: range.max };
+      }),
+    };
+  });
+
+  const representsAlternatives = groups.length === 1;
+  const representsMatchingRanges = groups.every(
+    (group) => group.ranges.length === 1,
+  );
+
+  if (!representsAlternatives && !representsMatchingRanges) {
+    throw new Error(
+      `${field} must use one group for variants or one range per group for matching ranges`,
+    );
+  }
+
+  return groups;
+}
+
+function parseImportedResearchConfiguration(
+  rawText: string,
+): ImportedResearchConfiguration {
+  let value: unknown;
+
+  try {
+    value = JSON.parse(rawText);
+  } catch {
+    throw new Error("Configuration must be valid JSON");
+  }
+
+  if (!isRecord(value)) {
+    throw new Error("Configuration must be a JSON object");
+  }
+
+  const requiredStrings = ["title", "description", "startAt", "endAt"] as const;
+  for (const field of requiredStrings) {
+    if (typeof value[field] !== "string" || value[field].trim() === "") {
+      throw new Error(`${field} must be a non-empty string`);
+    }
+  }
+
+  if (value.version !== 1) {
+    throw new Error("Configuration version must be 1");
+  }
+
+  if (!PLATFORM_OPTIONS.includes(value.platform as Platform)) {
+    throw new Error("platform must be Gns, Gmx, or Avnt");
+  }
+  if (!DIRECTION_OPTIONS.includes(value.direction as BotMode)) {
+    throw new Error("direction must be Default or Reversed");
+  }
+  if (
+    !SCORE_FORMULAR_OPTIONS.includes(
+      value.scoreFormular as SimulationScoreFormular,
+    )
+  ) {
+    throw new Error("scoreFormular is not supported");
+  }
+  if (
+    !SIZING_FORMULAR_OPTIONS.includes(
+      value.sizingFormular as SimulationSizingFormular,
+    )
+  ) {
+    throw new Error("sizingFormular is not supported");
+  }
+  if (
+    typeof value.days !== "number" ||
+    !Number.isInteger(value.days) ||
+    value.days <= 0
+  ) {
+    throw new Error("days must be a positive integer");
+  }
+  if (
+    typeof value.gapDays !== "number" ||
+    !Number.isInteger(value.gapDays) ||
+    value.gapDays < 0
+  ) {
+    throw new Error("gapDays must be a non-negative integer");
+  }
+
+  let startAt: DateValue;
+  let endAt: DateValue;
+  try {
+    startAt = parseDate((value.startAt as string).slice(0, 10));
+    endAt = parseDate((value.endAt as string).slice(0, 10));
+  } catch {
+    throw new Error("startAt and endAt must be ISO dates such as 2026-01-31");
+  }
+
+  if (startAt.compare(endAt) >= 0) {
+    throw new Error("endAt must be after startAt");
+  }
+
+  const configuration = {
+    version: 1 as const,
+    title: value.title as string,
+    description: value.description as string,
+    platform: value.platform as Platform,
+    startAt: value.startAt as string,
+    endAt: value.endAt as string,
+    days: value.days as number,
+    gapDays: value.gapDays as number,
+    direction: value.direction as BotMode,
+    trade: parseImportedRangeGroups(value.trade, "trade"),
+    r2: parseImportedRangeGroups(value.r2, "r2"),
+    slope: parseImportedRangeGroups(value.slope, "slope"),
+    collateral: parseImportedRangeGroups(value.collateral, "collateral"),
+    size: parseImportedRangeGroups(value.size, "size"),
+    leverage: parseImportedRangeGroups(value.leverage, "leverage"),
+    score: parseImportedRangeGroups(value.score, "score"),
+    scoreFormular: value.scoreFormular as SimulationScoreFormular,
+    sizingFormular: value.sizingFormular as SimulationSizingFormular,
+  };
+
+  const validateRanges = (
+    field: string,
+    groups: ImportedRangeGroup[],
+    options: { min?: number; max?: number; integer?: boolean } = {},
+  ) => {
+    for (const group of groups) {
+      for (const range of group.ranges) {
+        if (range.max < range.min) {
+          throw new Error(`${field} max must be greater than or equal to min`);
+        }
+        if (options.min !== undefined && range.min < options.min) {
+          throw new Error(`${field} min must be at least ${options.min}`);
+        }
+        if (options.max !== undefined && range.max > options.max) {
+          throw new Error(`${field} max must be at most ${options.max}`);
+        }
+        if (
+          options.integer &&
+          (!Number.isInteger(range.min) || !Number.isInteger(range.max))
+        ) {
+          throw new Error(`${field} ranges must use integers`);
+        }
+      }
+    }
+  };
+
+  validateRanges("trade", configuration.trade, { min: 1, integer: true });
+  validateRanges("r2", configuration.r2, { min: 0, max: 1 });
+  validateRanges("slope", configuration.slope, { min: 0 });
+  validateRanges("collateral", configuration.collateral, { min: 0 });
+  validateRanges("size", configuration.size, { min: 0 });
+  validateRanges("leverage", configuration.leverage, { min: 0 });
+  validateRanges("score", configuration.score, { min: 0, max: 1 });
+
+  const simulationCount = Object.values({
+    trade: configuration.trade,
+    r2: configuration.r2,
+    slope: configuration.slope,
+    collateral: configuration.collateral,
+    size: configuration.size,
+    leverage: configuration.leverage,
+    score: configuration.score,
+  }).reduce(
+    (count, groups) =>
+      count * (groups.length === 1 ? groups[0].ranges.length : groups.length),
+    1,
+  );
+
+  if (simulationCount > MAX_SIMULATIONS_PER_RESEARCH) {
+    throw new Error(
+      `Configuration would generate ${simulationCount} simulations; the maximum is ${MAX_SIMULATIONS_PER_RESEARCH}`,
+    );
+  }
+
+  return configuration;
+}
+
 function countPlanWindows(
   startAt: Date,
   endAt: Date,
@@ -281,6 +543,15 @@ export function SimulationCreationPanel({
 }) {
   const router = useRouter();
   const { createSimulationResearch, loading } = useCreateSimulationResearch();
+  const configurationFileInputRef = useRef<HTMLInputElement>(null);
+
+  const [configurationText, setConfigurationText] = useState("");
+  const [configurationMessage, setConfigurationMessage] = useState<
+    string | null
+  >(null);
+  const [configurationError, setConfigurationError] = useState<string | null>(
+    null,
+  );
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -324,6 +595,115 @@ export function SimulationCreationPanel({
   const [alternatives, setAlternatives] = useState<Record<string, boolean>>({});
   const toggleAlternatives = (field: string) =>
     setAlternatives((current) => ({ ...current, [field]: !current[field] }));
+
+  const mapImportedRangeGroups = (
+    prefix: string,
+    groups: ImportedRangeGroup[],
+  ) => ({
+    entries: groups.flatMap((group) =>
+      group.ranges.map((range) =>
+        createRangeEntry(prefix, {
+          min: String(range.min),
+          max: String(range.max),
+        }),
+      ),
+    ),
+    alternatives: groups.length === 1 && groups[0].ranges.length > 1,
+  });
+
+  const applyConfiguration = () => {
+    setConfigurationError(null);
+    setConfigurationMessage(null);
+
+    try {
+      const configuration =
+        parseImportedResearchConfiguration(configurationText);
+      const trade = mapImportedRangeGroups("trade", configuration.trade);
+      const r2 = mapImportedRangeGroups("r2", configuration.r2);
+      const slope = mapImportedRangeGroups("slope", configuration.slope);
+      const collateral = mapImportedRangeGroups(
+        "collateral",
+        configuration.collateral,
+      );
+      const size = mapImportedRangeGroups("size", configuration.size);
+      const leverage = mapImportedRangeGroups(
+        "leverage",
+        configuration.leverage,
+      );
+      const score = mapImportedRangeGroups("score", configuration.score);
+
+      setTitle(configuration.title);
+      setDescription(configuration.description);
+      setPlatform(configuration.platform);
+      setDirection(configuration.direction);
+      setScoreFormular(configuration.scoreFormular);
+      setSizingFormular(configuration.sizingFormular);
+      setScheduleRange({
+        start: parseDate(configuration.startAt.slice(0, 10)),
+        end: parseDate(configuration.endAt.slice(0, 10)),
+      });
+      setDays(String(configuration.days));
+      setGapDays(String(configuration.gapDays));
+      setTradeRanges(trade.entries);
+      setR2Ranges(r2.entries);
+      setSlopeRanges(slope.entries);
+      setCollateralRanges(collateral.entries);
+      setSizeRanges(size.entries);
+      setLeverageRanges(leverage.entries);
+      setScoreRanges(score.entries);
+      setAlternatives({
+        trade: trade.alternatives,
+        r2: r2.alternatives,
+        slope: slope.alternatives,
+        collateral: collateral.alternatives,
+        size: size.alternatives,
+        leverage: leverage.alternatives,
+        score: score.alternatives,
+      });
+      setConfigurationMessage(
+        "Configuration applied. Review the populated form, then use Create Research to submit it.",
+      );
+    } catch (error) {
+      setConfigurationError(
+        error instanceof Error
+          ? error.message
+          : "Unable to apply configuration",
+      );
+    }
+  };
+
+  const handleConfigurationFile = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) return;
+
+    try {
+      setConfigurationText(await file.text());
+      setConfigurationError(null);
+      setConfigurationMessage(
+        `Loaded ${file.name}. Select Apply Configuration to validate it.`,
+      );
+    } catch {
+      setConfigurationError("Unable to read the selected JSON file");
+    }
+  };
+
+  const copyConfigurationTemplate = async () => {
+    try {
+      await navigator.clipboard.writeText(
+        JSON.stringify(EXPERT_CONFIGURATION_TEMPLATE, null, 2),
+      );
+      setConfigurationError(null);
+      setConfigurationMessage(
+        "Configuration template copied to your clipboard.",
+      );
+    } catch {
+      setConfigurationError("Unable to copy the configuration template");
+    }
+  };
 
   const generatedSimulationCount =
     (alternatives.trade ? 1 : tradeRanges.length) *
@@ -623,6 +1003,74 @@ export function SimulationCreationPanel({
           </p>
         </div>
       ) : null}
+
+      <Card
+        shadow="none"
+        className="border-default-200 bg-content1 rounded-lg border"
+      >
+        <CardBody className="gap-4">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-white">
+                Expert: Input Configuration From JSON
+              </h2>
+              <p className="text-sm text-neutral-400">
+                Paste an AI-generated configuration or load a JSON file. It only
+                fills this form; Create Research remains the sole submission
+                step.
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="flat"
+              onPress={() => void copyConfigurationTemplate()}
+            >
+              Copy JSON Template
+            </Button>
+          </div>
+
+          <Textarea
+            minRows={8}
+            value={configurationText}
+            onValueChange={setConfigurationText}
+            label="Simulation research configuration JSON"
+            placeholder='{"version": 1, "title": "...", ...}'
+            aria-label="Simulation research configuration JSON"
+            isInvalid={Boolean(configurationError)}
+            errorMessage={configurationError ?? undefined}
+          />
+
+          <input
+            ref={configurationFileInputRef}
+            className="hidden"
+            type="file"
+            accept="application/json,.json"
+            onChange={(event) => void handleConfigurationFile(event)}
+          />
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant="flat"
+              onPress={() => configurationFileInputRef.current?.click()}
+            >
+              Choose JSON File
+            </Button>
+            <Button
+              size="sm"
+              color="primary"
+              isDisabled={configurationText.trim() === ""}
+              onPress={applyConfiguration}
+            >
+              Apply Configuration
+            </Button>
+          </div>
+
+          {configurationMessage ? (
+            <p className="text-sm text-emerald-400">{configurationMessage}</p>
+          ) : null}
+        </CardBody>
+      </Card>
 
       <Card
         shadow="none"

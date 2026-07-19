@@ -755,7 +755,6 @@ type Query {
   simulationPlansBySimulation(simulationId: Int!): [SimulationPlan!]!
   simulationResearch(id: Int!): SimulationResearchDetails
   simulationResearches(after: Int, first: Int!): SimulationResearchConnection!
-  simulations(after: Int, first: Int!): SimulationConnection!
   simulationsByResearch(researchId: Int!): [Simulation!]!
   systemStatus: Boolean!
 }
@@ -896,16 +895,6 @@ type SimulationBotDetails {
   totalPositions: Int!
 }
 
-type SimulationConnection {
-  edges: [SimulationEdge!]!
-  pageInfo: SimulationPageInfo!
-}
-
-type SimulationEdge {
-  cursor: Int!
-  node: Simulation!
-}
-
 type SimulationEvaluatorWorkerCacheView {
   coveredEndAt: Date
   coveredStartAt: Date
@@ -935,11 +924,6 @@ type SimulationEvaluatorWorkerView {
   runtimeStatus: String!
 }
 
-type SimulationPageInfo {
-  endCursor: Int
-  hasNextPage: Boolean!
-}
-
 type SimulationPlan {
   cursor: Date!
   description: String!
@@ -955,11 +939,6 @@ type SimulationPlan {
   totalPositions: Int!
 }
 
-type SimulationPlanConnection {
-  edges: [SimulationPlanEdge!]!
-  pageInfo: SimulationPlanPageInfo!
-}
-
 type SimulationPlanDetails {
   cursor: Date!
   description: String!
@@ -973,16 +952,6 @@ type SimulationPlanDetails {
   totalFollowerPnl: Float!
   totalLeaderPnl: Float!
   totalPositions: Int!
-}
-
-type SimulationPlanEdge {
-  cursor: Int!
-  node: SimulationPlan!
-}
-
-type SimulationPlanPageInfo {
-  endCursor: Int
-  hasNextPage: Boolean!
 }
 
 type SimulationResearch {

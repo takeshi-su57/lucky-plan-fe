@@ -364,23 +364,6 @@ export const SIMULATION_PLAN_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   }
 `);
 
-export const GET_SIMULATIONS_DOCUMENT = graphql(`
-  query simulations($after: Int, $first: Int!) {
-    simulations(after: $after, first: $first) {
-      edges {
-        cursor
-        node {
-          ...SimulationInfo
-        }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-    }
-  }
-`);
-
 export const GET_SIMULATION_RESEARCHES_DOCUMENT = graphql(`
   query simulationResearches($after: Int, $first: Int!) {
     simulationResearches(after: $after, first: $first) {
@@ -691,18 +674,6 @@ export function useSubscribeSimulation() {
 
     client.cache.updateQuery(
       {
-        query: GET_SIMULATIONS_DOCUMENT,
-        variables: { first: 20 },
-      },
-      (oldData: any) =>
-        updateConnectionNodeById(oldData, "simulations", simulation.id, {
-          __typename: "Simulation",
-          ...simulation,
-        }),
-    );
-
-    client.cache.updateQuery(
-      {
         query: GET_SIMULATION_DOCUMENT,
         variables: { id: simulation.id },
       },
@@ -891,48 +862,6 @@ export function useSubscribeSimulation() {
       },
     );
   }, [client.cache, updatedSimulationPlanData]);
-}
-
-export function useGetSimulations() {
-  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
-    GET_SIMULATIONS_DOCUMENT,
-  );
-
-  useEffect(() => {
-    query({
-      variables: {
-        first: 20,
-      },
-    });
-  }, [query]);
-
-  const simulations = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-
-    return data.simulations.edges.map((edge) =>
-      getFragmentData(SIMULATION_INFO_FRAGMENT_DOCUMENT, edge.node),
-    ) as Simulation[];
-  }, [data]);
-
-  const handleFetchMore = useCallback(() => {
-    if (data && !error) {
-      fetchMore({
-        variables: {
-          first: 20,
-          after: data.simulations.pageInfo.endCursor,
-        },
-      });
-    }
-  }, [data, error, fetchMore]);
-
-  return {
-    simulations,
-    loading,
-    fetchMore: handleFetchMore,
-    hasMore: data?.simulations.pageInfo.hasNextPage,
-  };
 }
 
 export function useGetSimulationResearches() {
