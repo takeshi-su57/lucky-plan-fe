@@ -1,14 +1,5 @@
-"use client";
-
-import { Suspense } from "react";
-import { Spinner } from "@heroui/react";
-
-import { SimulationCreateTabs } from "@/app/_components/SimulationsWidget/SimulationCreateTabs";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return (
-    <Suspense fallback={<Spinner color="white" size="sm" />}>
-      <SimulationCreateTabs defaultTab="manual-plan" />
-    </Suspense>
-  );
+  redirect("/simulations/create");
 }

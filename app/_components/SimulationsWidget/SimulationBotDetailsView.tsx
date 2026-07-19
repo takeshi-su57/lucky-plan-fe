@@ -4,20 +4,12 @@ import { Accordion, AccordionItem, CardBody, Card, Chip } from "@heroui/react";
 import { Address } from "viem";
 import dayjs from "dayjs";
 
-import { SimulationBotDetails, UserPermission } from "@/graphql/gql/graphql";
+import { SimulationBotDetails } from "@/graphql/gql/graphql";
 
 import { AddressWidget } from "@/components/AddressWidget/AddressWidget";
 import { twMerge } from "tailwind-merge";
 import { SimulationPositionView } from "./SimulationPositionView";
-import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
-import {
-  GET_SIMULATION_PLAN_BY_ID_DOCUMENT,
-  useDeleteSimulationBot,
-  useStopSimulationBot,
-} from "@/app/_hooks/useSimulations";
-import { EditSimulationBot } from "./EditAutomationModal";
 import { getPriceStr } from "@/utils/price";
-import { useUserJWT } from "@/app/_hooks/useUserJWT";
 
 export type SimulationBotDetailsViewProps = {
   simulationBot: SimulationBotDetails;
@@ -26,35 +18,6 @@ export type SimulationBotDetailsViewProps = {
 export function SimulationBotDetailsView({
   simulationBot,
 }: SimulationBotDetailsViewProps) {
-  const { stopSimulationBot } = useStopSimulationBot();
-  const { deleteSimulationBot, loading: deleteLoading } =
-    useDeleteSimulationBot();
-  const { userJwtQuery } = useUserJWT();
-  const isAdmin = userJwtQuery.data?.permission === UserPermission.Admin;
-
-  const handleStop = () => {
-    stopSimulationBot({
-      variables: {
-        id: simulationBot.id,
-      },
-    });
-  };
-
-  const handleRemove = () => {
-    deleteSimulationBot({
-      variables: {
-        id: simulationBot.id,
-      },
-      refetchQueries: [
-        {
-          query: GET_SIMULATION_PLAN_BY_ID_DOCUMENT,
-          variables: { id: simulationBot.simulationPlanId },
-        },
-      ],
-    });
-  };
-
-  const botStatus = simulationBot.stoppedAt ? "Stop" : "Live";
   const cacheState = simulationBot.cacheState;
   const hasPositions = simulationBot.positions.length > 0;
   const cacheStatusLabel = cacheState
@@ -118,26 +81,6 @@ export function SimulationBotDetailsView({
           )}
         </div>
 
-        {botStatus === "Live" ? (
-          <div className="flex items-center gap-2">
-            <ButtonWithConfirm onPress={handleStop} color="primary">
-              Stop
-            </ButtonWithConfirm>
-          </div>
-        ) : null}
-
-        <EditSimulationBot simulationBot={simulationBot} />
-
-        {isAdmin ? (
-          <ButtonWithConfirm
-            onPress={handleRemove}
-            color="danger"
-            isLoading={deleteLoading}
-            isDisabled={deleteLoading}
-          >
-            Remove
-          </ButtonWithConfirm>
-        ) : null}
       </div>
 
       <div className="flex flex-col gap-3">

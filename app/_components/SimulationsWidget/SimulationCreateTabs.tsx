@@ -1,19 +1,7 @@
 "use client";
 
-import { Tab, Tabs } from "@heroui/react";
-import { useState } from "react";
-
 import { SimulationCreationPanel } from "./SimulationCreationPanel";
-import { SimulationPlanCreationPanel } from "./SimulationPlanCreationPanel";
-
-type CreateTab = "research" | "manual-plan";
-
-export function SimulationCreateTabs({
-  defaultTab = "research",
-}: {
-  defaultTab?: CreateTab;
-}) {
-  const [selected, setSelected] = useState<CreateTab>(defaultTab);
+export function SimulationCreateTabs() {
 
   return (
     <div className="flex max-w-6xl flex-col gap-6">
@@ -22,24 +10,12 @@ export function SimulationCreateTabs({
           Create Simulation
         </h1>
         <p className="text-sm text-neutral-400">
-          Create a simulation research set or build a manual plan from one page.
+          Define a research rule. Simulations, plan windows, and automations are
+          generated from it.
         </p>
       </div>
 
-      <Tabs
-        aria-label="simulation-create-tabs"
-        selectedKey={selected}
-        onSelectionChange={(key) => setSelected(key as CreateTab)}
-      >
-        <Tab key="research" title="Research" />
-        <Tab key="manual-plan" title="Manual Plan" />
-      </Tabs>
-
-      {selected === "research" ? (
-        <SimulationCreationPanel compactHeading />
-      ) : (
-        <SimulationPlanCreationPanel compactHeading />
-      )}
+      <SimulationCreationPanel compactHeading />
     </div>
   );
 }

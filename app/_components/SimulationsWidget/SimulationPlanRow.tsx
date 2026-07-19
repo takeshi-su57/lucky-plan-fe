@@ -2,22 +2,15 @@
 
 import { Button, Card, CardBody, Chip, Link } from "@heroui/react";
 import dayjs from "dayjs";
-import { SimulationPlan, UserPermission } from "@/graphql/gql/graphql";
+import { SimulationPlan } from "@/graphql/gql/graphql";
 import { LabeledChip } from "@/components/chips/LabeledChip";
 import { getPriceStr } from "@/utils/price";
-import { useDeleteSimulationPlan } from "@/app/_hooks/useSimulations";
-import { useUserJWT } from "@/app/_hooks/useUserJWT";
-import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 
 export type SimulationPlanRowProps = {
   simulationPlan: SimulationPlan;
 };
 
 export function SimulationPlanRow({ simulationPlan }: SimulationPlanRowProps) {
-  const { deleteSimulationPlan, loading: deleteLoading } =
-    useDeleteSimulationPlan();
-  const { userJwtQuery } = useUserJWT();
-  const isAdmin = userJwtQuery.data?.permission === UserPermission.Admin;
 
   const items = [
     {
@@ -126,23 +119,6 @@ export function SimulationPlanRow({ simulationPlan }: SimulationPlanRowProps) {
                   Show Details
                 </Button>
               </Link>
-
-              {isAdmin ? (
-                <ButtonWithConfirm
-                  size="sm"
-                  variant="solid"
-                  color="danger"
-                  isLoading={deleteLoading}
-                  isDisabled={deleteLoading}
-                  onPress={() =>
-                    deleteSimulationPlan({
-                      variables: { id: simulationPlan.id },
-                    })
-                  }
-                >
-                  Remove
-                </ButtonWithConfirm>
-              ) : null}
             </div>
           </div>
         </CardBody>

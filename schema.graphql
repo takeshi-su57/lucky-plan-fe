@@ -216,25 +216,6 @@ input CreatePlanInput {
   title: String!
 }
 
-input CreateSimulationBotInput {
-  leaderAddress: String!
-  leaderPlatform: Platform!
-  maxCollateral: Float! = 1000000000
-  maxLeverage: Float!
-  minCollateral: Float! = 0
-  minLeverage: Float! = 0
-  mode: BotMode!
-  ratio: Float!
-  simulationPlanId: Int!
-}
-
-input CreateSimulationPlanInput {
-  description: String!
-  endAt: Date!
-  startAt: Date!
-  title: String!
-}
-
 input CreateSimulationResearchInput {
   collateral: [FloatRangeGroupInput!]!
   days: Int! = 1
@@ -501,7 +482,6 @@ type Mutation {
   allowAuto(address: String!, allowAuto: Boolean!, budget: Float!, followerContractId: Int!, ratio: Float!): User!
   approveSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
-  batchCreateSimulationBots(inputs: [CreateSimulationBotInput!]!): [SimulationBot!]!
   buildPnlSnapshotsV2(dateStr: String!, isForceBuild: Boolean!, platform: Platform!): Boolean!
   cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
   cancelResearch(id: Int!): SimulationResearch!
@@ -516,7 +496,6 @@ type Mutation {
   createBot(input: CreateBotInput!): BotBackwardDetails!
   createPlan(createPlanInput: CreatePlanInput!): Plan!
   createSLTP(input: SLTPRequestInput!): SLTPRequest!
-  createSimulationPlan(input: CreateSimulationPlanInput!): SimulationPlan!
   createSimulationResearch(input: CreateSimulationResearchInput!): SimulationResearch!
   decreaseAllowanceToZero(collateralIndex: Int!, contractId: Int!, followerAddress: String!, password: String!): Boolean!
   decreasePositionSize(input: DecreasePositionSizeInput!): ContractExecutionResult!
@@ -524,8 +503,6 @@ type Mutation {
   deletePlan(id: Int!): Int!
   deleteSLTP(id: Int!): SLTPRequest!
   deleteSimulation(id: Int!): Int!
-  deleteSimulationBot(id: Int!): Int!
-  deleteSimulationPlan(id: Int!): Int!
   deleteSimulationResearch(id: Int!): Int!
   depositAsset(input: AssetInput!): Boolean!
   disableContract(contractId: Int!): Contract!
@@ -545,7 +522,6 @@ type Mutation {
   pauseResearch(id: Int!): SimulationResearch!
   pauseSystem: Boolean!
   playAutoResearch(id: Int!): SimulationResearch!
-  playSimulationPlan(id: Int!): SimulationPlan!
   prebuildSimulationEvaluatorWorker(endedAt: String!, platform: String!, startedAt: String!, workerId: String!): String!
   rejectSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
   removeRejectedSimulationEvaluatorWorker(workerId: String!): Boolean!
@@ -554,13 +530,11 @@ type Mutation {
   startPlan(id: Int!): Boolean!
   startSubService(service: String!): Boolean!
   stopBot(id: Int!): Boolean!
-  stopSimulationBot(id: Int!): SimulationBot!
   stopTask(id: Int!): Boolean!
   updateLeverage(input: UpdateLeverageInput!): ContractExecutionResult!
   updateMaxOpenMissions(maxCount: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
   updateSimulation(input: UpdateSimulationInput!): Simulation!
-  updateSimulationBot(input: UpdateSimulationBotInput!): SimulationBot!
   updateSimulationResearch(input: UpdateSimulationResearchInput!): SimulationResearch!
   updateSl(input: UpdateSlInput!): ContractExecutionResult!
   updateStrategy(id: Int!, input: UpdateStrategyInput!): Strategy!
@@ -773,7 +747,6 @@ type Query {
   getPnlSnapshotsV2(dateStr: String!, isDesc: Boolean!, maxLeverage: Float, page: Int!, pageSize: Int!, platform: Platform!): PnlSnapshotV2DetailsPaginatedResponse!
   getServerTime: ServerTime!
   getSimulationPlanById(id: Int!): SimulationPlanDetails!
-  getSimulationPlans(after: Int, first: Int!): SimulationPlanConnection!
   isPnlSnapshotV2Initialized(dateStr: String!, platform: Platform!): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   simulation(id: Int!): Simulation
@@ -1228,16 +1201,6 @@ input UpdatePlanInput {
   startedAt: Date
   status: PlanStatus!
   title: String
-}
-
-input UpdateSimulationBotInput {
-  id: Int!
-  maxCollateral: Float
-  maxLeverage: Float
-  minCollateral: Float
-  minLeverage: Float
-  mode: BotMode
-  ratio: Float
 }
 
 input UpdateSimulationInput {
