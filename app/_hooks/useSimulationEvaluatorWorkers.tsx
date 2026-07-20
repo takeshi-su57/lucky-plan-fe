@@ -17,7 +17,24 @@ export const SIMULATION_EVALUATOR_WORKERS_DOCUMENT = graphql(`
       lastHeartbeatAt
       lastTaskAt
       lastError
+      lastDiagnosticAt
+      lastDiagnostic {
+        pid
+        uptimeSeconds
+        childCapacity
+        childCount
+        idleChildCount
+        runningTaskCount
+        lastPollAt
+        lastPollError
+        recentLogs {
+          at
+          level
+          message
+        }
+      }
       platformCaches {
+        id
         platform
         status
         coveredStartAt
@@ -58,6 +75,12 @@ const REMOVE_REJECTED_SIMULATION_EVALUATOR_WORKER_DOCUMENT = graphql(`
   }
 `);
 
+const REMOVE_OFFLINE_SIMULATION_EVALUATOR_WORKER_DOCUMENT = graphql(`
+  mutation removeOfflineSimulationEvaluatorWorker($workerId: String!) {
+    removeOfflineSimulationEvaluatorWorker(workerId: $workerId)
+  }
+`);
+
 const PREBUILD_SIMULATION_EVALUATOR_WORKER_DOCUMENT = graphql(`
   mutation prebuildSimulationEvaluatorWorker(
     $workerId: String!
@@ -71,6 +94,85 @@ const PREBUILD_SIMULATION_EVALUATOR_WORKER_DOCUMENT = graphql(`
       startedAt: $startedAt
       endedAt: $endedAt
     )
+  }
+`);
+
+export const SIMULATION_EVALUATOR_WORKER_TASKS_DOCUMENT = graphql(`
+  query GetSimulationEvaluatorWorkerTasks($workerId: String) {
+    simulationEvaluatorWorkerTasks(workerId: $workerId) {
+      id
+      kind
+      status
+      syncStatus
+      platform
+      targetWorkerId
+      workerId
+      rangeStartedAt
+      rangeEndedAt
+      claimedAt
+      leaseExpiresAt
+      completedAt
+      progressPercent
+      progressMessage
+      progressRecords
+      progressTotalRecords
+      progressBytes
+      lastError
+      canCancel
+      createdAt
+    }
+  }
+`);
+
+const SIMULATION_EVALUATOR_WORKER_TASK_CONNECTION_DOCUMENT = graphql(`
+  query GetSimulationEvaluatorWorkerTaskConnection(
+    $workerId: String!
+    $archive: Boolean!
+    $cursor: String
+    $limit: Int!
+  ) {
+    simulationEvaluatorWorkerTaskConnection(
+      workerId: $workerId
+      archive: $archive
+      cursor: $cursor
+      limit: $limit
+    ) {
+      nextCursor
+      items {
+        id
+        kind
+        status
+        syncStatus
+        platform
+        targetWorkerId
+        workerId
+        rangeStartedAt
+        rangeEndedAt
+        claimedAt
+        leaseExpiresAt
+        completedAt
+        progressPercent
+        progressMessage
+        progressRecords
+        progressTotalRecords
+        progressBytes
+        lastError
+        canCancel
+        createdAt
+      }
+    }
+  }
+`);
+
+const RETRY_SIMULATION_EVALUATOR_WORKER_CACHE_DOCUMENT = graphql(`
+  mutation retrySimulationEvaluatorWorkerCache($cacheId: Int!) {
+    retrySimulationEvaluatorWorkerCache(cacheId: $cacheId)
+  }
+`);
+
+const REMOVE_SIMULATION_EVALUATOR_WORKER_CACHE_DOCUMENT = graphql(`
+  mutation removeSimulationEvaluatorWorkerCache($cacheId: Int!) {
+    removeSimulationEvaluatorWorkerCache(cacheId: $cacheId)
   }
 `);
 
@@ -102,7 +204,16 @@ const SET_SIMULATION_EVALUATOR_WORKER_CAPACITY_DOCUMENT = graphql(`
   }
 `);
 
-const refetchWorkers = [SIMULATION_EVALUATOR_WORKERS_DOCUMENT];
+const CANCEL_UNASSIGNED_SIMULATION_EVALUATOR_WORKER_TASK_DOCUMENT = graphql(`
+  mutation cancelUnassignedSimulationEvaluatorWorkerTask($taskId: String!) {
+    cancelUnassignedSimulationEvaluatorWorkerTask(taskId: $taskId)
+  }
+`);
+
+const refetchWorkers = [
+  SIMULATION_EVALUATOR_WORKERS_DOCUMENT,
+  SIMULATION_EVALUATOR_WORKER_TASKS_DOCUMENT,
+];
 
 export function useSimulationEvaluatorWorkers() {
   return useQuery(SIMULATION_EVALUATOR_WORKERS_DOCUMENT, {
@@ -131,8 +242,71 @@ export function useRemoveRejectedSimulationEvaluatorWorker() {
   });
 }
 
+export function useRemoveOfflineSimulationEvaluatorWorker() {
+  return useMutation(REMOVE_OFFLINE_SIMULATION_EVALUATOR_WORKER_DOCUMENT, {
+    refetchQueries: refetchWorkers,
+  });
+}
+
 export function usePrebuildSimulationEvaluatorWorker() {
   return useMutation(PREBUILD_SIMULATION_EVALUATOR_WORKER_DOCUMENT, {
+    refetchQueries: refetchWorkers,
+  });
+}
+
+export function useSimulationEvaluatorWorkerTasks(workerId?: string) {
+  return useQuery(SIMULATION_EVALUATOR_WORKER_TASKS_DOCUMENT, {
+    variables: { workerId },
+    pollInterval: 10_000,
+    fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
+    notifyOnNetworkStatusChange: false,
+  });
+}
+
+export function useSimulationEvaluatorWorkerTaskConnection(
+  workerId: string,
+  archive: boolean,
+) {
+  const query = useQuery(SIMULATION_EVALUATOR_WORKER_TASK_CONNECTION_DOCUMENT, {
+    variables: { workerId, archive, cursor: null, limit: 30 },
+    pollInterval: archive ? 0 : 10_000,
+    fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
+    notifyOnNetworkStatusChange: false,
+  });
+  const connection = query.data?.simulationEvaluatorWorkerTaskConnection;
+  const loadMore = async () => {
+    if (!connection?.nextCursor || query.loading) return;
+    await query.fetchMore({
+      variables: { cursor: connection.nextCursor },
+      updateQuery: (previous, { fetchMoreResult }) => ({
+        simulationEvaluatorWorkerTaskConnection: {
+          ...fetchMoreResult.simulationEvaluatorWorkerTaskConnection,
+          items: [
+            ...previous.simulationEvaluatorWorkerTaskConnection.items,
+            ...fetchMoreResult.simulationEvaluatorWorkerTaskConnection.items,
+          ],
+        },
+      }),
+    });
+  };
+  return {
+    ...query,
+    tasks: connection?.items ?? [],
+    hasMore: Boolean(connection?.nextCursor),
+    loadMore,
+  };
+}
+
+export function useRetrySimulationEvaluatorWorkerCache() {
+  return useMutation(RETRY_SIMULATION_EVALUATOR_WORKER_CACHE_DOCUMENT, {
+    refetchQueries: refetchWorkers,
+  });
+}
+
+export function useRemoveSimulationEvaluatorWorkerCache() {
+  return useMutation(REMOVE_SIMULATION_EVALUATOR_WORKER_CACHE_DOCUMENT, {
     refetchQueries: refetchWorkers,
   });
 }
@@ -153,4 +327,11 @@ export function useSetSimulationEvaluatorWorkerCapacity() {
   return useMutation(SET_SIMULATION_EVALUATOR_WORKER_CAPACITY_DOCUMENT, {
     refetchQueries: refetchWorkers,
   });
+}
+
+export function useCancelUnassignedSimulationEvaluatorWorkerTask() {
+  return useMutation(
+    CANCEL_UNASSIGNED_SIMULATION_EVALUATOR_WORKER_TASK_DOCUMENT,
+    { refetchQueries: refetchWorkers },
+  );
 }

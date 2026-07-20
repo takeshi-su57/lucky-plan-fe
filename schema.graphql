@@ -507,6 +507,7 @@ type Mutation {
   cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
   cancelResearch(id: Int!): SimulationResearch!
   cancelSimulation(id: Int!): Simulation!
+  cancelUnassignedSimulationEvaluatorWorkerTask(taskId: String!): Boolean!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
   checkLog(id: Int!): Log!
@@ -550,9 +551,12 @@ type Mutation {
   playSimulationPlan(id: Int!): SimulationPlan!
   prebuildSimulationEvaluatorWorker(endedAt: String!, platform: String!, startedAt: String!, workerId: String!): String!
   rejectSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
+  removeOfflineSimulationEvaluatorWorker(workerId: String!): Boolean!
   removeRejectedSimulationEvaluatorWorker(workerId: String!): Boolean!
+  removeSimulationEvaluatorWorkerCache(cacheId: Int!): Boolean!
   resumeSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
   resumeSystem(password: String): Boolean!
+  retrySimulationEvaluatorWorkerCache(cacheId: Int!): String!
   setSimulationEvaluatorWorkerCapacity(capacity: Float!, workerId: String!): String!
   startAdaption(contractId: Int!, shouldRestart: Boolean!): Boolean!
   startPlan(id: Int!): Boolean!
@@ -781,6 +785,8 @@ type Query {
   isPnlSnapshotV2Initialized(dateStr: String!, platform: Platform!): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   simulation(id: Int!): Simulation
+  simulationEvaluatorWorkerTaskConnection(archive: Boolean! = false, cursor: String, limit: Int! = 30, workerId: String!): SimulationEvaluatorWorkerTaskConnection!
+  simulationEvaluatorWorkerTasks(workerId: String): [SimulationEvaluatorWorkerTaskView!]!
   simulationEvaluatorWorkers: [SimulationEvaluatorWorkerView!]!
   simulationPlanDetailsBySimulation(simulationId: Int!): [SimulationPlanDetails!]!
   simulationPlansBySimulation(simulationId: Int!): [SimulationPlan!]!
@@ -940,9 +946,28 @@ type SimulationEdge {
 type SimulationEvaluatorWorkerCacheView {
   coveredEndAt: Date
   coveredStartAt: Date
+  id: Int!
   lastError: String
   platform: String!
   status: String!
+}
+
+type SimulationEvaluatorWorkerDiagnosticLogView {
+  at: Date!
+  level: String!
+  message: String!
+}
+
+type SimulationEvaluatorWorkerDiagnosticView {
+  childCapacity: Int!
+  childCount: Int!
+  idleChildCount: Int!
+  lastPollAt: Date
+  lastPollError: String
+  pid: Int!
+  recentLogs: [SimulationEvaluatorWorkerDiagnosticLogView!]!
+  runningTaskCount: Int!
+  uptimeSeconds: Int!
 }
 
 type SimulationEvaluatorWorkerPrebuildProgressView {
@@ -954,6 +979,34 @@ type SimulationEvaluatorWorkerPrebuildProgressView {
   totalRecords: String!
 }
 
+type SimulationEvaluatorWorkerTaskConnection {
+  items: [SimulationEvaluatorWorkerTaskView!]!
+  nextCursor: String
+}
+
+type SimulationEvaluatorWorkerTaskView {
+  canCancel: Boolean!
+  claimedAt: Date
+  completedAt: Date
+  createdAt: Date!
+  id: String!
+  kind: String!
+  lastError: String
+  leaseExpiresAt: Date
+  platform: String
+  progressBytes: String!
+  progressMessage: String!
+  progressPercent: Float!
+  progressRecords: String!
+  progressTotalRecords: String!
+  rangeEndedAt: Date!
+  rangeStartedAt: Date!
+  status: String!
+  syncStatus: String!
+  targetWorkerId: String
+  workerId: String
+}
+
 type SimulationEvaluatorWorkerView {
   activeCapacity: Int!
   authorizationStatus: String!
@@ -961,6 +1014,8 @@ type SimulationEvaluatorWorkerView {
   desiredState: String!
   displayName: String!
   id: String!
+  lastDiagnostic: SimulationEvaluatorWorkerDiagnosticView
+  lastDiagnosticAt: Date
   lastError: String
   lastHeartbeatAt: Date
   lastTaskAt: Date
