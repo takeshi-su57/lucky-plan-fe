@@ -48,6 +48,15 @@ const age = (value?: string | null) =>
         "minute",
       )
     : "Never";
+const duration = (startedAt?: string | null, endedAt?: string | null) => {
+  if (!startedAt || !endedAt) return null;
+  const milliseconds =
+    new Date(endedAt).getTime() - new Date(startedAt).getTime();
+  if (!Number.isFinite(milliseconds) || milliseconds < 0) return null;
+  if (milliseconds < 60_000) return `${Math.max(1, Math.round(milliseconds / 1000))}s`;
+  if (milliseconds < 3_600_000) return `${Math.floor(milliseconds / 60_000)}m ${Math.round((milliseconds % 60_000) / 1000)}s`;
+  return `${Math.floor(milliseconds / 3_600_000)}h ${Math.floor((milliseconds % 3_600_000) / 60_000)}m`;
+};
 const color = (value: string) =>
   value === "Completed" || value === "Ready"
     ? "success"
@@ -584,6 +593,13 @@ function TaskFeed({
               Created {stamp(task.createdAt)} · Range{" "}
               {stamp(task.rangeStartedAt)} — {stamp(task.rangeEndedAt)}
             </p>
+            {task.claimedAt && (
+              <p className="text-default-500 mt-1 text-xs">
+                {task.completedAt
+                  ? `Completed ${stamp(task.completedAt)}${duration(task.claimedAt, task.completedAt) ? ` · Took ${duration(task.claimedAt, task.completedAt)}` : ""}`
+                  : `Started ${stamp(task.claimedAt)}`}
+              </p>
+            )}
           </div>
           <div>
             <p className="text-sm font-medium">{task.syncStatus}</p>
@@ -604,6 +620,12 @@ function TaskFeed({
                   {task.progressPercent.toFixed(0)}% ·{" "}
                   {task.progressMessage || "Processing"}
                 </p>
+                {Number(task.progressTotalRecords) > 0 && (
+                  <p className="text-default-400 mt-1 text-xs">
+                    {Number(task.progressRecords).toLocaleString()} /{" "}
+                    {Number(task.progressTotalRecords).toLocaleString()} {task.kind === "EvaluateLeaders" ? "leaders evaluated" : "records processed"}
+                  </p>
+                )}
               </>
             )}
           </div>

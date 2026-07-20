@@ -529,6 +529,30 @@ export const PLAY_AUTO_RESEARCH_DOCUMENT = graphql(`
   }
 `);
 
+export const CLONE_SIMULATION_RESEARCH_DOCUMENT = graphql(`
+  mutation cloneSimulationResearch($id: Int!) {
+    cloneSimulationResearch(id: $id) {
+      ...SimulationResearchInfo
+    }
+  }
+`);
+
+export const RESUME_RESEARCH_DOCUMENT = graphql(`
+  mutation resumeResearch($id: Int!) {
+    resumeResearch(id: $id) {
+      ...SimulationResearchInfo
+    }
+  }
+`);
+
+export const RESTART_RESEARCH_DOCUMENT = graphql(`
+  mutation restartResearch($id: Int!) {
+    restartResearch(id: $id) {
+      ...SimulationResearchInfo
+    }
+  }
+`);
+
 export const PAUSE_RESEARCH_DOCUMENT = graphql(`
   mutation pauseResearch($id: Int!) {
     pauseResearch(id: $id) {
@@ -1330,6 +1354,14 @@ export function useCreateSimulationResearch() {
   return { createSimulationResearch, simulationResearch, loading };
 }
 
+export function useCloneSimulationResearch() {
+  const [cloneSimulationResearch, { loading }] = useMutation(
+    CLONE_SIMULATION_RESEARCH_DOCUMENT,
+  );
+
+  return { cloneSimulationResearch, loading };
+}
+
 export function useUpdateSimulationResearch() {
   const [updateSimulationResearch, { data: newData, error, loading }] =
     useMutation(UPDATE_SIMULATION_RESEARCH_DOCUMENT);
@@ -1474,6 +1506,42 @@ export function usePlayAutoResearch() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return { playAutoResearch, loading };
+}
+
+export function useResumeResearch() {
+  const [resumeResearch, { data: newData, error, loading }] = useMutation(
+    RESUME_RESEARCH_DOCUMENT,
+  );
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      enqueueSnackbar("Research resumed!", { variant: "success" });
+    }
+    if (newData && error) {
+      enqueueSnackbar("Error at resuming research!", { variant: "error" });
+    }
+  }, [newData, error, enqueueSnackbar]);
+
+  return { resumeResearch, loading };
+}
+
+export function useRestartResearch() {
+  const [restartResearch, { data: newData, error, loading }] = useMutation(
+    RESTART_RESEARCH_DOCUMENT,
+  );
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      enqueueSnackbar("Research restarted!", { variant: "success" });
+    }
+    if (newData && error) {
+      enqueueSnackbar("Error at restarting research!", { variant: "error" });
+    }
+  }, [newData, error, enqueueSnackbar]);
+
+  return { restartResearch, loading };
 }
 
 export function usePauseResearch() {

@@ -7,11 +7,14 @@ import { Button, Chip, Input, Spinner, Textarea } from "@heroui/react";
 
 import {
   useCancelResearch,
+  useCloneSimulationResearch,
   useDeleteSimulationResearch,
   useGetSimulationResearch,
   useGetSimulationsByResearch,
   usePauseResearch,
   usePlayAutoResearch,
+  useRestartResearch,
+  useResumeResearch,
   useUpdateSimulationResearch,
 } from "@/app/_hooks/useSimulations";
 import { SimulationRow } from "./SimulationRow";
@@ -71,8 +74,12 @@ export function SimulationResearchDetailPanel({
     useGetSimulationsByResearch(id);
   const { deleteSimulationResearch, loading: deleteLoading } =
     useDeleteSimulationResearch();
+  const { cloneSimulationResearch, loading: cloneLoading } =
+    useCloneSimulationResearch();
   const { playAutoResearch, loading: playLoading } = usePlayAutoResearch();
   const { pauseResearch, loading: pauseLoading } = usePauseResearch();
+  const { resumeResearch, loading: resumeLoading } = useResumeResearch();
+  const { restartResearch, loading: restartLoading } = useRestartResearch();
   const { cancelResearch, loading: cancelLoading } = useCancelResearch();
   const { updateSimulationResearch, loading: updateLoading } =
     useUpdateSimulationResearch();
@@ -94,7 +101,13 @@ export function SimulationResearchDetailPanel({
     userJwtQuery.data?.permission === UserPermission.Admin ||
     userJwtQuery.data?.permission === UserPermission.Trader;
   const actionLoading =
-    playLoading || pauseLoading || cancelLoading || deleteLoading;
+    playLoading ||
+    pauseLoading ||
+    resumeLoading ||
+    restartLoading ||
+    cloneLoading ||
+    cancelLoading ||
+    deleteLoading;
   const canQueue =
     simulationResearch.status === SimulationStatus.Created ||
     simulationResearch.status === SimulationStatus.Paused;
@@ -105,6 +118,8 @@ export function SimulationResearchDetailPanel({
     simulationResearch.status !== SimulationStatus.Completed &&
     simulationResearch.status !== SimulationStatus.Cancelled;
   const canExport = simulationResearch.status === SimulationStatus.Completed;
+  const canRecover =
+    isAdmin && simulationResearch.status === SimulationStatus.Failed;
 
   const openEditModal = () => {
     setTitle(simulationResearch.title);
@@ -219,6 +234,55 @@ export function SimulationResearchDetailPanel({
               >
                 Pause
               </Button>
+            ) : null}
+
+            {canRecover ? (
+              <Button
+                color="success"
+                variant="flat"
+                size="sm"
+                isLoading={resumeLoading}
+                isDisabled={actionLoading}
+                onPress={() =>
+                  resumeResearch({ variables: { id: simulationResearch.id } })
+                }
+              >
+                Resume
+              </Button>
+            ) : null}
+
+            {canRecover ? (
+              <ButtonWithConfirm
+                color="warning"
+                variant="flat"
+                size="sm"
+                isLoading={restartLoading}
+                isDisabled={actionLoading}
+                onPress={() =>
+                  restartResearch({ variables: { id: simulationResearch.id } })
+                }
+              >
+                Restart
+              </ButtonWithConfirm>
+            ) : null}
+
+            {isAdmin ? (
+              <ButtonWithConfirm
+                color="secondary"
+                variant="flat"
+                size="sm"
+                isLoading={cloneLoading}
+                isDisabled={actionLoading}
+                onPress={async () => {
+                  const result = await cloneSimulationResearch({
+                    variables: { id: simulationResearch.id },
+                  });
+                  const cloned = result.data?.cloneSimulationResearch;
+                  if (cloned) router.push(`/simulations/research/${cloned.id}`);
+                }}
+              >
+                Clone Research
+              </ButtonWithConfirm>
             ) : null}
 
             {canCancel ? (

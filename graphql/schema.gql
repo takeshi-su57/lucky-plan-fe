@@ -605,6 +605,8 @@ type Mutation {
   removeOfflineSimulationEvaluatorWorker(workerId: String!): Boolean!
   removeRejectedSimulationEvaluatorWorker(workerId: String!): Boolean!
   removeSimulationEvaluatorWorkerCache(cacheId: Int!): Boolean!
+  restartResearch(id: Int!): SimulationResearch!
+  resumeResearch(id: Int!): SimulationResearch!
   resumeSimulationEvaluatorWorker(
     workerId: String!
   ): SimulationEvaluatorWorkerView!
@@ -1212,11 +1214,13 @@ type SimulationResearch {
   id: Int!
   lastError: String
   leverage: [SimulationValueRangeGroup!]!
+  nextRetryAt: Date
   platform: Platform!
   progressMessage: String
   progressPercent: Float!
   progressPhase: String
   r2: [SimulationValueRangeGroup!]!
+  retryAttempts: Int!
   score: [SimulationValueRangeGroup!]!
   scoreFormular: SimulationScoreFormular!
   size: [SimulationValueRangeGroup!]!
@@ -1253,11 +1257,13 @@ type SimulationResearchDetails {
   id: Int!
   lastError: String
   leverage: [SimulationValueRangeGroup!]!
+  nextRetryAt: Date
   platform: Platform!
   progressMessage: String
   progressPercent: Float!
   progressPhase: String
   r2: [SimulationValueRangeGroup!]!
+  retryAttempts: Int!
   score: [SimulationValueRangeGroup!]!
   scoreFormular: SimulationScoreFormular!
   simulations: [Simulation!]!
