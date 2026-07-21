@@ -34,14 +34,13 @@ export const SimulationBotSummary = memo(function SimulationBotSummary({
           ? "Ready"
           : "Pending"
     : "Untracked";
-  const cacheColor =
-    cacheState?.lastError
-      ? "danger"
-      : cacheState?.rebuilding
-        ? "warning"
-        : cacheState?.completed
-          ? "success"
-          : "default";
+  const cacheColor = cacheState?.lastError
+    ? "danger"
+    : cacheState?.rebuilding
+      ? "warning"
+      : cacheState?.completed
+        ? "success"
+        : "default";
 
   return (
     <div className="flex min-w-0 items-center justify-between gap-4 text-neutral-400">
@@ -63,16 +62,23 @@ export const SimulationBotSummary = memo(function SimulationBotSummary({
 
         <div className="grid min-w-0 grid-cols-[minmax(160px,1fr)_minmax(180px,1fr)_120px] items-center gap-4 font-mono text-xs">
           <div className="flex min-w-0 flex-col">
-            <span className="truncate">Ratio {simulationBot.ratio}x</span>
+            <span className="truncate">
+              Base ratio {simulationBot.baseRatio}x
+            </span>
             <span className="truncate">
               Score {simulationBot.score.toFixed(2)}
             </span>
             <span className="truncate">
-              Collateral {getPriceStr(simulationBot.minCollateral)}-
+              L2 collateral {getPriceStr(simulationBot.minCollateral)}-
               {getPriceStr(simulationBot.maxCollateral)}
             </span>
             <span className="truncate">
-              Leverage {simulationBot.minLeverage}x-{simulationBot.maxLeverage}x
+              L2 size {getPriceStr(simulationBot.minSize)}-
+              {getPriceStr(simulationBot.maxSize)}
+            </span>
+            <span className="truncate">
+              L2 leverage {simulationBot.minLeverage}x-
+              {simulationBot.maxLeverage}x
             </span>
             <span className="truncate">Direction {simulationBot.mode}</span>
           </div>

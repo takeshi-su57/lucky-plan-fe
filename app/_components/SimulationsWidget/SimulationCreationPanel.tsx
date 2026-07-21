@@ -57,7 +57,7 @@ type RangeEntryErrors = Partial<Record<"min" | "max", string>>;
 type ImportedRange = { min: number; max: number };
 type ImportedRangeGroup = { ranges: ImportedRange[] };
 type ImportedResearchConfiguration = {
-  version: 1;
+  version: 2;
   title: string;
   description: string;
   platform: Platform;
@@ -72,13 +72,18 @@ type ImportedResearchConfiguration = {
   collateral: ImportedRangeGroup[];
   size: ImportedRangeGroup[];
   leverage: ImportedRangeGroup[];
+  leaderExecutionCollateral: ImportedRangeGroup[];
+  leaderExecutionSize: ImportedRangeGroup[];
+  leaderExecutionLeverage: ImportedRangeGroup[];
+  followerRiskSize: ImportedRangeGroup[];
+  followerRiskCollateral: ImportedRangeGroup[];
   score: ImportedRangeGroup[];
   scoreFormular: SimulationScoreFormular;
   sizingFormular: SimulationSizingFormular;
 };
 
 const EXPERT_CONFIGURATION_TEMPLATE = {
-  version: 1,
+  version: 2,
   title: "GNS reversed momentum refinement",
   description: "Refined after reviewing a previous simulation research report.",
   platform: Platform.Gns,
@@ -93,6 +98,11 @@ const EXPERT_CONFIGURATION_TEMPLATE = {
   collateral: [{ ranges: [{ min: 10, max: 500 }] }],
   size: [{ ranges: [{ min: 0, max: 1000000000 }] }],
   leverage: [{ ranges: [{ min: 10, max: 50 }] }],
+  leaderExecutionCollateral: [{ ranges: [{ min: 50, max: 150 }] }],
+  leaderExecutionSize: [{ ranges: [{ min: 1500, max: 3000 }] }],
+  leaderExecutionLeverage: [{ ranges: [{ min: 18, max: 25 }] }],
+  followerRiskSize: [{ ranges: [{ min: 50, max: 500 }] }],
+  followerRiskCollateral: [{ ranges: [{ min: 10, max: 100 }] }],
   score: [{ ranges: [{ min: 0.5, max: 0.8 }] }],
   scoreFormular: SimulationScoreFormular.RiskAdjustedCopyScore,
   sizingFormular: SimulationSizingFormular.ScoreScaledCollateralSizing,
@@ -376,8 +386,8 @@ function parseImportedResearchConfiguration(
     }
   }
 
-  if (value.version !== 1) {
-    throw new Error("Configuration version must be 1");
+  if (value.version !== 2) {
+    throw new Error("Configuration version must be 2");
   }
 
   if (!PLATFORM_OPTIONS.includes(value.platform as Platform)) {
@@ -429,7 +439,7 @@ function parseImportedResearchConfiguration(
   }
 
   const configuration = {
-    version: 1 as const,
+    version: 2 as const,
     title: value.title as string,
     description: value.description as string,
     platform: value.platform as Platform,
@@ -444,6 +454,26 @@ function parseImportedResearchConfiguration(
     collateral: parseImportedRangeGroups(value.collateral, "collateral"),
     size: parseImportedRangeGroups(value.size, "size"),
     leverage: parseImportedRangeGroups(value.leverage, "leverage"),
+    leaderExecutionCollateral: parseImportedRangeGroups(
+      value.leaderExecutionCollateral,
+      "leaderExecutionCollateral",
+    ),
+    leaderExecutionSize: parseImportedRangeGroups(
+      value.leaderExecutionSize,
+      "leaderExecutionSize",
+    ),
+    leaderExecutionLeverage: parseImportedRangeGroups(
+      value.leaderExecutionLeverage,
+      "leaderExecutionLeverage",
+    ),
+    followerRiskSize: parseImportedRangeGroups(
+      value.followerRiskSize,
+      "followerRiskSize",
+    ),
+    followerRiskCollateral: parseImportedRangeGroups(
+      value.followerRiskCollateral,
+      "followerRiskCollateral",
+    ),
     score: parseImportedRangeGroups(value.score, "score"),
     scoreFormular: value.scoreFormular as SimulationScoreFormular,
     sizingFormular: value.sizingFormular as SimulationSizingFormular,
@@ -482,6 +512,19 @@ function parseImportedResearchConfiguration(
   validateRanges("size", configuration.size, { min: 0 });
   validateRanges("leverage", configuration.leverage, { min: 0 });
   validateRanges("score", configuration.score, { min: 0, max: 1 });
+  validateRanges(
+    "leaderExecutionCollateral",
+    configuration.leaderExecutionCollateral,
+    { min: 0 },
+  );
+  validateRanges("leaderExecutionSize", configuration.leaderExecutionSize, {
+    min: 0,
+  });
+  validateRanges(
+    "leaderExecutionLeverage",
+    configuration.leaderExecutionLeverage,
+    { min: 0 },
+  );
 
   const simulationCount = Object.values({
     trade: configuration.trade,
@@ -491,6 +534,9 @@ function parseImportedResearchConfiguration(
     size: configuration.size,
     leverage: configuration.leverage,
     score: configuration.score,
+    leaderExecutionCollateral: configuration.leaderExecutionCollateral,
+    leaderExecutionSize: configuration.leaderExecutionSize,
+    leaderExecutionLeverage: configuration.leaderExecutionLeverage,
   }).reduce(
     (count, groups) =>
       count * (groups.length === 1 ? groups[0].ranges.length : groups.length),
@@ -592,6 +638,35 @@ export function SimulationCreationPanel({
   const [scoreRanges, setScoreRanges] = useState<RangeEntryState[]>([
     createRangeEntry("score", { min: "0.5", max: "0.8" }),
   ]);
+  const [leaderExecutionCollateralRanges, setLeaderExecutionCollateralRanges] =
+    useState<RangeEntryState[]>([
+      createRangeEntry("leader-execution-collateral", {
+        min: "50",
+        max: "150",
+      }),
+    ]);
+  const [leaderExecutionSizeRanges, setLeaderExecutionSizeRanges] = useState<
+    RangeEntryState[]
+  >([
+    createRangeEntry("leader-execution-size", {
+      min: "1500",
+      max: "3000",
+    }),
+  ]);
+  const [leaderExecutionLeverageRanges, setLeaderExecutionLeverageRanges] =
+    useState<RangeEntryState[]>([
+      createRangeEntry("leader-execution-leverage", {
+        min: "18",
+        max: "25",
+      }),
+    ]);
+  const [followerRiskSizeRanges, setFollowerRiskSizeRanges] = useState([
+    createRangeEntry("follower-risk-size", { min: "50", max: "500" }),
+  ]);
+  const [followerRiskCollateralRanges, setFollowerRiskCollateralRanges] =
+    useState([
+      createRangeEntry("follower-risk-collateral", { min: "10", max: "100" }),
+    ]);
   const [alternatives, setAlternatives] = useState<Record<string, boolean>>({});
   const toggleAlternatives = (field: string) =>
     setAlternatives((current) => ({ ...current, [field]: !current[field] }));
@@ -631,6 +706,26 @@ export function SimulationCreationPanel({
         configuration.leverage,
       );
       const score = mapImportedRangeGroups("score", configuration.score);
+      const leaderExecutionCollateral = mapImportedRangeGroups(
+        "leader-execution-collateral",
+        configuration.leaderExecutionCollateral,
+      );
+      const leaderExecutionSize = mapImportedRangeGroups(
+        "leader-execution-size",
+        configuration.leaderExecutionSize,
+      );
+      const leaderExecutionLeverage = mapImportedRangeGroups(
+        "leader-execution-leverage",
+        configuration.leaderExecutionLeverage,
+      );
+      const followerRiskSize = mapImportedRangeGroups(
+        "follower-risk-size",
+        configuration.followerRiskSize,
+      );
+      const followerRiskCollateral = mapImportedRangeGroups(
+        "follower-risk-collateral",
+        configuration.followerRiskCollateral,
+      );
 
       setTitle(configuration.title);
       setDescription(configuration.description);
@@ -651,6 +746,11 @@ export function SimulationCreationPanel({
       setSizeRanges(size.entries);
       setLeverageRanges(leverage.entries);
       setScoreRanges(score.entries);
+      setLeaderExecutionCollateralRanges(leaderExecutionCollateral.entries);
+      setLeaderExecutionSizeRanges(leaderExecutionSize.entries);
+      setLeaderExecutionLeverageRanges(leaderExecutionLeverage.entries);
+      setFollowerRiskSizeRanges(followerRiskSize.entries);
+      setFollowerRiskCollateralRanges(followerRiskCollateral.entries);
       setAlternatives({
         trade: trade.alternatives,
         r2: r2.alternatives,
@@ -659,6 +759,11 @@ export function SimulationCreationPanel({
         size: size.alternatives,
         leverage: leverage.alternatives,
         score: score.alternatives,
+        leaderExecutionCollateral: leaderExecutionCollateral.alternatives,
+        leaderExecutionSize: leaderExecutionSize.alternatives,
+        leaderExecutionLeverage: leaderExecutionLeverage.alternatives,
+        followerRiskSize: followerRiskSize.alternatives,
+        followerRiskCollateral: followerRiskCollateral.alternatives,
       });
       setConfigurationMessage(
         "Configuration applied. Review the populated form, then use Create Research to submit it.",
@@ -712,6 +817,17 @@ export function SimulationCreationPanel({
     (alternatives.collateral ? 1 : collateralRanges.length) *
     (alternatives.size ? 1 : sizeRanges.length) *
     (alternatives.leverage ? 1 : leverageRanges.length) *
+    (alternatives.leaderExecutionCollateral
+      ? 1
+      : leaderExecutionCollateralRanges.length) *
+    (alternatives.leaderExecutionSize ? 1 : leaderExecutionSizeRanges.length) *
+    (alternatives.leaderExecutionLeverage
+      ? 1
+      : leaderExecutionLeverageRanges.length) *
+    (alternatives.followerRiskSize ? 1 : followerRiskSizeRanges.length) *
+    (alternatives.followerRiskCollateral
+      ? 1
+      : followerRiskCollateralRanges.length) *
     (alternatives.score ? 1 : scoreRanges.length);
 
   const planWindowCount = useMemo(() => {
@@ -801,6 +917,25 @@ export function SimulationCreationPanel({
     if (scoreRanges.length === 0) {
       result.scoreEmpty = "Add at least one score range";
     }
+    if (leaderExecutionCollateralRanges.length === 0) {
+      result.leaderExecutionCollateralEmpty =
+        "Add at least one leader execution collateral range";
+    }
+    if (leaderExecutionSizeRanges.length === 0) {
+      result.leaderExecutionSizeEmpty =
+        "Add at least one leader execution size range";
+    }
+    if (leaderExecutionLeverageRanges.length === 0) {
+      result.leaderExecutionLeverageEmpty =
+        "Add at least one leader execution leverage range";
+    }
+    if (followerRiskSizeRanges.length === 0) {
+      result.followerRiskSizeEmpty = "Add at least one follower size range";
+    }
+    if (followerRiskCollateralRanges.length === 0) {
+      result.followerRiskCollateralEmpty =
+        "Add at least one follower collateral range";
+    }
 
     if (generatedSimulationCount > MAX_SIMULATIONS_PER_RESEARCH) {
       result.simulationCount = `This research would generate ${generatedSimulationCount} simulations. Maximum allowed is ${MAX_SIMULATIONS_PER_RESEARCH}. Please reduce grid search combinations.`;
@@ -838,6 +973,31 @@ export function SimulationCreationPanel({
       minAllowed: 0,
       maxAllowed: 1,
     });
+    const leaderExecutionCollateralEntryErrors = validateRangeEntries(
+      "Leader execution collateral",
+      leaderExecutionCollateralRanges,
+      { minAllowed: 0 },
+    );
+    const leaderExecutionSizeEntryErrors = validateRangeEntries(
+      "Leader execution size",
+      leaderExecutionSizeRanges,
+      { minAllowed: 0 },
+    );
+    const leaderExecutionLeverageEntryErrors = validateRangeEntries(
+      "Leader execution leverage",
+      leaderExecutionLeverageRanges,
+      { minAllowed: 0 },
+    );
+    const followerRiskSizeEntryErrors = validateRangeEntries(
+      "Follower size",
+      followerRiskSizeRanges,
+      { minAllowed: 0 },
+    );
+    const followerRiskCollateralEntryErrors = validateRangeEntries(
+      "Follower collateral",
+      followerRiskCollateralRanges,
+      { minAllowed: 0 },
+    );
 
     Object.values(tradeEntryErrors).forEach((entryErrors) => {
       Object.values(entryErrors).forEach((message) => {
@@ -893,6 +1053,19 @@ export function SimulationCreationPanel({
         }
       });
     });
+    for (const [prefix, entryErrors] of [
+      ["leaderExecutionCollateral", leaderExecutionCollateralEntryErrors],
+      ["leaderExecutionSize", leaderExecutionSizeEntryErrors],
+      ["leaderExecutionLeverage", leaderExecutionLeverageEntryErrors],
+      ["followerRiskSize", followerRiskSizeEntryErrors],
+      ["followerRiskCollateral", followerRiskCollateralEntryErrors],
+    ] as const) {
+      Object.values(entryErrors).forEach((fieldErrors) => {
+        Object.values(fieldErrors).forEach((message) => {
+          if (message) result[`${prefix}-${message}`] = message;
+        });
+      });
+    }
 
     return {
       flat: result,
@@ -903,6 +1076,11 @@ export function SimulationCreationPanel({
       collateralEntryErrors,
       sizeEntryErrors,
       scoreEntryErrors,
+      leaderExecutionCollateralEntryErrors,
+      leaderExecutionSizeEntryErrors,
+      leaderExecutionLeverageEntryErrors,
+      followerRiskSizeEntryErrors,
+      followerRiskCollateralEntryErrors,
     };
   }, [
     collateralRanges,
@@ -912,6 +1090,11 @@ export function SimulationCreationPanel({
     gapDays,
     generatedSimulationCount,
     leverageRanges,
+    leaderExecutionCollateralRanges,
+    leaderExecutionSizeRanges,
+    leaderExecutionLeverageRanges,
+    followerRiskSizeRanges,
+    followerRiskCollateralRanges,
     r2Ranges,
     scheduleRange,
     scoreRanges,
@@ -969,6 +1152,26 @@ export function SimulationCreationPanel({
           leverage: normalizeRangeGroups(
             leverageRanges,
             Boolean(alternatives.leverage),
+          ),
+          leaderExecutionCollateral: normalizeRangeGroups(
+            leaderExecutionCollateralRanges,
+            Boolean(alternatives.leaderExecutionCollateral),
+          ),
+          leaderExecutionSize: normalizeRangeGroups(
+            leaderExecutionSizeRanges,
+            Boolean(alternatives.leaderExecutionSize),
+          ),
+          leaderExecutionLeverage: normalizeRangeGroups(
+            leaderExecutionLeverageRanges,
+            Boolean(alternatives.leaderExecutionLeverage),
+          ),
+          followerRiskSize: normalizeRangeGroups(
+            followerRiskSizeRanges,
+            Boolean(alternatives.followerRiskSize),
+          ),
+          followerRiskCollateral: normalizeRangeGroups(
+            followerRiskCollateralRanges,
+            Boolean(alternatives.followerRiskCollateral),
           ),
           score: normalizeRangeGroups(scoreRanges, Boolean(alternatives.score)),
           scoreFormular,
@@ -1034,7 +1237,7 @@ export function SimulationCreationPanel({
             value={configurationText}
             onValueChange={setConfigurationText}
             label="Simulation research configuration JSON"
-            placeholder='{"version": 1, "title": "...", ...}'
+            placeholder='{"version": 2, "title": "...", ...}'
             aria-label="Simulation research configuration JSON"
             isInvalid={Boolean(configurationError)}
             errorMessage={configurationError ?? undefined}
@@ -1190,6 +1393,16 @@ export function SimulationCreationPanel({
             </Select>
           </div>
 
+          <div className="border-primary-500/30 bg-primary-500/5 rounded-xl border p-4">
+            <h2 className="font-semibold text-white">
+              Layer 1 — Leader qualification
+            </h2>
+            <p className="mt-1 text-sm text-neutral-400">
+              Define the historical position universe and the metrics used once
+              to qualify, score, and size each leader for the plan window.
+            </p>
+          </div>
+
           <div className="grid gap-4 xl:grid-cols-2">
             <RangeEntryCard
               label="Trades"
@@ -1250,7 +1463,7 @@ export function SimulationCreationPanel({
               onToggleAlternatives={() => toggleAlternatives("slope")}
             />
             <RangeEntryCard
-              label="Leverage"
+              label="Historical leader leverage"
               entries={leverageRanges}
               onAdd={() =>
                 setLeverageRanges((current) => [
@@ -1270,7 +1483,7 @@ export function SimulationCreationPanel({
               onToggleAlternatives={() => toggleAlternatives("leverage")}
             />
             <RangeEntryCard
-              label="Collateral"
+              label="Historical leader collateral (USD)"
               entries={collateralRanges}
               onAdd={() =>
                 setCollateralRanges((current) => [
@@ -1295,7 +1508,7 @@ export function SimulationCreationPanel({
               onToggleAlternatives={() => toggleAlternatives("collateral")}
             />
             <RangeEntryCard
-              label="Size (USD)"
+              label="Historical leader size (USD)"
               entries={sizeRanges}
               onAdd={() =>
                 setSizeRanges((current) => [
@@ -1337,11 +1550,189 @@ export function SimulationCreationPanel({
             />
           </div>
 
+          <div className="rounded-xl border border-sky-500/30 bg-sky-500/5 p-4">
+            <h2 className="font-semibold text-white">
+              Layer 2 — Leader-position eligibility
+            </h2>
+            <p className="mt-1 text-sm text-neutral-400">
+              Filter each new leader position by its entry characteristics. No
+              historical score is recalculated here.
+            </p>
+          </div>
+
+          <div className="grid gap-4 xl:grid-cols-2">
+            <RangeEntryCard
+              label="Leader entry size (USD)"
+              entries={leaderExecutionSizeRanges}
+              onAdd={() =>
+                setLeaderExecutionSizeRanges((current) => [
+                  ...current,
+                  createRangeEntry("leader-execution-size"),
+                ])
+              }
+              onChange={(id, field, nextValue) =>
+                handleRangeEntryChange(
+                  setLeaderExecutionSizeRanges,
+                  id,
+                  field,
+                  nextValue,
+                )
+              }
+              onRemove={(id) =>
+                handleRangeEntryRemove(setLeaderExecutionSizeRanges, id)
+              }
+              min={0}
+              step={1}
+              errors={errors.leaderExecutionSizeEntryErrors}
+              emptyMessage={errors.flat.leaderExecutionSizeEmpty}
+              rangesAreAlternatives={Boolean(alternatives.leaderExecutionSize)}
+              onToggleAlternatives={() =>
+                toggleAlternatives("leaderExecutionSize")
+              }
+            />
+            <RangeEntryCard
+              label="Leader entry collateral (USD)"
+              entries={leaderExecutionCollateralRanges}
+              onAdd={() =>
+                setLeaderExecutionCollateralRanges((current) => [
+                  ...current,
+                  createRangeEntry("leader-execution-collateral"),
+                ])
+              }
+              onChange={(id, field, nextValue) =>
+                handleRangeEntryChange(
+                  setLeaderExecutionCollateralRanges,
+                  id,
+                  field,
+                  nextValue,
+                )
+              }
+              onRemove={(id) =>
+                handleRangeEntryRemove(setLeaderExecutionCollateralRanges, id)
+              }
+              min={0}
+              step={1}
+              errors={errors.leaderExecutionCollateralEntryErrors}
+              emptyMessage={errors.flat.leaderExecutionCollateralEmpty}
+              rangesAreAlternatives={Boolean(
+                alternatives.leaderExecutionCollateral,
+              )}
+              onToggleAlternatives={() =>
+                toggleAlternatives("leaderExecutionCollateral")
+              }
+            />
+            <RangeEntryCard
+              label="Leader entry leverage"
+              entries={leaderExecutionLeverageRanges}
+              onAdd={() =>
+                setLeaderExecutionLeverageRanges((current) => [
+                  ...current,
+                  createRangeEntry("leader-execution-leverage"),
+                ])
+              }
+              onChange={(id, field, nextValue) =>
+                handleRangeEntryChange(
+                  setLeaderExecutionLeverageRanges,
+                  id,
+                  field,
+                  nextValue,
+                )
+              }
+              onRemove={(id) =>
+                handleRangeEntryRemove(setLeaderExecutionLeverageRanges, id)
+              }
+              min={0}
+              step={0.1}
+              errors={errors.leaderExecutionLeverageEntryErrors}
+              emptyMessage={errors.flat.leaderExecutionLeverageEmpty}
+              rangesAreAlternatives={Boolean(
+                alternatives.leaderExecutionLeverage,
+              )}
+              onToggleAlternatives={() =>
+                toggleAlternatives("leaderExecutionLeverage")
+              }
+            />
+          </div>
+
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4">
+            <h2 className="font-semibold text-white">
+              Layer 3 — Follower sizing and risk envelope
+            </h2>
+            <p className="mt-1 text-sm text-neutral-400">
+              Size follower notional from the frozen base ratio, then control
+              leverage, collateral, and exposure independently.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <RangeEntryCard
+              label="Follower size (USD)"
+              entries={followerRiskSizeRanges}
+              onAdd={() =>
+                setFollowerRiskSizeRanges((current) => [
+                  ...current,
+                  createRangeEntry("follower-risk-size"),
+                ])
+              }
+              onChange={(id, field, value) =>
+                handleRangeEntryChange(
+                  setFollowerRiskSizeRanges,
+                  id,
+                  field,
+                  value,
+                )
+              }
+              onRemove={(id) =>
+                handleRangeEntryRemove(setFollowerRiskSizeRanges, id)
+              }
+              min={0}
+              step={1}
+              errors={errors.followerRiskSizeEntryErrors}
+              emptyMessage={errors.flat.followerRiskSizeEmpty}
+              rangesAreAlternatives={Boolean(alternatives.followerRiskSize)}
+              onToggleAlternatives={() =>
+                toggleAlternatives("followerRiskSize")
+              }
+            />
+            <RangeEntryCard
+              label="Follower collateral (USD)"
+              entries={followerRiskCollateralRanges}
+              onAdd={() =>
+                setFollowerRiskCollateralRanges((current) => [
+                  ...current,
+                  createRangeEntry("follower-risk-collateral"),
+                ])
+              }
+              onChange={(id, field, value) =>
+                handleRangeEntryChange(
+                  setFollowerRiskCollateralRanges,
+                  id,
+                  field,
+                  value,
+                )
+              }
+              onRemove={(id) =>
+                handleRangeEntryRemove(setFollowerRiskCollateralRanges, id)
+              }
+              min={0}
+              step={1}
+              errors={errors.followerRiskCollateralEntryErrors}
+              emptyMessage={errors.flat.followerRiskCollateralEmpty}
+              rangesAreAlternatives={Boolean(
+                alternatives.followerRiskCollateral,
+              )}
+              onToggleAlternatives={() =>
+                toggleAlternatives("followerRiskCollateral")
+              }
+            />
+          </div>
+
           <div className="rounded-xl border border-amber-500/45 bg-amber-50 px-4 py-4 text-sm text-amber-950 shadow-[0_10px_30px_rgba(245,158,11,0.10)]">
             <p className="leading-6 font-medium">
-              Trades, R2, slope, collateral, size, leverage, and score each use
-              min/max ranges. Every range is combined into generated
-              simulations.
+              Layer 1 ranges qualify the leader. Layer 2 ranges filter only the
+              leader opening. Layer 3 checks the ratio-scaled follower opening
+              size and collateral; accepted positions replay the full leader
+              lifecycle at that ratio.
             </p>
           </div>
 

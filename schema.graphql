@@ -222,7 +222,13 @@ input CreateSimulationResearchInput {
   description: String!
   direction: BotMode!
   endAt: Date!
+  executionFlow: SimulationResearchExecutionFlow! = Centralized
+  followerRiskCollateral: [FloatRangeGroupInput!]!
+  followerRiskSize: [FloatRangeGroupInput!]!
   gapDays: Int! = 0
+  leaderExecutionCollateral: [FloatRangeGroupInput!]!
+  leaderExecutionLeverage: [FloatRangeGroupInput!]!
+  leaderExecutionSize: [FloatRangeGroupInput!]!
   leverage: [FloatRangeGroupInput!]!
   platform: Platform!
   r2: [FloatRangeGroupInput!]!
@@ -353,6 +359,15 @@ input IntRangeGroupInput {
 
 """JSON custom scalar type"""
 scalar JSON
+
+type LeaderEvaluationMetrics {
+  copiedMaxDrawdownUsd: Float!
+  copiedPnlUsd: Float!
+  copiedProfitFactor: Float!
+  r2: Float!
+  slope: Float!
+  tradeCount: Int!
+}
 
 type Log {
   checked: Boolean!
@@ -486,11 +501,13 @@ type Mutation {
   cancelOrderAfterTimeout(input: CancelOrderAfterTimeoutInput!): ContractExecutionResult!
   cancelResearch(id: Int!): SimulationResearch!
   cancelSimulation(id: Int!): Simulation!
+  cancelUnassignedSimulationEvaluatorWorkerTask(taskId: String!): Boolean!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
   checkLog(id: Int!): Log!
   cleanDB: Boolean!
   cloneMission(id: Int!, manualParams: ManualParams): Boolean!
+  cloneSimulationResearch(id: Int!): SimulationResearch!
   closeMission(id: Int!, isForce: Boolean!): Boolean!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
   createBot(input: CreateBotInput!): BotBackwardDetails!
@@ -520,12 +537,20 @@ type Mutation {
   makeSafeApp(password: String!): Boolean!
   openTradeMarket(input: OpenTradeInput!): ContractExecutionResult!
   pauseResearch(id: Int!): SimulationResearch!
+  pauseSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
   pauseSystem: Boolean!
   playAutoResearch(id: Int!): SimulationResearch!
   prebuildSimulationEvaluatorWorker(endedAt: String!, platform: String!, startedAt: String!, workerId: String!): String!
   rejectSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
+  removeOfflineSimulationEvaluatorWorker(workerId: String!): Boolean!
   removeRejectedSimulationEvaluatorWorker(workerId: String!): Boolean!
+  removeSimulationEvaluatorWorkerCache(cacheId: Int!): Boolean!
+  restartResearch(id: Int!): SimulationResearch!
+  resumeResearch(id: Int!): SimulationResearch!
+  resumeSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
   resumeSystem(password: String): Boolean!
+  retrySimulationEvaluatorWorkerCache(cacheId: Int!): String!
+  setSimulationEvaluatorWorkerCapacity(capacity: Float!, workerId: String!): String!
   startAdaption(contractId: Int!, shouldRestart: Boolean!): Boolean!
   startPlan(id: Int!): Boolean!
   startSubService(service: String!): Boolean!
@@ -534,7 +559,6 @@ type Mutation {
   updateLeverage(input: UpdateLeverageInput!): ContractExecutionResult!
   updateMaxOpenMissions(maxCount: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
-  updateSimulation(input: UpdateSimulationInput!): Simulation!
   updateSimulationResearch(input: UpdateSimulationResearchInput!): SimulationResearch!
   updateSl(input: UpdateSlInput!): ContractExecutionResult!
   updateStrategy(id: Int!, input: UpdateStrategyInput!): Strategy!
@@ -750,6 +774,8 @@ type Query {
   isPnlSnapshotV2Initialized(dateStr: String!, platform: Platform!): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   simulation(id: Int!): Simulation
+  simulationEvaluatorWorkerTaskConnection(archive: Boolean! = false, cursor: String, limit: Int! = 30, workerId: String!): SimulationEvaluatorWorkerTaskConnection!
+  simulationEvaluatorWorkerTasks(workerId: String): [SimulationEvaluatorWorkerTaskView!]!
   simulationEvaluatorWorkers: [SimulationEvaluatorWorkerView!]!
   simulationPlanDetailsBySimulation(simulationId: Int!): [SimulationPlanDetails!]!
   simulationPlansBySimulation(simulationId: Int!): [SimulationPlan!]!
@@ -795,8 +821,13 @@ type Simulation {
   direction: BotMode!
   endAt: Date!
   error: String
+  followerRiskCollateral: [SimulationValueRange!]!
+  followerRiskSize: [SimulationValueRange!]!
   gapDays: Int!
   id: Int!
+  leaderExecutionCollateral: [SimulationValueRange!]!
+  leaderExecutionLeverage: [SimulationValueRange!]!
+  leaderExecutionSize: [SimulationValueRange!]!
   leverage: [SimulationValueRange!]!
   maxDrawdownUsd: Float!
   platform: Platform!
@@ -837,14 +868,20 @@ type SimulationBot {
   avgPnlPercentageBySize: Float!
   avgPositivePnl: Float!
   avgSize: Float!
+  baseRatio: Float!
+  evaluationMetrics: LeaderEvaluationMetrics!
+  followerRiskCollateral: [SimulationValueRange!]!
+  followerRiskSize: [SimulationValueRange!]!
   id: Int!
   leaderAddress: String!
   leaderPlatform: Platform!
   maxCollateral: Float!
   maxDuration: Float!
   maxLeverage: Float!
+  maxSize: Float!
   minCollateral: Float!
   minLeverage: Float!
+  minSize: Float!
   mode: BotMode!
   openedPositions: Int!
   ratio: Float!
@@ -874,15 +911,21 @@ type SimulationBotDetails {
   avgPnlPercentageBySize: Float!
   avgPositivePnl: Float!
   avgSize: Float!
+  baseRatio: Float!
   cacheState: SimulationBotCacheState
+  evaluationMetrics: LeaderEvaluationMetrics!
+  followerRiskCollateral: [SimulationValueRange!]!
+  followerRiskSize: [SimulationValueRange!]!
   id: Int!
   leaderAddress: String!
   leaderPlatform: Platform!
   maxCollateral: Float!
   maxDuration: Float!
   maxLeverage: Float!
+  maxSize: Float!
   minCollateral: Float!
   minLeverage: Float!
+  minSize: Float!
   mode: BotMode!
   openedPositions: Int!
   positions: [SimulationTradePosition!]!
@@ -898,9 +941,28 @@ type SimulationBotDetails {
 type SimulationEvaluatorWorkerCacheView {
   coveredEndAt: Date
   coveredStartAt: Date
+  id: Int!
   lastError: String
   platform: String!
   status: String!
+}
+
+type SimulationEvaluatorWorkerDiagnosticLogView {
+  at: Date!
+  level: String!
+  message: String!
+}
+
+type SimulationEvaluatorWorkerDiagnosticView {
+  childCapacity: Int!
+  childCount: Int!
+  idleChildCount: Int!
+  lastPollAt: Date
+  lastPollError: String
+  pid: Int!
+  recentLogs: [SimulationEvaluatorWorkerDiagnosticLogView!]!
+  runningTaskCount: Int!
+  uptimeSeconds: Int!
 }
 
 type SimulationEvaluatorWorkerPrebuildProgressView {
@@ -912,10 +974,44 @@ type SimulationEvaluatorWorkerPrebuildProgressView {
   totalRecords: String!
 }
 
+type SimulationEvaluatorWorkerTaskConnection {
+  items: [SimulationEvaluatorWorkerTaskView!]!
+  nextCursor: String
+}
+
+type SimulationEvaluatorWorkerTaskView {
+  canCancel: Boolean!
+  claimedAt: Date
+  completedAt: Date
+  createdAt: Date!
+  id: String!
+  kind: String!
+  lastError: String
+  leaseExpiresAt: Date
+  platform: String
+  progressBytes: String!
+  progressMessage: String!
+  progressPercent: Float!
+  progressRecords: String!
+  progressTotalRecords: String!
+  rangeEndedAt: Date!
+  rangeStartedAt: Date!
+  status: String!
+  syncStatus: String!
+  targetWorkerId: String
+  timingJson: String
+  workerId: String
+}
+
 type SimulationEvaluatorWorkerView {
+  activeCapacity: Int!
   authorizationStatus: String!
+  desiredCapacity: Int!
+  desiredState: String!
   displayName: String!
   id: String!
+  lastDiagnostic: SimulationEvaluatorWorkerDiagnosticView
+  lastDiagnosticAt: Date
   lastError: String
   lastHeartbeatAt: Date
   lastTaskAt: Date
@@ -956,6 +1052,7 @@ type SimulationPlanDetails {
 
 type SimulationResearch {
   collateral: [SimulationValueRangeGroup!]!
+  completedPlans: Int!
   completedRanges: Int!
   completedSimulations: Int!
   createdAt: Date!
@@ -964,16 +1061,28 @@ type SimulationResearch {
   description: String!
   direction: BotMode!
   endAt: Date!
+  executionFlow: SimulationResearchExecutionFlow!
+  finalizingPlans: Int!
   finishedAt: Date
+  followerRiskCollateral: [SimulationValueRangeGroup!]!
+  followerRiskSize: [SimulationValueRangeGroup!]!
   gapDays: Int!
   id: Int!
   lastError: String
+  leaderExecutionCollateral: [SimulationValueRangeGroup!]!
+  leaderExecutionLeverage: [SimulationValueRangeGroup!]!
+  leaderExecutionSize: [SimulationValueRangeGroup!]!
   leverage: [SimulationValueRangeGroup!]!
+  nextRetryAt: Date
+  outstandingPlans: Int!
   platform: Platform!
   progressMessage: String
   progressPercent: Float!
   progressPhase: String
+  queuedPlans: Int!
   r2: [SimulationValueRangeGroup!]!
+  retryAttempts: Int!
+  runningPlans: Int!
   score: [SimulationValueRangeGroup!]!
   scoreFormular: SimulationScoreFormular!
   size: [SimulationValueRangeGroup!]!
@@ -983,6 +1092,7 @@ type SimulationResearch {
   startedAt: Date
   status: SimulationStatus!
   title: String!
+  totalPlans: Int!
   totalRanges: Int!
   totalSimulations: Int!
   trade: [SimulationTradeRangeGroup!]!
@@ -996,6 +1106,7 @@ type SimulationResearchConnection {
 
 type SimulationResearchDetails {
   collateral: [SimulationValueRangeGroup!]!
+  completedPlans: Int!
   completedRanges: Int!
   completedSimulations: Int!
   createdAt: Date!
@@ -1004,16 +1115,28 @@ type SimulationResearchDetails {
   description: String!
   direction: BotMode!
   endAt: Date!
+  executionFlow: SimulationResearchExecutionFlow!
+  finalizingPlans: Int!
   finishedAt: Date
+  followerRiskCollateral: [SimulationValueRangeGroup!]!
+  followerRiskSize: [SimulationValueRangeGroup!]!
   gapDays: Int!
   id: Int!
   lastError: String
+  leaderExecutionCollateral: [SimulationValueRangeGroup!]!
+  leaderExecutionLeverage: [SimulationValueRangeGroup!]!
+  leaderExecutionSize: [SimulationValueRangeGroup!]!
   leverage: [SimulationValueRangeGroup!]!
+  nextRetryAt: Date
+  outstandingPlans: Int!
   platform: Platform!
   progressMessage: String
   progressPercent: Float!
   progressPhase: String
+  queuedPlans: Int!
   r2: [SimulationValueRangeGroup!]!
+  retryAttempts: Int!
+  runningPlans: Int!
   score: [SimulationValueRangeGroup!]!
   scoreFormular: SimulationScoreFormular!
   simulations: [Simulation!]!
@@ -1024,6 +1147,7 @@ type SimulationResearchDetails {
   startedAt: Date
   status: SimulationStatus!
   title: String!
+  totalPlans: Int!
   totalRanges: Int!
   totalSimulations: Int!
   trade: [SimulationTradeRangeGroup!]!
@@ -1033,6 +1157,11 @@ type SimulationResearchDetails {
 type SimulationResearchEdge {
   cursor: Int!
   node: SimulationResearch!
+}
+
+enum SimulationResearchExecutionFlow {
+  Centralized
+  DynamicExperimental
 }
 
 type SimulationResearchPageInfo {
@@ -1170,24 +1299,6 @@ input UpdatePlanInput {
   startedAt: Date
   status: PlanStatus!
   title: String
-}
-
-input UpdateSimulationInput {
-  collateral: FloatMinMaxInput
-  description: String
-  direction: BotMode
-  id: Int!
-  leverage: FloatMinMaxInput
-  r2: FloatMinMaxInput
-  score: FloatMinMaxInput
-  scoreFormular: SimulationScoreFormular
-  selectedLeaderCount: Int
-  size: FloatMinMaxInput
-  sizingFormular: SimulationSizingFormular
-  slope: FloatMinMaxInput
-  standardCollateralUsd: Float
-  title: String
-  trade: IntMinMaxInput
 }
 
 input UpdateSimulationResearchInput {

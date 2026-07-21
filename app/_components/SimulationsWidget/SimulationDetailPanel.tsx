@@ -39,6 +39,14 @@ function getRangeEnvelope(ranges: Array<{ min: number; max: number }>) {
   };
 }
 
+function formatRange(
+  ranges: Array<{ min: number; max: number }>,
+  format: (value: number) => string,
+) {
+  const range = getRangeEnvelope(ranges);
+  return `${format(range.min)} - ${format(range.max)}`;
+}
+
 function getEffectiveSlopeBounds(simulation: Simulation) {
   const slope = getRangeEnvelope(simulation.slope);
   if (simulation.direction === "Reversed") {
@@ -96,6 +104,13 @@ function SimulationConfigResults({ simulation }: { simulation: Simulation }) {
   const collateral = getRangeEnvelope(simulation.collateral);
   const size = getRangeEnvelope(simulation.size);
   const leverage = getRangeEnvelope(simulation.leverage);
+  const executionCollateral = getRangeEnvelope(
+    simulation.leaderExecutionCollateral,
+  );
+  const executionSize = getRangeEnvelope(simulation.leaderExecutionSize);
+  const executionLeverage = getRangeEnvelope(
+    simulation.leaderExecutionLeverage,
+  );
   const score = getRangeEnvelope(simulation.score);
   const configItems = [
     { label: "Direction", value: simulation.direction },
@@ -112,11 +127,11 @@ function SimulationConfigResults({ simulation }: { simulation: Simulation }) {
       value: getPriceStr(simulation.standardCollateralUsd),
     },
     {
-      label: "Collateral Filter",
+      label: "L1 Historical Collateral",
       value: `${getPriceStr(collateral.min)} - ${getPriceStr(collateral.max)}`,
     },
     {
-      label: "Size Filter",
+      label: "L1 Historical Size",
       value: `${getPriceStr(size.min)} - ${getPriceStr(size.max)}`,
     },
     {
@@ -130,12 +145,32 @@ function SimulationConfigResults({ simulation }: { simulation: Simulation }) {
       value: `${SIMULATION_SYSTEM_CONFIG.minRatio}x - ${SIMULATION_SYSTEM_CONFIG.maxRatio}x`,
     },
     {
-      label: "Leverage",
+      label: "L1 Historical Leverage",
       value: `${leverage.min}x - ${leverage.max}x`,
     },
     {
       label: "Score",
       value: `${score.min.toFixed(2)} - ${score.max.toFixed(2)}`,
+    },
+    {
+      label: "L2 Entry Size",
+      value: `${getPriceStr(executionSize.min)} - ${getPriceStr(executionSize.max)}`,
+    },
+    {
+      label: "L2 Entry Collateral",
+      value: `${getPriceStr(executionCollateral.min)} - ${getPriceStr(executionCollateral.max)}`,
+    },
+    {
+      label: "L2 Entry Leverage",
+      value: `${executionLeverage.min}x - ${executionLeverage.max}x`,
+    },
+    {
+      label: "L3 Follower Size",
+      value: formatRange(simulation.followerRiskSize, getPriceStr),
+    },
+    {
+      label: "L3 Follower Collateral",
+      value: formatRange(simulation.followerRiskCollateral, getPriceStr),
     },
   ];
 

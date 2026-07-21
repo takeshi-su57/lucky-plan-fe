@@ -262,22 +262,57 @@ export function SimulationResearchDetailPanel({
             ]}
           />
           <RangeListStat
-            label="Leverage Ranges"
+            label="L1 Historical Leverage"
             values={formatRangePairs(
               simulationResearch.leverage,
               (value) => `${value}x`,
             )}
           />
           <RangeListStat
-            label="Collateral Ranges"
+            label="L1 Historical Collateral"
             values={formatRangePairs(
               simulationResearch.collateral,
               getPriceStr,
             )}
           />
           <RangeListStat
-            label="Size Ranges"
+            label="L1 Historical Size"
             values={formatRangePairs(simulationResearch.size, getPriceStr)}
+          />
+          <RangeListStat
+            label="L2 Entry Size"
+            values={formatRangePairs(
+              simulationResearch.leaderExecutionSize,
+              getPriceStr,
+            )}
+          />
+          <RangeListStat
+            label="L2 Entry Collateral"
+            values={formatRangePairs(
+              simulationResearch.leaderExecutionCollateral,
+              getPriceStr,
+            )}
+          />
+          <RangeListStat
+            label="L2 Entry Leverage"
+            values={formatRangePairs(
+              simulationResearch.leaderExecutionLeverage,
+              (value) => `${value}x`,
+            )}
+          />
+          <RangeListStat
+            label="L3 Follower Size"
+            values={formatRangePairs(
+              simulationResearch.followerRiskSize,
+              getPriceStr,
+            )}
+          />
+          <RangeListStat
+            label="L3 Follower Collateral"
+            values={formatRangePairs(
+              simulationResearch.followerRiskCollateral,
+              getPriceStr,
+            )}
           />
           <RangeListStat
             label="Score"

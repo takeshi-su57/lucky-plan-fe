@@ -32,11 +32,14 @@ export const SIMULATION_BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
     avgPnlPercentageBySize
     avgPositivePnl
     avgSize
+    baseRatio
     id
     leaderAddress
     leaderPlatform
     minCollateral
     maxCollateral
+    minSize
+    maxSize
     maxDuration
     mode
     openedPositions
@@ -44,6 +47,22 @@ export const SIMULATION_BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
     score
     minLeverage
     maxLeverage
+    evaluationMetrics {
+      tradeCount
+      slope
+      r2
+      copiedPnlUsd
+      copiedProfitFactor
+      copiedMaxDrawdownUsd
+    }
+    followerRiskSize {
+      min
+      max
+    }
+    followerRiskCollateral {
+      min
+      max
+    }
     simulationPlanId
     startedAt
     stoppedAt
@@ -95,6 +114,26 @@ export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
     leverage {
       max
       min
+    }
+    leaderExecutionCollateral {
+      max
+      min
+    }
+    leaderExecutionSize {
+      max
+      min
+    }
+    leaderExecutionLeverage {
+      max
+      min
+    }
+    followerRiskSize {
+      min
+      max
+    }
+    followerRiskCollateral {
+      min
+      max
     }
     platform
     profitFactor
@@ -162,6 +201,36 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
       ranges {
         max
         min
+      }
+    }
+    leaderExecutionCollateral {
+      ranges {
+        max
+        min
+      }
+    }
+    leaderExecutionSize {
+      ranges {
+        max
+        min
+      }
+    }
+    leaderExecutionLeverage {
+      ranges {
+        max
+        min
+      }
+    }
+    followerRiskSize {
+      ranges {
+        min
+        max
+      }
+    }
+    followerRiskCollateral {
+      ranges {
+        min
+        max
       }
     }
     score {
@@ -234,6 +303,36 @@ export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
       ranges {
         max
         min
+      }
+    }
+    leaderExecutionCollateral {
+      ranges {
+        max
+        min
+      }
+    }
+    leaderExecutionSize {
+      ranges {
+        max
+        min
+      }
+    }
+    leaderExecutionLeverage {
+      ranges {
+        max
+        min
+      }
+    }
+    followerRiskSize {
+      ranges {
+        min
+        max
+      }
+    }
+    followerRiskCollateral {
+      ranges {
+        min
+        max
       }
     }
     score {
@@ -315,11 +414,14 @@ export const SIMULATION_BOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     avgPnlPercentageBySize
     avgPositivePnl
     avgSize
+    baseRatio
     id
     leaderAddress
     leaderPlatform
     minCollateral
     maxCollateral
+    minSize
+    maxSize
     maxDuration
     mode
     openedPositions
@@ -332,6 +434,22 @@ export const SIMULATION_BOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     totalPositions
     minLeverage
     maxLeverage
+    evaluationMetrics {
+      tradeCount
+      slope
+      r2
+      copiedPnlUsd
+      copiedProfitFactor
+      copiedMaxDrawdownUsd
+    }
+    followerRiskSize {
+      min
+      max
+    }
+    followerRiskCollateral {
+      min
+      max
+    }
     cacheState {
       completed
       lastError

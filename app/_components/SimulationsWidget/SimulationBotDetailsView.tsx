@@ -51,22 +51,49 @@ export function SimulationBotDetailsView({
 
         <div className="flex flex-col gap-2 font-mono">
           <span className="text-xs">
-            Ratio:
-            {`${simulationBot.ratio} x`}
+            Frozen base ratio:
+            {`${simulationBot.baseRatio} x`}
           </span>
           <span className="text-xs">
             Score:
             {` ${simulationBot.score.toFixed(2)}`}
           </span>
           <span className="text-xs">
-            Collateral:
+            L2 leader collateral:
             {` ${getPriceStr(simulationBot.minCollateral)} - ${getPriceStr(
               simulationBot.maxCollateral,
             )}`}
           </span>
           <span className="text-xs">
-            Leverage:
+            L2 leader size:
+            {` ${getPriceStr(simulationBot.minSize)} - ${getPriceStr(
+              simulationBot.maxSize,
+            )}`}
+          </span>
+          <span className="text-xs">
+            L2 leader leverage:
             {` ${simulationBot.minLeverage}x - ${simulationBot.maxLeverage}x`}
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-2 font-mono text-xs">
+          <span>
+            L1 metrics: {simulationBot.evaluationMetrics.tradeCount} trades, R²{" "}
+            {simulationBot.evaluationMetrics.r2.toFixed(2)}, slope{" "}
+            {simulationBot.evaluationMetrics.slope.toFixed(2)}
+          </span>
+          <span>
+            Copied PnL{" "}
+            {getPriceStr(simulationBot.evaluationMetrics.copiedPnlUsd)}, PF{" "}
+            {simulationBot.evaluationMetrics.copiedProfitFactor.toFixed(2)},
+            drawdown{" "}
+            {getPriceStr(simulationBot.evaluationMetrics.copiedMaxDrawdownUsd)}
+          </span>
+          <span>
+            L3 follower size{" "}
+            {simulationBot.followerRiskSize
+              .map((range) => `${getPriceStr(range.min)} - ${getPriceStr(range.max)}`)
+              .join(", ")}
           </span>
         </div>
 
@@ -80,7 +107,6 @@ export function SimulationBotDetailsView({
             </span>
           )}
         </div>
-
       </div>
 
       <div className="flex flex-col gap-3">
