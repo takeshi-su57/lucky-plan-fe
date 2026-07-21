@@ -53,8 +53,10 @@ const duration = (startedAt?: string | null, endedAt?: string | null) => {
   const milliseconds =
     new Date(endedAt).getTime() - new Date(startedAt).getTime();
   if (!Number.isFinite(milliseconds) || milliseconds < 0) return null;
-  if (milliseconds < 60_000) return `${Math.max(1, Math.round(milliseconds / 1000))}s`;
-  if (milliseconds < 3_600_000) return `${Math.floor(milliseconds / 60_000)}m ${Math.round((milliseconds % 60_000) / 1000)}s`;
+  if (milliseconds < 60_000)
+    return `${Math.max(1, Math.round(milliseconds / 1000))}s`;
+  if (milliseconds < 3_600_000)
+    return `${Math.floor(milliseconds / 60_000)}m ${Math.round((milliseconds % 60_000) / 1000)}s`;
   return `${Math.floor(milliseconds / 3_600_000)}h ${Math.floor((milliseconds % 3_600_000) / 60_000)}m`;
 };
 const color = (value: string) =>
@@ -62,11 +64,34 @@ const color = (value: string) =>
     ? "success"
     : value === "Failed"
       ? "danger"
-    : value === "Claimed" || value === "Building"
-      ? "primary"
-      : value === "Queued"
-        ? "warning"
-        : "default";
+      : value === "Claimed" || value === "Building"
+        ? "primary"
+        : value === "Queued"
+          ? "warning"
+          : "default";
+
+type EvaluationTiming = {
+  totalMs?: number;
+  setupMs?: number;
+  cacheReadMs?: number;
+  recentFilterMs?: number;
+  historyConversionMs?: number;
+  positionBuildMs?: number;
+  scoringMs?: number;
+  candidates?: number;
+  acceptedCandidates?: number;
+  eventLogRecords?: number;
+};
+
+const parseTiming = (value?: string | null): EvaluationTiming | null => {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value) as EvaluationTiming;
+    return typeof parsed.totalMs === "number" ? parsed : null;
+  } catch {
+    return null;
+  }
+};
 
 export default function WorkerDetailsPage() {
   const { workerId: rawId } = useParams<{ workerId: string }>();
@@ -326,7 +351,9 @@ export default function WorkerDetailsPage() {
                       {cache.platform}
                     </span>
                     <Chip size="sm" color={color(cache.status)} variant="flat">
-                      {cache.status === "Queued" ? "Awaiting worker" : cache.status}
+                      {cache.status === "Queued"
+                        ? "Awaiting worker"
+                        : cache.status}
                     </Chip>
                   </div>
                   <div className="flex gap-1">
@@ -343,19 +370,20 @@ export default function WorkerDetailsPage() {
                         Retry
                       </ButtonWithConfirm>
                     )}
-                    {cache.status !== "Building" && cache.status !== "Queued" && (
-                      <ButtonWithConfirm
-                        size="sm"
-                        color="danger"
-                        variant="light"
-                        isLoading={removing}
-                        onPress={() =>
-                          removeCache({ variables: { cacheId: cache.id } })
-                        }
-                      >
-                        Remove
-                      </ButtonWithConfirm>
-                    )}
+                    {cache.status !== "Building" &&
+                      cache.status !== "Queued" && (
+                        <ButtonWithConfirm
+                          size="sm"
+                          color="danger"
+                          variant="light"
+                          isLoading={removing}
+                          onPress={() =>
+                            removeCache({ variables: { cacheId: cache.id } })
+                          }
+                        >
+                          Remove
+                        </ButtonWithConfirm>
+                      )}
                   </div>
                 </div>
                 <p className="text-default-500 mt-2 text-xs">
@@ -576,79 +604,7 @@ function TaskFeed({
       data={tasks}
       endReached={() => (hasMore && !loading ? onEndReached() : undefined)}
       itemContent={(_, task) => (
-        <div className="border-default-100 grid gap-3 border-b px-5 py-4 md:grid-cols-[minmax(0,1.2fr)_minmax(180px,.8fr)_auto]">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium">
-                {task.kind.replace(/([A-Z])/g, " $1").trim()}
-              </span>
-              <Chip size="sm" color={color(task.status)} variant="flat">
-                {task.status}
-              </Chip>
-            </div>
-            <p className="text-default-400 mt-1 truncate font-mono text-xs">
-              {task.id}
-            </p>
-            <p className="text-default-500 mt-1 text-xs">
-              Created {stamp(task.createdAt)} · Range{" "}
-              {stamp(task.rangeStartedAt)} — {stamp(task.rangeEndedAt)}
-            </p>
-            {task.claimedAt && (
-              <p className="text-default-500 mt-1 text-xs">
-                {task.completedAt
-                  ? `Completed ${stamp(task.completedAt)}${duration(task.claimedAt, task.completedAt) ? ` · Took ${duration(task.claimedAt, task.completedAt)}` : ""}`
-                  : `Started ${stamp(task.claimedAt)}`}
-              </p>
-            )}
-          </div>
-          <div>
-            <p className="text-sm font-medium">{task.syncStatus}</p>
-            <p className="text-default-500 mt-1 text-xs">
-              {task.workerId
-                ? "Dispatched to this worker"
-                : "Waiting for this worker to poll"}
-            </p>
-            {task.status === "Claimed" && (
-              <>
-                <Progress
-                  className="mt-2"
-                  size="sm"
-                  value={task.progressPercent}
-                  aria-label="Task progress"
-                />
-                <p className="text-default-500 mt-1 text-xs">
-                  {task.progressPercent.toFixed(0)}% ·{" "}
-                  {task.progressMessage || "Processing"}
-                </p>
-                {Number(task.progressTotalRecords) > 0 && (
-                  <p className="text-default-400 mt-1 text-xs">
-                    {Number(task.progressRecords).toLocaleString()} /{" "}
-                    {Number(task.progressTotalRecords).toLocaleString()} {task.kind === "EvaluateLeaders" ? "leaders evaluated" : "records processed"}
-                  </p>
-                )}
-              </>
-            )}
-          </div>
-          <div className="min-w-0 text-right">
-            {task.lastError && (
-              <p className="text-danger max-w-xs text-left text-xs">
-                {task.lastError}
-              </p>
-            )}
-            {task.canCancel && (
-              <ButtonWithConfirm
-                size="sm"
-                className="mt-2"
-                color="danger"
-                variant="light"
-                isLoading={cancelling}
-                onPress={() => onCancel(task.id)}
-              >
-                Remove
-              </ButtonWithConfirm>
-            )}
-          </div>
-        </div>
+        <TaskRow task={task} cancelling={cancelling} onCancel={onCancel} />
       )}
       components={{
         Footer: () => (
@@ -664,5 +620,118 @@ function TaskFeed({
         ),
       }}
     />
+  );
+}
+
+function TaskRow({
+  task,
+  cancelling,
+  onCancel,
+}: {
+  task: any;
+  cancelling: boolean;
+  onCancel: (id: string) => void;
+}) {
+  const timing = parseTiming(task.timingJson);
+  return (
+    <div className="border-default-100 grid gap-3 border-b px-5 py-4 md:grid-cols-[minmax(0,1.2fr)_minmax(180px,.8fr)_auto]">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-medium">
+            {task.kind.replace(/([A-Z])/g, " $1").trim()}
+          </span>
+          <Chip size="sm" color={color(task.status)} variant="flat">
+            {task.status}
+          </Chip>
+        </div>
+        <p className="text-default-400 mt-1 truncate font-mono text-xs">
+          {task.id}
+        </p>
+        <p className="text-default-500 mt-1 text-xs">
+          Created {stamp(task.createdAt)} · Range {stamp(task.rangeStartedAt)} —{" "}
+          {stamp(task.rangeEndedAt)}
+        </p>
+        {task.claimedAt && (
+          <p className="text-default-500 mt-1 text-xs">
+            {task.completedAt
+              ? `Completed ${stamp(task.completedAt)}${duration(task.claimedAt, task.completedAt) ? ` · Took ${duration(task.claimedAt, task.completedAt)}` : ""}`
+              : `Started ${stamp(task.claimedAt)}`}
+          </p>
+        )}
+        {timing && (
+          <div className="bg-default-50 mt-3 rounded-lg p-2 text-xs">
+            <div className="flex flex-wrap justify-between gap-x-3 gap-y-1">
+              <span className="font-medium">
+                Evaluation timing · {timing.totalMs}ms
+              </span>
+              <span className="text-default-500">
+                {timing.acceptedCandidates ?? 0} accepted /{" "}
+                {timing.candidates ?? 0} candidates
+              </span>
+            </div>
+            <div className="text-default-500 mt-2 grid grid-cols-2 gap-x-3 gap-y-1 sm:grid-cols-3">
+              <span>Cache reads: {timing.cacheReadMs ?? 0}ms</span>
+              <span>History: {timing.historyConversionMs ?? 0}ms</span>
+              <span>Positions: {timing.positionBuildMs ?? 0}ms</span>
+              <span>Scoring: {timing.scoringMs ?? 0}ms</span>
+              <span>Filtering: {timing.recentFilterMs ?? 0}ms</span>
+              <span>
+                {(timing.eventLogRecords ?? 0).toLocaleString()} cached logs
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+      <div>
+        <p className="text-sm font-medium">{task.syncStatus}</p>
+        <p className="text-default-500 mt-1 text-xs">
+          {task.workerId
+            ? "Dispatched to this worker"
+            : "Waiting for this worker to poll"}
+        </p>
+        {task.status === "Claimed" && (
+          <>
+            <Progress
+              className="mt-2"
+              size="sm"
+              value={task.progressPercent}
+              aria-label="Task progress"
+            />
+            <p className="text-default-500 mt-1 text-xs">
+              {task.progressPercent.toFixed(0)}% ·{" "}
+              {task.progressMessage || "Processing"}
+            </p>
+            {Number(task.progressTotalRecords) > 0 && (
+              <p className="text-default-400 mt-1 text-xs">
+                {Number(task.progressRecords).toLocaleString()} /{" "}
+                {Number(task.progressTotalRecords).toLocaleString()}{" "}
+                {task.kind === "EvaluateLeaders"
+                  ? "leaders evaluated"
+                  : "records processed"}
+              </p>
+            )}
+          </>
+        )}
+      </div>
+      <div className="min-w-0 text-right">
+        {task.lastError && (
+          <p className="text-danger max-w-xs text-left text-xs">
+            {task.lastError}
+          </p>
+        )}
+        {task.canCancel && (
+          <ButtonWithConfirm
+            size="sm"
+            className="mt-2"
+            color="danger"
+            variant="light"
+            isLoading={cancelling}
+            onPress={() => onCancel(task.id)}
+          >
+            Remove
+          </ButtonWithConfirm>
+        )}
+      </div>
+    </div>
   );
 }

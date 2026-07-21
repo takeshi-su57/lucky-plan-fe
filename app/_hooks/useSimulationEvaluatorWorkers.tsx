@@ -118,6 +118,7 @@ export const SIMULATION_EVALUATOR_WORKER_TASKS_DOCUMENT = graphql(`
       progressTotalRecords
       progressBytes
       lastError
+      timingJson
       canCancel
       createdAt
     }
@@ -157,6 +158,7 @@ const SIMULATION_EVALUATOR_WORKER_TASK_CONNECTION_DOCUMENT = graphql(`
         progressTotalRecords
         progressBytes
         lastError
+        timingJson
         canCancel
         createdAt
       }

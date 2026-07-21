@@ -180,6 +180,12 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
     progressPercent
     totalRanges
     completedRanges
+    totalPlans
+    completedPlans
+    outstandingPlans
+    queuedPlans
+    runningPlans
+    finalizingPlans
     startedAt
     finishedAt
     lastError
@@ -253,6 +259,12 @@ export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     progressPercent
     totalRanges
     completedRanges
+    totalPlans
+    completedPlans
+    outstandingPlans
+    queuedPlans
+    runningPlans
+    finalizingPlans
     startedAt
     finishedAt
     lastError
@@ -707,6 +719,11 @@ export function useSubscribeSimulation() {
       }),
       fields: {
         completedRanges: () => simulationResearch.completedRanges,
+        completedPlans: () => simulationResearch.completedPlans,
+        outstandingPlans: () => simulationResearch.outstandingPlans,
+        queuedPlans: () => simulationResearch.queuedPlans,
+        runningPlans: () => simulationResearch.runningPlans,
+        finalizingPlans: () => simulationResearch.finalizingPlans,
         completedSimulations: () => simulationResearch.completedSimulations,
         cursor: () => simulationResearch.cursor,
         finishedAt: () => simulationResearch.finishedAt,
@@ -717,6 +734,7 @@ export function useSubscribeSimulation() {
         startedAt: () => simulationResearch.startedAt,
         status: () => simulationResearch.status,
         totalRanges: () => simulationResearch.totalRanges,
+        totalPlans: () => simulationResearch.totalPlans,
         totalSimulations: () => simulationResearch.totalSimulations,
         updatedAt: () => simulationResearch.updatedAt,
       },

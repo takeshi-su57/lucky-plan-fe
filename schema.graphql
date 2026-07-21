@@ -1007,6 +1007,7 @@ type SimulationEvaluatorWorkerTaskView {
   status: String!
   syncStatus: String!
   targetWorkerId: String
+  timingJson: String
   workerId: String
 }
 
@@ -1079,6 +1080,7 @@ type SimulationPlanPageInfo {
 
 type SimulationResearch {
   collateral: [SimulationValueRangeGroup!]!
+  completedPlans: Int!
   completedRanges: Int!
   completedSimulations: Int!
   createdAt: Date!
@@ -1088,18 +1090,22 @@ type SimulationResearch {
   direction: BotMode!
   endAt: Date!
   executionFlow: SimulationResearchExecutionFlow!
+  finalizingPlans: Int!
   finishedAt: Date
   gapDays: Int!
   id: Int!
   lastError: String
   leverage: [SimulationValueRangeGroup!]!
   nextRetryAt: Date
+  outstandingPlans: Int!
   platform: Platform!
   progressMessage: String
   progressPercent: Float!
   progressPhase: String
+  queuedPlans: Int!
   r2: [SimulationValueRangeGroup!]!
   retryAttempts: Int!
+  runningPlans: Int!
   score: [SimulationValueRangeGroup!]!
   scoreFormular: SimulationScoreFormular!
   size: [SimulationValueRangeGroup!]!
@@ -1109,6 +1115,7 @@ type SimulationResearch {
   startedAt: Date
   status: SimulationStatus!
   title: String!
+  totalPlans: Int!
   totalRanges: Int!
   totalSimulations: Int!
   trade: [SimulationTradeRangeGroup!]!
@@ -1122,6 +1129,7 @@ type SimulationResearchConnection {
 
 type SimulationResearchDetails {
   collateral: [SimulationValueRangeGroup!]!
+  completedPlans: Int!
   completedRanges: Int!
   completedSimulations: Int!
   createdAt: Date!
@@ -1131,18 +1139,22 @@ type SimulationResearchDetails {
   direction: BotMode!
   endAt: Date!
   executionFlow: SimulationResearchExecutionFlow!
+  finalizingPlans: Int!
   finishedAt: Date
   gapDays: Int!
   id: Int!
   lastError: String
   leverage: [SimulationValueRangeGroup!]!
   nextRetryAt: Date
+  outstandingPlans: Int!
   platform: Platform!
   progressMessage: String
   progressPercent: Float!
   progressPhase: String
+  queuedPlans: Int!
   r2: [SimulationValueRangeGroup!]!
   retryAttempts: Int!
+  runningPlans: Int!
   score: [SimulationValueRangeGroup!]!
   scoreFormular: SimulationScoreFormular!
   simulations: [Simulation!]!
@@ -1153,6 +1165,7 @@ type SimulationResearchDetails {
   startedAt: Date
   status: SimulationStatus!
   title: String!
+  totalPlans: Int!
   totalRanges: Int!
   totalSimulations: Int!
   trade: [SimulationTradeRangeGroup!]!

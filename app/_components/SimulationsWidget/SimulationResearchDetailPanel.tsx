@@ -16,7 +16,9 @@ import {
   useRestartResearch,
   useResumeResearch,
   useUpdateSimulationResearch,
+  SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT,
 } from "@/app/_hooks/useSimulations";
+import { getFragmentData } from "@/gql/index";
 import { SimulationRow } from "./SimulationRow";
 import { getPriceStr } from "@/utils/price";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
@@ -108,6 +110,13 @@ export function SimulationResearchDetailPanel({
     cloneLoading ||
     cancelLoading ||
     deleteLoading;
+  const simulationStatusCounts = simulations.reduce(
+    (counts, simulation) => {
+      counts[simulation.status] = (counts[simulation.status] || 0) + 1;
+      return counts;
+    },
+    {} as Partial<Record<SimulationStatus, number>>,
+  );
   const canQueue =
     simulationResearch.status === SimulationStatus.Created ||
     simulationResearch.status === SimulationStatus.Paused;
@@ -277,7 +286,12 @@ export function SimulationResearchDetailPanel({
                   const result = await cloneSimulationResearch({
                     variables: { id: simulationResearch.id },
                   });
-                  const cloned = result.data?.cloneSimulationResearch;
+                  const cloned = result.data?.cloneSimulationResearch
+                    ? getFragmentData(
+                        SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT,
+                        result.data.cloneSimulationResearch,
+                      )
+                    : null;
                   if (cloned) router.push(`/simulations/research/${cloned.id}`);
                 }}
               >
@@ -381,11 +395,11 @@ export function SimulationResearchDetailPanel({
           </div>
           <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
             <span className="text-[10px] font-semibold text-neutral-500 uppercase">
-              Ranges
+              Plans
             </span>
             <span className="mt-1 text-sm font-semibold text-neutral-300">
-              {simulationResearch.completedRanges} /{" "}
-              {simulationResearch.totalRanges}
+              {simulationResearch.completedPlans} /{" "}
+              {simulationResearch.totalPlans}
             </span>
           </div>
           <div className="border-default-100 bg-content2/40 flex min-h-16 flex-col justify-center rounded-lg border px-3 py-2">
@@ -422,6 +436,39 @@ export function SimulationResearchDetailPanel({
             </div>
           ) : null}
         </div>
+        {simulationResearch.executionFlow ===
+        SimulationResearchExecutionFlow.DynamicExperimental ? (
+          <div className="border-warning-500/20 bg-warning-500/5 mt-4 rounded-lg border p-3 text-xs text-neutral-300">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-warning-200 font-semibold">
+                Dynamic scheduler
+              </span>
+              <span>
+                {simulationResearch.outstandingPlans} / 20 plan slots active
+              </span>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2 text-neutral-400">
+              <span>
+                {simulationStatusCounts[SimulationStatus.Running] || 0} running
+              </span>
+              <span>
+                {simulationStatusCounts[SimulationStatus.Queued] || 0} queued
+              </span>
+              <span>
+                {simulationStatusCounts[SimulationStatus.Completed] || 0}{" "}
+                completed
+              </span>
+              <span>{simulationResearch.queuedPlans} plans queued</span>
+              <span>{simulationResearch.runningPlans} plans claimed</span>
+              <span>{simulationResearch.finalizingPlans} plans finalizing</span>
+              {simulationStatusCounts[SimulationStatus.Failed] ? (
+                <span className="text-danger-300">
+                  {simulationStatusCounts[SimulationStatus.Failed]} failed
+                </span>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <StandardModal
