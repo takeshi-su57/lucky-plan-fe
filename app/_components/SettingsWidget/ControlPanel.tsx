@@ -19,7 +19,6 @@ import { SetupPasswordButton } from "./SetupPasswordButton";
 import { ChangePasswordButton } from "./ChangePasswordButton";
 import { DataTable, TableColumnProps } from "@/components/tables/DataTable";
 import { MaxMissionPanel } from "./MaxMisssionPanel";
-import { SimulationEvaluatorWorkersPanel } from "./SimulationEvaluatorWorkersPanel";
 
 const columns: TableColumnProps[] = [
   {
@@ -167,8 +166,6 @@ export function ControlPanel() {
           </CardBody>
         </Card>
       ) : null}
-
-      {isAdmin ? <SimulationEvaluatorWorkersPanel /> : null}
     </>
   );
 }
