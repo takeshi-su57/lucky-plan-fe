@@ -1,12 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   Button,
   Card,
   CardBody,
   Chip,
-  Progress,
   Spinner,
   useDisclosure,
 } from "@heroui/react";
@@ -14,58 +14,56 @@ import {
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import {
   useApproveSimulationEvaluatorWorker,
+  usePauseSimulationEvaluatorWorker,
   useRejectSimulationEvaluatorWorker,
   useRemoveRejectedSimulationEvaluatorWorker,
+  useRemoveOfflineSimulationEvaluatorWorker,
+  useResumeSimulationEvaluatorWorker,
+  useSetSimulationEvaluatorWorkerCapacity,
+  useSimulationEvaluatorWorkerTasks,
   useSimulationEvaluatorWorkers,
 } from "@/app/_hooks/useSimulationEvaluatorWorkers";
-
 import { PrebuildWorkerCacheModal } from "./PrebuildWorkerCacheModal";
+import { SetWorkerCapacityModal } from "./SetWorkerCapacityModal";
 
-const authorizationColor = (status: string) =>
-  status === "Approved" ? "success" : status === "Rejected" ? "danger" : "warning";
-
-const runtimeColor = (status: string) =>
-  status === "Free" ? "success" : status === "Busy" || status === "Prebuilding" ? "primary" : "default";
-
-const formatDate = (value?: string | null) => {
+const age = (value?: string | null) => {
   if (!value) return "Never";
-  const date = /^\d+$/.test(value) ? new Date(Number(value)) : new Date(value);
-  if (Number.isNaN(date.getTime())) return "Unknown";
-  const seconds = Math.max(0, Math.round((Date.now() - date.getTime()) / 1_000));
+  const date = new Date(/^\d+$/.test(value) ? Number(value) : value);
+  const seconds = Math.max(0, Math.round((Date.now() - date.getTime()) / 1000));
   if (seconds < 60) return `${seconds}s ago`;
-  if (seconds < 3_600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86_400) return `${Math.floor(seconds / 3_600)}h ago`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
   return date.toLocaleDateString();
-};
-
-const formatBytes = (value: string) => {
-  const bytes = Number(value);
-  if (!Number.isFinite(bytes)) return value;
-  if (bytes < 1_024) return `${bytes} B`;
-  if (bytes < 1_048_576) return `${(bytes / 1_024).toFixed(1)} KB`;
-  return `${(bytes / 1_048_576).toFixed(1)} MB`;
-};
-
-const formatCount = (value: string) => {
-  const count = Number(value);
-  return Number.isFinite(count) ? count.toLocaleString() : value;
 };
 
 export function SimulationEvaluatorWorkersPanel() {
   const { data, loading } = useSimulationEvaluatorWorkers();
-  const [approve, { loading: approving }] = useApproveSimulationEvaluatorWorker();
+  const { data: taskData } = useSimulationEvaluatorWorkerTasks();
+  const [approve, { loading: approving }] =
+    useApproveSimulationEvaluatorWorker();
   const [reject, { loading: rejecting }] = useRejectSimulationEvaluatorWorker();
-  const [remove, { loading: removing }] = useRemoveRejectedSimulationEvaluatorWorker();
+  const [remove, { loading: removing }] =
+    useRemoveRejectedSimulationEvaluatorWorker();
+  const [removeOffline, { loading: removingOffline }] =
+    useRemoveOfflineSimulationEvaluatorWorker();
+  const [pause, { loading: pausing }] = usePauseSimulationEvaluatorWorker();
+  const [resume, { loading: resuming }] = useResumeSimulationEvaluatorWorker();
+  const [setCapacity, { loading: settingCapacity }] =
+    useSetSimulationEvaluatorWorkerCapacity();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const capacity = useDisclosure();
   const [prebuildWorker, setPrebuildWorker] = useState<{
     id: string;
     displayName: string;
   } | null>(null);
-  const workers = data?.simulationEvaluatorWorkers || [];
-  const onlineWorkers = workers.filter((worker) => worker.runtimeStatus !== "Offline").length;
-  const workingWorkers = workers.filter(
-    (worker) => worker.runtimeStatus === "Busy" || worker.runtimeStatus === "Prebuilding",
-  ).length;
+  const [capacityWorker, setCapacityWorker] = useState<{
+    id: string;
+    displayName: string;
+    activeCapacity: number;
+    desiredCapacity: number;
+  } | null>(null);
+  const workers = data?.simulationEvaluatorWorkers ?? [];
+  const tasks = taskData?.simulationEvaluatorWorkerTasks ?? [];
 
   if (loading && !data) return <Spinner />;
 
@@ -74,29 +72,45 @@ export function SimulationEvaluatorWorkersPanel() {
       <CardBody className="gap-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h6 className="text-lg font-semibold">Simulation evaluator workers</h6>
+            <h6 className="text-lg font-semibold">
+              Simulation evaluator workers
+            </h6>
             <p className="text-default-500 text-sm">
-              Worker availability, current execution, cache coverage, and enrollment controls.
+              Availability and the minimum operational signals. Open a worker
+              for its full audit trail.
             </p>
           </div>
-          <div className="flex gap-2">
-            <Chip size="sm" variant="flat" color="success">{onlineWorkers} online</Chip>
-            <Chip size="sm" variant="flat" color="primary">{workingWorkers} working</Chip>
-          </div>
+          <Chip size="sm" variant="flat">
+            {workers.length} enrolled
+          </Chip>
         </div>
-
         {workers.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-default-300 px-5 py-10 text-center text-default-500">
+          <div className="border-default-300 text-default-500 rounded-xl border border-dashed px-5 py-10 text-center">
             No worker enrollment requests yet.
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 2xl:grid-cols-2">
             {workers.map((worker) => {
-              const isWorking = worker.runtimeStatus === "Busy" || worker.runtimeStatus === "Prebuilding";
-              const isPrebuilding = worker.runtimeStatus === "Prebuilding";
-
+              const workerTasks = tasks.filter(
+                (task) =>
+                  task.targetWorkerId === worker.id ||
+                  task.workerId === worker.id,
+              );
+              const active = workerTasks.filter(
+                (task) => task.status === "Claimed",
+              ).length;
+              const failedCaches = worker.platformCaches.filter(
+                (cache) => cache.status === "Failed",
+              ).length;
+              const isWorking =
+                worker.runtimeStatus === "Busy" ||
+                worker.runtimeStatus === "Prebuilding";
               return (
-                <Card key={worker.id} shadow="sm" className="border border-default-200">
+                <Card
+                  key={worker.id}
+                  shadow="sm"
+                  className="border-default-200 border"
+                >
                   <CardBody className="gap-4 p-5">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -104,110 +118,179 @@ export function SimulationEvaluatorWorkersPanel() {
                           <span
                             className={`h-2.5 w-2.5 rounded-full ${worker.runtimeStatus === "Offline" ? "bg-default-300" : "bg-success"}`}
                           />
-                          <h3 className="truncate font-semibold">{worker.displayName}</h3>
+                          <h3 className="truncate font-semibold">
+                            {worker.displayName}
+                          </h3>
                         </div>
-                        <p className="mt-1 truncate font-mono text-xs text-default-500" title={worker.id}>
+                        <p
+                          className="text-default-500 mt-1 truncate font-mono text-xs"
+                          title={worker.id}
+                        >
                           {worker.id}
                         </p>
                       </div>
                       <div className="flex shrink-0 flex-col items-end gap-1">
-                        <Chip size="sm" color={authorizationColor(worker.authorizationStatus)}>
+                        <Chip
+                          size="sm"
+                          color={
+                            worker.authorizationStatus === "Approved"
+                              ? "success"
+                              : worker.authorizationStatus === "Rejected"
+                                ? "danger"
+                                : "warning"
+                          }
+                        >
                           {worker.authorizationStatus}
                         </Chip>
-                        <Chip size="sm" variant="flat" color={runtimeColor(worker.runtimeStatus)}>
+                        <Chip size="sm" variant="flat">
                           {worker.runtimeStatus}
                         </Chip>
                       </div>
                     </div>
-
-                    <div className="grid grid-cols-2 gap-2 rounded-lg bg-default-50 p-3 text-sm">
+                    <div className="bg-default-50 grid grid-cols-2 gap-2 rounded-lg p-3 text-sm">
                       <div>
-                        <p className="text-xs text-default-500">Last heartbeat</p>
-                        <p className="font-medium">{formatDate(worker.lastHeartbeatAt)}</p>
+                        <p className="text-default-500 text-xs">
+                          Last heartbeat
+                        </p>
+                        <p className="font-medium">
+                          {age(worker.lastHeartbeatAt)}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-xs text-default-500">Last task</p>
-                        <p className="font-medium">{formatDate(worker.lastTaskAt)}</p>
+                        <p className="text-default-500 text-xs">Capacity</p>
+                        <p className="font-medium">
+                          {worker.activeCapacity} / {worker.desiredCapacity}{" "}
+                          slots
+                        </p>
                       </div>
                     </div>
-
-                    {worker.prebuildProgress && (
-                      <div className="rounded-lg border border-primary-200 bg-primary-50/50 p-3">
-                        <div className="flex items-start justify-between gap-3 text-sm">
-                          <div className="min-w-0">
-                            <p className="font-medium">Prebuilding cache</p>
-                            <p className="truncate text-default-600">{worker.prebuildProgress.message}</p>
-                          </div>
-                          <span className="shrink-0 text-lg font-semibold text-primary">
-                            {worker.prebuildProgress.percent.toFixed(1)}%
-                          </span>
-                        </div>
-                        <Progress
-                          aria-label="Prebuild progress"
-                          value={worker.prebuildProgress.percent}
-                          size="sm"
-                          className="mt-3"
-                        />
-                        <div className="mt-2 flex flex-wrap justify-between gap-x-4 gap-y-1 text-xs text-default-500">
-                          <span>
-                            {formatCount(worker.prebuildProgress.records)} / {formatCount(worker.prebuildProgress.totalRecords)} event logs
-                          </span>
-                          <span>{formatBytes(worker.prebuildProgress.bytes)} downloaded</span>
-                        </div>
+                    <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                      <div className="bg-default-50 rounded-lg p-2">
+                        <p className="font-semibold">{workerTasks.length}</p>
+                        <p className="text-default-500 text-xs">tasks</p>
                       </div>
-                    )}
-
-                    <div>
-                      <p className="mb-2 text-xs font-medium uppercase tracking-wide text-default-500">
-                        Platform caches
-                      </p>
-                      {worker.platformCaches.length ? (
-                        <div className="flex flex-wrap gap-2">
-                          {worker.platformCaches.map((cache) => (
-                            <div key={`${cache.platform}-${cache.coveredStartAt}-${cache.coveredEndAt}-${cache.status}`} className="rounded-lg border border-default-200 px-2.5 py-2 text-xs">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">{cache.platform}</span>
-                                <Chip size="sm" variant="flat" color={cache.status === "Ready" ? "success" : cache.status === "Failed" ? "danger" : "default"}>
-                                  {cache.status}
-                                </Chip>
-                              </div>
-                              {cache.coveredStartAt && cache.coveredEndAt && (
-                                <p className="mt-1 text-default-500">{formatDate(cache.coveredStartAt)} – {formatDate(cache.coveredEndAt)}</p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-default-500">No cache coverage reported.</p>
-                      )}
+                      <div className="bg-default-50 rounded-lg p-2">
+                        <p className="font-semibold">{active}</p>
+                        <p className="text-default-500 text-xs">active</p>
+                      </div>
+                      <div className="bg-default-50 rounded-lg p-2">
+                        <p
+                          className={
+                            failedCaches
+                              ? "text-danger font-semibold"
+                              : "font-semibold"
+                          }
+                        >
+                          {failedCaches}
+                        </p>
+                        <p className="text-default-500 text-xs">
+                          cache failures
+                        </p>
+                      </div>
                     </div>
-
-                    {worker.lastError && (
-                      <div className="rounded-lg border border-danger-200 bg-danger-50 p-3 text-sm text-danger-700">
-                        <p className="font-medium">Last worker message</p>
-                        <p className="mt-1 break-words">{worker.lastError}</p>
-                      </div>
-                    )}
-
-                    <div className="flex flex-wrap gap-2 border-t border-default-200 pt-4">
+                    <div className="border-default-200 flex flex-wrap gap-2 border-t pt-4">
+                      <Button
+                        as={Link}
+                        href={`/settings/workers/${encodeURIComponent(worker.id)}`}
+                        size="sm"
+                        variant="flat"
+                      >
+                        Details
+                      </Button>
                       {worker.authorizationStatus === "Pending" && (
                         <>
-                          <Button size="sm" color="success" isLoading={approving} onPress={() => approve({ variables: { workerId: worker.id } })}>
+                          <Button
+                            size="sm"
+                            color="success"
+                            isLoading={approving}
+                            onPress={() =>
+                              approve({ variables: { workerId: worker.id } })
+                            }
+                          >
                             Approve
                           </Button>
-                          <ButtonWithConfirm size="sm" color="danger" isLoading={rejecting} onPress={() => reject({ variables: { workerId: worker.id } })}>
+                          <ButtonWithConfirm
+                            size="sm"
+                            color="danger"
+                            isLoading={rejecting}
+                            onPress={() =>
+                              reject({ variables: { workerId: worker.id } })
+                            }
+                          >
                             Reject
                           </ButtonWithConfirm>
                         </>
                       )}
                       {worker.authorizationStatus === "Approved" && (
-                        <Button size="sm" color="primary" isDisabled={isWorking} onPress={() => { setPrebuildWorker(worker); onOpen(); }}>
-                          Prebuild cache
-                        </Button>
+                        <>
+                          <Button
+                            size="sm"
+                            color="primary"
+                            isDisabled={isWorking}
+                            onPress={() => {
+                              setPrebuildWorker(worker);
+                              onOpen();
+                            }}
+                          >
+                            Prebuild
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="flat"
+                            isLoading={
+                              worker.desiredState === "Running"
+                                ? pausing
+                                : resuming
+                            }
+                            onPress={() =>
+                              worker.desiredState === "Running"
+                                ? pause({ variables: { workerId: worker.id } })
+                                : resume({ variables: { workerId: worker.id } })
+                            }
+                          >
+                            {worker.desiredState === "Running"
+                              ? "Pause"
+                              : "Resume"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="flat"
+                            isLoading={settingCapacity}
+                            onPress={() => {
+                              setCapacityWorker(worker);
+                              capacity.onOpen();
+                            }}
+                          >
+                            Capacity
+                          </Button>
+                        </>
                       )}
-                      {!isWorking && (
-                        <ButtonWithConfirm size="sm" color="danger" variant="flat" isLoading={removing} onPress={() => remove({ variables: { workerId: worker.id } })}>
+                      {worker.authorizationStatus === "Rejected" && (
+                        <ButtonWithConfirm
+                          size="sm"
+                          color="danger"
+                          variant="flat"
+                          isLoading={removing}
+                          onPress={() =>
+                            remove({ variables: { workerId: worker.id } })
+                          }
+                        >
                           Remove
+                        </ButtonWithConfirm>
+                      )}
+                      {worker.runtimeStatus === "Offline" && (
+                        <ButtonWithConfirm
+                          size="sm"
+                          color="danger"
+                          variant="flat"
+                          isLoading={removingOffline}
+                          onPress={() =>
+                            removeOffline({
+                              variables: { workerId: worker.id },
+                            })
+                          }
+                        >
+                          Delete worker
                         </ButtonWithConfirm>
                       )}
                     </div>
@@ -217,8 +300,26 @@ export function SimulationEvaluatorWorkersPanel() {
             })}
           </div>
         )}
-
-        {prebuildWorker && <PrebuildWorkerCacheModal worker={prebuildWorker} isOpen={isOpen} onOpenChange={onOpenChange} />}
+        {prebuildWorker && (
+          <PrebuildWorkerCacheModal
+            worker={prebuildWorker}
+            isOpen={isOpen}
+            onOpenChange={onOpenChange}
+          />
+        )}
+        {capacityWorker && (
+          <SetWorkerCapacityModal
+            worker={capacityWorker}
+            isOpen={capacity.isOpen}
+            isLoading={settingCapacity}
+            onOpenChange={capacity.onOpenChange}
+            onSubmit={(value) =>
+              setCapacity({
+                variables: { workerId: capacityWorker.id, capacity: value },
+              })
+            }
+          />
+        )}
       </CardBody>
     </Card>
   );
