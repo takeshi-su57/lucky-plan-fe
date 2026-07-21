@@ -123,8 +123,6 @@ type Documents = {
     "\n  fragment SimulationTradePositionInfo on SimulationTradePosition {\n    histories {\n      ...SimulationTradeHistoryInfo\n    }\n    followerPnl\n    leaderPnl\n  }\n": typeof types.SimulationTradePositionInfoFragmentDoc,
     "\n  fragment SimulationBotDetailsInfo on SimulationBotDetails {\n    avgCollateral\n    avgDuration\n    avgLeverage\n    avgNegativePnl\n    avgPnl\n    avgPnlPercentageByCollateral\n    avgPnlPercentageBySize\n    avgPositivePnl\n    avgSize\n    id\n    leaderAddress\n    leaderPlatform\n    minCollateral\n    maxCollateral\n    maxDuration\n    mode\n    openedPositions\n    ratio\n    score\n    simulationPlanId\n    startedAt\n    stoppedAt\n    totalPnl\n    totalPositions\n    minLeverage\n    maxLeverage\n    cacheState {\n      completed\n      lastError\n      lastFetchedAt\n      rebuildRequested\n      rebuilding\n    }\n    positions {\n      ...SimulationTradePositionInfo\n    }\n  }\n": typeof types.SimulationBotDetailsInfoFragmentDoc,
     "\n  fragment SimulationPlanDetailsInfo on SimulationPlanDetails {\n    cursor\n    description\n    endAt\n    id\n    openedPositions\n    simulationId\n    simulationBots {\n      ...SimulationBotDetailsInfo\n    }\n    startAt\n    title\n    totalFollowerPnl\n    totalLeaderPnl\n    totalPositions\n  }\n": typeof types.SimulationPlanDetailsInfoFragmentDoc,
-    "\n  query getSimulationPlans($after: Int, $first: Int!) {\n    getSimulationPlans(after: $after, first: $first) {\n      edges {\n        cursor\n        node {\n          ...SimulationPlanInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n": typeof types.GetSimulationPlansDocument,
-    "\n  query simulations($after: Int, $first: Int!) {\n    simulations(after: $after, first: $first) {\n      edges {\n        cursor\n        node {\n          ...SimulationInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n": typeof types.SimulationsDocument,
     "\n  query simulationResearches($after: Int, $first: Int!) {\n    simulationResearches(after: $after, first: $first) {\n      edges {\n        cursor\n        node {\n          ...SimulationResearchInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n": typeof types.SimulationResearchesDocument,
     "\n  query simulation($id: Int!) {\n    simulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": typeof types.SimulationDocument,
     "\n  query simulationResearch($id: Int!) {\n    simulationResearch(id: $id) {\n      ...SimulationResearchDetailsInfo\n    }\n  }\n": typeof types.SimulationResearchDocument,
@@ -132,12 +130,8 @@ type Documents = {
     "\n  query simulationPlansBySimulation($simulationId: Int!) {\n    simulationPlansBySimulation(simulationId: $simulationId) {\n      ...SimulationPlanInfo\n    }\n  }\n": typeof types.SimulationPlansBySimulationDocument,
     "\n  query simulationPlanDetailsBySimulation($simulationId: Int!) {\n    simulationPlanDetailsBySimulation(simulationId: $simulationId) {\n      ...SimulationPlanDetailsInfo\n    }\n  }\n": typeof types.SimulationPlanDetailsBySimulationDocument,
     "\n  query getSimulationPlanById($id: Int!) {\n    getSimulationPlanById(id: $id) {\n      ...SimulationPlanDetailsInfo\n    }\n  }\n": typeof types.GetSimulationPlanByIdDocument,
-    "\n  mutation createSimulationPlan($input: CreateSimulationPlanInput!) {\n    createSimulationPlan(input: $input) {\n      ...SimulationPlanInfo\n    }\n  }\n": typeof types.CreateSimulationPlanDocument,
     "\n  mutation createSimulationResearch($input: CreateSimulationResearchInput!) {\n    createSimulationResearch(input: $input) {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.CreateSimulationResearchDocument,
     "\n  mutation updateSimulationResearch($input: UpdateSimulationResearchInput!) {\n    updateSimulationResearch(input: $input) {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.UpdateSimulationResearchDocument,
-    "\n  mutation updateSimulationBot($input: UpdateSimulationBotInput!) {\n    updateSimulationBot(input: $input) {\n      ...SimulationBotInfo\n    }\n  }\n": typeof types.UpdateSimulationBotDocument,
-    "\n  mutation batchCreateSimulationBots($inputs: [CreateSimulationBotInput!]!) {\n    batchCreateSimulationBots(inputs: $inputs) {\n      ...SimulationBotInfo\n    }\n  }\n": typeof types.BatchCreateSimulationBotsDocument,
-    "\n  mutation playSimulationPlan($id: Int!) {\n    playSimulationPlan(id: $id) {\n      ...SimulationPlanInfo\n    }\n  }\n": typeof types.PlaySimulationPlanDocument,
     "\n  mutation cancelSimulation($id: Int!) {\n    cancelSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": typeof types.CancelSimulationDocument,
     "\n  mutation playAutoResearch($id: Int!) {\n    playAutoResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.PlayAutoResearchDocument,
     "\n  mutation cloneSimulationResearch($id: Int!) {\n    cloneSimulationResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.CloneSimulationResearchDocument,
@@ -147,9 +141,6 @@ type Documents = {
     "\n  mutation cancelResearch($id: Int!) {\n    cancelResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.CancelResearchDocument,
     "\n  mutation deleteSimulation($id: Int!) {\n    deleteSimulation(id: $id)\n  }\n": typeof types.DeleteSimulationDocument,
     "\n  mutation deleteSimulationResearch($id: Int!) {\n    deleteSimulationResearch(id: $id)\n  }\n": typeof types.DeleteSimulationResearchDocument,
-    "\n  mutation deleteSimulationPlan($id: Int!) {\n    deleteSimulationPlan(id: $id)\n  }\n": typeof types.DeleteSimulationPlanDocument,
-    "\n  mutation deleteSimulationBot($id: Int!) {\n    deleteSimulationBot(id: $id)\n  }\n": typeof types.DeleteSimulationBotDocument,
-    "\n  mutation stopSimulationBot($id: Int!) {\n    stopSimulationBot(id: $id) {\n      ...SimulationBotInfo\n    }\n  }\n": typeof types.StopSimulationBotDocument,
     "\n  subscription simulationResearchUpdated {\n    simulationResearchUpdated {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.SimulationResearchUpdatedDocument,
     "\n  subscription simulationUpdated {\n    simulationUpdated {\n      ...SimulationInfo\n    }\n  }\n": typeof types.SimulationUpdatedDocument,
     "\n  subscription simulationPlanUpdated {\n    simulationPlanUpdated {\n      ...SimulationPlanInfo\n    }\n  }\n": typeof types.SimulationPlanUpdatedDocument,
@@ -291,8 +282,6 @@ const documents: Documents = {
     "\n  fragment SimulationTradePositionInfo on SimulationTradePosition {\n    histories {\n      ...SimulationTradeHistoryInfo\n    }\n    followerPnl\n    leaderPnl\n  }\n": types.SimulationTradePositionInfoFragmentDoc,
     "\n  fragment SimulationBotDetailsInfo on SimulationBotDetails {\n    avgCollateral\n    avgDuration\n    avgLeverage\n    avgNegativePnl\n    avgPnl\n    avgPnlPercentageByCollateral\n    avgPnlPercentageBySize\n    avgPositivePnl\n    avgSize\n    id\n    leaderAddress\n    leaderPlatform\n    minCollateral\n    maxCollateral\n    maxDuration\n    mode\n    openedPositions\n    ratio\n    score\n    simulationPlanId\n    startedAt\n    stoppedAt\n    totalPnl\n    totalPositions\n    minLeverage\n    maxLeverage\n    cacheState {\n      completed\n      lastError\n      lastFetchedAt\n      rebuildRequested\n      rebuilding\n    }\n    positions {\n      ...SimulationTradePositionInfo\n    }\n  }\n": types.SimulationBotDetailsInfoFragmentDoc,
     "\n  fragment SimulationPlanDetailsInfo on SimulationPlanDetails {\n    cursor\n    description\n    endAt\n    id\n    openedPositions\n    simulationId\n    simulationBots {\n      ...SimulationBotDetailsInfo\n    }\n    startAt\n    title\n    totalFollowerPnl\n    totalLeaderPnl\n    totalPositions\n  }\n": types.SimulationPlanDetailsInfoFragmentDoc,
-    "\n  query getSimulationPlans($after: Int, $first: Int!) {\n    getSimulationPlans(after: $after, first: $first) {\n      edges {\n        cursor\n        node {\n          ...SimulationPlanInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n": types.GetSimulationPlansDocument,
-    "\n  query simulations($after: Int, $first: Int!) {\n    simulations(after: $after, first: $first) {\n      edges {\n        cursor\n        node {\n          ...SimulationInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n": types.SimulationsDocument,
     "\n  query simulationResearches($after: Int, $first: Int!) {\n    simulationResearches(after: $after, first: $first) {\n      edges {\n        cursor\n        node {\n          ...SimulationResearchInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n": types.SimulationResearchesDocument,
     "\n  query simulation($id: Int!) {\n    simulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": types.SimulationDocument,
     "\n  query simulationResearch($id: Int!) {\n    simulationResearch(id: $id) {\n      ...SimulationResearchDetailsInfo\n    }\n  }\n": types.SimulationResearchDocument,
@@ -300,12 +289,8 @@ const documents: Documents = {
     "\n  query simulationPlansBySimulation($simulationId: Int!) {\n    simulationPlansBySimulation(simulationId: $simulationId) {\n      ...SimulationPlanInfo\n    }\n  }\n": types.SimulationPlansBySimulationDocument,
     "\n  query simulationPlanDetailsBySimulation($simulationId: Int!) {\n    simulationPlanDetailsBySimulation(simulationId: $simulationId) {\n      ...SimulationPlanDetailsInfo\n    }\n  }\n": types.SimulationPlanDetailsBySimulationDocument,
     "\n  query getSimulationPlanById($id: Int!) {\n    getSimulationPlanById(id: $id) {\n      ...SimulationPlanDetailsInfo\n    }\n  }\n": types.GetSimulationPlanByIdDocument,
-    "\n  mutation createSimulationPlan($input: CreateSimulationPlanInput!) {\n    createSimulationPlan(input: $input) {\n      ...SimulationPlanInfo\n    }\n  }\n": types.CreateSimulationPlanDocument,
     "\n  mutation createSimulationResearch($input: CreateSimulationResearchInput!) {\n    createSimulationResearch(input: $input) {\n      ...SimulationResearchInfo\n    }\n  }\n": types.CreateSimulationResearchDocument,
     "\n  mutation updateSimulationResearch($input: UpdateSimulationResearchInput!) {\n    updateSimulationResearch(input: $input) {\n      ...SimulationResearchInfo\n    }\n  }\n": types.UpdateSimulationResearchDocument,
-    "\n  mutation updateSimulationBot($input: UpdateSimulationBotInput!) {\n    updateSimulationBot(input: $input) {\n      ...SimulationBotInfo\n    }\n  }\n": types.UpdateSimulationBotDocument,
-    "\n  mutation batchCreateSimulationBots($inputs: [CreateSimulationBotInput!]!) {\n    batchCreateSimulationBots(inputs: $inputs) {\n      ...SimulationBotInfo\n    }\n  }\n": types.BatchCreateSimulationBotsDocument,
-    "\n  mutation playSimulationPlan($id: Int!) {\n    playSimulationPlan(id: $id) {\n      ...SimulationPlanInfo\n    }\n  }\n": types.PlaySimulationPlanDocument,
     "\n  mutation cancelSimulation($id: Int!) {\n    cancelSimulation(id: $id) {\n      ...SimulationInfo\n    }\n  }\n": types.CancelSimulationDocument,
     "\n  mutation playAutoResearch($id: Int!) {\n    playAutoResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": types.PlayAutoResearchDocument,
     "\n  mutation cloneSimulationResearch($id: Int!) {\n    cloneSimulationResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": types.CloneSimulationResearchDocument,
@@ -315,9 +300,6 @@ const documents: Documents = {
     "\n  mutation cancelResearch($id: Int!) {\n    cancelResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": types.CancelResearchDocument,
     "\n  mutation deleteSimulation($id: Int!) {\n    deleteSimulation(id: $id)\n  }\n": types.DeleteSimulationDocument,
     "\n  mutation deleteSimulationResearch($id: Int!) {\n    deleteSimulationResearch(id: $id)\n  }\n": types.DeleteSimulationResearchDocument,
-    "\n  mutation deleteSimulationPlan($id: Int!) {\n    deleteSimulationPlan(id: $id)\n  }\n": types.DeleteSimulationPlanDocument,
-    "\n  mutation deleteSimulationBot($id: Int!) {\n    deleteSimulationBot(id: $id)\n  }\n": types.DeleteSimulationBotDocument,
-    "\n  mutation stopSimulationBot($id: Int!) {\n    stopSimulationBot(id: $id) {\n      ...SimulationBotInfo\n    }\n  }\n": types.StopSimulationBotDocument,
     "\n  subscription simulationResearchUpdated {\n    simulationResearchUpdated {\n      ...SimulationResearchInfo\n    }\n  }\n": types.SimulationResearchUpdatedDocument,
     "\n  subscription simulationUpdated {\n    simulationUpdated {\n      ...SimulationInfo\n    }\n  }\n": types.SimulationUpdatedDocument,
     "\n  subscription simulationPlanUpdated {\n    simulationPlanUpdated {\n      ...SimulationPlanInfo\n    }\n  }\n": types.SimulationPlanUpdatedDocument,
@@ -803,14 +785,6 @@ export function graphql(source: "\n  fragment SimulationPlanDetailsInfo on Simul
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query getSimulationPlans($after: Int, $first: Int!) {\n    getSimulationPlans(after: $after, first: $first) {\n      edges {\n        cursor\n        node {\n          ...SimulationPlanInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n"): (typeof documents)["\n  query getSimulationPlans($after: Int, $first: Int!) {\n    getSimulationPlans(after: $after, first: $first) {\n      edges {\n        cursor\n        node {\n          ...SimulationPlanInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  query simulations($after: Int, $first: Int!) {\n    simulations(after: $after, first: $first) {\n      edges {\n        cursor\n        node {\n          ...SimulationInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n"): (typeof documents)["\n  query simulations($after: Int, $first: Int!) {\n    simulations(after: $after, first: $first) {\n      edges {\n        cursor\n        node {\n          ...SimulationInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
 export function graphql(source: "\n  query simulationResearches($after: Int, $first: Int!) {\n    simulationResearches(after: $after, first: $first) {\n      edges {\n        cursor\n        node {\n          ...SimulationResearchInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n"): (typeof documents)["\n  query simulationResearches($after: Int, $first: Int!) {\n    simulationResearches(after: $after, first: $first) {\n      edges {\n        cursor\n        node {\n          ...SimulationResearchInfo\n        }\n      }\n      pageInfo {\n        endCursor\n        hasNextPage\n      }\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
@@ -839,27 +813,11 @@ export function graphql(source: "\n  query getSimulationPlanById($id: Int!) {\n 
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  mutation createSimulationPlan($input: CreateSimulationPlanInput!) {\n    createSimulationPlan(input: $input) {\n      ...SimulationPlanInfo\n    }\n  }\n"): (typeof documents)["\n  mutation createSimulationPlan($input: CreateSimulationPlanInput!) {\n    createSimulationPlan(input: $input) {\n      ...SimulationPlanInfo\n    }\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
 export function graphql(source: "\n  mutation createSimulationResearch($input: CreateSimulationResearchInput!) {\n    createSimulationResearch(input: $input) {\n      ...SimulationResearchInfo\n    }\n  }\n"): (typeof documents)["\n  mutation createSimulationResearch($input: CreateSimulationResearchInput!) {\n    createSimulationResearch(input: $input) {\n      ...SimulationResearchInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation updateSimulationResearch($input: UpdateSimulationResearchInput!) {\n    updateSimulationResearch(input: $input) {\n      ...SimulationResearchInfo\n    }\n  }\n"): (typeof documents)["\n  mutation updateSimulationResearch($input: UpdateSimulationResearchInput!) {\n    updateSimulationResearch(input: $input) {\n      ...SimulationResearchInfo\n    }\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  mutation updateSimulationBot($input: UpdateSimulationBotInput!) {\n    updateSimulationBot(input: $input) {\n      ...SimulationBotInfo\n    }\n  }\n"): (typeof documents)["\n  mutation updateSimulationBot($input: UpdateSimulationBotInput!) {\n    updateSimulationBot(input: $input) {\n      ...SimulationBotInfo\n    }\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  mutation batchCreateSimulationBots($inputs: [CreateSimulationBotInput!]!) {\n    batchCreateSimulationBots(inputs: $inputs) {\n      ...SimulationBotInfo\n    }\n  }\n"): (typeof documents)["\n  mutation batchCreateSimulationBots($inputs: [CreateSimulationBotInput!]!) {\n    batchCreateSimulationBots(inputs: $inputs) {\n      ...SimulationBotInfo\n    }\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  mutation playSimulationPlan($id: Int!) {\n    playSimulationPlan(id: $id) {\n      ...SimulationPlanInfo\n    }\n  }\n"): (typeof documents)["\n  mutation playSimulationPlan($id: Int!) {\n    playSimulationPlan(id: $id) {\n      ...SimulationPlanInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -896,18 +854,6 @@ export function graphql(source: "\n  mutation deleteSimulation($id: Int!) {\n   
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation deleteSimulationResearch($id: Int!) {\n    deleteSimulationResearch(id: $id)\n  }\n"): (typeof documents)["\n  mutation deleteSimulationResearch($id: Int!) {\n    deleteSimulationResearch(id: $id)\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  mutation deleteSimulationPlan($id: Int!) {\n    deleteSimulationPlan(id: $id)\n  }\n"): (typeof documents)["\n  mutation deleteSimulationPlan($id: Int!) {\n    deleteSimulationPlan(id: $id)\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  mutation deleteSimulationBot($id: Int!) {\n    deleteSimulationBot(id: $id)\n  }\n"): (typeof documents)["\n  mutation deleteSimulationBot($id: Int!) {\n    deleteSimulationBot(id: $id)\n  }\n"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "\n  mutation stopSimulationBot($id: Int!) {\n    stopSimulationBot(id: $id) {\n      ...SimulationBotInfo\n    }\n  }\n"): (typeof documents)["\n  mutation stopSimulationBot($id: Int!) {\n    stopSimulationBot(id: $id) {\n      ...SimulationBotInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

@@ -378,40 +378,6 @@ export const SIMULATION_PLAN_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   }
 `);
 
-export const GET_SIMULATION_PLANS_DOCUMENT = graphql(`
-  query getSimulationPlans($after: Int, $first: Int!) {
-    getSimulationPlans(after: $after, first: $first) {
-      edges {
-        cursor
-        node {
-          ...SimulationPlanInfo
-        }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-    }
-  }
-`);
-
-export const GET_SIMULATIONS_DOCUMENT = graphql(`
-  query simulations($after: Int, $first: Int!) {
-    simulations(after: $after, first: $first) {
-      edges {
-        cursor
-        node {
-          ...SimulationInfo
-        }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-    }
-  }
-`);
-
 export const GET_SIMULATION_RESEARCHES_DOCUMENT = graphql(`
   query simulationResearches($after: Int, $first: Int!) {
     simulationResearches(after: $after, first: $first) {
@@ -477,14 +443,6 @@ export const GET_SIMULATION_PLAN_BY_ID_DOCUMENT = graphql(`
   }
 `);
 
-export const CREATE_SIMULATION_PLAN_DOCUMENT = graphql(`
-  mutation createSimulationPlan($input: CreateSimulationPlanInput!) {
-    createSimulationPlan(input: $input) {
-      ...SimulationPlanInfo
-    }
-  }
-`);
-
 export const CREATE_SIMULATION_RESEARCH_DOCUMENT = graphql(`
   mutation createSimulationResearch($input: CreateSimulationResearchInput!) {
     createSimulationResearch(input: $input) {
@@ -497,30 +455,6 @@ export const UPDATE_SIMULATION_RESEARCH_DOCUMENT = graphql(`
   mutation updateSimulationResearch($input: UpdateSimulationResearchInput!) {
     updateSimulationResearch(input: $input) {
       ...SimulationResearchInfo
-    }
-  }
-`);
-
-export const UPDATE_SIMULATION_BOT_DOCUMENT = graphql(`
-  mutation updateSimulationBot($input: UpdateSimulationBotInput!) {
-    updateSimulationBot(input: $input) {
-      ...SimulationBotInfo
-    }
-  }
-`);
-
-export const BATCH_CREATE_SIMULATION_BOTS_DOCUMENT = graphql(`
-  mutation batchCreateSimulationBots($inputs: [CreateSimulationBotInput!]!) {
-    batchCreateSimulationBots(inputs: $inputs) {
-      ...SimulationBotInfo
-    }
-  }
-`);
-
-export const PLAY_SIMULATION_PLAN_DOCUMENT = graphql(`
-  mutation playSimulationPlan($id: Int!) {
-    playSimulationPlan(id: $id) {
-      ...SimulationPlanInfo
     }
   }
 `);
@@ -590,26 +524,6 @@ export const DELETE_SIMULATION_DOCUMENT = graphql(`
 export const DELETE_SIMULATION_RESEARCH_DOCUMENT = graphql(`
   mutation deleteSimulationResearch($id: Int!) {
     deleteSimulationResearch(id: $id)
-  }
-`);
-
-export const DELETE_SIMULATION_PLAN_DOCUMENT = graphql(`
-  mutation deleteSimulationPlan($id: Int!) {
-    deleteSimulationPlan(id: $id)
-  }
-`);
-
-export const DELETE_SIMULATION_BOT_DOCUMENT = graphql(`
-  mutation deleteSimulationBot($id: Int!) {
-    deleteSimulationBot(id: $id)
-  }
-`);
-
-export const STOP_SIMULATION_BOT_DOCUMENT = graphql(`
-  mutation stopSimulationBot($id: Int!) {
-    stopSimulationBot(id: $id) {
-      ...SimulationBotInfo
-    }
   }
 `);
 
@@ -804,18 +718,6 @@ export function useSubscribeSimulation() {
 
     client.cache.updateQuery(
       {
-        query: GET_SIMULATIONS_DOCUMENT,
-        variables: { first: 20 },
-      },
-      (oldData: any) =>
-        updateConnectionNodeById(oldData, "simulations", simulation.id, {
-          __typename: "Simulation",
-          ...simulation,
-        }),
-    );
-
-    client.cache.updateQuery(
-      {
         query: GET_SIMULATION_DOCUMENT,
         variables: { id: simulation.id },
       },
@@ -912,23 +814,6 @@ export function useSubscribeSimulation() {
       },
     });
 
-    client.cache.updateQuery(
-      {
-        query: GET_SIMULATION_PLANS_DOCUMENT,
-        variables: { first: 20 },
-      },
-      (oldData: any) =>
-        updateConnectionNodeById(
-          oldData,
-          "getSimulationPlans",
-          simulationPlan.id,
-          {
-            __typename: "SimulationPlan",
-            ...simulationPlan,
-          },
-        ),
-    );
-
     if (simulationPlan.simulationId) {
       client.cache.updateQuery(
         {
@@ -1021,89 +906,6 @@ export function useSubscribeSimulation() {
       },
     );
   }, [client.cache, updatedSimulationPlanData]);
-}
-
-export function useGetSimulationPlans() {
-  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
-    GET_SIMULATION_PLANS_DOCUMENT,
-  );
-
-  useEffect(() => {
-    query({
-      variables: {
-        first: 20,
-      },
-    });
-  }, [query]);
-
-  const simultionPlans = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-    return data.getSimulationPlans.edges.map((edge) =>
-      unwrapSimulationPlan(edge.node),
-    );
-  }, [data]);
-
-  const handleFetchMore = useCallback(() => {
-    if (data && !error) {
-      fetchMore({
-        variables: {
-          first: 20,
-          after: data.getSimulationPlans.pageInfo.endCursor,
-        },
-      });
-    }
-  }, [data, error, fetchMore]);
-
-  return {
-    simultionPlans,
-    loading,
-    fetchMore: handleFetchMore,
-    hasMore: data?.getSimulationPlans.pageInfo.hasNextPage,
-  };
-}
-
-export function useGetSimulations() {
-  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
-    GET_SIMULATIONS_DOCUMENT,
-  );
-
-  useEffect(() => {
-    query({
-      variables: {
-        first: 20,
-      },
-    });
-  }, [query]);
-
-  const simulations = useMemo(() => {
-    if (!data) {
-      return [];
-    }
-
-    return data.simulations.edges.map((edge) =>
-      getFragmentData(SIMULATION_INFO_FRAGMENT_DOCUMENT, edge.node),
-    ) as Simulation[];
-  }, [data]);
-
-  const handleFetchMore = useCallback(() => {
-    if (data && !error) {
-      fetchMore({
-        variables: {
-          first: 20,
-          after: data.simulations.pageInfo.endCursor,
-        },
-      });
-    }
-  }, [data, error, fetchMore]);
-
-  return {
-    simulations,
-    loading,
-    fetchMore: handleFetchMore,
-    hasMore: data?.simulations.pageInfo.hasNextPage,
-  };
 }
 
 export function useGetSimulationResearches() {
@@ -1312,31 +1114,6 @@ export function useGetSimulationPlanById(id: number) {
   return { simulationPlan, loading };
 }
 
-export function useCreateSimulationPlan() {
-  const [createSimulationPlan, { data: newData, error, loading }] = useMutation(
-    CREATE_SIMULATION_PLAN_DOCUMENT,
-  );
-  const client = useApolloClient();
-
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (newData && !error) {
-      enqueueSnackbar("Success at creating new simulation plan!", {
-        variant: "success",
-      });
-    }
-
-    if (newData && error) {
-      enqueueSnackbar("Error at creating new simulation plan!", {
-        variant: "error",
-      });
-    }
-  }, [client.cache, newData, error, enqueueSnackbar]);
-
-  return { createSimulationPlan, loading };
-}
-
 export function useCreateSimulationResearch() {
   const [createSimulationResearch, { data: newData, error, loading }] =
     useMutation(CREATE_SIMULATION_RESEARCH_DOCUMENT);
@@ -1400,80 +1177,6 @@ export function useUpdateSimulationResearch() {
   }, [newData, error, enqueueSnackbar]);
 
   return { updateSimulationResearch, loading };
-}
-
-export function useUpdateSimulationBot() {
-  const [updateSimulationBot, { data: newData, error, loading }] = useMutation(
-    UPDATE_SIMULATION_BOT_DOCUMENT,
-  );
-  const client = useApolloClient();
-
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (newData && !error) {
-      enqueueSnackbar("Success at updating simulation bot!", {
-        variant: "success",
-      });
-    }
-
-    if (newData && error) {
-      enqueueSnackbar("Error at updating simulation bot!", {
-        variant: "error",
-      });
-    }
-  }, [client.cache, newData, error, enqueueSnackbar]);
-
-  return { updateSimulationBot, loading };
-}
-
-export function useBatchCreateSimulationBots() {
-  const [batchCreateSimulationBots, { data: newData, error, loading }] =
-    useMutation(BATCH_CREATE_SIMULATION_BOTS_DOCUMENT);
-  const client = useApolloClient();
-
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (newData && !error) {
-      enqueueSnackbar("Success at creating new simulation bots!", {
-        variant: "success",
-      });
-    }
-
-    if (newData && error) {
-      enqueueSnackbar("Error at creating new simulation bots!", {
-        variant: "error",
-      });
-    }
-  }, [client.cache, newData, error, enqueueSnackbar]);
-
-  return { batchCreateSimulationBots, loading };
-}
-
-export function usePlaySimulationPlan() {
-  const [playSimulationPlan, { data: newData, error, loading }] = useMutation(
-    PLAY_SIMULATION_PLAN_DOCUMENT,
-  );
-  const client = useApolloClient();
-
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (newData && !error) {
-      enqueueSnackbar("Success at playing simulation plan!", {
-        variant: "success",
-      });
-    }
-
-    if (newData && error) {
-      enqueueSnackbar("Error at playing simulation plan!", {
-        variant: "error",
-      });
-    }
-  }, [client.cache, newData, error, enqueueSnackbar]);
-
-  return { playSimulationPlan, loading };
 }
 
 export function useCancelSimulation() {
@@ -1665,87 +1368,4 @@ export function useDeleteSimulationResearch() {
   }, [client.cache, newData, error, enqueueSnackbar]);
 
   return { deleteSimulationResearch, loading };
-}
-
-export function useDeleteSimulationPlan() {
-  const [deleteSimulationPlan, { data: newData, error, loading }] = useMutation(
-    DELETE_SIMULATION_PLAN_DOCUMENT,
-  );
-  const client = useApolloClient();
-
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (newData && !error) {
-      client.cache.evict({
-        id: `SimulationPlan:${newData.deleteSimulationPlan}`,
-      });
-      client.cache.gc();
-      enqueueSnackbar("Simulation plan removed!", {
-        variant: "success",
-      });
-    }
-
-    if (newData && error) {
-      enqueueSnackbar("Error at removing simulation plan!", {
-        variant: "error",
-      });
-    }
-  }, [client.cache, newData, error, enqueueSnackbar]);
-
-  return { deleteSimulationPlan, loading };
-}
-
-export function useDeleteSimulationBot() {
-  const [deleteSimulationBot, { data: newData, error, loading }] = useMutation(
-    DELETE_SIMULATION_BOT_DOCUMENT,
-  );
-  const client = useApolloClient();
-
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (newData && !error) {
-      client.cache.evict({
-        id: `SimulationBot:${newData.deleteSimulationBot}`,
-      });
-      client.cache.gc();
-      enqueueSnackbar("Simulation bot removed!", {
-        variant: "success",
-      });
-    }
-
-    if (newData && error) {
-      enqueueSnackbar("Error at removing simulation bot!", {
-        variant: "error",
-      });
-    }
-  }, [client.cache, newData, error, enqueueSnackbar]);
-
-  return { deleteSimulationBot, loading };
-}
-
-export function useStopSimulationBot() {
-  const [stopSimulationBot, { data: newData, error, loading }] = useMutation(
-    STOP_SIMULATION_BOT_DOCUMENT,
-  );
-  const client = useApolloClient();
-
-  const { enqueueSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (newData && !error) {
-      enqueueSnackbar("Success at stopping simulation bot!", {
-        variant: "success",
-      });
-    }
-
-    if (newData && error) {
-      enqueueSnackbar("Error at stopping simulation bot!", {
-        variant: "error",
-      });
-    }
-  }, [client.cache, newData, error, enqueueSnackbar]);
-
-  return { stopSimulationBot, loading };
 }
