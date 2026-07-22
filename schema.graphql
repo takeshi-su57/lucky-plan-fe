@@ -546,6 +546,7 @@ type Mutation {
   removeRejectedSimulationEvaluatorWorker(workerId: String!): Boolean!
   removeSimulationEvaluatorWorkerCache(cacheId: Int!): Boolean!
   restartResearch(id: Int!): SimulationResearch!
+  restoreSimulationWorkflowDefaults: SimulationWorkflowConfigView!
   resumeResearch(id: Int!): SimulationResearch!
   resumeSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
   resumeSystem(password: String): Boolean!
@@ -560,6 +561,7 @@ type Mutation {
   updateMaxOpenMissions(maxCount: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
   updateSimulationResearch(input: UpdateSimulationResearchInput!): SimulationResearch!
+  updateSimulationWorkflowConfig(input: UpdateSimulationWorkflowConfigInput!): SimulationWorkflowConfigView!
   updateSl(input: UpdateSlInput!): ContractExecutionResult!
   updateStrategy(id: Int!, input: UpdateStrategyInput!): Strategy!
   updateTp(input: UpdateTpInput!): ContractExecutionResult!
@@ -781,6 +783,7 @@ type Query {
   simulationPlansBySimulation(simulationId: Int!): [SimulationPlan!]!
   simulationResearch(id: Int!): SimulationResearchDetails
   simulationResearches(after: Int, first: Int!): SimulationResearchConnection!
+  simulationWorkflowConfig: SimulationWorkflowConfigView!
   simulationsByResearch(researchId: Int!): [Simulation!]!
   systemStatus: Boolean!
 }
@@ -1209,6 +1212,22 @@ type SimulationValueRangeGroup {
   ranges: [SimulationValueRange!]!
 }
 
+type SimulationWorkflowConfigView {
+  botTraderMinAvgDurationMs: Int!
+  candidateRecentActivityDays: Int!
+  evaluatorTaskLeaseMs: Int!
+  eventLogAddressBatchSize: Int!
+  eventLogRecordBatchSize: Int!
+  finalizerBatchSize: Int!
+  finalizerLeaseMs: Int!
+  leaderScoringWindowDays: Int!
+  maxOutstandingDynamicPlans: Int!
+  maxSimulationsPerResearch: Int!
+  prebuildChunkSourceRecordLimit: Int!
+  queuedTaskBatchSize: Int!
+  readyTaskScanLimit: Int!
+}
+
 type Strategy {
   id: Int!
   lifeTime: Int!
@@ -1298,6 +1317,22 @@ input UpdateSimulationResearchInput {
   description: String!
   id: Int!
   title: String!
+}
+
+input UpdateSimulationWorkflowConfigInput {
+  botTraderMinAvgDurationMs: Int
+  candidateRecentActivityDays: Int
+  evaluatorTaskLeaseMs: Int
+  eventLogAddressBatchSize: Int
+  eventLogRecordBatchSize: Int
+  finalizerBatchSize: Int
+  finalizerLeaseMs: Int
+  leaderScoringWindowDays: Int
+  maxOutstandingDynamicPlans: Int
+  maxSimulationsPerResearch: Int
+  prebuildChunkSourceRecordLimit: Int
+  queuedTaskBatchSize: Int
+  readyTaskScanLimit: Int
 }
 
 input UpdateSlInput {

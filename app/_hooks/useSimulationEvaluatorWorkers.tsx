@@ -217,6 +217,60 @@ const refetchWorkers = [
   SIMULATION_EVALUATOR_WORKER_TASKS_DOCUMENT,
 ];
 
+const SIMULATION_WORKFLOW_CONFIG_DOCUMENT = graphql(`
+  query GetSimulationWorkflowConfig {
+    simulationWorkflowConfig {
+      maxSimulationsPerResearch
+      maxOutstandingDynamicPlans
+      finalizerBatchSize
+      finalizerLeaseMs
+      evaluatorTaskLeaseMs
+      queuedTaskBatchSize
+      readyTaskScanLimit
+      eventLogAddressBatchSize
+      eventLogRecordBatchSize
+      prebuildChunkSourceRecordLimit
+      leaderScoringWindowDays
+      candidateRecentActivityDays
+      botTraderMinAvgDurationMs
+    }
+  }
+`);
+
+const UPDATE_SIMULATION_WORKFLOW_CONFIG_DOCUMENT = graphql(`
+  mutation UpdateSimulationWorkflowConfig($input: UpdateSimulationWorkflowConfigInput!) {
+    updateSimulationWorkflowConfig(input: $input) {
+      maxOutstandingDynamicPlans
+    }
+  }
+`);
+
+const RESTORE_SIMULATION_WORKFLOW_DEFAULTS_DOCUMENT = graphql(`
+  mutation RestoreSimulationWorkflowDefaults {
+    restoreSimulationWorkflowDefaults {
+      maxOutstandingDynamicPlans
+    }
+  }
+`);
+
+export function useSimulationWorkflowConfig() {
+  return useQuery(SIMULATION_WORKFLOW_CONFIG_DOCUMENT, {
+    fetchPolicy: "cache-and-network",
+  });
+}
+
+export function useUpdateSimulationWorkflowConfig() {
+  return useMutation(UPDATE_SIMULATION_WORKFLOW_CONFIG_DOCUMENT, {
+    refetchQueries: [SIMULATION_WORKFLOW_CONFIG_DOCUMENT],
+  });
+}
+
+export function useRestoreSimulationWorkflowDefaults() {
+  return useMutation(RESTORE_SIMULATION_WORKFLOW_DEFAULTS_DOCUMENT, {
+    refetchQueries: [SIMULATION_WORKFLOW_CONFIG_DOCUMENT],
+  });
+}
+
 export function useSimulationEvaluatorWorkers() {
   return useQuery(SIMULATION_EVALUATOR_WORKERS_DOCUMENT, {
     pollInterval: 15_000,

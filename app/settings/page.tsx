@@ -7,10 +7,11 @@ import { ContractPanel } from "../_components/SettingsWidget/ContractPanel";
 import { PnlSnapshotPanel } from "../_components/SettingsWidget/PnlSnapshotPanel";
 import { UsersPanel } from "../_components/SettingsWidget/UsersPanel";
 import { SimulationEvaluatorWorkersPanel } from "../_components/SettingsWidget/SimulationEvaluatorWorkersPanel";
+import { SimulationWorkflowCommandCenter } from "../_components/SettingsWidget/SimulationWorkflowCommandCenter";
 import { useUserJWT } from "../_hooks/useUserJWT";
 import { UserPermission } from "@/graphql/gql/graphql";
 
-type TabType = "contracts" | "pnlSnapshot" | "users" | "workers" | "controls";
+type TabType = "contracts" | "pnlSnapshot" | "users" | "workers" | "workflow" | "controls";
 
 export default function Page() {
   const [selected, setSelected] = useState<TabType>("controls");
@@ -32,6 +33,7 @@ export default function Page() {
               <Tab key="pnlSnapshot" title="Pnl Snapshot" />
               <Tab key="users" title="Users" />
               <Tab key="workers" title="Evaluator Workers" />
+              <Tab key="workflow" title="Simulation Workflow" />
             </>
           ) : null}
 
@@ -48,6 +50,7 @@ export default function Page() {
           {selected === "pnlSnapshot" && <PnlSnapshotPanel />}
           {selected === "users" && <UsersPanel />}
           {selected === "workers" && <SimulationEvaluatorWorkersPanel />}
+          {selected === "workflow" && <SimulationWorkflowCommandCenter />}
         </>
       ) : null}
     </div>
