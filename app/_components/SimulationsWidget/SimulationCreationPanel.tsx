@@ -29,7 +29,6 @@ import {
   BotMode,
   Platform,
   SimulationScoreFormular,
-  SimulationResearchExecutionFlow,
   SimulationSizingFormular,
 } from "@/graphql/gql/graphql";
 import {
@@ -1142,7 +1141,6 @@ export function SimulationCreationPanel({
           days: Number(days),
           gapDays: Number(gapDays),
           direction,
-          executionFlow: SimulationResearchExecutionFlow.DynamicExperimental,
           trade: normalizeRangeGroups(tradeRanges, Boolean(alternatives.trade)),
           r2: normalizeRangeGroups(r2Ranges, Boolean(alternatives.r2)),
           slope: normalizeRangeGroups(slopeRanges, Boolean(alternatives.slope)),
@@ -1316,7 +1314,6 @@ export function SimulationCreationPanel({
                 <SelectItem key={item}>{item}</SelectItem>
               ))}
             </Select>
-
           </div>
 
           <Input
