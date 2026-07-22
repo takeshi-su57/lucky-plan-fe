@@ -1314,7 +1314,6 @@ export function SimulationCreationPanel({
                 <SelectItem key={item}>{item}</SelectItem>
               ))}
             </Select>
-
           </div>
 
           <Input

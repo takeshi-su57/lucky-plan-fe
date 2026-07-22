@@ -451,35 +451,35 @@ export function SimulationResearchDetailPanel({
           ) : null}
         </div>
         <div className="border-warning-500/20 bg-warning-500/5 mt-4 rounded-lg border p-3 text-xs text-neutral-300">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-warning-200 font-semibold">
-                Dynamic scheduler
-              </span>
-              <span>
-                {simulationResearch.outstandingPlans} / 20 plan slots active
-              </span>
-            </div>
-            <div className="mt-2 flex flex-wrap gap-2 text-neutral-400">
-              <span>
-                {simulationStatusCounts[SimulationStatus.Running] || 0} running
-              </span>
-              <span>
-                {simulationStatusCounts[SimulationStatus.Queued] || 0} queued
-              </span>
-              <span>
-                {simulationStatusCounts[SimulationStatus.Completed] || 0}{" "}
-                completed
-              </span>
-              <span>{simulationResearch.queuedPlans} plans queued</span>
-              <span>{simulationResearch.runningPlans} plans claimed</span>
-              <span>{simulationResearch.finalizingPlans} plans finalizing</span>
-              {simulationStatusCounts[SimulationStatus.Failed] ? (
-                <span className="text-danger-300">
-                  {simulationStatusCounts[SimulationStatus.Failed]} failed
-                </span>
-              ) : null}
-            </div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-warning-200 font-semibold">
+              Dynamic scheduler
+            </span>
+            <span>
+              {simulationResearch.outstandingPlans} / 20 plan slots active
+            </span>
           </div>
+          <div className="mt-2 flex flex-wrap gap-2 text-neutral-400">
+            <span>
+              {simulationStatusCounts[SimulationStatus.Running] || 0} running
+            </span>
+            <span>
+              {simulationStatusCounts[SimulationStatus.Queued] || 0} queued
+            </span>
+            <span>
+              {simulationStatusCounts[SimulationStatus.Completed] || 0}{" "}
+              completed
+            </span>
+            <span>{simulationResearch.queuedPlans} plans queued</span>
+            <span>{simulationResearch.runningPlans} plans claimed</span>
+            <span>{simulationResearch.finalizingPlans} plans finalizing</span>
+            {simulationStatusCounts[SimulationStatus.Failed] ? (
+              <span className="text-danger-300">
+                {simulationStatusCounts[SimulationStatus.Failed]} failed
+              </span>
+            ) : null}
+          </div>
+        </div>
       </div>
 
       <StandardModal

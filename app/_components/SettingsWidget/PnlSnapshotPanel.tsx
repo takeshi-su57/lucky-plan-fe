@@ -6,6 +6,7 @@ import {
   CardBody,
   Chip,
   DatePicker,
+  Pagination,
   Select,
   SelectItem,
 } from "@heroui/react";
@@ -35,6 +36,8 @@ const columns: TableColumnProps[] = [
   },
 ];
 
+const SNAPSHOT_PAGE_SIZE = 50;
+
 export function PnlSnapshotPanel() {
   const {
     buildPnlSnapshotsV2: v2BuildPnlSnapshots,
@@ -52,6 +55,7 @@ export function PnlSnapshotPanel() {
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>(
     Platform.Gns,
   );
+  const [snapshotPage, setSnapshotPage] = useState(1);
 
   const { data: v2Data } = useGetPnlSnapshotV2InitializedFlag(selectedPlatform);
 
@@ -129,31 +133,41 @@ export function PnlSnapshotPanel() {
     );
   }, [v2Data, selectedDate]);
 
+  const snapshotFlags = v2Data?.getPnlSnapshotV2InitializedFlag ?? [];
+  const snapshotTotalPages = Math.max(
+    1,
+    Math.ceil(snapshotFlags.length / SNAPSHOT_PAGE_SIZE),
+  );
+  const safeSnapshotPage = Math.min(snapshotPage, snapshotTotalPages);
+
   const v2Rows = useMemo(() => {
     if (!v2Data) {
       return [];
     }
-    return v2Data.getPnlSnapshotV2InitializedFlag.map((flag) => ({
-      id: `${flag.dateStr}`,
-      className: "group",
-      data: {
-        dateStr: {
-          component: flag.dateStr,
+    const offset = (safeSnapshotPage - 1) * SNAPSHOT_PAGE_SIZE;
+    return v2Data.getPnlSnapshotV2InitializedFlag
+      .slice(offset, offset + SNAPSHOT_PAGE_SIZE)
+      .map((flag) => ({
+        id: `${flag.dateStr}`,
+        className: "group",
+        data: {
+          dateStr: {
+            component: flag.dateStr,
+          },
+          isInit: {
+            component: flag.isInit ? (
+              <Chip color="primary" className="text-xs">
+                Initialized
+              </Chip>
+            ) : (
+              <Chip color="danger" className="text-xs">
+                Not Initialized
+              </Chip>
+            ),
+          },
         },
-        isInit: {
-          component: flag.isInit ? (
-            <Chip color="primary" className="text-xs">
-              Initialized
-            </Chip>
-          ) : (
-            <Chip color="danger" className="text-xs">
-              Not Initialized
-            </Chip>
-          ),
-        },
-      },
-    }));
-  }, [v2Data]);
+      }));
+  }, [v2Data, safeSnapshotPage]);
 
   return (
     <>
@@ -166,7 +180,10 @@ export function PnlSnapshotPanel() {
               label="Platform"
               placeholder="Select a platform"
               selectedKeys={[selectedPlatform]}
-              onChange={(e) => setSelectedPlatform(e.target.value as Platform)}
+              onChange={(e) => {
+                setSelectedPlatform(e.target.value as Platform);
+                setSnapshotPage(1);
+              }}
               selectionMode="single"
             >
               {Object.values(Platform).map((platform) => (
@@ -236,6 +253,16 @@ export function PnlSnapshotPanel() {
               th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
             }}
           />
+          {snapshotFlags.length > SNAPSHOT_PAGE_SIZE ? (
+            <div className="flex justify-center pt-4">
+              <Pagination
+                showControls
+                page={safeSnapshotPage}
+                total={snapshotTotalPages}
+                onChange={setSnapshotPage}
+              />
+            </div>
+          ) : null}
         </CardBody>
       </Card>
     </>
