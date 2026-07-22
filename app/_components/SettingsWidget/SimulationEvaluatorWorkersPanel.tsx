@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import {
   Button,
@@ -25,6 +24,8 @@ import {
 } from "@/app/_hooks/useSimulationEvaluatorWorkers";
 import { PrebuildWorkerCacheModal } from "./PrebuildWorkerCacheModal";
 import { SetWorkerCapacityModal } from "./SetWorkerCapacityModal";
+import { RightDrawer } from "@/components/modals/RightDrawer";
+import { WorkerDetails } from "./WorkerDetails";
 
 const age = (value?: string | null) => {
   if (!value) return "Never";
@@ -62,6 +63,7 @@ export function SimulationEvaluatorWorkersPanel() {
     activeCapacity: number;
     desiredCapacity: number;
   } | null>(null);
+  const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(null);
   const workers = data?.simulationEvaluatorWorkers ?? [];
   const tasks = taskData?.simulationEvaluatorWorkerTasks ?? [];
 
@@ -89,7 +91,7 @@ export function SimulationEvaluatorWorkersPanel() {
             No worker enrollment requests yet.
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 2xl:grid-cols-2">
+          <div className="space-y-3">
             {workers.map((worker) => {
               const workerTasks = tasks.filter(
                 (task) =>
@@ -109,10 +111,10 @@ export function SimulationEvaluatorWorkersPanel() {
                 <Card
                   key={worker.id}
                   shadow="sm"
-                  className="border-default-200 border"
+                  className="border-default-200 hover:border-primary-300 border transition-colors"
                 >
-                  <CardBody className="gap-4 p-5">
-                    <div className="flex items-start justify-between gap-3">
+                  <CardBody className="gap-4 p-5 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+                    <div className="flex min-w-0 items-start justify-between gap-3 lg:contents">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <span
@@ -129,7 +131,7 @@ export function SimulationEvaluatorWorkersPanel() {
                           {worker.id}
                         </p>
                       </div>
-                      <div className="flex shrink-0 flex-col items-end gap-1">
+                      <div className="flex shrink-0 flex-col items-end gap-1 lg:col-start-2 lg:row-start-1">
                         <Chip
                           size="sm"
                           color={
@@ -147,7 +149,7 @@ export function SimulationEvaluatorWorkersPanel() {
                         </Chip>
                       </div>
                     </div>
-                    <div className="bg-default-50 grid grid-cols-2 gap-2 rounded-lg p-3 text-sm">
+                    <div className="bg-default-50 grid grid-cols-2 gap-2 rounded-lg p-3 text-sm lg:col-start-1 lg:row-start-2">
                       <div>
                         <p className="text-default-500 text-xs">
                           Last heartbeat
@@ -164,7 +166,7 @@ export function SimulationEvaluatorWorkersPanel() {
                         </p>
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                    <div className="grid grid-cols-3 gap-2 text-center text-sm lg:col-start-1 lg:row-start-3">
                       <div className="bg-default-50 rounded-lg p-2">
                         <p className="font-semibold">{workerTasks.length}</p>
                         <p className="text-default-500 text-xs">tasks</p>
@@ -188,12 +190,12 @@ export function SimulationEvaluatorWorkersPanel() {
                         </p>
                       </div>
                     </div>
-                    <div className="border-default-200 flex flex-wrap gap-2 border-t pt-4">
+                    <div className="border-default-200 flex flex-wrap gap-2 border-t pt-4 lg:col-start-2 lg:row-span-3 lg:row-start-2 lg:w-40 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-5">
                       <Button
-                        as={Link}
-                        href={`/settings/workers/${encodeURIComponent(worker.id)}`}
+                        onPress={() => setSelectedWorkerId(worker.id)}
                         size="sm"
-                        variant="flat"
+                        color="primary"
+                        className="w-full"
                       >
                         Details
                       </Button>
@@ -320,6 +322,17 @@ export function SimulationEvaluatorWorkersPanel() {
             }
           />
         )}
+        <RightDrawer
+          isOpen={selectedWorkerId !== null}
+          onOpenChange={(open) => {
+            if (!open) setSelectedWorkerId(null);
+          }}
+          classNames={{ base: "max-w-[min(92vw,1120px)]" }}
+        >
+          {selectedWorkerId && (
+            <WorkerDetails workerId={selectedWorkerId} embedded />
+          )}
+        </RightDrawer>
       </CardBody>
     </Card>
   );
