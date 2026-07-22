@@ -1,7 +1,14 @@
 "use client";
 
 import { SimulationCreationPanel } from "./SimulationCreationPanel";
+import { useSearchParams } from "next/navigation";
+
 export function SimulationCreateTabs() {
+  const searchParams = useSearchParams();
+  const rawSourceSimulationId = searchParams.get("sourceSimulationId");
+  const sourceSimulationId = rawSourceSimulationId
+    ? Number(rawSourceSimulationId)
+    : undefined;
 
   return (
     <div className="flex max-w-6xl flex-col gap-6">
@@ -15,7 +22,14 @@ export function SimulationCreateTabs() {
         </p>
       </div>
 
-      <SimulationCreationPanel compactHeading />
+      <SimulationCreationPanel
+        compactHeading
+        sourceSimulationId={
+          Number.isInteger(sourceSimulationId) && sourceSimulationId! > 0
+            ? sourceSimulationId
+            : undefined
+        }
+      />
     </div>
   );
 }

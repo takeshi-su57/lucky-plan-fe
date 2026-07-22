@@ -506,13 +506,13 @@ type Mutation {
   checkLog(id: Int!): Log!
   cleanDB: Boolean!
   cloneMission(id: Int!, manualParams: ManualParams): Boolean!
-  cloneSimulationResearch(id: Int!): SimulationResearch!
   closeMission(id: Int!, isForce: Boolean!): Boolean!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
   createBot(input: CreateBotInput!): BotBackwardDetails!
   createPlan(createPlanInput: CreatePlanInput!): Plan!
   createSLTP(input: SLTPRequestInput!): SLTPRequest!
   createSimulationResearch(input: CreateSimulationResearchInput!): SimulationResearch!
+  createSimulationResearchFromSimulation(input: CreateSimulationResearchInput!, sourceSimulationId: Int!): SimulationResearch!
   decreaseAllowanceToZero(collateralIndex: Int!, contractId: Int!, followerAddress: String!, password: String!): Boolean!
   decreasePositionSize(input: DecreasePositionSizeInput!): ContractExecutionResult!
   deleteBot(id: Int!): BotBackwardDetails!
@@ -782,7 +782,7 @@ type Query {
   simulationPlanDetailsBySimulation(simulationId: Int!): [SimulationPlanDetails!]!
   simulationPlansBySimulation(simulationId: Int!): [SimulationPlan!]!
   simulationResearch(id: Int!): SimulationResearchDetails
-  simulationResearches(after: Int, first: Int!): SimulationResearchConnection!
+  simulationResearches(limit: Int! = 10, offset: Int! = 0): SimulationResearchPage!
   simulationWorkflowConfig: SimulationWorkflowConfigView!
   simulationsByResearch(researchId: Int!): [Simulation!]!
   systemStatus: Boolean!
@@ -877,6 +877,9 @@ type SimulationBot {
   followerRiskSize: [SimulationValueRange!]!
   id: Int!
   leaderAddress: String!
+  leaderExecutionCollateral: [SimulationValueRange!]!
+  leaderExecutionLeverage: [SimulationValueRange!]!
+  leaderExecutionSize: [SimulationValueRange!]!
   leaderPlatform: Platform!
   maxCollateral: Float!
   maxDuration: Float!
@@ -921,6 +924,9 @@ type SimulationBotDetails {
   followerRiskSize: [SimulationValueRange!]!
   id: Int!
   leaderAddress: String!
+  leaderExecutionCollateral: [SimulationValueRange!]!
+  leaderExecutionLeverage: [SimulationValueRange!]!
+  leaderExecutionSize: [SimulationValueRange!]!
   leaderPlatform: Platform!
   maxCollateral: Float!
   maxDuration: Float!
@@ -1090,6 +1096,7 @@ type SimulationResearch {
   size: [SimulationValueRangeGroup!]!
   sizingFormular: SimulationSizingFormular!
   slope: [SimulationValueRangeGroup!]!
+  sourceSimulationId: Int
   startAt: Date!
   startedAt: Date
   status: SimulationStatus!
@@ -1099,11 +1106,6 @@ type SimulationResearch {
   totalSimulations: Int!
   trade: [SimulationTradeRangeGroup!]!
   updatedAt: Date!
-}
-
-type SimulationResearchConnection {
-  edges: [SimulationResearchEdge!]!
-  pageInfo: SimulationResearchPageInfo!
 }
 
 type SimulationResearchDetails {
@@ -1144,6 +1146,7 @@ type SimulationResearchDetails {
   size: [SimulationValueRangeGroup!]!
   sizingFormular: SimulationSizingFormular!
   slope: [SimulationValueRangeGroup!]!
+  sourceSimulationId: Int
   startAt: Date!
   startedAt: Date
   status: SimulationStatus!
@@ -1155,14 +1158,11 @@ type SimulationResearchDetails {
   updatedAt: Date!
 }
 
-type SimulationResearchEdge {
-  cursor: Int!
-  node: SimulationResearch!
-}
-
-type SimulationResearchPageInfo {
-  endCursor: Int
-  hasNextPage: Boolean!
+type SimulationResearchPage {
+  items: [SimulationResearch!]!
+  limit: Int!
+  offset: Int!
+  total: Int!
 }
 
 enum SimulationScoreFormular {

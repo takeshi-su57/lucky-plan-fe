@@ -2,14 +2,13 @@
 
 import {
   useApolloClient,
-  useLazyQuery,
   useMutation,
   useQuery,
   useSubscription,
 } from "@apollo/client/react";
 
 import { getFragmentData, graphql } from "@/gql/index";
-import { useCallback, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useSnackbar } from "notistack";
 import { PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT } from "./useHistory";
 import {
@@ -47,6 +46,18 @@ export const SIMULATION_BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
     score
     minLeverage
     maxLeverage
+    leaderExecutionCollateral {
+      min
+      max
+    }
+    leaderExecutionSize {
+      min
+      max
+    }
+    leaderExecutionLeverage {
+      min
+      max
+    }
     evaluationMetrics {
       tradeCount
       slope
@@ -177,6 +188,7 @@ export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
 
 export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment SimulationResearchInfo on SimulationResearch {
+    sourceSimulationId
     completedSimulations
     createdAt
     days
@@ -285,6 +297,7 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
 
 export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment SimulationResearchDetailsInfo on SimulationResearchDetails {
+    sourceSimulationId
     completedSimulations
     createdAt
     days
@@ -446,6 +459,18 @@ export const SIMULATION_BOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     totalPositions
     minLeverage
     maxLeverage
+    leaderExecutionCollateral {
+      min
+      max
+    }
+    leaderExecutionSize {
+      min
+      max
+    }
+    leaderExecutionLeverage {
+      min
+      max
+    }
     evaluationMetrics {
       tradeCount
       slope
@@ -495,18 +520,14 @@ export const SIMULATION_PLAN_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
 `);
 
 export const GET_SIMULATION_RESEARCHES_DOCUMENT = graphql(`
-  query simulationResearches($after: Int, $first: Int!) {
-    simulationResearches(after: $after, first: $first) {
-      edges {
-        cursor
-        node {
-          ...SimulationResearchInfo
-        }
+  query simulationResearches($offset: Int!, $limit: Int!) {
+    simulationResearches(offset: $offset, limit: $limit) {
+      items {
+        ...SimulationResearchInfo
       }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
+      total
+      offset
+      limit
     }
   }
 `);
@@ -591,9 +612,16 @@ export const PLAY_AUTO_RESEARCH_DOCUMENT = graphql(`
   }
 `);
 
-export const CLONE_SIMULATION_RESEARCH_DOCUMENT = graphql(`
-  mutation cloneSimulationResearch($id: Int!) {
-    cloneSimulationResearch(id: $id) {
+export const CREATE_SIMULATION_RESEARCH_FROM_SIMULATION_DOCUMENT = graphql(`
+  mutation createSimulationResearchFromSimulation(
+    $sourceSimulationId: Int!
+    $input: CreateSimulationResearchInput!
+  ) {
+    createSimulationResearchFromSimulation(
+      sourceSimulationId: $sourceSimulationId
+      input: $input
+    ) {
+      id
       ...SimulationResearchInfo
     }
   }
@@ -692,29 +720,6 @@ function unwrapSimulationPlan(plan: {
   } as SimulationPlan;
 }
 
-function updateConnectionNodeById(
-  oldData: any,
-  connectionKey: string,
-  id: number,
-  node: any,
-) {
-  const connection = oldData?.[connectionKey];
-
-  if (!connection?.edges) {
-    return oldData;
-  }
-
-  return {
-    ...oldData,
-    [connectionKey]: {
-      ...connection,
-      edges: connection.edges.map((edge: any) =>
-        edge.cursor === id ? { ...edge, node } : edge,
-      ),
-    },
-  };
-}
-
 export function useSubscribeSimulation() {
   const client = useApolloClient();
   const { data: updatedResearchData } = useSubscription(
@@ -777,23 +782,6 @@ export function useSubscribeSimulation() {
         updatedAt: () => simulationResearch.updatedAt,
       },
     });
-
-    client.cache.updateQuery(
-      {
-        query: GET_SIMULATION_RESEARCHES_DOCUMENT,
-        variables: { first: 20 },
-      },
-      (oldData: any) =>
-        updateConnectionNodeById(
-          oldData,
-          "simulationResearches",
-          simulationResearch.id,
-          {
-            __typename: "SimulationResearch",
-            ...simulationResearch,
-          },
-        ),
-    );
 
     client.cache.updateQuery(
       {
@@ -1032,51 +1020,33 @@ export function useSubscribeSimulation() {
   }, [client.cache, updatedSimulationPlanData]);
 }
 
-export function useGetSimulationResearches() {
-  const [query, { data, fetchMore, loading, error }] = useLazyQuery(
-    GET_SIMULATION_RESEARCHES_DOCUMENT,
-  );
-
-  useEffect(() => {
-    query({
-      variables: {
-        first: 20,
-      },
-    });
-  }, [query]);
+export function useGetSimulationResearches(page: number, pageSize = 10) {
+  const offset = (page - 1) * pageSize;
+  const { data, loading } = useQuery(GET_SIMULATION_RESEARCHES_DOCUMENT, {
+    variables: { offset, limit: pageSize },
+  });
 
   const simulationResearches = useMemo(() => {
     if (!data) {
       return [];
     }
 
-    return data.simulationResearches.edges.map((edge) =>
-      getFragmentData(SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT, edge.node),
+    return data.simulationResearches.items.map((item) =>
+      getFragmentData(SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT, item),
     ) as SimulationResearch[];
   }, [data]);
-
-  const handleFetchMore = useCallback(() => {
-    if (data && !error) {
-      fetchMore({
-        variables: {
-          first: 20,
-          after: data.simulationResearches.pageInfo.endCursor,
-        },
-      });
-    }
-  }, [data, error, fetchMore]);
 
   return {
     simulationResearches,
     loading,
-    fetchMore: handleFetchMore,
-    hasMore: data?.simulationResearches.pageInfo.hasNextPage,
+    total: data?.simulationResearches.total ?? 0,
   };
 }
 
-export function useGetSimulation(id: number) {
+export function useGetSimulation(id: number, skip = false) {
   const { data, loading } = useQuery(GET_SIMULATION_DOCUMENT, {
     variables: { id },
+    skip,
   });
 
   const simulation = useMemo(() => {
@@ -1273,12 +1243,12 @@ export function useCreateSimulationResearch() {
   return { createSimulationResearch, simulationResearch, loading };
 }
 
-export function useCloneSimulationResearch() {
-  const [cloneSimulationResearch, { loading }] = useMutation(
-    CLONE_SIMULATION_RESEARCH_DOCUMENT,
+export function useCreateSimulationResearchFromSimulation() {
+  const [createSimulationResearchFromSimulation, { loading }] = useMutation(
+    CREATE_SIMULATION_RESEARCH_FROM_SIMULATION_DOCUMENT,
   );
 
-  return { cloneSimulationResearch, loading };
+  return { createSimulationResearchFromSimulation, loading };
 }
 
 export function useUpdateSimulationResearch() {

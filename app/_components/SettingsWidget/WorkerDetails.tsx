@@ -31,6 +31,7 @@ import {
 } from "@/app/_hooks/useSimulationEvaluatorWorkers";
 import { PrebuildWorkerCacheModal } from "@/app/_components/SettingsWidget/PrebuildWorkerCacheModal";
 import { SetWorkerCapacityModal } from "@/app/_components/SettingsWidget/SetWorkerCapacityModal";
+import { WorkerRuntimeStatusIndicator } from "./WorkerRuntimeStatusIndicator";
 
 const stamp = (value?: string | null) =>
   value
@@ -166,8 +167,8 @@ export function WorkerDetails({
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="mt-2 flex items-center gap-2">
-            <span
-              className={`h-2.5 w-2.5 rounded-full ${worker.runtimeStatus === "Offline" ? "bg-default-300" : "bg-success"}`}
+            <WorkerRuntimeStatusIndicator
+              runtimeStatus={worker.runtimeStatus}
             />
             <h1 className="text-2xl font-semibold tracking-tight">
               {worker.displayName}

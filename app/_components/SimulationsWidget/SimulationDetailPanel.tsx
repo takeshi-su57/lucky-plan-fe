@@ -310,6 +310,16 @@ export function SimulationDetailPanel({
           </div>
 
           <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {isAdmin && simulation.status === SimulationStatus.Completed ? (
+              <Link
+                href={`/simulations/create?sourceSimulationId=${simulation.id}`}
+              >
+                <Button color="secondary" variant="flat" size="sm">
+                  Start New Simulation Research
+                </Button>
+              </Link>
+            ) : null}
+
             {isAdmin ? (
               <ButtonWithConfirm
                 color="danger"

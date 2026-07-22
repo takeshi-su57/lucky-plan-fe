@@ -5,6 +5,7 @@ import {
   type Dispatch,
   type SetStateAction,
   useMemo,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -34,6 +35,8 @@ import {
 import {
   SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT,
   useCreateSimulationResearch,
+  useCreateSimulationResearchFromSimulation,
+  useGetSimulation,
 } from "@/app/_hooks/useSimulations";
 import { getFragmentData } from "@/graphql/gql";
 
@@ -141,6 +144,7 @@ function RangeEntryCard({
   step,
   errors,
   emptyMessage,
+  isDisabled = false,
 }: {
   label: string;
   entries: RangeEntryState[];
@@ -154,13 +158,19 @@ function RangeEntryCard({
   step: number;
   errors: Record<string, RangeEntryErrors>;
   emptyMessage?: string;
+  isDisabled?: boolean;
 }) {
   return (
     <div className="border-default-200 bg-content2/20 rounded-xl border p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h3 className="text-sm font-semibold text-neutral-100">{label}</h3>
         <div className="flex gap-2">
-          <Button size="sm" variant="flat" onPress={onToggleAlternatives}>
+          <Button
+            size="sm"
+            variant="flat"
+            isDisabled={isDisabled}
+            onPress={onToggleAlternatives}
+          >
             {rangesAreAlternatives
               ? "Ranges match together"
               : "Ranges are variants"}
@@ -169,6 +179,7 @@ function RangeEntryCard({
             size="sm"
             variant="flat"
             color="primary"
+            isDisabled={isDisabled}
             aria-label={`Add ${label} range`}
             onPress={onAdd}
           >
@@ -191,7 +202,7 @@ function RangeEntryCard({
                   size="sm"
                   color="danger"
                   variant="light"
-                  isDisabled={entries.length <= 1}
+                  isDisabled={isDisabled || entries.length <= 1}
                   aria-label={`Remove ${label} range`}
                   onPress={() => onRemove(entry.id)}
                 >
@@ -210,6 +221,7 @@ function RangeEntryCard({
                   step={step}
                   errorMessage={entryErrors.min}
                   isInvalid={Boolean(entryErrors.min)}
+                  isDisabled={isDisabled}
                 />
                 <NumericInput
                   amount={entry.max}
@@ -221,6 +233,7 @@ function RangeEntryCard({
                   step={step}
                   errorMessage={entryErrors.max}
                   isInvalid={Boolean(entryErrors.max)}
+                  isDisabled={isDisabled}
                 />
               </div>
             </div>
@@ -584,11 +597,19 @@ function countPlanWindows(
 
 export function SimulationCreationPanel({
   compactHeading = false,
+  sourceSimulationId,
 }: {
   compactHeading?: boolean;
+  sourceSimulationId?: number;
 }) {
   const router = useRouter();
   const { createSimulationResearch, loading } = useCreateSimulationResearch();
+  const {
+    createSimulationResearchFromSimulation,
+    loading: sourceCreationLoading,
+  } = useCreateSimulationResearchFromSimulation();
+  const { simulation: sourceSimulation, loading: sourceLoading } =
+    useGetSimulation(sourceSimulationId ?? 0, !sourceSimulationId);
   const configurationFileInputRef = useRef<HTMLInputElement>(null);
 
   const [configurationText, setConfigurationText] = useState("");
@@ -671,6 +692,51 @@ export function SimulationCreationPanel({
   const toggleAlternatives = (field: string) =>
     setAlternatives((current) => ({ ...current, [field]: !current[field] }));
 
+  useEffect(() => {
+    if (!sourceSimulation) return;
+
+    const fromSource = (
+      prefix: string,
+      ranges: Array<{ min: number; max: number }>,
+    ) =>
+      ranges.map((range) =>
+        createRangeEntry(prefix, {
+          min: String(range.min),
+          max: String(range.max),
+        }),
+      );
+
+    setTitle(`${sourceSimulation.title} — Layer 2/3 research`);
+    setDescription(sourceSimulation.description);
+    setPlatform(sourceSimulation.platform);
+    setDirection(sourceSimulation.direction);
+    setScoreFormular(sourceSimulation.scoreFormular);
+    setSizingFormular(sourceSimulation.sizingFormular);
+    setScheduleRange({
+      start: parseDate(String(sourceSimulation.startAt).slice(0, 10)),
+      end: parseDate(String(sourceSimulation.endAt).slice(0, 10)),
+    });
+    setDays(String(sourceSimulation.days));
+    setGapDays(String(sourceSimulation.gapDays));
+    setTradeRanges(fromSource("trade", sourceSimulation.trade));
+    setR2Ranges(fromSource("r2", sourceSimulation.r2));
+    setSlopeRanges(fromSource("slope", sourceSimulation.slope));
+    setCollateralRanges(fromSource("collateral", sourceSimulation.collateral));
+    setSizeRanges(fromSource("size", sourceSimulation.size));
+    setLeverageRanges(fromSource("leverage", sourceSimulation.leverage));
+    setScoreRanges(fromSource("score", sourceSimulation.score));
+    setAlternatives((current) => ({
+      ...current,
+      trade: false,
+      r2: false,
+      slope: false,
+      collateral: false,
+      size: false,
+      leverage: false,
+      score: false,
+    }));
+  }, [sourceSimulation]);
+
   const mapImportedRangeGroups = (
     prefix: string,
     groups: ImportedRangeGroup[],
@@ -729,36 +795,42 @@ export function SimulationCreationPanel({
 
       setTitle(configuration.title);
       setDescription(configuration.description);
-      setPlatform(configuration.platform);
-      setDirection(configuration.direction);
-      setScoreFormular(configuration.scoreFormular);
-      setSizingFormular(configuration.sizingFormular);
-      setScheduleRange({
-        start: parseDate(configuration.startAt.slice(0, 10)),
-        end: parseDate(configuration.endAt.slice(0, 10)),
-      });
-      setDays(String(configuration.days));
-      setGapDays(String(configuration.gapDays));
-      setTradeRanges(trade.entries);
-      setR2Ranges(r2.entries);
-      setSlopeRanges(slope.entries);
-      setCollateralRanges(collateral.entries);
-      setSizeRanges(size.entries);
-      setLeverageRanges(leverage.entries);
-      setScoreRanges(score.entries);
+      if (!sourceSimulationId) {
+        setPlatform(configuration.platform);
+        setDirection(configuration.direction);
+        setScoreFormular(configuration.scoreFormular);
+        setSizingFormular(configuration.sizingFormular);
+        setScheduleRange({
+          start: parseDate(configuration.startAt.slice(0, 10)),
+          end: parseDate(configuration.endAt.slice(0, 10)),
+        });
+        setDays(String(configuration.days));
+        setGapDays(String(configuration.gapDays));
+        setTradeRanges(trade.entries);
+        setR2Ranges(r2.entries);
+        setSlopeRanges(slope.entries);
+        setCollateralRanges(collateral.entries);
+        setSizeRanges(size.entries);
+        setLeverageRanges(leverage.entries);
+        setScoreRanges(score.entries);
+      }
       setLeaderExecutionCollateralRanges(leaderExecutionCollateral.entries);
       setLeaderExecutionSizeRanges(leaderExecutionSize.entries);
       setLeaderExecutionLeverageRanges(leaderExecutionLeverage.entries);
       setFollowerRiskSizeRanges(followerRiskSize.entries);
       setFollowerRiskCollateralRanges(followerRiskCollateral.entries);
       setAlternatives({
-        trade: trade.alternatives,
-        r2: r2.alternatives,
-        slope: slope.alternatives,
-        collateral: collateral.alternatives,
-        size: size.alternatives,
-        leverage: leverage.alternatives,
-        score: score.alternatives,
+        ...(!sourceSimulationId
+          ? {
+              trade: trade.alternatives,
+              r2: r2.alternatives,
+              slope: slope.alternatives,
+              collateral: collateral.alternatives,
+              size: size.alternatives,
+              leverage: leverage.alternatives,
+              score: score.alternatives,
+            }
+          : {}),
         leaderExecutionCollateral: leaderExecutionCollateral.alternatives,
         leaderExecutionSize: leaderExecutionSize.alternatives,
         leaderExecutionLeverage: leaderExecutionLeverage.alternatives,
@@ -1130,60 +1202,65 @@ export function SimulationCreationPanel({
       return;
     }
 
-    const { data } = await createSimulationResearch({
-      variables: {
-        input: {
-          title: title.trim(),
-          description: description.trim(),
-          platform,
-          startAt: scheduleRange.start.toDate(getServerTimezone()),
-          endAt: scheduleRange.end.toDate(getServerTimezone()),
-          days: Number(days),
-          gapDays: Number(gapDays),
-          direction,
-          trade: normalizeRangeGroups(tradeRanges, Boolean(alternatives.trade)),
-          r2: normalizeRangeGroups(r2Ranges, Boolean(alternatives.r2)),
-          slope: normalizeRangeGroups(slopeRanges, Boolean(alternatives.slope)),
-          collateral: normalizeRangeGroups(
-            collateralRanges,
-            Boolean(alternatives.collateral),
-          ),
-          size: normalizeRangeGroups(sizeRanges, Boolean(alternatives.size)),
-          leverage: normalizeRangeGroups(
-            leverageRanges,
-            Boolean(alternatives.leverage),
-          ),
-          leaderExecutionCollateral: normalizeRangeGroups(
-            leaderExecutionCollateralRanges,
-            Boolean(alternatives.leaderExecutionCollateral),
-          ),
-          leaderExecutionSize: normalizeRangeGroups(
-            leaderExecutionSizeRanges,
-            Boolean(alternatives.leaderExecutionSize),
-          ),
-          leaderExecutionLeverage: normalizeRangeGroups(
-            leaderExecutionLeverageRanges,
-            Boolean(alternatives.leaderExecutionLeverage),
-          ),
-          followerRiskSize: normalizeRangeGroups(
-            followerRiskSizeRanges,
-            Boolean(alternatives.followerRiskSize),
-          ),
-          followerRiskCollateral: normalizeRangeGroups(
-            followerRiskCollateralRanges,
-            Boolean(alternatives.followerRiskCollateral),
-          ),
-          score: normalizeRangeGroups(scoreRanges, Boolean(alternatives.score)),
-          scoreFormular,
-          sizingFormular,
-        },
-      },
-    });
+    const input = {
+      title: title.trim(),
+      description: description.trim(),
+      platform,
+      startAt: scheduleRange.start.toDate(getServerTimezone()),
+      endAt: scheduleRange.end.toDate(getServerTimezone()),
+      days: Number(days),
+      gapDays: Number(gapDays),
+      direction,
+      trade: normalizeRangeGroups(tradeRanges, Boolean(alternatives.trade)),
+      r2: normalizeRangeGroups(r2Ranges, Boolean(alternatives.r2)),
+      slope: normalizeRangeGroups(slopeRanges, Boolean(alternatives.slope)),
+      collateral: normalizeRangeGroups(
+        collateralRanges,
+        Boolean(alternatives.collateral),
+      ),
+      size: normalizeRangeGroups(sizeRanges, Boolean(alternatives.size)),
+      leverage: normalizeRangeGroups(
+        leverageRanges,
+        Boolean(alternatives.leverage),
+      ),
+      leaderExecutionCollateral: normalizeRangeGroups(
+        leaderExecutionCollateralRanges,
+        Boolean(alternatives.leaderExecutionCollateral),
+      ),
+      leaderExecutionSize: normalizeRangeGroups(
+        leaderExecutionSizeRanges,
+        Boolean(alternatives.leaderExecutionSize),
+      ),
+      leaderExecutionLeverage: normalizeRangeGroups(
+        leaderExecutionLeverageRanges,
+        Boolean(alternatives.leaderExecutionLeverage),
+      ),
+      followerRiskSize: normalizeRangeGroups(
+        followerRiskSizeRanges,
+        Boolean(alternatives.followerRiskSize),
+      ),
+      followerRiskCollateral: normalizeRangeGroups(
+        followerRiskCollateralRanges,
+        Boolean(alternatives.followerRiskCollateral),
+      ),
+      score: normalizeRangeGroups(scoreRanges, Boolean(alternatives.score)),
+      scoreFormular,
+      sizingFormular,
+    };
+    const { data } = sourceSimulationId
+      ? await createSimulationResearchFromSimulation({
+          variables: { sourceSimulationId, input },
+        })
+      : await createSimulationResearch({ variables: { input } });
 
-    const research = data?.createSimulationResearch
+    const createdResearch =
+      data && "createSimulationResearchFromSimulation" in data
+        ? data.createSimulationResearchFromSimulation
+        : data?.createSimulationResearch;
+    const research = createdResearch
       ? getFragmentData(
           SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT,
-          data.createSimulationResearch,
+          createdResearch,
         )
       : null;
 
@@ -1280,6 +1357,27 @@ export function SimulationCreationPanel({
         className="border-default-200 bg-content1 rounded-lg border"
       >
         <CardBody className="gap-6">
+          {sourceSimulationId ? (
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 text-sm text-neutral-300">
+              {sourceLoading ? (
+                "Loading source simulation…"
+              ) : sourceSimulation ? (
+                <>
+                  Layer 1, platform, duration, plan days, and gap are locked to{" "}
+                  <a
+                    className="text-emerald-400 underline"
+                    href={`/simulations/${sourceSimulation.id}`}
+                  >
+                    Simulation {sourceSimulation.id}
+                  </a>
+                  . Imported JSON only changes the title, description, Layer 2,
+                  and Layer 3.
+                </>
+              ) : (
+                "The source simulation could not be loaded."
+              )}
+            </div>
+          ) : null}
           <div className="grid gap-4 md:grid-cols-3">
             <Input
               variant="underlined"
@@ -1296,6 +1394,7 @@ export function SimulationCreationPanel({
               label="Platform"
               aria-label="Research platform"
               selectedKeys={[platform]}
+              isDisabled={Boolean(sourceSimulationId)}
               onChange={(event) => setPlatform(event.target.value as Platform)}
             >
               {PLATFORM_OPTIONS.map((item) => (
@@ -1308,6 +1407,7 @@ export function SimulationCreationPanel({
               label="Direction"
               aria-label="Research direction"
               selectedKeys={[direction]}
+              isDisabled={Boolean(sourceSimulationId)}
               onChange={(event) => setDirection(event.target.value as BotMode)}
             >
               {DIRECTION_OPTIONS.map((item) => (
@@ -1336,6 +1436,7 @@ export function SimulationCreationPanel({
             timeInputProps={{}}
             errorMessage={errors.flat.scheduleRange}
             isInvalid={Boolean(errors.flat.scheduleRange)}
+            isDisabled={Boolean(sourceSimulationId)}
           />
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -1348,6 +1449,7 @@ export function SimulationCreationPanel({
               step={1}
               errorMessage={errors.flat.days}
               isInvalid={Boolean(errors.flat.days)}
+              isDisabled={Boolean(sourceSimulationId)}
             />
             <NumericInput
               amount={gapDays}
@@ -1358,6 +1460,7 @@ export function SimulationCreationPanel({
               step={1}
               errorMessage={errors.flat.gapDays}
               isInvalid={Boolean(errors.flat.gapDays)}
+              isDisabled={Boolean(sourceSimulationId)}
             />
           </div>
 
@@ -1367,6 +1470,7 @@ export function SimulationCreationPanel({
               label="Score Formula"
               aria-label="Score formula"
               selectedKeys={[scoreFormular]}
+              isDisabled={Boolean(sourceSimulationId)}
               onChange={(event) =>
                 setScoreFormular(event.target.value as SimulationScoreFormular)
               }
@@ -1381,6 +1485,7 @@ export function SimulationCreationPanel({
               label="Sizing Formula"
               aria-label="Sizing formula"
               selectedKeys={[sizingFormular]}
+              isDisabled={Boolean(sourceSimulationId)}
               onChange={(event) =>
                 setSizingFormular(
                   event.target.value as SimulationSizingFormular,
@@ -1423,6 +1528,7 @@ export function SimulationCreationPanel({
               emptyMessage={errors.flat.tradeEmpty}
               rangesAreAlternatives={Boolean(alternatives.trade)}
               onToggleAlternatives={() => toggleAlternatives("trade")}
+              isDisabled={Boolean(sourceSimulationId)}
             />
             <RangeEntryCard
               label="R2"
@@ -1441,6 +1547,7 @@ export function SimulationCreationPanel({
               emptyMessage={errors.flat.r2Empty}
               rangesAreAlternatives={Boolean(alternatives.r2)}
               onToggleAlternatives={() => toggleAlternatives("r2")}
+              isDisabled={Boolean(sourceSimulationId)}
             />
             <RangeEntryCard
               label={`Slope (${direction} uses signed execution behind the scenes)`}
@@ -1461,6 +1568,7 @@ export function SimulationCreationPanel({
               emptyMessage={errors.flat.slopeEmpty}
               rangesAreAlternatives={Boolean(alternatives.slope)}
               onToggleAlternatives={() => toggleAlternatives("slope")}
+              isDisabled={Boolean(sourceSimulationId)}
             />
             <RangeEntryCard
               label="Historical leader leverage"
@@ -1481,6 +1589,7 @@ export function SimulationCreationPanel({
               emptyMessage={errors.flat.leverageEmpty}
               rangesAreAlternatives={Boolean(alternatives.leverage)}
               onToggleAlternatives={() => toggleAlternatives("leverage")}
+              isDisabled={Boolean(sourceSimulationId)}
             />
             <RangeEntryCard
               label="Historical leader collateral (USD)"
@@ -1506,6 +1615,7 @@ export function SimulationCreationPanel({
               emptyMessage={errors.flat.collateralEmpty}
               rangesAreAlternatives={Boolean(alternatives.collateral)}
               onToggleAlternatives={() => toggleAlternatives("collateral")}
+              isDisabled={Boolean(sourceSimulationId)}
             />
             <RangeEntryCard
               label="Historical leader size (USD)"
@@ -1526,6 +1636,7 @@ export function SimulationCreationPanel({
               emptyMessage={errors.flat.sizeEmpty}
               rangesAreAlternatives={Boolean(alternatives.size)}
               onToggleAlternatives={() => toggleAlternatives("size")}
+              isDisabled={Boolean(sourceSimulationId)}
             />
             <RangeEntryCard
               label="Score"
@@ -1547,6 +1658,7 @@ export function SimulationCreationPanel({
               emptyMessage={errors.flat.scoreEmpty}
               rangesAreAlternatives={Boolean(alternatives.score)}
               onToggleAlternatives={() => toggleAlternatives("score")}
+              isDisabled={Boolean(sourceSimulationId)}
             />
           </div>
 
@@ -1774,11 +1886,19 @@ export function SimulationCreationPanel({
               color="primary"
               size="sm"
               aria-label="Create research"
-              isLoading={loading}
-              isDisabled={isDisabled || loading}
+              isLoading={loading || sourceCreationLoading}
+              isDisabled={
+                isDisabled ||
+                loading ||
+                sourceCreationLoading ||
+                sourceLoading ||
+                Boolean(sourceSimulationId && !sourceSimulation)
+              }
               onPress={handleSave}
             >
-              Create Research
+              {sourceSimulationId
+                ? "Create Research from Simulation"
+                : "Create Research"}
             </Button>
           </div>
         </CardBody>

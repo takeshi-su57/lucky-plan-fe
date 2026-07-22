@@ -9,6 +9,7 @@ import {
 } from "@/app/_hooks/useSimulationEvaluatorWorkers";
 import { RightDrawer } from "@/components/modals/RightDrawer";
 import { WorkerDetails } from "./WorkerDetails";
+import { WorkerRuntimeStatusIndicator } from "./WorkerRuntimeStatusIndicator";
 
 const age = (value?: string | null) => {
   if (!value) return "Never";
@@ -151,12 +152,8 @@ export function SimulationEvaluatorWorkersPanel() {
                       >
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <span
-                              className={`h-2.5 w-2.5 shrink-0 rounded-full ${
-                                worker.runtimeStatus === "Offline"
-                                  ? "bg-default-300"
-                                  : "bg-success"
-                              }`}
+                            <WorkerRuntimeStatusIndicator
+                              runtimeStatus={worker.runtimeStatus}
                             />
                             <p className="truncate font-semibold">
                               {worker.displayName}

@@ -7,7 +7,6 @@ import { Button, Chip, Input, Spinner, Textarea } from "@heroui/react";
 
 import {
   useCancelResearch,
-  useCloneSimulationResearch,
   useDeleteSimulationResearch,
   useGetSimulationResearch,
   useGetSimulationsByResearch,
@@ -17,9 +16,7 @@ import {
   useRecoverResearch,
   useResumeResearch,
   useUpdateSimulationResearch,
-  SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT,
 } from "@/app/_hooks/useSimulations";
-import { getFragmentData } from "@/gql/index";
 import { SimulationRow } from "./SimulationRow";
 import { getPriceStr } from "@/utils/price";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
@@ -67,8 +64,6 @@ export function SimulationResearchDetailPanel({
     useGetSimulationsByResearch(id);
   const { deleteSimulationResearch, loading: deleteLoading } =
     useDeleteSimulationResearch();
-  const { cloneSimulationResearch, loading: cloneLoading } =
-    useCloneSimulationResearch();
   const { playAutoResearch, loading: playLoading } = usePlayAutoResearch();
   const { pauseResearch, loading: pauseLoading } = usePauseResearch();
   const { resumeResearch, loading: resumeLoading } = useResumeResearch();
@@ -100,7 +95,6 @@ export function SimulationResearchDetailPanel({
     resumeLoading ||
     restartLoading ||
     recoverLoading ||
-    cloneLoading ||
     cancelLoading ||
     deleteLoading;
   const simulationStatusCounts = simulations.reduce(
@@ -273,30 +267,6 @@ export function SimulationResearchDetailPanel({
                 }
               >
                 Restart
-              </ButtonWithConfirm>
-            ) : null}
-
-            {isAdmin ? (
-              <ButtonWithConfirm
-                color="secondary"
-                variant="flat"
-                size="sm"
-                isLoading={cloneLoading}
-                isDisabled={actionLoading}
-                onPress={async () => {
-                  const result = await cloneSimulationResearch({
-                    variables: { id: simulationResearch.id },
-                  });
-                  const cloned = result.data?.cloneSimulationResearch
-                    ? getFragmentData(
-                        SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT,
-                        result.data.cloneSimulationResearch,
-                      )
-                    : null;
-                  if (cloned) router.push(`/simulations/research/${cloned.id}`);
-                }}
-              >
-                Clone Research
               </ButtonWithConfirm>
             ) : null}
 
