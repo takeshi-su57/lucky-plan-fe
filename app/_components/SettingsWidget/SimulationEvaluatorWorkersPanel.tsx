@@ -246,7 +246,7 @@ export function SimulationEvaluatorWorkersPanel() {
           onOpenChange={(open) => {
             if (!open) setSelectedWorkerId(null);
           }}
-          classNames={{ base: "max-w-[min(96vw,1440px)]" }}
+          classNames={{ base: "max-w-[min(94vw,1280px)]" }}
         >
           {selectedWorkerId && (
             <WorkerDetails workerId={selectedWorkerId} embedded />
