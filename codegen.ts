@@ -18,6 +18,5 @@ const config: CodegenConfig = {
       },
     },
   },
-  watch: true,
 };
 export default config;

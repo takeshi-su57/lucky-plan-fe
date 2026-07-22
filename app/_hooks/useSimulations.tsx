@@ -182,7 +182,6 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
     days
     description
     direction
-    executionFlow
     endAt
     gapDays
     id
@@ -291,7 +290,6 @@ export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     days
     description
     direction
-    executionFlow
     endAt
     gapDays
     id

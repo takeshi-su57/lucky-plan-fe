@@ -22,11 +22,7 @@ import { getFragmentData } from "@/gql/index";
 import { SimulationRow } from "./SimulationRow";
 import { getPriceStr } from "@/utils/price";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
-import {
-  SimulationResearchExecutionFlow,
-  SimulationStatus,
-  UserPermission,
-} from "@/graphql/gql/graphql";
+import { SimulationStatus, UserPermission } from "@/graphql/gql/graphql";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import { SimulationProgressBar } from "./SimulationProgressBar";
 import { LOCAL_USER_JWT_KEY } from "@/app/_hooks/useUserJWT";
@@ -55,12 +51,6 @@ function formatRangePairs(
   return ranges
     .flatMap((range) => ("ranges" in range ? range.ranges : [range]))
     .map((range) => `${formatter(range.min)}-${formatter(range.max)}`);
-}
-
-function executionFlowLabel(flow: SimulationResearchExecutionFlow) {
-  return flow === SimulationResearchExecutionFlow.DynamicExperimental
-    ? "Dynamic workers (experimental)"
-    : "Centralized (stable)";
 }
 
 export function SimulationResearchDetailPanel({
@@ -173,17 +163,6 @@ export function SimulationResearchDetailPanel({
                 {simulationResearch.platform}
               </Chip>
               <Chip variant="flat">{simulationResearch.direction}</Chip>
-              <Chip
-                variant="flat"
-                color={
-                  simulationResearch.executionFlow ===
-                  SimulationResearchExecutionFlow.DynamicExperimental
-                    ? "warning"
-                    : "default"
-                }
-              >
-                {executionFlowLabel(simulationResearch.executionFlow)}
-              </Chip>
               <Chip variant="flat">
                 {simulationResearch.days}d / {simulationResearch.gapDays}g
               </Chip>
@@ -471,9 +450,7 @@ export function SimulationResearchDetailPanel({
             </div>
           ) : null}
         </div>
-        {simulationResearch.executionFlow ===
-        SimulationResearchExecutionFlow.DynamicExperimental ? (
-          <div className="border-warning-500/20 bg-warning-500/5 mt-4 rounded-lg border p-3 text-xs text-neutral-300">
+        <div className="border-warning-500/20 bg-warning-500/5 mt-4 rounded-lg border p-3 text-xs text-neutral-300">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-warning-200 font-semibold">
                 Dynamic scheduler
@@ -503,7 +480,6 @@ export function SimulationResearchDetailPanel({
               ) : null}
             </div>
           </div>
-        ) : null}
       </div>
 
       <StandardModal

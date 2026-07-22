@@ -4,11 +4,11 @@ import graphqlEslint from "@graphql-eslint/eslint-plugin";
 import tanstackQuery from "@tanstack/eslint-plugin-query";
 import nextVitals from "eslint-config-next/core-web-vitals";
 
-const schemaSdl = readFileSync(new URL("./graphql/schema.gql", import.meta.url), "utf8");
+const schemaSdl = readFileSync(new URL("./schema.graphql", import.meta.url), "utf8");
 
 const config = [
   {
-    ignores: [".npm-cache/**"],
+    ignores: [".npm-cache/**", "graphql/gql/**"],
   },
   ...nextVitals,
   {

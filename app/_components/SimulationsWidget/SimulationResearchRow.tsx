@@ -6,7 +6,6 @@ import dayjs from "dayjs";
 
 import {
   SimulationResearch,
-  SimulationResearchExecutionFlow,
   SimulationStatus,
   UserPermission,
 } from "@/graphql/gql/graphql";
@@ -31,12 +30,6 @@ function formatRangePairs(
   return ranges.length > 2
     ? `${preview.join(", ")} +${ranges.length - 2}`
     : preview.join(", ");
-}
-
-function executionFlowLabel(flow: SimulationResearchExecutionFlow) {
-  return flow === SimulationResearchExecutionFlow.DynamicExperimental
-    ? "Dynamic workers"
-    : "Centralized";
 }
 
 function flattenRangeGroups(
@@ -77,18 +70,6 @@ export function SimulationResearchRow({
                 </Chip>
                 <Chip variant="flat" size="sm">
                   {simulationResearch.direction}
-                </Chip>
-                <Chip
-                  variant="flat"
-                  size="sm"
-                  color={
-                    simulationResearch.executionFlow ===
-                    SimulationResearchExecutionFlow.DynamicExperimental
-                      ? "warning"
-                      : "default"
-                  }
-                >
-                  {executionFlowLabel(simulationResearch.executionFlow)}
                 </Chip>
                 <Chip variant="flat" size="sm">
                   {simulationResearch.days}d / {simulationResearch.gapDays}g
