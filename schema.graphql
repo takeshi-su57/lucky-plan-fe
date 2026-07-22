@@ -540,6 +540,7 @@ type Mutation {
   pauseSystem: Boolean!
   playAutoResearch(id: Int!): SimulationResearch!
   prebuildSimulationEvaluatorWorker(endedAt: String!, platform: String!, startedAt: String!, workerId: String!): String!
+  recoverResearch(id: Int!): SimulationResearch!
   rejectSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
   removeOfflineSimulationEvaluatorWorker(workerId: String!): Boolean!
   removeRejectedSimulationEvaluatorWorker(workerId: String!): Boolean!

@@ -607,6 +607,14 @@ export const RESUME_RESEARCH_DOCUMENT = graphql(`
   }
 `);
 
+export const RECOVER_RESEARCH_DOCUMENT = graphql(`
+  mutation recoverResearch($id: Int!) {
+    recoverResearch(id: $id) {
+      ...SimulationResearchInfo
+    }
+  }
+`);
+
 export const RESTART_RESEARCH_DOCUMENT = graphql(`
   mutation restartResearch($id: Int!) {
     restartResearch(id: $id) {
@@ -1361,6 +1369,24 @@ export function useResumeResearch() {
   }, [newData, error, enqueueSnackbar]);
 
   return { resumeResearch, loading };
+}
+
+export function useRecoverResearch() {
+  const [recoverResearch, { data: newData, error, loading }] = useMutation(
+    RECOVER_RESEARCH_DOCUMENT,
+  );
+  const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (newData && !error) {
+      enqueueSnackbar("Research recovery requested!", { variant: "success" });
+    }
+    if (newData && error) {
+      enqueueSnackbar("Error at recovering research!", { variant: "error" });
+    }
+  }, [newData, error, enqueueSnackbar]);
+
+  return { recoverResearch, loading };
 }
 
 export function useRestartResearch() {

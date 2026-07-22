@@ -14,6 +14,7 @@ import {
   usePauseResearch,
   usePlayAutoResearch,
   useRestartResearch,
+  useRecoverResearch,
   useResumeResearch,
   useUpdateSimulationResearch,
   SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT,
@@ -71,6 +72,7 @@ export function SimulationResearchDetailPanel({
   const { playAutoResearch, loading: playLoading } = usePlayAutoResearch();
   const { pauseResearch, loading: pauseLoading } = usePauseResearch();
   const { resumeResearch, loading: resumeLoading } = useResumeResearch();
+  const { recoverResearch, loading: recoverLoading } = useRecoverResearch();
   const { restartResearch, loading: restartLoading } = useRestartResearch();
   const { cancelResearch, loading: cancelLoading } = useCancelResearch();
   const { updateSimulationResearch, loading: updateLoading } =
@@ -97,6 +99,7 @@ export function SimulationResearchDetailPanel({
     pauseLoading ||
     resumeLoading ||
     restartLoading ||
+    recoverLoading ||
     cloneLoading ||
     cancelLoading ||
     deleteLoading;
@@ -118,6 +121,10 @@ export function SimulationResearchDetailPanel({
     simulationResearch.status !== SimulationStatus.Cancelled;
   const canExport = simulationResearch.status === SimulationStatus.Completed;
   const canRecover =
+    isAdmin &&
+    simulationResearch.status !== SimulationStatus.Completed &&
+    simulationResearch.status !== SimulationStatus.Cancelled;
+  const canResume =
     isAdmin && simulationResearch.status === SimulationStatus.Failed;
 
   const openEditModal = () => {
@@ -225,6 +232,21 @@ export function SimulationResearchDetailPanel({
             ) : null}
 
             {canRecover ? (
+              <ButtonWithConfirm
+                color="warning"
+                variant="flat"
+                size="sm"
+                isLoading={recoverLoading}
+                isDisabled={actionLoading}
+                onPress={() =>
+                  recoverResearch({ variables: { id: simulationResearch.id } })
+                }
+              >
+                Recover
+              </ButtonWithConfirm>
+            ) : null}
+
+            {canResume ? (
               <Button
                 color="success"
                 variant="flat"

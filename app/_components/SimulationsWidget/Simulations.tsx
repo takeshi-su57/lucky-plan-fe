@@ -38,7 +38,7 @@ export function Simulations() {
         </div>
       ) : (
         <Virtuoso
-          style={{ height: "calc(100vh - 300px)", minHeight: 520 }}
+          useWindowScroll
           data={simulationResearches}
           endReached={() => {
             if (hasMoreResearches && !researchesLoading) {

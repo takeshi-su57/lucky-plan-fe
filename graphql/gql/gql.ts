@@ -136,6 +136,7 @@ type Documents = {
     "\n  mutation playAutoResearch($id: Int!) {\n    playAutoResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.PlayAutoResearchDocument,
     "\n  mutation cloneSimulationResearch($id: Int!) {\n    cloneSimulationResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.CloneSimulationResearchDocument,
     "\n  mutation resumeResearch($id: Int!) {\n    resumeResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.ResumeResearchDocument,
+    "\n  mutation recoverResearch($id: Int!) {\n    recoverResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.RecoverResearchDocument,
     "\n  mutation restartResearch($id: Int!) {\n    restartResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.RestartResearchDocument,
     "\n  mutation pauseResearch($id: Int!) {\n    pauseResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.PauseResearchDocument,
     "\n  mutation cancelResearch($id: Int!) {\n    cancelResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": typeof types.CancelResearchDocument,
@@ -295,6 +296,7 @@ const documents: Documents = {
     "\n  mutation playAutoResearch($id: Int!) {\n    playAutoResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": types.PlayAutoResearchDocument,
     "\n  mutation cloneSimulationResearch($id: Int!) {\n    cloneSimulationResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": types.CloneSimulationResearchDocument,
     "\n  mutation resumeResearch($id: Int!) {\n    resumeResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": types.ResumeResearchDocument,
+    "\n  mutation recoverResearch($id: Int!) {\n    recoverResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": types.RecoverResearchDocument,
     "\n  mutation restartResearch($id: Int!) {\n    restartResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": types.RestartResearchDocument,
     "\n  mutation pauseResearch($id: Int!) {\n    pauseResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": types.PauseResearchDocument,
     "\n  mutation cancelResearch($id: Int!) {\n    cancelResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n": types.CancelResearchDocument,
@@ -834,6 +836,10 @@ export function graphql(source: "\n  mutation cloneSimulationResearch($id: Int!)
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n  mutation resumeResearch($id: Int!) {\n    resumeResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n"): (typeof documents)["\n  mutation resumeResearch($id: Int!) {\n    resumeResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n  mutation recoverResearch($id: Int!) {\n    recoverResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n"): (typeof documents)["\n  mutation recoverResearch($id: Int!) {\n    recoverResearch(id: $id) {\n      ...SimulationResearchInfo\n    }\n  }\n"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
