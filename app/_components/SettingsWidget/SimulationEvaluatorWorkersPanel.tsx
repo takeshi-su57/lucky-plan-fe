@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Card, CardBody, Chip, Spinner } from "@heroui/react";
+import { Button, Card, CardBody, Chip, Progress, Spinner } from "@heroui/react";
 
 import {
   useSimulationEvaluatorWorkerTasks,
@@ -27,6 +27,19 @@ const statusColor = (status: string) =>
     : status === "Rejected"
       ? "danger"
       : "warning";
+
+const taskColor = (status: string) =>
+  status === "Completed"
+    ? "success"
+    : status === "Failed"
+      ? "danger"
+      : status === "Claimed"
+        ? "primary"
+        : status === "Ready" || status === "Queued"
+          ? "warning"
+          : "default";
+
+const taskStages = ["Queued", "Ready", "Claimed", "Completed", "Failed"];
 
 export function SimulationEvaluatorWorkersPanel() {
   const { data, loading } = useSimulationEvaluatorWorkers();
@@ -55,6 +68,24 @@ export function SimulationEvaluatorWorkersPanel() {
   const capacityUtilization = desiredCapacity
     ? Math.round((activeCapacity / desiredCapacity) * 100)
     : 0;
+  const taskCounts = Object.fromEntries(
+    taskStages.map((status) => [
+      status,
+      tasks.filter((task) => task.status === status).length,
+    ]),
+  ) as Record<string, number>;
+  const liveTasks =
+    (taskCounts.Queued ?? 0) +
+    (taskCounts.Ready ?? 0) +
+    (taskCounts.Claimed ?? 0);
+  const waitingTasks = (taskCounts.Queued ?? 0) + (taskCounts.Ready ?? 0);
+  const unassignedTasks = tasks.filter(
+    (task) =>
+      !task.workerId &&
+      !task.targetWorkerId &&
+      ["Queued", "Ready"].includes(task.status),
+  ).length;
+  const failedTasks = taskCounts.Failed ?? 0;
 
   if (loading && !data) return <Spinner />;
 
@@ -64,17 +95,102 @@ export function SimulationEvaluatorWorkersPanel() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h6 className="text-lg font-semibold">
-              Simulation evaluator workers
+              Evaluator fleet & dispatch queue
             </h6>
             <p className="text-default-500 text-sm">
-              Monitor the evaluator fleet and open a worker for diagnostics or
-              controls.
+              A live view of queued work, worker capacity, and task assignment.
             </p>
           </div>
           <Chip size="sm" variant="flat">
             {workers.length} enrolled
           </Chip>
         </div>
+
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <QueueMetric
+            label="Live queue"
+            value={liveTasks}
+            hint={`${waitingTasks} waiting to be claimed`}
+            tone={waitingTasks ? "warning" : undefined}
+          />
+          <QueueMetric
+            label="Unassigned"
+            value={unassignedTasks}
+            hint={
+              unassignedTasks
+                ? "No target worker yet"
+                : "All pending work is routed"
+            }
+            tone={unassignedTasks ? "warning" : "success"}
+          />
+          <QueueMetric
+            label="In progress"
+            value={taskCounts.Claimed ?? 0}
+            hint="Active worker leases"
+            tone="primary"
+          />
+          <QueueMetric
+            label="Failed tasks"
+            value={failedTasks}
+            hint="Shown in the recent task window"
+            tone={failedTasks ? "danger" : "success"}
+          />
+        </section>
+
+        <Card className="border-default-200 border shadow-none">
+          <CardBody className="gap-4 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 className="font-semibold">Task flow</h2>
+                <p className="text-default-500 text-sm">
+                  The most recent {tasks.length} evaluator tasks. A task moves
+                  from queued to ready when dispatch can route it, then is
+                  claimed on a worker poll.
+                </p>
+              </div>
+              <Chip
+                size="sm"
+                color={waitingTasks ? "warning" : "success"}
+                variant="flat"
+              >
+                {waitingTasks
+                  ? `${waitingTasks} awaiting a worker`
+                  : "Queue clear"}
+              </Chip>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-5">
+              {taskStages.map((status) => {
+                const count = taskCounts[status] ?? 0;
+                const percentage = tasks.length
+                  ? Math.round((count / tasks.length) * 100)
+                  : 0;
+                return (
+                  <div
+                    key={status}
+                    className="border-default-200 rounded-lg border p-3"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <Chip size="sm" color={taskColor(status)} variant="flat">
+                        {status}
+                      </Chip>
+                      <span className="text-lg font-semibold">{count}</span>
+                    </div>
+                    <Progress
+                      aria-label={`${status} tasks`}
+                      className="mt-3"
+                      color={taskColor(status)}
+                      size="sm"
+                      value={percentage}
+                    />
+                    <p className="text-default-500 mt-2 text-xs">
+                      {percentage}% of recent work
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </CardBody>
+        </Card>
 
         {workers.length === 0 ? (
           <div className="border-default-300 text-default-500 rounded-xl border border-dashed px-5 py-10 text-center">
@@ -131,6 +247,9 @@ export function SimulationEvaluatorWorkersPanel() {
                     );
                     const activeTasks = workerTasks.filter(
                       (task) => task.status === "Claimed",
+                    ).length;
+                    const waitingWorkerTasks = workerTasks.filter((task) =>
+                      ["Queued", "Ready"].includes(task.status),
                     ).length;
                     const failedCaches = worker.platformCaches.filter(
                       (cache) => cache.status === "Failed",
@@ -211,6 +330,14 @@ export function SimulationEvaluatorWorkersPanel() {
                           >
                             {activeTasks} active
                           </span>
+                          {waitingWorkerTasks > 0 && (
+                            <>
+                              <span className="text-default-400 px-1.5">·</span>
+                              <span className="text-warning font-medium">
+                                {waitingWorkerTasks} waiting
+                              </span>
+                            </>
+                          )}
                           {failedCaches > 0 && (
                             <>
                               <span className="text-default-400 px-1.5">·</span>
@@ -249,6 +376,38 @@ export function SimulationEvaluatorWorkersPanel() {
             <WorkerDetails workerId={selectedWorkerId} embedded />
           )}
         </RightDrawer>
+      </CardBody>
+    </Card>
+  );
+}
+
+function QueueMetric({
+  label,
+  value,
+  hint,
+  tone,
+}: {
+  label: string;
+  value: number;
+  hint: string;
+  tone?: "primary" | "success" | "warning" | "danger";
+}) {
+  const textColor =
+    tone === "danger"
+      ? "text-danger"
+      : tone === "warning"
+        ? "text-warning"
+        : tone === "success"
+          ? "text-success"
+          : tone === "primary"
+            ? "text-primary"
+            : "";
+  return (
+    <Card className="border-default-200 border shadow-none">
+      <CardBody className="gap-1 p-4">
+        <p className="text-default-500 text-xs">{label}</p>
+        <p className={`text-2xl font-semibold ${textColor}`}>{value}</p>
+        <p className="text-default-500 text-xs">{hint}</p>
       </CardBody>
     </Card>
   );
