@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { Virtuoso } from "react-virtuoso";
+import { useSnackbar } from "notistack";
 import {
   Button,
   Card,
   CardBody,
   Chip,
+  Input,
   Progress,
   Spinner,
   Tab,
@@ -25,6 +27,8 @@ import {
   useResumeSimulationEvaluatorWorker,
   useRetrySimulationEvaluatorWorkerCache,
   useSetSimulationEvaluatorWorkerCapacity,
+  useUpgradeSimulationEvaluatorWorker,
+  useBackendReleaseInfo,
   useSimulationEvaluatorWorkerTaskConnection,
   useSimulationEvaluatorWorkerTasks,
   useSimulationEvaluatorWorkers,
@@ -92,6 +96,28 @@ const parseTiming = (value?: string | null): EvaluationTiming | null => {
   }
 };
 
+const parseVersion = (value: string) => {
+  const match = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/.exec(value);
+  return match
+    ? {
+        numbers: [Number(match[1]), Number(match[2]), Number(match[3])],
+        prerelease: match[4] || "",
+      }
+    : null;
+};
+
+const isNewerVersion = (target: string, current?: string | null) => {
+  const next = parseVersion(target);
+  if (!next) return false;
+  const installed = current ? parseVersion(current) : null;
+  if (!installed) return true;
+  for (let index = 0; index < next.numbers.length; index += 1) {
+    if (next.numbers[index] !== installed.numbers[index])
+      return next.numbers[index] > installed.numbers[index];
+  }
+  return !next.prerelease && Boolean(installed.prerelease);
+};
+
 export function WorkerDetails({
   workerId,
   embedded = false,
@@ -100,6 +126,7 @@ export function WorkerDetails({
   embedded?: boolean;
 }) {
   const [section, setSection] = useState("live");
+  const { enqueueSnackbar } = useSnackbar();
   const prebuildModal = useDisclosure();
   const capacityModal = useDisclosure();
   const { data, loading } = useSimulationEvaluatorWorkers();
@@ -144,6 +171,9 @@ export function WorkerDetails({
   const [resume, { loading: resuming }] = useResumeSimulationEvaluatorWorker();
   const [setCapacity, { loading: settingCapacity }] =
     useSetSimulationEvaluatorWorkerCapacity();
+  const [upgrade, { loading: upgrading }] =
+    useUpgradeSimulationEvaluatorWorker();
+  const latestRelease = useBackendReleaseInfo();
   const worker = data?.simulationEvaluatorWorkers.find(
     (item) => item.id === workerId,
   );
@@ -167,6 +197,21 @@ export function WorkerDetails({
     0,
     worker.claimedEvaluationTasks - runningEvaluations,
   );
+  const targetVersion = latestRelease.data?.backendReleaseInfo.version ?? "";
+  const targetVersionIsNewer = isNewerVersion(targetVersion, worker.version);
+  const requestUpgrade = async () => {
+    try {
+      await upgrade({ variables: { workerId, version: targetVersion } });
+      enqueueSnackbar(`Upgrade to ${targetVersion} queued.`, {
+        variant: "success",
+      });
+    } catch (error) {
+      enqueueSnackbar(
+        error instanceof Error ? error.message : "Failed to queue upgrade.",
+        { variant: "error" },
+      );
+    }
+  };
 
   return (
     <main
@@ -257,6 +302,41 @@ export function WorkerDetails({
               >
                 Set capacity
               </Button>
+              <div className="flex items-center gap-2">
+                <Input
+                  aria-label="Latest evaluator worker version"
+                  className="w-36"
+                  size="sm"
+                  placeholder="Latest version"
+                  value={targetVersion}
+                  isReadOnly
+                  description={
+                    worker.version
+                      ? `Installed: ${worker.version}`
+                      : "Install one versioned release manually first"
+                  }
+                  isInvalid={Boolean(targetVersion) && !targetVersionIsNewer}
+                  errorMessage={
+                    targetVersion
+                      ? `Enter a version newer than ${worker.version || "the installed release"}.`
+                      : undefined
+                  }
+                />
+                <ButtonWithConfirm
+                  size="sm"
+                  color="primary"
+                  variant="flat"
+                  isLoading={upgrading}
+                  isDisabled={
+                    latestRelease.loading ||
+                    !worker.version ||
+                    !targetVersionIsNewer
+                  }
+                  onPress={requestUpgrade}
+                >
+                  Upgrade
+                </ButtonWithConfirm>
+              </div>
             </>
           )}
           {worker.authorizationStatus === "Rejected" && (
@@ -303,6 +383,15 @@ export function WorkerDetails({
           label="Prefetched"
           value={String(prefetchedEvaluations)}
           hint="claimed and waiting locally"
+        />
+        <Metric
+          label="Worker version"
+          value={worker.version || "Not reported"}
+          hint={
+            worker.versionReportedAt
+              ? `reported ${age(worker.versionReportedAt)}`
+              : "Install a versioned release"
+          }
         />
         <Metric
           label="Heartbeat"

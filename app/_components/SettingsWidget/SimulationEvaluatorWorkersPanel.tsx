@@ -398,6 +398,8 @@ export function SimulationEvaluatorWorkersPanel() {
                             <span>·</span>
                             <span>{worker.runtimeStatus}</span>
                             <span>·</span>
+                            <span>{worker.version || "version unavailable"}</span>
+                            <span>·</span>
                             <span>{age(worker.lastHeartbeatAt)}</span>
                           </div>
                         </div>

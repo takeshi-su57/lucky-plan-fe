@@ -4,6 +4,16 @@ import { useMutation, useQuery } from "@apollo/client/react";
 
 import { graphql } from "@/gql/index";
 
+export const BACKEND_RELEASE_INFO_DOCUMENT = graphql(`
+  query GetBackendReleaseInfo {
+    backendReleaseInfo {
+      version
+      gitSha
+      builtAt
+    }
+  }
+`);
+
 export const SIMULATION_EVALUATOR_WORKERS_DOCUMENT = graphql(`
   query GetSimulationEvaluatorWorkers {
     simulationEvaluatorWorkers {
@@ -14,6 +24,8 @@ export const SIMULATION_EVALUATOR_WORKERS_DOCUMENT = graphql(`
       desiredState
       desiredCapacity
       activeCapacity
+      version
+      versionReportedAt
       claimedEvaluationTasks
       evaluationClaimLimit
       lastHeartbeatAt
@@ -231,6 +243,15 @@ const SET_SIMULATION_EVALUATOR_WORKER_CAPACITY_DOCUMENT = graphql(`
   }
 `);
 
+const UPGRADE_SIMULATION_EVALUATOR_WORKER_DOCUMENT = graphql(`
+  mutation upgradeSimulationEvaluatorWorker(
+    $workerId: String!
+    $version: String!
+  ) {
+    upgradeSimulationEvaluatorWorker(workerId: $workerId, version: $version)
+  }
+`);
+
 const CANCEL_UNASSIGNED_SIMULATION_EVALUATOR_WORKER_TASK_DOCUMENT = graphql(`
   mutation cancelUnassignedSimulationEvaluatorWorkerTask($taskId: String!) {
     cancelUnassignedSimulationEvaluatorWorkerTask(taskId: $taskId)
@@ -421,6 +442,18 @@ export function useResumeSimulationEvaluatorWorker() {
 
 export function useSetSimulationEvaluatorWorkerCapacity() {
   return useMutation(SET_SIMULATION_EVALUATOR_WORKER_CAPACITY_DOCUMENT, {
+    refetchQueries: refetchWorkers,
+  });
+}
+
+export function useBackendReleaseInfo() {
+  return useQuery(BACKEND_RELEASE_INFO_DOCUMENT, {
+    fetchPolicy: "cache-and-network",
+  });
+}
+
+export function useUpgradeSimulationEvaluatorWorker() {
+  return useMutation(UPGRADE_SIMULATION_EVALUATOR_WORKER_DOCUMENT, {
     refetchQueries: refetchWorkers,
   });
 }

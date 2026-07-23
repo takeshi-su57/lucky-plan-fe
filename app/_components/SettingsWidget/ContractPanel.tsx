@@ -115,78 +115,78 @@ export function ContractPanel() {
         const isHistorical = isHistoricalGnsContract(contract);
 
         return {
-        id: `${contract.id}`,
-        className: "group",
-        data: {
-          id: {
-            sortableAmount: contract.id,
-            component: `${contract.id}`,
-          },
-          address: {
-            sortableAmount: contract.address,
-            component: (
-              <div className="flex flex-col">
-                <AddressWidget address={contract.address as Address} />
-                <span className="text-xs">{`Chain ID: ${contract.chainId}`}</span>
-                <span className="text-xs text-gray-400/60">
-                  {contract.description}
-                </span>
-              </div>
-            ),
-          },
-          progress: {
-            component: (
-              <ContractCircularProgress
-                chainId={contract.chainId}
-                fromBlock={contract.fromBlock}
-                toBlock={contract.toBlock ?? 0}
-                currentBlock={
-                  contract.lastLeaderboardBlockNumber ?? contract.fromBlock
-                }
-                status={adaptionStatus[contract.id] ?? ServiceStatus.READY}
-              />
-            ),
-          },
-          status: {
-            sortableAmount: contract.status,
-            component: (
-              <Chip
-                color={
-                  contract.status === ContractStatus.Live
-                    ? "success"
-                    : "default"
-                }
-              >
-                {contract.status}
-              </Chip>
-            ),
-          },
-          actions: {
-            component: isAdmin ? (
-              <div className="flex items-center gap-6">
-                {contract.status === ContractStatus.Live ? (
-                  <Button
-                    size="sm"
-                    variant="solid"
-                    color="danger"
-                    onPress={handleDisableContract(contract)}
-                  >
-                    Disable
-                  </Button>
-                ) : isHistorical ? null : (
-                  <ContractLiveButton contract={contract} />
-                )}
+          id: `${contract.id}`,
+          className: "group",
+          data: {
+            id: {
+              sortableAmount: contract.id,
+              component: `${contract.id}`,
+            },
+            address: {
+              sortableAmount: contract.address,
+              component: (
+                <div className="flex flex-col">
+                  <AddressWidget address={contract.address as Address} />
+                  <span className="text-xs">{`Chain ID: ${contract.chainId}`}</span>
+                  <span className="text-xs text-gray-400/60">
+                    {contract.description}
+                  </span>
+                </div>
+              ),
+            },
+            progress: {
+              component: (
+                <ContractCircularProgress
+                  chainId={contract.chainId}
+                  fromBlock={contract.fromBlock}
+                  toBlock={contract.toBlock ?? 0}
+                  currentBlock={
+                    contract.lastLeaderboardBlockNumber ?? contract.fromBlock
+                  }
+                  status={adaptionStatus[contract.id] ?? ServiceStatus.READY}
+                />
+              ),
+            },
+            status: {
+              sortableAmount: contract.status,
+              component: (
+                <Chip
+                  color={
+                    contract.status === ContractStatus.Live
+                      ? "success"
+                      : "default"
+                  }
+                >
+                  {contract.status}
+                </Chip>
+              ),
+            },
+            actions: {
+              component: isAdmin ? (
+                <div className="flex items-center gap-6">
+                  {contract.status === ContractStatus.Live ? (
+                    <Button
+                      size="sm"
+                      variant="solid"
+                      color="danger"
+                      onPress={handleDisableContract(contract)}
+                    >
+                      Disable
+                    </Button>
+                  ) : isHistorical ? null : (
+                    <ContractLiveButton contract={contract} />
+                  )}
 
-                {adaptionStatus[contract.id] !== ServiceStatus.PROCESS ? (
-                  <ContractAdaptionButton
-                    contract={contract}
-                    isHistorical={isHistorical}
-                  />
-                ) : null}
-              </div>
-            ) : null,
+                  {adaptionStatus[contract.id] !== ServiceStatus.PROCESS ? (
+                    <ContractAdaptionButton
+                      contract={contract}
+                      isHistorical={isHistorical}
+                    />
+                  ) : null}
+                </div>
+              ) : null,
+            },
           },
-        },
         };
       });
   }, [
