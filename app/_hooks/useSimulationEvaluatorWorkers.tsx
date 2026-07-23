@@ -14,6 +14,8 @@ export const SIMULATION_EVALUATOR_WORKERS_DOCUMENT = graphql(`
       desiredState
       desiredCapacity
       activeCapacity
+      claimedEvaluationTasks
+      evaluationClaimLimit
       lastHeartbeatAt
       lastTaskAt
       lastError
@@ -49,6 +51,29 @@ export const SIMULATION_EVALUATOR_WORKERS_DOCUMENT = graphql(`
         totalRecords
         bytes
       }
+    }
+  }
+`);
+
+export const SIMULATION_EVALUATOR_PIPELINE_DOCUMENT = graphql(`
+  query GetSimulationEvaluatorPipeline {
+    simulationEvaluatorPipeline {
+      fleetCapacity
+      queueLowWatermark
+      queueHighWatermark
+      workerClaimLimit
+      queuedEvaluationTasks
+      readyEvaluationTasks
+      claimedEvaluationTasks
+      awaitingFinalizationPlans
+      finalizingPlans
+      awaitingEventLogPlans
+      failedExecutionPlans
+      outstandingExecutionPlans
+      finalizerConcurrency
+      maxAwaitingFinalizationPlans
+      maxOutstandingDynamicPlans
+      backpressureActive
     }
   }
 `);
@@ -215,6 +240,7 @@ const CANCEL_UNASSIGNED_SIMULATION_EVALUATOR_WORKER_TASK_DOCUMENT = graphql(`
 const refetchWorkers = [
   SIMULATION_EVALUATOR_WORKERS_DOCUMENT,
   SIMULATION_EVALUATOR_WORKER_TASKS_DOCUMENT,
+  SIMULATION_EVALUATOR_PIPELINE_DOCUMENT,
 ];
 
 const SIMULATION_WORKFLOW_CONFIG_DOCUMENT = graphql(`
@@ -278,7 +304,16 @@ export function useRestoreSimulationWorkflowDefaults() {
 
 export function useSimulationEvaluatorWorkers() {
   return useQuery(SIMULATION_EVALUATOR_WORKERS_DOCUMENT, {
-    pollInterval: 15_000,
+    pollInterval: 10_000,
+    fetchPolicy: "cache-and-network",
+    nextFetchPolicy: "cache-first",
+    notifyOnNetworkStatusChange: false,
+  });
+}
+
+export function useSimulationEvaluatorPipeline() {
+  return useQuery(SIMULATION_EVALUATOR_PIPELINE_DOCUMENT, {
+    pollInterval: 10_000,
     fetchPolicy: "cache-and-network",
     nextFetchPolicy: "cache-first",
     notifyOnNetworkStatusChange: false,

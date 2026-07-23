@@ -776,6 +776,7 @@ type Query {
   isPnlSnapshotV2Initialized(dateStr: String!, platform: Platform!): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   simulation(id: Int!): Simulation
+  simulationEvaluatorPipeline: SimulationEvaluatorPipelineView!
   simulationEvaluatorWorkerTaskConnection(archive: Boolean! = false, cursor: String, limit: Int! = 30, workerId: String!): SimulationEvaluatorWorkerTaskConnection!
   simulationEvaluatorWorkerTasks(workerId: String): [SimulationEvaluatorWorkerTaskView!]!
   simulationEvaluatorWorkers: [SimulationEvaluatorWorkerView!]!
@@ -947,6 +948,25 @@ type SimulationBotDetails {
   totalPositions: Int!
 }
 
+type SimulationEvaluatorPipelineView {
+  awaitingEventLogPlans: Int!
+  awaitingFinalizationPlans: Int!
+  backpressureActive: Boolean!
+  claimedEvaluationTasks: Int!
+  failedExecutionPlans: Int!
+  finalizerConcurrency: Int!
+  finalizingPlans: Int!
+  fleetCapacity: Int!
+  maxAwaitingFinalizationPlans: Int!
+  maxOutstandingDynamicPlans: Int!
+  outstandingExecutionPlans: Int!
+  queueHighWatermark: Int!
+  queueLowWatermark: Int!
+  queuedEvaluationTasks: Int!
+  readyEvaluationTasks: Int!
+  workerClaimLimit: Int!
+}
+
 type SimulationEvaluatorWorkerCacheView {
   coveredEndAt: Date
   coveredStartAt: Date
@@ -1015,9 +1035,11 @@ type SimulationEvaluatorWorkerTaskView {
 type SimulationEvaluatorWorkerView {
   activeCapacity: Int!
   authorizationStatus: String!
+  claimedEvaluationTasks: Int!
   desiredCapacity: Int!
   desiredState: String!
   displayName: String!
+  evaluationClaimLimit: Int!
   id: String!
   lastDiagnostic: SimulationEvaluatorWorkerDiagnosticView
   lastDiagnosticAt: Date

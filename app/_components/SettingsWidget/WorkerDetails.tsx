@@ -159,6 +159,14 @@ export function WorkerDetails({
         <p className="text-default-500">This worker no longer exists.</p>
       </main>
     );
+  const runningEvaluations = Math.min(
+    worker.claimedEvaluationTasks,
+    worker.lastDiagnostic?.runningTaskCount ?? worker.activeCapacity,
+  );
+  const prefetchedEvaluations = Math.max(
+    0,
+    worker.claimedEvaluationTasks - runningEvaluations,
+  );
 
   return (
     <main
@@ -275,11 +283,26 @@ export function WorkerDetails({
           )}
         </CardBody>
       </Card>
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
         <Metric
           label="Capacity"
           value={`${worker.activeCapacity} / ${worker.desiredCapacity}`}
           hint="worker slots"
+        />
+        <Metric
+          label="Running evaluations"
+          value={String(runningEvaluations)}
+          hint="active child processes"
+        />
+        <Metric
+          label="Claim window"
+          value={`${worker.claimedEvaluationTasks} / ${worker.evaluationClaimLimit}`}
+          hint="claimed evaluator leases"
+        />
+        <Metric
+          label="Prefetched"
+          value={String(prefetchedEvaluations)}
+          hint="claimed and waiting locally"
         />
         <Metric
           label="Heartbeat"
@@ -287,14 +310,9 @@ export function WorkerDetails({
           hint={stamp(worker.lastHeartbeatAt)}
         />
         <Metric
-          label="Live queue"
-          value={String(liveTasks.length)}
-          hint="queued, ready, or claimed"
-        />
-        <Metric
-          label="Archive"
-          value={String(archiveTasks.length)}
-          hint="completed, failed, cancelled"
+          label="Loaded task records"
+          value={String(liveTasks.length + archiveTasks.length)}
+          hint="live and paged history shown below"
         />
       </section>
       {worker.prebuildProgress && (

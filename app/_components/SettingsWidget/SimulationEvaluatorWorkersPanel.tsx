@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button, Card, CardBody, Chip, Progress, Spinner } from "@heroui/react";
 
 import {
+  useSimulationEvaluatorPipeline,
   useSimulationEvaluatorWorkerTasks,
   useSimulationEvaluatorWorkers,
 } from "@/app/_hooks/useSimulationEvaluatorWorkers";
@@ -44,10 +45,12 @@ const taskStages = ["Queued", "Ready", "Claimed", "Completed", "Failed"];
 export function SimulationEvaluatorWorkersPanel() {
   const { data, loading } = useSimulationEvaluatorWorkers();
   const { data: taskData } = useSimulationEvaluatorWorkerTasks();
+  const { data: pipelineData } = useSimulationEvaluatorPipeline();
   const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(null);
 
   const workers = data?.simulationEvaluatorWorkers ?? [];
   const tasks = taskData?.simulationEvaluatorWorkerTasks ?? [];
+  const pipeline = pipelineData?.simulationEvaluatorPipeline;
   const approvedWorkers = workers.filter(
     (worker) => worker.authorizationStatus === "Approved",
   ).length;
@@ -74,18 +77,32 @@ export function SimulationEvaluatorWorkersPanel() {
       tasks.filter((task) => task.status === status).length,
     ]),
   ) as Record<string, number>;
-  const liveTasks =
-    (taskCounts.Queued ?? 0) +
-    (taskCounts.Ready ?? 0) +
-    (taskCounts.Claimed ?? 0);
   const waitingTasks = (taskCounts.Queued ?? 0) + (taskCounts.Ready ?? 0);
-  const unassignedTasks = tasks.filter(
-    (task) =>
-      !task.workerId &&
-      !task.targetWorkerId &&
-      ["Queued", "Ready"].includes(task.status),
-  ).length;
-  const failedTasks = taskCounts.Failed ?? 0;
+  const evaluationWaiting = pipeline
+    ? pipeline.queuedEvaluationTasks + pipeline.readyEvaluationTasks
+    : waitingTasks;
+  const finalizerBacklog = pipeline
+    ? pipeline.awaitingFinalizationPlans +
+      pipeline.finalizingPlans +
+      pipeline.awaitingEventLogPlans
+    : 0;
+  const queueFillPercent = pipeline?.queueHighWatermark
+    ? Math.min(100, (evaluationWaiting / pipeline.queueHighWatermark) * 100)
+    : 0;
+  const finalizerBacklogPercent = pipeline?.maxAwaitingFinalizationPlans
+    ? Math.min(
+        100,
+        (finalizerBacklog / pipeline.maxAwaitingFinalizationPlans) * 100,
+      )
+    : 0;
+  const outstandingPercent = pipeline?.maxOutstandingDynamicPlans
+    ? Math.min(
+        100,
+        (pipeline.outstandingExecutionPlans /
+          pipeline.maxOutstandingDynamicPlans) *
+          100,
+      )
+    : 0;
 
   if (loading && !data) return <Spinner />;
 
@@ -106,34 +123,60 @@ export function SimulationEvaluatorWorkersPanel() {
           </Chip>
         </div>
 
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
           <QueueMetric
-            label="Live queue"
-            value={liveTasks}
-            hint={`${waitingTasks} waiting to be claimed`}
-            tone={waitingTasks ? "warning" : undefined}
-          />
-          <QueueMetric
-            label="Unassigned"
-            value={unassignedTasks}
+            label="Evaluation reservoir"
+            value={evaluationWaiting}
             hint={
-              unassignedTasks
-                ? "No target worker yet"
-                : "All pending work is routed"
+              pipeline
+                ? `Target ${pipeline.queueLowWatermark}–${pipeline.queueHighWatermark}`
+                : "Loading exact pipeline totals"
             }
-            tone={unassignedTasks ? "warning" : "success"}
+            tone={
+              !pipeline
+                ? undefined
+                : evaluationWaiting < pipeline.queueLowWatermark
+                  ? "warning"
+                  : "success"
+            }
           />
           <QueueMetric
-            label="In progress"
-            value={taskCounts.Claimed ?? 0}
-            hint="Active worker leases"
+            label="Claimed evaluations"
+            value={pipeline?.claimedEvaluationTasks ?? taskCounts.Claimed ?? 0}
+            hint={
+              pipeline
+                ? `${pipeline.workerClaimLimit} fleet claim limit`
+                : "Active worker leases"
+            }
             tone="primary"
           />
           <QueueMetric
-            label="Failed tasks"
-            value={failedTasks}
-            hint="Shown in the recent task window"
-            tone={failedTasks ? "danger" : "success"}
+            label="Awaiting finalization"
+            value={pipeline?.awaitingFinalizationPlans ?? 0}
+            hint="Evaluations completed"
+            tone={pipeline?.awaitingFinalizationPlans ? "warning" : undefined}
+          />
+          <QueueMetric
+            label="Active finalizers"
+            value={pipeline?.finalizingPlans ?? 0}
+            hint={
+              pipeline
+                ? `${pipeline.finalizerConcurrency} concurrency limit`
+                : "Loading finalizer state"
+            }
+            tone="primary"
+          />
+          <QueueMetric
+            label="Awaiting future events"
+            value={pipeline?.awaitingEventLogPlans ?? 0}
+            hint="Waiting for position closes"
+            tone={pipeline?.awaitingEventLogPlans ? "warning" : "success"}
+          />
+          <QueueMetric
+            label="Failed plans"
+            value={pipeline?.failedExecutionPlans ?? 0}
+            hint="Execution plans requiring recovery"
+            tone={pipeline?.failedExecutionPlans ? "danger" : "success"}
           />
         </section>
 
@@ -141,21 +184,84 @@ export function SimulationEvaluatorWorkersPanel() {
           <CardBody className="gap-4 p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h2 className="font-semibold">Task flow</h2>
+                <h2 className="font-semibold">Pipeline pressure</h2>
                 <p className="text-default-500 text-sm">
-                  The most recent {tasks.length} evaluator tasks. A task moves
-                  from queued to ready when dispatch can route it, then is
-                  claimed on a worker poll.
+                  Exact global counts for evaluation, finalization, and
+                  future-event processing.
                 </p>
               </div>
               <Chip
                 size="sm"
-                color={waitingTasks ? "warning" : "success"}
+                color={
+                  !pipeline
+                    ? "default"
+                    : pipeline.backpressureActive
+                      ? "danger"
+                      : "success"
+                }
                 variant="flat"
               >
-                {waitingTasks
-                  ? `${waitingTasks} awaiting a worker`
-                  : "Queue clear"}
+                {!pipeline
+                  ? "Loading pipeline state"
+                  : pipeline.backpressureActive
+                    ? "Downstream backpressure active"
+                    : "Pipeline accepting work"}
+              </Chip>
+            </div>
+            <div className="grid gap-4 lg:grid-cols-3">
+              <PressureBar
+                label="Evaluation reservoir"
+                value={evaluationWaiting}
+                maximum={pipeline?.queueHighWatermark ?? 0}
+                percent={queueFillPercent}
+                detail={
+                  pipeline
+                    ? `${pipeline.queuedEvaluationTasks} queued · ${pipeline.readyEvaluationTasks} ready · low watermark ${pipeline.queueLowWatermark}`
+                    : "Loading"
+                }
+                tone={
+                  pipeline && evaluationWaiting < pipeline.queueLowWatermark
+                    ? "warning"
+                    : "primary"
+                }
+              />
+              <PressureBar
+                label="Finalizer backlog"
+                value={finalizerBacklog}
+                maximum={pipeline?.maxAwaitingFinalizationPlans ?? 0}
+                percent={finalizerBacklogPercent}
+                detail={
+                  pipeline
+                    ? `${pipeline.awaitingFinalizationPlans} ready · ${pipeline.finalizingPlans} active · ${pipeline.awaitingEventLogPlans} awaiting events`
+                    : "Loading"
+                }
+                tone={pipeline?.backpressureActive ? "danger" : "warning"}
+              />
+              <PressureBar
+                label="Outstanding plan safety limit"
+                value={pipeline?.outstandingExecutionPlans ?? 0}
+                maximum={pipeline?.maxOutstandingDynamicPlans ?? 0}
+                percent={outstandingPercent}
+                detail="Pending, dispatched, awaiting events, and finalizing"
+                tone={outstandingPercent >= 90 ? "danger" : "primary"}
+              />
+            </div>
+          </CardBody>
+        </Card>
+
+        <Card className="border-default-200 border shadow-none">
+          <CardBody className="gap-4 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 className="font-semibold">Task flow</h2>
+                <p className="text-default-500 text-sm">
+                  Recent history only: the most recent {tasks.length} tasks of
+                  every evaluator kind. A task moves from queued to ready when
+                  dispatch can route it, then is claimed on a worker poll.
+                </p>
+              </div>
+              <Chip size="sm" color="default" variant="flat">
+                Recent task window
               </Chip>
             </div>
             <div className="grid gap-2 sm:grid-cols-5">
@@ -240,17 +346,16 @@ export function SimulationEvaluatorWorkersPanel() {
                 </div>
                 <div className="divide-default-100 divide-y">
                   {workers.map((worker) => {
-                    const workerTasks = tasks.filter(
-                      (task) =>
-                        task.targetWorkerId === worker.id ||
-                        task.workerId === worker.id,
+                    const claimedEvaluations = worker.claimedEvaluationTasks;
+                    const runningEvaluations = Math.min(
+                      claimedEvaluations,
+                      worker.lastDiagnostic?.runningTaskCount ??
+                        worker.activeCapacity,
                     );
-                    const activeTasks = workerTasks.filter(
-                      (task) => task.status === "Claimed",
-                    ).length;
-                    const waitingWorkerTasks = workerTasks.filter((task) =>
-                      ["Queued", "Ready"].includes(task.status),
-                    ).length;
+                    const bufferedEvaluations = Math.max(
+                      0,
+                      claimedEvaluations - runningEvaluations,
+                    );
                     const failedCaches = worker.platformCaches.filter(
                       (cache) => cache.status === "Failed",
                     ).length;
@@ -317,24 +422,19 @@ export function SimulationEvaluatorWorkersPanel() {
                         </div>
 
                         <div className="text-sm">
-                          <span className="font-medium">
-                            {workerTasks.length} tasks
+                          <span className="text-primary font-medium">
+                            {runningEvaluations} running
                           </span>
                           <span className="text-default-400 px-1.5">·</span>
-                          <span
-                            className={
-                              activeTasks
-                                ? "text-primary font-medium"
-                                : "text-default-500"
-                            }
-                          >
-                            {activeTasks} active
+                          <span className="font-medium">
+                            {claimedEvaluations} / {worker.evaluationClaimLimit}{" "}
+                            claimed
                           </span>
-                          {waitingWorkerTasks > 0 && (
+                          {bufferedEvaluations > 0 && (
                             <>
                               <span className="text-default-400 px-1.5">·</span>
                               <span className="text-warning font-medium">
-                                {waitingWorkerTasks} waiting
+                                {bufferedEvaluations} prefetched
                               </span>
                             </>
                           )}
@@ -436,6 +536,41 @@ function FleetMetric({
       >
         {value}
       </p>
+    </div>
+  );
+}
+
+function PressureBar({
+  label,
+  value,
+  maximum,
+  percent,
+  detail,
+  tone,
+}: {
+  label: string;
+  value: number;
+  maximum: number;
+  percent: number;
+  detail: string;
+  tone: "primary" | "warning" | "danger";
+}) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="text-default-500 text-xs">{label}</p>
+        <p className="text-sm font-semibold">
+          {value} / {maximum}
+        </p>
+      </div>
+      <Progress
+        aria-label={label}
+        className="mt-2"
+        color={tone}
+        size="sm"
+        value={percent}
+      />
+      <p className="text-default-500 mt-2 text-xs">{detail}</p>
     </div>
   );
 }
