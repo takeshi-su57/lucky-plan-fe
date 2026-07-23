@@ -34,7 +34,15 @@ export function ContractCircularProgress({
 
   const endBlock = toBlock > 0 ? toBlock : lastBlock;
   const percentage =
-    ((currentBlock - fromBlock) / (endBlock - fromBlock)) * 100;
+    endBlock > fromBlock
+      ? Math.min(
+          100,
+          Math.max(
+            0,
+            ((currentBlock - fromBlock) / (endBlock - fromBlock)) * 100,
+          ),
+        )
+      : 0;
 
   return (
     <Tooltip

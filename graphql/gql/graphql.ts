@@ -2067,6 +2067,8 @@ export enum UserPermission {
 export enum Version {
   V1 = 'V1',
   V2 = 'V2',
+  V6V7 = 'V6_V7',
+  V8V9_2 = 'V8_V9_2',
   V9 = 'V9',
   V10 = 'V10'
 }

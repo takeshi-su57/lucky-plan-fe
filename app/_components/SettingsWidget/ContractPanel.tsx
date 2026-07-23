@@ -58,10 +58,23 @@ const columns: TableColumnProps[] = [
 ];
 
 const availableVersions = {
-  [Platform.Gns]: [Version.V9, Version.V10],
+  [Platform.Gns]: [
+    Version.V6V7,
+    Version.V8V9_2,
+    Version.V9,
+    Version.V10,
+  ],
   [Platform.Gmx]: [Version.V2],
   [Platform.Avnt]: [Version.V1],
 };
+
+function isHistoricalGnsContract(contract: Contract) {
+  return (
+    contract.platform === Platform.Gns &&
+    (contract.version === Version.V6V7 ||
+      contract.version === Version.V8V9_2)
+  );
+}
 
 export function ContractPanel() {
   const allContracts = useGetAllContracts();
@@ -98,7 +111,10 @@ export function ContractPanel() {
           contract.platform === selectedPlatform &&
           contract.version === selectedVersion,
       )
-      .map((contract) => ({
+      .map((contract) => {
+        const isHistorical = isHistoricalGnsContract(contract);
+
+        return {
         id: `${contract.id}`,
         className: "group",
         data: {
@@ -157,18 +173,22 @@ export function ContractPanel() {
                   >
                     Disable
                   </Button>
-                ) : (
+                ) : isHistorical ? null : (
                   <ContractLiveButton contract={contract} />
                 )}
 
                 {adaptionStatus[contract.id] !== ServiceStatus.PROCESS ? (
-                  <ContractAdaptionButton contractId={contract.id} />
+                  <ContractAdaptionButton
+                    contract={contract}
+                    isHistorical={isHistorical}
+                  />
                 ) : null}
               </div>
             ) : null,
           },
         },
-      }));
+        };
+      });
   }, [
     adaptionStatus,
     allContracts,

@@ -88,6 +88,7 @@ export function useGetAdaptionStatus() {
 export function useGetAllContracts() {
   const { data } = useQuery(GET_ALL_CONTRACT_DOCUMENT, {
     variables: {},
+    pollInterval: 10_000,
   });
 
   return useMemo(() => {
@@ -179,6 +180,9 @@ export function useLiveContract() {
 export function useStartAdaption() {
   const [startAdaption, { data, error, loading }] = useMutation(
     START_ADAPTION_DOCUMENT,
+    {
+      refetchQueries: [GET_ALL_CONTRACT_DOCUMENT],
+    },
   );
   const { enqueueSnackbar } = useSnackbar();
 
