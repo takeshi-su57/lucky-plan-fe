@@ -1251,6 +1251,7 @@ type SimulationWorkflowConfigView {
   eventLogAddressBatchSize: Int!
   eventLogRecordBatchSize: Int!
   finalizerBatchSize: Int!
+  finalizerBotCacheConcurrency: Int!
   finalizerConcurrency: Int!
   finalizerLeaseMs: Int!
   finalizerRetryDelayMs: Int!
@@ -1361,6 +1362,7 @@ input UpdateSimulationWorkflowConfigInput {
   eventLogAddressBatchSize: Int
   eventLogRecordBatchSize: Int
   finalizerBatchSize: Int
+  finalizerBotCacheConcurrency: Int
   finalizerConcurrency: Int
   finalizerLeaseMs: Int
   finalizerRetryDelayMs: Int
