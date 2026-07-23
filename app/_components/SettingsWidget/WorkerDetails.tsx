@@ -198,6 +198,7 @@ export function WorkerDetails({
     worker.claimedEvaluationTasks - runningEvaluations,
   );
   const targetVersion = latestRelease.data?.backendReleaseInfo.version ?? "";
+  const targetVersionIsValid = Boolean(parseVersion(targetVersion));
   const targetVersionIsNewer = isNewerVersion(targetVersion, worker.version);
   const requestUpgrade = async () => {
     try {
@@ -315,9 +316,14 @@ export function WorkerDetails({
                       ? `Installed: ${worker.version}`
                       : "Install one versioned release manually first"
                   }
-                  isInvalid={Boolean(targetVersion) && !targetVersionIsNewer}
+                  isInvalid={
+                    Boolean(targetVersion) &&
+                    (!targetVersionIsValid || !targetVersionIsNewer)
+                  }
                   errorMessage={
-                    targetVersion
+                    !targetVersionIsValid && targetVersion
+                      ? "The latest evaluator worker release is unavailable."
+                      : targetVersion
                       ? `Enter a version newer than ${worker.version || "the installed release"}.`
                       : undefined
                   }
