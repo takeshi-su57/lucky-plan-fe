@@ -28,7 +28,6 @@ import {
   useRetrySimulationEvaluatorWorkerCache,
   useSetSimulationEvaluatorWorkerCapacity,
   useUpgradeSimulationEvaluatorWorker,
-  useBackendReleaseInfo,
   useSimulationEvaluatorWorkerTaskConnection,
   useSimulationEvaluatorWorkerTasks,
   useSimulationEvaluatorWorkers,
@@ -126,6 +125,7 @@ export function WorkerDetails({
   embedded?: boolean;
 }) {
   const [section, setSection] = useState("live");
+  const [targetVersion, setTargetVersion] = useState("");
   const { enqueueSnackbar } = useSnackbar();
   const prebuildModal = useDisclosure();
   const capacityModal = useDisclosure();
@@ -173,7 +173,6 @@ export function WorkerDetails({
     useSetSimulationEvaluatorWorkerCapacity();
   const [upgrade, { loading: upgrading }] =
     useUpgradeSimulationEvaluatorWorker();
-  const latestRelease = useBackendReleaseInfo();
   const worker = data?.simulationEvaluatorWorkers.find(
     (item) => item.id === workerId,
   );
@@ -197,7 +196,6 @@ export function WorkerDetails({
     0,
     worker.claimedEvaluationTasks - runningEvaluations,
   );
-  const targetVersion = latestRelease.data?.backendReleaseInfo.version ?? "";
   const targetVersionIsValid = Boolean(parseVersion(targetVersion));
   const targetVersionIsNewer = isNewerVersion(targetVersion, worker.version);
   const requestUpgrade = async () => {
@@ -305,12 +303,12 @@ export function WorkerDetails({
               </Button>
               <div className="flex items-center gap-2">
                 <Input
-                  aria-label="Latest evaluator worker version"
+                  aria-label="Evaluator worker version"
                   className="w-36"
                   size="sm"
-                  placeholder="Latest version"
+                  placeholder="3.0.4"
                   value={targetVersion}
-                  isReadOnly
+                  onValueChange={setTargetVersion}
                   description={
                     worker.version
                       ? `Installed: ${worker.version}`
@@ -322,7 +320,7 @@ export function WorkerDetails({
                   }
                   errorMessage={
                     !targetVersionIsValid && targetVersion
-                      ? "The latest evaluator worker release is unavailable."
+                      ? "Enter a semver version, for example 3.0.4."
                       : targetVersion
                       ? `Enter a version newer than ${worker.version || "the installed release"}.`
                       : undefined
@@ -334,7 +332,6 @@ export function WorkerDetails({
                   variant="flat"
                   isLoading={upgrading}
                   isDisabled={
-                    latestRelease.loading ||
                     !worker.version ||
                     !targetVersionIsNewer
                   }
