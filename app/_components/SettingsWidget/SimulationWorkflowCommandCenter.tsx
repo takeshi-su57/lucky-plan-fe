@@ -11,14 +11,17 @@ import {
 
 const sliderFields = [
   ["maxSimulationsPerResearch", "Max simulations per research", 1, 100, 1],
-  ["maxOutstandingDynamicPlans", "Max outstanding dynamic plans", 1, 100, 1],
+  ["maxOutstandingDynamicPlans", "Max outstanding dynamic plans", 1, 500, 1],
   ["finalizerBatchSize", "Finalizer batch size", 1, 100, 1],
+  ["finalizerConcurrency", "Active finalizers", 1, 100, 1],
+  ["maxAwaitingFinalizationPlans", "Max awaiting finalization", 1, 500, 1],
   ["leaderScoringWindowDays", "Leader scoring lookback (days)", 1, 365, 1],
   ["candidateRecentActivityDays", "Recent activity window (days)", 1, 180, 1],
 ] as const;
 
 const numberFields = [
   ["finalizerLeaseMs", "Finalizer lease (ms)"],
+  ["finalizerRetryDelayMs", "Future-event retry delay (ms)"],
   ["evaluatorTaskLeaseMs", "Evaluator task lease (ms)"],
   ["queuedTaskBatchSize", "Queued task batch size"],
   ["readyTaskScanLimit", "Ready task scan limit"],
@@ -33,13 +36,16 @@ const fields = [...sliderFields, ...numberFields] as const;
 export function SimulationWorkflowCommandCenter() {
   const { data, loading } = useSimulationWorkflowConfig();
   const [update, { loading: saving }] = useUpdateSimulationWorkflowConfig();
-  const [restore, { loading: restoring }] = useRestoreSimulationWorkflowDefaults();
+  const [restore, { loading: restoring }] =
+    useRestoreSimulationWorkflowDefaults();
   const [values, setValues] = useState<Record<string, string>>({});
   const config = data?.simulationWorkflowConfig;
 
   useEffect(() => {
     if (!config) return;
-    setValues(Object.fromEntries(fields.map(([key]) => [key, String(config[key])])));
+    setValues(
+      Object.fromEntries(fields.map(([key]) => [key, String(config[key])])),
+    );
   }, [config]);
 
   if (loading && !config) return <Spinner />;
@@ -49,9 +55,12 @@ export function SimulationWorkflowCommandCenter() {
       <CardBody className="gap-5 p-4 sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h6 className="text-lg font-semibold">Simulation workflow command center</h6>
+            <h6 className="text-lg font-semibold">
+              Simulation workflow command center
+            </h6>
             <p className="text-default-500 text-sm">
-              Runtime limits are stored as one metadata override. Changes apply to new scheduler and evaluator work.
+              Runtime limits are stored as one metadata override. Changes apply
+              to new scheduler and evaluator work.
             </p>
           </div>
           <Button
@@ -100,7 +109,9 @@ export function SimulationWorkflowCommandCenter() {
               label={label}
               type="number"
               value={values[key] ?? ""}
-              onValueChange={(value) => setValues((current) => ({ ...current, [key]: value }))}
+              onValueChange={(value) =>
+                setValues((current) => ({ ...current, [key]: value }))
+              }
             />
           ))}
         </div>

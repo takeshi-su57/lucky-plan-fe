@@ -223,6 +223,9 @@ const SIMULATION_WORKFLOW_CONFIG_DOCUMENT = graphql(`
       maxSimulationsPerResearch
       maxOutstandingDynamicPlans
       finalizerBatchSize
+      finalizerConcurrency
+      finalizerRetryDelayMs
+      maxAwaitingFinalizationPlans
       finalizerLeaseMs
       evaluatorTaskLeaseMs
       queuedTaskBatchSize
@@ -238,7 +241,9 @@ const SIMULATION_WORKFLOW_CONFIG_DOCUMENT = graphql(`
 `);
 
 const UPDATE_SIMULATION_WORKFLOW_CONFIG_DOCUMENT = graphql(`
-  mutation UpdateSimulationWorkflowConfig($input: UpdateSimulationWorkflowConfigInput!) {
+  mutation UpdateSimulationWorkflowConfig(
+    $input: UpdateSimulationWorkflowConfigInput!
+  ) {
     updateSimulationWorkflowConfig(input: $input) {
       maxOutstandingDynamicPlans
     }
