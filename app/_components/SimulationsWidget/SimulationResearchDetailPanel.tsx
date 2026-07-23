@@ -448,7 +448,7 @@ export function SimulationResearchDetailPanel({
               Dynamic scheduler
             </span>
             <span>
-              {simulationResearch.outstandingPlans} / 20 plan slots active
+              {simulationResearch.outstandingPlans} / 20 outstanding plan slots
             </span>
           </div>
           <div className="mt-2 flex flex-wrap gap-2 text-neutral-400">
@@ -464,7 +464,10 @@ export function SimulationResearchDetailPanel({
             </span>
             <span>{simulationResearch.queuedPlans} plans queued</span>
             <span>{simulationResearch.runningPlans} plans claimed</span>
-            <span>{simulationResearch.finalizingPlans} plans finalizing</span>
+            <span>
+              {simulationResearch.finalizingPlans} awaiting finalization or
+              event data
+            </span>
             {simulationStatusCounts[SimulationStatus.Failed] ? (
               <span className="text-danger-300">
                 {simulationStatusCounts[SimulationStatus.Failed]} failed
