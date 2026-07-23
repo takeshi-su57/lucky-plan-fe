@@ -82,9 +82,7 @@ export function SimulationEvaluatorWorkersPanel() {
     ? pipeline.queuedEvaluationTasks + pipeline.readyEvaluationTasks
     : waitingTasks;
   const finalizerBacklog = pipeline
-    ? pipeline.awaitingFinalizationPlans +
-      pipeline.finalizingPlans +
-      pipeline.awaitingEventLogPlans
+    ? pipeline.awaitingFinalizationPlans + pipeline.finalizingPlans
     : 0;
   const queueFillPercent = pipeline?.queueHighWatermark
     ? Math.min(100, (evaluationWaiting / pipeline.queueHighWatermark) * 100)
@@ -226,13 +224,13 @@ export function SimulationEvaluatorWorkersPanel() {
                 }
               />
               <PressureBar
-                label="Finalizer backlog"
+                label="Active finalizer pressure"
                 value={finalizerBacklog}
                 maximum={pipeline?.maxAwaitingFinalizationPlans ?? 0}
                 percent={finalizerBacklogPercent}
                 detail={
                   pipeline
-                    ? `${pipeline.awaitingFinalizationPlans} ready · ${pipeline.finalizingPlans} active · ${pipeline.awaitingEventLogPlans} awaiting events`
+                    ? `${pipeline.awaitingFinalizationPlans} ready · ${pipeline.finalizingPlans} active · future-event waits excluded`
                     : "Loading"
                 }
                 tone={pipeline?.backpressureActive ? "danger" : "warning"}
@@ -242,7 +240,7 @@ export function SimulationEvaluatorWorkersPanel() {
                 value={pipeline?.outstandingExecutionPlans ?? 0}
                 maximum={pipeline?.maxOutstandingDynamicPlans ?? 0}
                 percent={outstandingPercent}
-                detail="Pending, dispatched, awaiting events, and finalizing"
+                detail="Pending, dispatched, and finalizing; future-event waits excluded"
                 tone={outstandingPercent >= 90 ? "danger" : "primary"}
               />
             </div>
