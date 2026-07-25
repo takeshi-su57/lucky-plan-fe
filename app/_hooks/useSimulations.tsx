@@ -8,7 +8,7 @@ import {
 } from "@apollo/client/react";
 
 import { getFragmentData, graphql } from "@/gql/index";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useSnackbar } from "notistack";
 import { PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT } from "./useHistory";
 import {
@@ -1033,6 +1033,13 @@ export function useGetSimulationResearches(page: number, pageSize = 10) {
   const { data, loading } = useQuery(GET_SIMULATION_RESEARCHES_DOCUMENT, {
     variables: { offset, limit: pageSize },
   });
+  const lastKnownTotal = useRef(0);
+
+  useEffect(() => {
+    if (data) {
+      lastKnownTotal.current = data.simulationResearches.total;
+    }
+  }, [data]);
 
   const simulationResearches = useMemo(() => {
     if (!data) {
@@ -1047,7 +1054,7 @@ export function useGetSimulationResearches(page: number, pageSize = 10) {
   return {
     simulationResearches,
     loading,
-    total: data?.simulationResearches.total ?? 0,
+    total: data?.simulationResearches.total ?? lastKnownTotal.current,
   };
 }
 

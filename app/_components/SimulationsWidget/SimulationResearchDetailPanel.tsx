@@ -23,8 +23,8 @@ import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { SimulationStatus, UserPermission } from "@/graphql/gql/graphql";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import { SimulationProgressBar } from "./SimulationProgressBar";
-import { LOCAL_USER_JWT_KEY } from "@/app/_hooks/useUserJWT";
 import { StandardModal } from "@/components/modals/StandardModal";
+import { AiReportDownloadButton } from "./AiReportDownloadButton";
 
 function RangeListStat({ label, values }: { label: string; values: string[] }) {
   return (
@@ -113,9 +113,6 @@ export function SimulationResearchDetailPanel({
   const canCancel =
     simulationResearch.status !== SimulationStatus.Completed &&
     simulationResearch.status !== SimulationStatus.Cancelled;
-  const canExport =
-    simulationResearch.status === SimulationStatus.Completed &&
-    simulationResearch.aiReportReady;
   const canRecover =
     isAdmin &&
     simulationResearch.status !== SimulationStatus.Completed &&
@@ -127,29 +124,6 @@ export function SimulationResearchDetailPanel({
     setTitle(simulationResearch.title);
     setDescription(simulationResearch.description);
     setIsEditOpen(true);
-  };
-
-  const downloadAiReport = async () => {
-    const token = window.localStorage.getItem(LOCAL_USER_JWT_KEY);
-    const apiBase = process.env.NEXT_PUBLIC_LUCKY_PLAN_GRAPHQL_API.replace(
-      /\/graphql$/,
-      "",
-    );
-    const response = await fetch(
-      `${apiBase}/simulation-researches/${simulationResearch.id}/reports/ai`,
-      {
-        headers: token ? { Authorization: `Bearer ${JSON.parse(token)}` } : {},
-      },
-    );
-    if (!response.ok) throw new Error("Unable to export this research report");
-    const url = URL.createObjectURL(await response.blob());
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `simulation-research-${simulationResearch.id}-ai-standard.zip`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
   };
 
   return (
@@ -177,22 +151,12 @@ export function SimulationResearchDetailPanel({
           </div>
 
           <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <Button
-              color="secondary"
-              variant="flat"
-              size="sm"
-              isDisabled={!canExport}
-              isLoading={simulationResearch.aiReportGenerating}
-              onPress={() => void downloadAiReport()}
-            >
-                {simulationResearch.aiReportReady
-                  ? "Export AI Report"
-                  : simulationResearch.aiReportGenerating
-                    ? "AI report is generating"
-                    : simulationResearch.aiReportError
-                      ? "AI report retry queued"
-                    : "AI report queued"}
-            </Button>
+            <AiReportDownloadButton
+              researchId={simulationResearch.id}
+              ready={simulationResearch.aiReportReady}
+              generating={simulationResearch.aiReportGenerating}
+              hasError={Boolean(simulationResearch.aiReportError)}
+            />
 
             {canEdit ? (
               <Button
