@@ -113,7 +113,9 @@ export function SimulationResearchDetailPanel({
   const canCancel =
     simulationResearch.status !== SimulationStatus.Completed &&
     simulationResearch.status !== SimulationStatus.Cancelled;
-  const canExport = simulationResearch.status === SimulationStatus.Completed;
+  const canExport =
+    simulationResearch.status === SimulationStatus.Completed &&
+    simulationResearch.aiReportReady;
   const canRecover =
     isAdmin &&
     simulationResearch.status !== SimulationStatus.Completed &&
@@ -180,9 +182,16 @@ export function SimulationResearchDetailPanel({
               variant="flat"
               size="sm"
               isDisabled={!canExport}
+              isLoading={simulationResearch.aiReportGenerating}
               onPress={() => void downloadAiReport()}
             >
-              Export AI Report
+                {simulationResearch.aiReportReady
+                  ? "Export AI Report"
+                  : simulationResearch.aiReportGenerating
+                    ? "AI report is generating"
+                    : simulationResearch.aiReportError
+                      ? "AI report retry queued"
+                    : "AI report queued"}
             </Button>
 
             {canEdit ? (

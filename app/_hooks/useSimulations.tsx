@@ -254,6 +254,10 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
     scoreFormular
     sizingFormular
     status
+    aiReportReady
+    aiReportGenerating
+    aiReportError
+    aiReportRevision
     cursor
     progressPhase
     progressMessage
@@ -363,6 +367,10 @@ export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     scoreFormular
     sizingFormular
     status
+    aiReportReady
+    aiReportGenerating
+    aiReportError
+    aiReportRevision
     cursor
     progressPhase
     progressMessage
