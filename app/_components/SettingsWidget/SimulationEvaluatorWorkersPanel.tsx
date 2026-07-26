@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Card, CardBody, Chip, Progress, Spinner } from "@heroui/react";
+import { Button, Card, CardBody, Chip, Spinner } from "@heroui/react";
 
 import {
   useSimulationEvaluatorPipeline,
-  useSimulationEvaluatorWorkerTasks,
   useSimulationEvaluatorWorkers,
 } from "@/app/_hooks/useSimulationEvaluatorWorkers";
 import { RightDrawer } from "@/components/modals/RightDrawer";
@@ -29,27 +28,12 @@ const statusColor = (status: string) =>
       ? "danger"
       : "warning";
 
-const taskColor = (status: string) =>
-  status === "Completed"
-    ? "success"
-    : status === "Failed"
-      ? "danger"
-      : status === "Claimed"
-        ? "primary"
-        : status === "Ready" || status === "Queued"
-          ? "warning"
-          : "default";
-
-const taskStages = ["Queued", "Ready", "Claimed", "Completed", "Failed"];
-
 export function SimulationEvaluatorWorkersPanel() {
   const { data, loading } = useSimulationEvaluatorWorkers();
-  const { data: taskData } = useSimulationEvaluatorWorkerTasks();
   const { data: pipelineData } = useSimulationEvaluatorPipeline();
   const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(null);
 
   const workers = data?.simulationEvaluatorWorkers ?? [];
-  const tasks = taskData?.simulationEvaluatorWorkerTasks ?? [];
   const pipeline = pipelineData?.simulationEvaluatorPipeline;
   const approvedWorkers = workers.filter(
     (worker) => worker.authorizationStatus === "Approved",
@@ -71,36 +55,50 @@ export function SimulationEvaluatorWorkersPanel() {
   const capacityUtilization = desiredCapacity
     ? Math.round((activeCapacity / desiredCapacity) * 100)
     : 0;
-  const taskCounts = Object.fromEntries(
-    taskStages.map((status) => [
-      status,
-      tasks.filter((task) => task.status === status).length,
-    ]),
-  ) as Record<string, number>;
-  const waitingTasks = (taskCounts.Queued ?? 0) + (taskCounts.Ready ?? 0);
   const evaluationWaiting = pipeline
     ? pipeline.queuedEvaluationTasks + pipeline.readyEvaluationTasks
-    : waitingTasks;
+    : 0;
   const finalizerBacklog = pipeline
     ? pipeline.awaitingFinalizationPlans + pipeline.finalizingPlans
     : 0;
-  const queueFillPercent = pipeline?.queueHighWatermark
-    ? Math.min(100, (evaluationWaiting / pipeline.queueHighWatermark) * 100)
-    : 0;
-  const finalizerBacklogPercent = pipeline?.maxAwaitingFinalizationPlans
-    ? Math.min(
-        100,
-        (finalizerBacklog / pipeline.maxAwaitingFinalizationPlans) * 100,
-      )
-    : 0;
-  const outstandingPercent = pipeline?.maxOutstandingDynamicPlans
-    ? Math.min(
-        100,
-        (pipeline.outstandingExecutionPlans /
-          pipeline.maxOutstandingDynamicPlans) *
-          100,
-      )
-    : 0;
+  const evaluatorHealthy =
+    pipeline !== undefined &&
+    evaluationWaiting >= pipeline.queueLowWatermark &&
+    evaluationWaiting <= pipeline.queueHighWatermark;
+  const materializerSaturated = Boolean(pipeline?.backpressureActive);
+  const hasFailedPlans = Boolean(pipeline?.failedExecutionPlans);
+  const hasEventWait = Boolean(pipeline?.awaitingEventLogPlans);
+  const finalizerReady = pipeline?.readyToFinalizeSimulations ?? 0;
+  const activeFinalizations = pipeline?.finalizingSimulations ?? 0;
+  const constraint = hasFailedPlans
+    ? {
+        title: "Recovery required",
+        detail: `${pipeline?.failedExecutionPlans ?? 0} execution plans failed and need recovery before their simulations can finish.`,
+        tone: "danger" as const,
+      }
+    : materializerSaturated
+      ? {
+          title: "Materializer backlog is applying backpressure",
+          detail: `${finalizerBacklog} plans are waiting for or using materializer capacity. New evaluator work is being held back.`,
+          tone: "danger" as const,
+        }
+      : finalizerReady > 0 && activeFinalizations === 0
+        ? {
+            title: "Finalizer-ready simulations are waiting",
+            detail: `${finalizerReady} fully materialized simulations can be finalized on the next cron claim.`,
+            tone: "warning" as const,
+          }
+        : hasEventWait
+          ? {
+              title: "Future-event data is the largest waiting state",
+              detail: `${pipeline?.awaitingEventLogPlans ?? 0} plans are waiting for position-close data. This is external waiting, not materializer saturation.`,
+              tone: "warning" as const,
+            }
+          : {
+              title: "Simulation workflow is progressing",
+              detail: "No failed plans, downstream backpressure, or event-data wait is currently reported.",
+              tone: "success" as const,
+            };
 
   if (loading && !data) return <Spinner />;
 
@@ -110,188 +108,103 @@ export function SimulationEvaluatorWorkersPanel() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h6 className="text-lg font-semibold">
-              Evaluator fleet & dispatch queue
+              Simulation workflow
             </h6>
             <p className="text-default-500 text-sm">
-              A live view of queued work, worker capacity, and task assignment.
+              Follow each cron-owned layer to see the current queue and the real blocker.
             </p>
           </div>
           <Chip size="sm" variant="flat">
-            {workers.length} enrolled
+            {workers.length} evaluator workers
           </Chip>
         </div>
 
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-          <QueueMetric
-            label="Evaluation reservoir"
-            value={evaluationWaiting}
-            hint={
-              pipeline
-                ? `Target ${pipeline.queueLowWatermark}–${pipeline.queueHighWatermark}`
-                : "Loading exact pipeline totals"
-            }
-            tone={
-              !pipeline
-                ? undefined
-                : evaluationWaiting < pipeline.queueLowWatermark
-                  ? "warning"
-                  : "success"
-            }
-          />
-          <QueueMetric
-            label="Claimed evaluations"
-            value={pipeline?.claimedEvaluationTasks ?? taskCounts.Claimed ?? 0}
-            hint={
-              pipeline
-                ? `${pipeline.workerClaimLimit} fleet claim limit`
-                : "Active worker leases"
-            }
-            tone="primary"
-          />
-          <QueueMetric
-            label="Awaiting finalization"
-            value={pipeline?.awaitingFinalizationPlans ?? 0}
-            hint="Evaluations completed"
-            tone={pipeline?.awaitingFinalizationPlans ? "warning" : undefined}
-          />
-          <QueueMetric
-            label="Active finalizers"
-            value={pipeline?.finalizingPlans ?? 0}
-            hint={
-              pipeline
-                ? `${pipeline.finalizerConcurrency} concurrency limit`
-                : "Loading finalizer state"
-            }
-            tone="primary"
-          />
-          <QueueMetric
-            label="Awaiting future events"
-            value={pipeline?.awaitingEventLogPlans ?? 0}
-            hint="Waiting for position closes"
-            tone={pipeline?.awaitingEventLogPlans ? "warning" : "success"}
-          />
-          <QueueMetric
-            label="Failed plans"
-            value={pipeline?.failedExecutionPlans ?? 0}
-            hint="Execution plans requiring recovery"
-            tone={pipeline?.failedExecutionPlans ? "danger" : "success"}
-          />
+        <div
+          className={`rounded-xl border px-4 py-3 ${
+            constraint.tone === "danger"
+              ? "border-danger-200 bg-danger-50"
+              : constraint.tone === "warning"
+                ? "border-warning-200 bg-warning-50"
+                : "border-success-200 bg-success-50"
+          }`}
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="font-semibold">Current constraint: {constraint.title}</p>
+              <p className="text-default-600 mt-1 text-sm">{constraint.detail}</p>
+            </div>
+            <Chip color={constraint.tone} size="sm" variant="flat">
+              {constraint.tone === "success" ? "No active blocker" : "Needs attention"}
+            </Chip>
+          </div>
+        </div>
+
+        <section>
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h2 className="font-semibold">Cron workflow</h2>
+              <p className="text-default-500 text-sm">
+                Queue units stay explicit: evaluator tasks, materializer plans, then finalizer simulations.
+              </p>
+            </div>
+            <Chip size="sm" variant="flat">Each cron is scheduled every 5 seconds</Chip>
+          </div>
+          <div className="grid gap-3 xl:grid-cols-3">
+            <WorkflowLane
+              number="1"
+              title="Evaluator"
+              cron="registerLeaderEvaluationTasks"
+              tone="primary"
+              status={evaluatorHealthy ? "Healthy" : "Needs refill"}
+              statusTone={evaluatorHealthy ? "success" : "warning"}
+              metrics={[
+                { label: "Reservoir", value: evaluationWaiting, unit: "tasks" },
+                { label: "Claimed", value: `${pipeline?.claimedEvaluationTasks ?? 0} / ${pipeline?.workerClaimLimit ?? 0}`, unit: "tasks" },
+              ]}
+              detail={pipeline ? `Reservoir target ${pipeline.queueLowWatermark}–${pipeline.queueHighWatermark} tasks · ${pipeline.queuedEvaluationTasks} queued, ${pipeline.readyEvaluationTasks} ready` : "Loading evaluator queue"}
+            />
+            <WorkflowLane
+              number="2"
+              title="Materializer"
+              cron="handleResolvedEvaluationTasks"
+              tone="warning"
+              status={materializerSaturated ? "Backpressure active" : "Healthy"}
+              statusTone={materializerSaturated ? "danger" : "success"}
+              metrics={[
+                { label: "Waiting", value: pipeline?.awaitingFinalizationPlans ?? 0, unit: "plans" },
+                { label: "Active", value: `${pipeline?.finalizingPlans ?? 0} / ${pipeline?.finalizerConcurrency ?? 0}`, unit: "plans" },
+              ]}
+              detail="Completed evaluator results are materialized into plans and bots."
+            />
+            <WorkflowLane
+              number="3"
+              title="Finalizer"
+              cron="finalizeMaterializedSimulations"
+              tone="secondary"
+              status={hasEventWait ? "Waiting on event data" : "Ready"}
+              statusTone={hasEventWait ? "warning" : "success"}
+              metrics={[
+                { label: "Ready", value: finalizerReady, unit: "simulations" },
+                { label: "Active", value: activeFinalizations, unit: "simulations" },
+              ]}
+              detail={`${pipeline?.awaitingEventLogPlans ?? 0} plans are awaiting event data; they are not finalizer-ready queue depth.`}
+            />
+          </div>
         </section>
 
         <Card className="border-default-200 border shadow-none">
-          <CardBody className="gap-4 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <h2 className="font-semibold">Pipeline pressure</h2>
-                <p className="text-default-500 text-sm">
-                  Exact global counts for evaluation, finalization, and
-                  future-event processing.
-                </p>
+          <CardBody className="gap-3 p-4">
+            <div>
+              <h2 className="font-semibold">Workflow diagnostics</h2>
+              <p className="text-default-500 text-sm">The exact state that can slow or stop each layer.</p>
+            </div>
+            <div className="overflow-x-auto">
+              <div className="min-w-[720px] divide-default-100 divide-y text-sm">
+                <DiagnosticRow state="Evaluator reservoir" count={`${evaluationWaiting} tasks`} meaning="Work available for evaluator workers" action={pipeline ? `Keep between ${pipeline.queueLowWatermark} and ${pipeline.queueHighWatermark} tasks` : "Loading target"} tone={evaluatorHealthy ? "success" : "warning"} />
+                <DiagnosticRow state="Materializer backlog" count={`${finalizerBacklog} plans`} meaning="Completed evaluations awaiting or using materializer capacity" action={materializerSaturated ? "Increase capacity or wait for backlog to drain" : "No action needed"} tone={materializerSaturated ? "danger" : "success"} />
+                <DiagnosticRow state="Future-event wait" count={`${pipeline?.awaitingEventLogPlans ?? 0} plans`} meaning="Waiting for position-close data before finalization" action={hasEventWait ? "Monitor event ingestion; this does not consume materializer capacity" : "No event-data wait"} tone={hasEventWait ? "warning" : "success"} />
+                <DiagnosticRow state="Failed execution plans" count={`${pipeline?.failedExecutionPlans ?? 0} plans`} meaning="Plans requiring recovery" action={hasFailedPlans ? "Inspect failures and retry or recover" : "No recovery required"} tone={hasFailedPlans ? "danger" : "success"} />
               </div>
-              <Chip
-                size="sm"
-                color={
-                  !pipeline
-                    ? "default"
-                    : pipeline.backpressureActive
-                      ? "danger"
-                      : "success"
-                }
-                variant="flat"
-              >
-                {!pipeline
-                  ? "Loading pipeline state"
-                  : pipeline.backpressureActive
-                    ? "Downstream backpressure active"
-                    : "Pipeline accepting work"}
-              </Chip>
-            </div>
-            <div className="grid gap-4 lg:grid-cols-3">
-              <PressureBar
-                label="Evaluation reservoir"
-                value={evaluationWaiting}
-                maximum={pipeline?.queueHighWatermark ?? 0}
-                percent={queueFillPercent}
-                detail={
-                  pipeline
-                    ? `${pipeline.queuedEvaluationTasks} queued · ${pipeline.readyEvaluationTasks} ready · low watermark ${pipeline.queueLowWatermark}`
-                    : "Loading"
-                }
-                tone={
-                  pipeline && evaluationWaiting < pipeline.queueLowWatermark
-                    ? "warning"
-                    : "primary"
-                }
-              />
-              <PressureBar
-                label="Active finalizer pressure"
-                value={finalizerBacklog}
-                maximum={pipeline?.maxAwaitingFinalizationPlans ?? 0}
-                percent={finalizerBacklogPercent}
-                detail={
-                  pipeline
-                    ? `${pipeline.awaitingFinalizationPlans} ready · ${pipeline.finalizingPlans} active · future-event waits excluded`
-                    : "Loading"
-                }
-                tone={pipeline?.backpressureActive ? "danger" : "warning"}
-              />
-              <PressureBar
-                label="Outstanding plan safety limit"
-                value={pipeline?.outstandingExecutionPlans ?? 0}
-                maximum={pipeline?.maxOutstandingDynamicPlans ?? 0}
-                percent={outstandingPercent}
-                detail="Pending, dispatched, and finalizing; future-event waits excluded"
-                tone={outstandingPercent >= 90 ? "danger" : "primary"}
-              />
-            </div>
-          </CardBody>
-        </Card>
-
-        <Card className="border-default-200 border shadow-none">
-          <CardBody className="gap-4 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <h2 className="font-semibold">Task flow</h2>
-                <p className="text-default-500 text-sm">
-                  Recent history only: the most recent {tasks.length} tasks of
-                  every evaluator kind. A task moves from queued to ready when
-                  dispatch can route it, then is claimed on a worker poll.
-                </p>
-              </div>
-              <Chip size="sm" color="default" variant="flat">
-                Recent task window
-              </Chip>
-            </div>
-            <div className="grid gap-2 sm:grid-cols-5">
-              {taskStages.map((status) => {
-                const count = taskCounts[status] ?? 0;
-                const percentage = tasks.length
-                  ? Math.round((count / tasks.length) * 100)
-                  : 0;
-                return (
-                  <div
-                    key={status}
-                    className="border-default-200 rounded-lg border p-3"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <Chip size="sm" color={taskColor(status)} variant="flat">
-                        {status}
-                      </Chip>
-                      <span className="text-lg font-semibold">{count}</span>
-                    </div>
-                    <Progress
-                      aria-label={`${status} tasks`}
-                      className="mt-3"
-                      color={taskColor(status)}
-                      size="sm"
-                      value={percentage}
-                    />
-                    <p className="text-default-500 mt-2 text-xs">
-                      {percentage}% of recent work
-                    </p>
-                  </div>
-                );
-              })}
             </div>
           </CardBody>
         </Card>
@@ -481,35 +394,91 @@ export function SimulationEvaluatorWorkersPanel() {
   );
 }
 
-function QueueMetric({
-  label,
-  value,
-  hint,
+function WorkflowLane({
+  number,
+  title,
+  cron,
   tone,
+  status,
+  statusTone,
+  metrics,
+  detail,
 }: {
-  label: string;
-  value: number;
-  hint: string;
-  tone?: "primary" | "success" | "warning" | "danger";
+  number: string;
+  title: string;
+  cron: string;
+  tone: "primary" | "secondary" | "warning";
+  status: string;
+  statusTone: "success" | "warning" | "danger";
+  metrics: Array<{ label: string; value: string | number; unit: string }>;
+  detail: string;
 }) {
-  const textColor =
-    tone === "danger"
-      ? "text-danger"
-      : tone === "warning"
-        ? "text-warning"
-        : tone === "success"
-          ? "text-success"
-          : tone === "primary"
-            ? "text-primary"
-            : "";
+  const laneToneClass = {
+    primary: "bg-primary text-primary-foreground",
+    secondary: "bg-secondary text-secondary-foreground",
+    warning: "bg-warning text-warning-foreground",
+  }[tone];
   return (
     <Card className="border-default-200 border shadow-none">
-      <CardBody className="gap-1 p-4">
-        <p className="text-default-500 text-xs">{label}</p>
-        <p className={`text-2xl font-semibold ${textColor}`}>{value}</p>
-        <p className="text-default-500 text-xs">{hint}</p>
+      <CardBody className="gap-4 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <span className={`${laneToneClass} flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold`}>
+              {number}
+            </span>
+            <div>
+              <h3 className="font-semibold">{title}</h3>
+              <p className="text-default-500 font-mono text-xs">{cron}</p>
+            </div>
+          </div>
+          <Chip color={statusTone} size="sm" variant="flat">{status}</Chip>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {metrics.map((metric) => (
+            <div key={metric.label} className="bg-default-50 rounded-lg p-3">
+              <p className="text-default-500 text-xs">{metric.label}</p>
+              <p className="mt-1 text-xl font-semibold">{metric.value}</p>
+              <p className="text-default-500 text-xs">{metric.unit}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-default-500 border-default-100 border-t pt-3 text-xs">
+          {detail}
+        </p>
       </CardBody>
     </Card>
+  );
+}
+
+function DiagnosticRow({
+  state,
+  count,
+  meaning,
+  action,
+  tone,
+}: {
+  state: string;
+  count: string;
+  meaning: string;
+  action: string;
+  tone: "success" | "warning" | "danger";
+}) {
+  const dot =
+    tone === "danger"
+      ? "bg-danger"
+      : tone === "warning"
+        ? "bg-warning"
+        : "bg-success";
+  return (
+    <div className="grid grid-cols-[minmax(170px,.9fr)_minmax(110px,.55fr)_minmax(220px,1.3fr)_minmax(250px,1.4fr)] gap-4 px-1 py-3">
+      <div className="flex items-center gap-2 font-medium">
+        <span className={`h-2 w-2 rounded-full ${dot}`} />
+        {state}
+      </div>
+      <span className="font-semibold">{count}</span>
+      <span className="text-default-500">{meaning}</span>
+      <span className="text-default-500">{action}</span>
+    </div>
   );
 }
 
@@ -536,41 +505,6 @@ function FleetMetric({
       >
         {value}
       </p>
-    </div>
-  );
-}
-
-function PressureBar({
-  label,
-  value,
-  maximum,
-  percent,
-  detail,
-  tone,
-}: {
-  label: string;
-  value: number;
-  maximum: number;
-  percent: number;
-  detail: string;
-  tone: "primary" | "warning" | "danger";
-}) {
-  return (
-    <div>
-      <div className="flex items-baseline justify-between gap-3">
-        <p className="text-default-500 text-xs">{label}</p>
-        <p className="text-sm font-semibold">
-          {value} / {maximum}
-        </p>
-      </div>
-      <Progress
-        aria-label={label}
-        className="mt-2"
-        color={tone}
-        size="sm"
-        value={percent}
-      />
-      <p className="text-default-500 mt-2 text-xs">{detail}</p>
     </div>
   );
 }

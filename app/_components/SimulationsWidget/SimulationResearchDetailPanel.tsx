@@ -25,6 +25,7 @@ import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import { SimulationWorkflowProgress } from "./SimulationWorkflowProgress";
 import { StandardModal } from "@/components/modals/StandardModal";
 import { AiReportDownloadButton } from "./AiReportDownloadButton";
+import { SimulationResearchWorkflowProgress } from "./SimulationResearchWorkflowProgress";
 
 function RangeListStat({ label, values }: { label: string; values: string[] }) {
   return (

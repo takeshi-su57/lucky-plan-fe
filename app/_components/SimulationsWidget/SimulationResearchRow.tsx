@@ -13,8 +13,8 @@ import { getPriceStr } from "@/utils/price";
 import { useDeleteSimulationResearch } from "@/app/_hooks/useSimulations";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
-import { SimulationProgressBar } from "./SimulationProgressBar";
 import { AiReportDownloadButton } from "./AiReportDownloadButton";
+import { SimulationResearchWorkflowProgress } from "./SimulationResearchWorkflowProgress";
 
 function formatRangePairs(
   ranges: Array<{ min: number; max: number }>,
@@ -48,7 +48,6 @@ export function SimulationResearchRow({
     useDeleteSimulationResearch();
   const { userJwtQuery } = useUserJWT();
   const isAdmin = userJwtQuery.data?.permission === UserPermission.Admin;
-  const progress = simulationResearch.progressPercent;
 
   return (
     <div className="pb-3 select-none">
@@ -199,22 +198,16 @@ export function SimulationResearchRow({
             </div>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <SimulationProgressBar
-              value={progress}
-              color="primary"
-              ariaLabel={`Simulation research ${simulationResearch.id} progress`}
-              status={simulationResearch.status as SimulationStatus}
-            />
-            <div className="text-xs text-neutral-500">
-              <span>
-                {simulationResearch.progressMessage || "Waiting to run"}
-              </span>
-              <span className="ml-2 text-neutral-600">
-                {simulationResearch.progressPhase || "created"}
-              </span>
-            </div>
-          </div>
+          <SimulationResearchWorkflowProgress
+            researchId={simulationResearch.id}
+            totalPlans={simulationResearch.totalPlans}
+            evaluatedPlans={simulationResearch.evaluatedPlans}
+            materializedPlans={simulationResearch.materializedPlans}
+            awaitingEventPlans={simulationResearch.awaitingEventPlans}
+            finalizedPlans={simulationResearch.finalizedPlans}
+            status={simulationResearch.status as SimulationStatus}
+            compact
+          />
         </CardBody>
       </Card>
     </div>

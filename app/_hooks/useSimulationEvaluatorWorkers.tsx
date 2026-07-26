@@ -80,6 +80,8 @@ export const SIMULATION_EVALUATOR_PIPELINE_DOCUMENT = graphql(`
       awaitingFinalizationPlans
       finalizingPlans
       awaitingEventLogPlans
+      readyToFinalizeSimulations
+      finalizingSimulations
       failedExecutionPlans
       outstandingExecutionPlans
       finalizerConcurrency

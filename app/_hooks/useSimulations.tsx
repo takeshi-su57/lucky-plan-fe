@@ -8,7 +8,7 @@ import {
 } from "@apollo/client/react";
 
 import { getFragmentData, graphql } from "@/gql/index";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSnackbar } from "notistack";
 import { PERP_TRADE_HISTORY_INFO_FRAGMENT_DOCUMENT } from "./useHistory";
 import {
@@ -273,6 +273,10 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
     queuedPlans
     runningPlans
     finalizingPlans
+    evaluatedPlans
+    materializedPlans
+    awaitingEventPlans
+    finalizedPlans
     startedAt
     finishedAt
     lastError
@@ -386,6 +390,10 @@ export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
     queuedPlans
     runningPlans
     finalizingPlans
+    evaluatedPlans
+    materializedPlans
+    awaitingEventPlans
+    finalizedPlans
     startedAt
     finishedAt
     lastError
@@ -1036,11 +1044,11 @@ export function useGetSimulationResearches(page: number, pageSize = 10) {
   const { data, loading } = useQuery(GET_SIMULATION_RESEARCHES_DOCUMENT, {
     variables: { offset, limit: pageSize },
   });
-  const lastKnownTotal = useRef(0);
+  const [lastKnownTotal, setLastKnownTotal] = useState(0);
 
   useEffect(() => {
     if (data) {
-      lastKnownTotal.current = data.simulationResearches.total;
+      setLastKnownTotal(data.simulationResearches.total);
     }
   }, [data]);
 
@@ -1057,7 +1065,7 @@ export function useGetSimulationResearches(page: number, pageSize = 10) {
   return {
     simulationResearches,
     loading,
-    total: data?.simulationResearches.total ?? lastKnownTotal.current,
+    total: data?.simulationResearches.total ?? lastKnownTotal,
   };
 }
 
