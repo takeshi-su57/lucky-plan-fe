@@ -964,6 +964,7 @@ type SimulationEvaluatorPipelineView {
   failedExecutionPlans: Int!
   finalizerConcurrency: Int!
   finalizingPlans: Int!
+  finalizingSimulations: Int!
   fleetCapacity: Int!
   maxAwaitingFinalizationPlans: Int!
   maxOutstandingDynamicPlans: Int!
@@ -972,6 +973,7 @@ type SimulationEvaluatorPipelineView {
   queueLowWatermark: Int!
   queuedEvaluationTasks: Int!
   readyEvaluationTasks: Int!
+  readyToFinalizeSimulations: Int!
   workerClaimLimit: Int!
 }
 
@@ -1106,6 +1108,8 @@ type SimulationResearch {
   description: String!
   direction: BotMode!
   endAt: Date!
+  evaluatedPlans: Int!
+  finalizedPlans: Int!
   finalizingPlans: Int!
   finishedAt: Date
   followerRiskCollateral: [SimulationValueRangeGroup!]!
@@ -1117,6 +1121,7 @@ type SimulationResearch {
   leaderExecutionLeverage: [SimulationValueRangeGroup!]!
   leaderExecutionSize: [SimulationValueRangeGroup!]!
   leverage: [SimulationValueRangeGroup!]!
+  materializedPlans: Int!
   nextRetryAt: Date
   outstandingPlans: Int!
   platform: Platform!
@@ -1159,6 +1164,8 @@ type SimulationResearchDetails {
   description: String!
   direction: BotMode!
   endAt: Date!
+  evaluatedPlans: Int!
+  finalizedPlans: Int!
   finalizingPlans: Int!
   finishedAt: Date
   followerRiskCollateral: [SimulationValueRangeGroup!]!
@@ -1170,6 +1177,7 @@ type SimulationResearchDetails {
   leaderExecutionLeverage: [SimulationValueRangeGroup!]!
   leaderExecutionSize: [SimulationValueRangeGroup!]!
   leverage: [SimulationValueRangeGroup!]!
+  materializedPlans: Int!
   nextRetryAt: Date
   outstandingPlans: Int!
   platform: Platform!

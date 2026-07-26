@@ -22,7 +22,7 @@ import { getPriceStr } from "@/utils/price";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { SimulationStatus, UserPermission } from "@/graphql/gql/graphql";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
-import { SimulationProgressBar } from "./SimulationProgressBar";
+import { SimulationWorkflowProgress } from "./SimulationWorkflowProgress";
 import { StandardModal } from "@/components/modals/StandardModal";
 import { AiReportDownloadButton } from "./AiReportDownloadButton";
 
@@ -392,12 +392,6 @@ export function SimulationResearchDetailPanel({
         </div>
 
         <div className="flex flex-col gap-2">
-          <SimulationProgressBar
-            value={simulationResearch.progressPercent}
-            color="primary"
-            ariaLabel={`Simulation research ${simulationResearch.id} progress`}
-            status={simulationResearch.status}
-          />
           <div
             aria-live="polite"
             className="flex flex-wrap items-center gap-2 text-xs text-neutral-500"
@@ -415,6 +409,12 @@ export function SimulationResearchDetailPanel({
             </div>
           ) : null}
         </div>
+        <SimulationWorkflowProgress
+          totalPlans={simulationResearch.totalPlans}
+          evaluatedPlans={simulationResearch.evaluatedPlans}
+          materializedPlans={simulationResearch.materializedPlans}
+          finalizedPlans={simulationResearch.finalizedPlans}
+        />
         <div className="border-warning-500/20 bg-warning-500/5 mt-4 rounded-lg border p-3 text-xs text-neutral-300">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-warning-200 font-semibold">

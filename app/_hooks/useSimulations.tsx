@@ -266,6 +266,9 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
     completedRanges
     totalPlans
     completedPlans
+    evaluatedPlans
+    materializedPlans
+    finalizedPlans
     outstandingPlans
     queuedPlans
     runningPlans
