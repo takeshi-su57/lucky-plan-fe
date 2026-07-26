@@ -22,7 +22,6 @@ import { getPriceStr } from "@/utils/price";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { SimulationStatus, UserPermission } from "@/graphql/gql/graphql";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
-import { SimulationWorkflowProgress } from "./SimulationWorkflowProgress";
 import { StandardModal } from "@/components/modals/StandardModal";
 import { AiReportDownloadButton } from "./AiReportDownloadButton";
 import { SimulationResearchWorkflowProgress } from "./SimulationResearchWorkflowProgress";
@@ -410,11 +409,14 @@ export function SimulationResearchDetailPanel({
             </div>
           ) : null}
         </div>
-        <SimulationWorkflowProgress
+        <SimulationResearchWorkflowProgress
+          researchId={simulationResearch.id}
           totalPlans={simulationResearch.totalPlans}
           evaluatedPlans={simulationResearch.evaluatedPlans}
           materializedPlans={simulationResearch.materializedPlans}
+          awaitingEventPlans={simulationResearch.awaitingEventPlans}
           finalizedPlans={simulationResearch.finalizedPlans}
+          status={simulationResearch.status}
         />
         <div className="border-warning-500/20 bg-warning-500/5 mt-4 rounded-lg border p-3 text-xs text-neutral-300">
           <div className="flex flex-wrap items-center justify-between gap-2">

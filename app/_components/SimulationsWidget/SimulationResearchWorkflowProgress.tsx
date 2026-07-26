@@ -3,7 +3,6 @@
 import { Chip } from "@heroui/react";
 
 import { SimulationStatus } from "@/graphql/gql/graphql";
-import { SimulationProgressBar } from "./SimulationProgressBar";
 
 type ResearchWorkflowProgress = {
   totalPlans: number;
@@ -83,35 +82,50 @@ export function SimulationResearchWorkflowProgress({
           {phase}
         </Chip>
       </div>
-      <div className={compact ? "space-y-2" : "grid gap-3 md:grid-cols-3"}>
-        {stages.map((stage) => (
+      <div className={compact ? "" : "border-default-100 bg-content2/40 rounded-lg border p-3"}>
+        <div
+          className="bg-default-200 relative h-4 overflow-hidden rounded-full"
+          role="progressbar"
+          aria-label={`${finalizedPlans} of ${totalPlans} plans finalized; ${materializedPlans} materialized; ${evaluatedPlans} evaluated`}
+          aria-valuemin={0}
+          aria-valuemax={totalPlans}
+          aria-valuenow={finalizedPlans}
+        >
           <div
-            key={stage.label}
-            className={
-              compact
-                ? "grid grid-cols-[92px_1fr_auto] items-center gap-3"
-                : "border-default-100 bg-content2/40 rounded-lg border p-3"
-            }
-          >
-            <div className={compact ? "" : "mb-3 flex items-baseline justify-between gap-2"}>
-              <p className="text-default-600 text-xs font-semibold uppercase">
+            className="bg-primary/75 absolute inset-y-0 left-0 rounded-full transition-[width] duration-700 ease-out"
+            style={{ width: `${evaluatorPercent}%` }}
+          />
+          <div
+            className="bg-warning absolute left-0 top-1/2 h-2 -translate-y-1/2 rounded-full transition-[width] duration-700 ease-out"
+            style={{ width: `${materializerPercent}%` }}
+          />
+          <div
+            className="bg-secondary absolute left-0 top-1/2 h-1 -translate-y-1/2 rounded-full transition-[width] duration-700 ease-out"
+            style={{ width: `${finalizerPercent}%` }}
+          />
+        </div>
+
+        <div className={`mt-3 grid gap-x-4 gap-y-2 ${compact ? "sm:grid-cols-3" : "md:grid-cols-3"}`}>
+          {stages.map((stage) => (
+            <div key={stage.label} className="flex items-center justify-between gap-2 text-xs">
+              <span className="text-default-500 flex items-center gap-1.5 font-medium uppercase">
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    stage.color === "primary"
+                      ? "bg-primary"
+                      : stage.color === "warning"
+                        ? "bg-warning"
+                        : "bg-secondary"
+                  }`}
+                />
                 {stage.label}
-              </p>
-              {!compact && <p className="text-sm font-semibold">{stage.percent}%</p>}
+              </span>
+              <span className="font-semibold tabular-nums">
+                {stage.value.toLocaleString()} / {totalPlans.toLocaleString()} <span className="text-default-500 font-normal">({stage.percent}%)</span>
+              </span>
             </div>
-            <SimulationProgressBar
-              value={stage.percent}
-              color={stage.color}
-              ariaLabel={`${stage.label} progress for research ${researchId}`}
-              status={status}
-            />
-            {compact ? (
-              <span className="text-default-500 text-xs">{stage.percent}%</span>
-            ) : (
-              <p className="text-default-500 mt-2 text-xs">{stage.detail}</p>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
       {!compact && (
         <p className="text-default-500 mt-3 text-xs">

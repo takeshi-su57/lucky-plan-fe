@@ -161,6 +161,13 @@ export function SimulationEvaluatorWorkersPanel() {
                 { label: "Reservoir", value: evaluationWaiting, unit: "tasks" },
                 { label: "Claimed", value: `${pipeline?.claimedEvaluationTasks ?? 0} / ${pipeline?.workerClaimLimit ?? 0}`, unit: "tasks" },
               ]}
+              capacity={{
+                label: "Evaluator queue capacity",
+                current: evaluationWaiting,
+                maximum: pipeline?.queueHighWatermark ?? 0,
+                target: pipeline?.queueLowWatermark ?? 0,
+                unit: "tasks",
+              }}
               detail={pipeline ? `Reservoir target ${pipeline.queueLowWatermark}–${pipeline.queueHighWatermark} tasks · ${pipeline.queuedEvaluationTasks} queued, ${pipeline.readyEvaluationTasks} ready` : "Loading evaluator queue"}
             />
             <WorkflowLane
@@ -174,6 +181,12 @@ export function SimulationEvaluatorWorkersPanel() {
                 { label: "Waiting", value: pipeline?.awaitingFinalizationPlans ?? 0, unit: "plans" },
                 { label: "Active", value: `${pipeline?.finalizingPlans ?? 0} / ${pipeline?.finalizerConcurrency ?? 0}`, unit: "plans" },
               ]}
+              capacity={{
+                label: "Materializer queue capacity",
+                current: finalizerBacklog,
+                maximum: pipeline?.maxAwaitingFinalizationPlans ?? 0,
+                unit: "plans",
+              }}
               detail="Completed evaluator results are materialized into plans and bots."
             />
             <WorkflowLane
@@ -187,6 +200,12 @@ export function SimulationEvaluatorWorkersPanel() {
                 { label: "Ready", value: finalizerReady, unit: "simulations" },
                 { label: "Active", value: activeFinalizations, unit: "simulations" },
               ]}
+              capacity={{
+                label: "Finalizer concurrency",
+                current: activeFinalizations,
+                maximum: pipeline?.finalizerConcurrency ?? 0,
+                unit: "simulations",
+              }}
               detail={`${pipeline?.awaitingEventLogPlans ?? 0} plans are awaiting event data; they are not finalizer-ready queue depth.`}
             />
           </div>
@@ -402,6 +421,7 @@ function WorkflowLane({
   status,
   statusTone,
   metrics,
+  capacity,
   detail,
 }: {
   number: string;
@@ -411,6 +431,13 @@ function WorkflowLane({
   status: string;
   statusTone: "success" | "warning" | "danger";
   metrics: Array<{ label: string; value: string | number; unit: string }>;
+  capacity: {
+    label: string;
+    current: number;
+    maximum: number;
+    target?: number;
+    unit: string;
+  };
   detail: string;
 }) {
   const laneToneClass = {
@@ -442,11 +469,66 @@ function WorkflowLane({
             </div>
           ))}
         </div>
+        <CapacityGauge {...capacity} tone={tone} />
         <p className="text-default-500 border-default-100 border-t pt-3 text-xs">
           {detail}
         </p>
       </CardBody>
     </Card>
+  );
+}
+
+function CapacityGauge({
+  label,
+  current,
+  maximum,
+  target,
+  unit,
+  tone,
+}: {
+  label: string;
+  current: number;
+  maximum: number;
+  target?: number;
+  unit: string;
+  tone: "primary" | "secondary" | "warning";
+}) {
+  const safeMaximum = Math.max(maximum, 0);
+  const percent = safeMaximum ? Math.min(100, (current / safeMaximum) * 100) : 0;
+  const targetPercent =
+    safeMaximum && target ? Math.min(100, (target / safeMaximum) * 100) : null;
+  const fillClass = {
+    primary: "bg-primary",
+    secondary: "bg-secondary",
+    warning: "bg-warning",
+  }[tone];
+
+  return (
+    <div className="border-default-100 bg-default-50 rounded-lg border p-3">
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="text-default-500 text-xs">{label}</p>
+        <p className="text-sm font-semibold tabular-nums">
+          {current} <span className="text-default-500 font-normal">/ {safeMaximum} {unit}</span>
+        </p>
+      </div>
+      <div className="bg-default-200 relative mt-2 h-2 overflow-visible rounded-full">
+        <div
+          className={`${fillClass} h-full rounded-full transition-[width] duration-700 ease-out`}
+          style={{ width: `${percent}%` }}
+        />
+        {targetPercent !== null && (
+          <span
+            aria-label={`Target refill threshold: ${target} ${unit}`}
+            className="bg-default-700 absolute -top-1 h-4 w-px"
+            style={{ left: `${targetPercent}%` }}
+          />
+        )}
+      </div>
+      <p className="text-default-500 mt-2 text-xs">
+        {target ? `Refill threshold ${target} ${unit} · ` : ""}
+        {percent.toFixed(0)}% filled
+      </p>
+    </div>
   );
 }
 
