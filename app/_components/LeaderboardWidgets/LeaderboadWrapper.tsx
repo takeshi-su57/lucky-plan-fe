@@ -112,7 +112,6 @@ export function LeaderboadWrapper() {
                 date: date.toDate(getServerTimezone()),
               }))
             }
-            minValue={parseDate("2024-11-01")}
             maxValue={parseDate(dayjs().format("YYYY-MM-DD"))}
             classNames={{
               inputWrapper: "h-10 rounded-lg border-default-200 bg-content2",

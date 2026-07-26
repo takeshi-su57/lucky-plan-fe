@@ -14,6 +14,7 @@ import { useDeleteSimulationResearch } from "@/app/_hooks/useSimulations";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
 import { SimulationProgressBar } from "./SimulationProgressBar";
+import { AiReportDownloadButton } from "./AiReportDownloadButton";
 
 function formatRangePairs(
   ranges: Array<{ min: number; max: number }>,
@@ -82,6 +83,13 @@ export function SimulationResearchRow({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              <AiReportDownloadButton
+                researchId={simulationResearch.id}
+                ready={simulationResearch.aiReportReady}
+                generating={simulationResearch.aiReportGenerating}
+                hasError={Boolean(simulationResearch.aiReportError)}
+              />
+
               <Link href={`/simulations/research/${simulationResearch.id}`}>
                 <Button size="sm" color="primary" variant="flat">
                   Open Research
