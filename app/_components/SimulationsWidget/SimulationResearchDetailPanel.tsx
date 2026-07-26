@@ -22,9 +22,9 @@ import { getPriceStr } from "@/utils/price";
 import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { SimulationStatus, UserPermission } from "@/graphql/gql/graphql";
 import { ButtonWithConfirm } from "@/components/buttons/ButtonWithConfirm";
-import { SimulationProgressBar } from "./SimulationProgressBar";
 import { StandardModal } from "@/components/modals/StandardModal";
 import { AiReportDownloadButton } from "./AiReportDownloadButton";
+import { SimulationResearchWorkflowProgress } from "./SimulationResearchWorkflowProgress";
 
 function RangeListStat({ label, values }: { label: string; values: string[] }) {
   return (
@@ -391,24 +391,16 @@ export function SimulationResearchDetailPanel({
           </div>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <SimulationProgressBar
-            value={simulationResearch.progressPercent}
-            color="primary"
-            ariaLabel={`Simulation research ${simulationResearch.id} progress`}
+        <div aria-live="polite">
+          <SimulationResearchWorkflowProgress
+            researchId={simulationResearch.id}
+            totalPlans={simulationResearch.totalPlans}
+            evaluatedPlans={simulationResearch.evaluatedPlans}
+            materializedPlans={simulationResearch.materializedPlans}
+            awaitingEventPlans={simulationResearch.awaitingEventPlans}
+            finalizedPlans={simulationResearch.finalizedPlans}
             status={simulationResearch.status}
           />
-          <div
-            aria-live="polite"
-            className="flex flex-wrap items-center gap-2 text-xs text-neutral-500"
-          >
-            <span>
-              {simulationResearch.progressMessage || "Waiting to run"}
-            </span>
-            <span className="text-neutral-600">
-              {simulationResearch.progressPhase || "created"}
-            </span>
-          </div>
           {simulationResearch.lastError ? (
             <div className="border-danger-500/30 bg-danger-500/10 text-danger-200 rounded-lg border px-3 py-2 text-xs">
               {simulationResearch.lastError}
