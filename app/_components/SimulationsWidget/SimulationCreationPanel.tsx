@@ -112,8 +112,45 @@ const EXPERT_CONFIGURATION_TEMPLATE = {
   scoreFormular: SimulationScoreFormular.RiskAdjustedCopyScore,
   sizingFormular: SimulationSizingFormular.ScoreScaledCollateralSizing,
   guide:
-    "sourceSimulationId is optional: omit it or set it to null for normal research; set it to a completed simulation ID for source-driven Layer 2/3 research. Each field is a list of range groups. One group containing multiple ranges means variants; multiple groups with one range each means the ranges match together across fields.",
+    "sourceSimulationId is optional: omit it or set it to null for normal research; set it to a completed simulation ID for source-driven Layer 2/3 research. Every parameter uses range groups: one group may contain several OR ranges in one generated simulation, while multiple single-range groups create separate generated variants. Groups from different parameters are combined as a Cartesian product, never matched or zipped together. Use separate professional-batch configurations for exact paired combinations.",
 } as const;
+
+const OR_RANGES_EXAMPLE = {
+  ...EXPERT_CONFIGURATION_TEMPLATE,
+  title: "One simulation with alternative trade ranges",
+  trade: [
+    {
+      ranges: [
+        { min: 3, max: 10 },
+        { min: 20, max: 30 },
+      ],
+    },
+  ],
+};
+
+const VARIANT_RANGES_EXAMPLE = {
+  ...EXPERT_CONFIGURATION_TEMPLATE,
+  title: "Two separate trade-range simulation variants",
+  trade: [
+    { ranges: [{ min: 3, max: 10 }] },
+    { ranges: [{ min: 20, max: 30 }] },
+  ],
+};
+
+const PAIRED_BATCH_EXAMPLE = [
+  {
+    ...EXPERT_CONFIGURATION_TEMPLATE,
+    title: "Paired experiment A",
+    trade: [{ ranges: [{ min: 3, max: 10 }] }],
+    r2: [{ ranges: [{ min: 0.25, max: 0.5 }] }],
+  },
+  {
+    ...EXPERT_CONFIGURATION_TEMPLATE,
+    title: "Paired experiment B",
+    trade: [{ ranges: [{ min: 20, max: 30 }] }],
+    r2: [{ ranges: [{ min: 0.6, max: 0.8 }] }],
+  },
+];
 
 const AI_CONFIGURATION_PROMPT = `Create a LuckyPlans simulation research configuration as valid JSON.
 
@@ -123,15 +160,31 @@ Source-driven workflow:
 - Omit sourceSimulationId or set it to null for normal research.
 - Set sourceSimulationId to the ID of a completed simulation to reuse its Layer 1 evaluation. In this mode, the source simulation controls platform, direction, date range, plan days, gap days, and Layer 1 ranges. The configuration's title, description, and Layer 2/3 ranges still apply.
 
-Range grouping:
-- Each parameter is an array of { "ranges": [{ "min": number, "max": number }] } groups.
-- One group with several ranges means alternatives/variants.
-- Several groups with one range each means corresponding ranges are matched together across fields.
+Range-group encoding — follow these rules exactly:
+- Every parameter is an array of group objects: { "ranges": [{ "min": number, "max": number }] }.
+- To allow several ranges inside ONE generated simulation, use exactly ONE group containing several ranges. Those ranges are OR alternatives inside that one simulation:
+  "trade": [{ "ranges": [{ "min": 3, "max": 10 }, { "min": 20, "max": 30 }] }]
+- To create separate generated simulation variants, use one single-range group per variant:
+  "trade": [{ "ranges": [{ "min": 3, "max": 10 }] }, { "ranges": [{ "min": 20, "max": 30 }] }]
+- Never mix the two shapes in one parameter. This is invalid: [{ "ranges": [A, B] }, { "ranges": [C] }].
+- Groups from DIFFERENT parameters are always combined as a Cartesian product. They are never zipped, paired, or matched by array position. For example, two trade groups and two r2 groups create four combinations.
+- If you need exact paired combinations (for example trade A with r2 A, and trade B with r2 B only), create two separate configuration objects in the Professional batch flow. Do not attempt to pair groups inside one configuration.
 - Use non-negative values; trade ranges use positive integers; r2 and score must be between 0 and 1.
+
+Complete examples:
+
+1. One generated simulation with OR alternatives inside its trade filter. This is NOT two simulation variants:
+${JSON.stringify(OR_RANGES_EXAMPLE, null, 2)}
+
+2. Two separate generated simulation variants for trade. Keep every other parameter to one group unless you deliberately want a Cartesian product:
+${JSON.stringify(VARIANT_RANGES_EXAMPLE, null, 2)}
+
+3. Exact paired trade/r2 experiments. This must be a Professional batch array; it cannot be encoded as matched groups in one configuration:
+${JSON.stringify(PAIRED_BATCH_EXAMPLE, null, 2)}
 
 For a professional batch, return an array of configurations in creation order. Each item can have its own sourceSimulationId. For the standard creator, return exactly one object.
 
-Example:
+Base single-configuration example:
 ${JSON.stringify(EXPERT_CONFIGURATION_TEMPLATE, null, 2)}`;
 
 let nextEntryId = 0;
