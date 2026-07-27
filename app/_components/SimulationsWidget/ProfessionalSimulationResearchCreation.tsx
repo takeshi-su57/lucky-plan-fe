@@ -13,6 +13,7 @@ import {
 type ParsedConfiguration = {
   text: string;
   title: string;
+  sourceSimulationId?: number;
   simulationCount: number;
 };
 
@@ -42,6 +43,7 @@ function parseProfessionalConfigurations(
       return {
         text: JSON.stringify(configuration),
         title: parsed.title,
+        sourceSimulationId: parsed.sourceSimulationId,
         simulationCount: getImportedConfigurationSimulationCount(parsed),
       };
     } catch (error) {
@@ -164,6 +166,9 @@ export function ProfessionalSimulationResearchCreation({
                 {configuration.simulationCount} generated simulation
                 {configuration.simulationCount === 1 ? "" : "s"} for this
                 research.
+                {configuration.sourceSimulationId
+                  ? ` Layer 1 is reused from simulation ${configuration.sourceSimulationId}.`
+                  : null}
               </p>
             </div>
             <Button variant="flat" onPress={() => setStep("import")}>
@@ -175,7 +180,9 @@ export function ProfessionalSimulationResearchCreation({
         <SimulationCreationPanel
           key={`${currentIndex}-${configuration.text}`}
           compactHeading
-          sourceSimulationId={sourceSimulationId}
+          sourceSimulationId={
+            configuration.sourceSimulationId ?? sourceSimulationId
+          }
           initialConfigurationText={configuration.text}
           hideConfigurationImporter
           onCreated={(researchId) => {
@@ -221,7 +228,7 @@ export function ProfessionalSimulationResearchCreation({
             }}
             label="Research configuration or configuration array"
             placeholder={
-              '[{"version": 2, "title": "First research", ...}, {"version": 2, "title": "Next research", ...}]'
+              '[{"version": 2, "sourceSimulationId": 2274, "title": "First research", ...}, {"version": 2, "title": "Next research", ...}]'
             }
             isInvalid={Boolean(error)}
             errorMessage={error ?? undefined}

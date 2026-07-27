@@ -61,6 +61,7 @@ type ImportedRange = { min: number; max: number };
 type ImportedRangeGroup = { ranges: ImportedRange[] };
 export type ImportedResearchConfiguration = {
   version: 2;
+  sourceSimulationId?: number;
   title: string;
   description: string;
   platform: Platform;
@@ -87,6 +88,7 @@ export type ImportedResearchConfiguration = {
 
 const EXPERT_CONFIGURATION_TEMPLATE = {
   version: 2,
+  sourceSimulationId: null,
   title: "GNS reversed momentum refinement",
   description: "Refined after reviewing a previous simulation research report.",
   platform: Platform.Gns,
@@ -110,8 +112,27 @@ const EXPERT_CONFIGURATION_TEMPLATE = {
   scoreFormular: SimulationScoreFormular.RiskAdjustedCopyScore,
   sizingFormular: SimulationSizingFormular.ScoreScaledCollateralSizing,
   guide:
-    "Each field is a list of range groups. One group containing multiple ranges means variants; multiple groups with one range each means the ranges match together across fields.",
+    "sourceSimulationId is optional: omit it or set it to null for normal research; set it to a completed simulation ID for source-driven Layer 2/3 research. Each field is a list of range groups. One group containing multiple ranges means variants; multiple groups with one range each means the ranges match together across fields.",
 } as const;
+
+const AI_CONFIGURATION_PROMPT = `Create a LuckyPlans simulation research configuration as valid JSON.
+
+Return JSON only: no Markdown fences, commentary, or comments. Use version 2 and include every field in the example below.
+
+Source-driven workflow:
+- Omit sourceSimulationId or set it to null for normal research.
+- Set sourceSimulationId to the ID of a completed simulation to reuse its Layer 1 evaluation. In this mode, the source simulation controls platform, direction, date range, plan days, gap days, and Layer 1 ranges. The configuration's title, description, and Layer 2/3 ranges still apply.
+
+Range grouping:
+- Each parameter is an array of { "ranges": [{ "min": number, "max": number }] } groups.
+- One group with several ranges means alternatives/variants.
+- Several groups with one range each means corresponding ranges are matched together across fields.
+- Use non-negative values; trade ranges use positive integers; r2 and score must be between 0 and 1.
+
+For a professional batch, return an array of configurations in creation order. Each item can have its own sourceSimulationId. For the standard creator, return exactly one object.
+
+Example:
+${JSON.stringify(EXPERT_CONFIGURATION_TEMPLATE, null, 2)}`;
 
 let nextEntryId = 0;
 
@@ -435,6 +456,17 @@ export function parseImportedResearchConfiguration(
   if (value.version !== 2) {
     throw new Error("Configuration version must be 2");
   }
+  if (
+    value.sourceSimulationId !== undefined &&
+    value.sourceSimulationId !== null &&
+    (typeof value.sourceSimulationId !== "number" ||
+      !Number.isInteger(value.sourceSimulationId) ||
+      value.sourceSimulationId <= 0)
+  ) {
+    throw new Error(
+      "sourceSimulationId must be a positive integer when provided",
+    );
+  }
 
   if (!PLATFORM_OPTIONS.includes(value.platform as Platform)) {
     throw new Error("platform must be Gns, Gmx, or Avnt");
@@ -486,6 +518,10 @@ export function parseImportedResearchConfiguration(
 
   const configuration = {
     version: 2 as const,
+    sourceSimulationId:
+      value.sourceSimulationId === null
+        ? undefined
+        : (value.sourceSimulationId as number | undefined),
     title: value.title as string,
     description: value.description as string,
     platform: value.platform as Platform,
@@ -633,8 +669,6 @@ export function SimulationCreationPanel({
     createSimulationResearchFromSimulation,
     loading: sourceCreationLoading,
   } = useCreateSimulationResearchFromSimulation();
-  const { simulation: sourceSimulation, loading: sourceLoading } =
-    useGetSimulation(sourceSimulationId ?? 0, !sourceSimulationId);
   const configurationFileInputRef = useRef<HTMLInputElement>(null);
 
   const [configurationText, setConfigurationText] = useState("");
@@ -644,6 +678,15 @@ export function SimulationCreationPanel({
   const [configurationError, setConfigurationError] = useState<string | null>(
     null,
   );
+  const [configuredSourceSimulationId, setConfiguredSourceSimulationId] =
+    useState<number | undefined>();
+  const effectiveSourceSimulationId =
+    sourceSimulationId ?? configuredSourceSimulationId;
+  const { simulation: sourceSimulation, loading: sourceLoading } =
+    useGetSimulation(
+      effectiveSourceSimulationId ?? 0,
+      !effectiveSourceSimulationId,
+    );
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -820,7 +863,8 @@ export function SimulationCreationPanel({
 
       setTitle(configuration.title);
       setDescription(configuration.description);
-      if (!sourceSimulationId) {
+      setConfiguredSourceSimulationId(configuration.sourceSimulationId);
+      if (!effectiveSourceSimulationId) {
         setPlatform(configuration.platform);
         setDirection(configuration.direction);
         setScoreFormular(configuration.scoreFormular);
@@ -845,7 +889,7 @@ export function SimulationCreationPanel({
       setFollowerRiskSizeRanges(followerRiskSize.entries);
       setFollowerRiskCollateralRanges(followerRiskCollateral.entries);
       setAlternatives({
-        ...(!sourceSimulationId
+        ...(!effectiveSourceSimulationId
           ? {
               trade: trade.alternatives,
               r2: r2.alternatives,
@@ -905,12 +949,10 @@ export function SimulationCreationPanel({
 
   const copyConfigurationTemplate = async () => {
     try {
-      await navigator.clipboard.writeText(
-        JSON.stringify(EXPERT_CONFIGURATION_TEMPLATE, null, 2),
-      );
+      await navigator.clipboard.writeText(AI_CONFIGURATION_PROMPT);
       setConfigurationError(null);
       setConfigurationMessage(
-        "Configuration template copied to your clipboard.",
+        "AI configuration prompt copied to your clipboard.",
       );
     } catch {
       setConfigurationError("Unable to copy the configuration template");
@@ -1282,9 +1324,9 @@ export function SimulationCreationPanel({
       scoreFormular,
       sizingFormular,
     };
-    const { data } = sourceSimulationId
+    const { data } = effectiveSourceSimulationId
       ? await createSimulationResearchFromSimulation({
-          variables: { sourceSimulationId, input },
+          variables: { sourceSimulationId: effectiveSourceSimulationId, input },
         })
       : await createSimulationResearch({ variables: { input } });
 
@@ -1346,7 +1388,7 @@ export function SimulationCreationPanel({
                 variant="flat"
                 onPress={() => void copyConfigurationTemplate()}
               >
-                Copy JSON Template
+                Copy AI Configuration Prompt
               </Button>
             </div>
 
@@ -1399,7 +1441,7 @@ export function SimulationCreationPanel({
         className="border-default-200 bg-content1 rounded-lg border"
       >
         <CardBody className="gap-6">
-          {sourceSimulationId ? (
+          {effectiveSourceSimulationId ? (
             <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 text-sm text-neutral-300">
               {sourceLoading ? (
                 "Loading source simulation…"
@@ -1436,7 +1478,7 @@ export function SimulationCreationPanel({
               label="Platform"
               aria-label="Research platform"
               selectedKeys={[platform]}
-              isDisabled={Boolean(sourceSimulationId)}
+              isDisabled={Boolean(effectiveSourceSimulationId)}
               onChange={(event) => setPlatform(event.target.value as Platform)}
             >
               {PLATFORM_OPTIONS.map((item) => (
@@ -1449,7 +1491,7 @@ export function SimulationCreationPanel({
               label="Direction"
               aria-label="Research direction"
               selectedKeys={[direction]}
-              isDisabled={Boolean(sourceSimulationId)}
+              isDisabled={Boolean(effectiveSourceSimulationId)}
               onChange={(event) => setDirection(event.target.value as BotMode)}
             >
               {DIRECTION_OPTIONS.map((item) => (
@@ -1478,7 +1520,7 @@ export function SimulationCreationPanel({
             timeInputProps={{}}
             errorMessage={errors.flat.scheduleRange}
             isInvalid={Boolean(errors.flat.scheduleRange)}
-            isDisabled={Boolean(sourceSimulationId)}
+            isDisabled={Boolean(effectiveSourceSimulationId)}
           />
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -1491,7 +1533,7 @@ export function SimulationCreationPanel({
               step={1}
               errorMessage={errors.flat.days}
               isInvalid={Boolean(errors.flat.days)}
-              isDisabled={Boolean(sourceSimulationId)}
+              isDisabled={Boolean(effectiveSourceSimulationId)}
             />
             <NumericInput
               amount={gapDays}
@@ -1502,7 +1544,7 @@ export function SimulationCreationPanel({
               step={1}
               errorMessage={errors.flat.gapDays}
               isInvalid={Boolean(errors.flat.gapDays)}
-              isDisabled={Boolean(sourceSimulationId)}
+              isDisabled={Boolean(effectiveSourceSimulationId)}
             />
           </div>
 
@@ -1512,7 +1554,7 @@ export function SimulationCreationPanel({
               label="Score Formula"
               aria-label="Score formula"
               selectedKeys={[scoreFormular]}
-              isDisabled={Boolean(sourceSimulationId)}
+              isDisabled={Boolean(effectiveSourceSimulationId)}
               onChange={(event) =>
                 setScoreFormular(event.target.value as SimulationScoreFormular)
               }
@@ -1527,7 +1569,7 @@ export function SimulationCreationPanel({
               label="Sizing Formula"
               aria-label="Sizing formula"
               selectedKeys={[sizingFormular]}
-              isDisabled={Boolean(sourceSimulationId)}
+              isDisabled={Boolean(effectiveSourceSimulationId)}
               onChange={(event) =>
                 setSizingFormular(
                   event.target.value as SimulationSizingFormular,
@@ -1570,7 +1612,7 @@ export function SimulationCreationPanel({
               emptyMessage={errors.flat.tradeEmpty}
               rangesAreAlternatives={Boolean(alternatives.trade)}
               onToggleAlternatives={() => toggleAlternatives("trade")}
-              isDisabled={Boolean(sourceSimulationId)}
+              isDisabled={Boolean(effectiveSourceSimulationId)}
             />
             <RangeEntryCard
               label="R2"
@@ -1589,7 +1631,7 @@ export function SimulationCreationPanel({
               emptyMessage={errors.flat.r2Empty}
               rangesAreAlternatives={Boolean(alternatives.r2)}
               onToggleAlternatives={() => toggleAlternatives("r2")}
-              isDisabled={Boolean(sourceSimulationId)}
+              isDisabled={Boolean(effectiveSourceSimulationId)}
             />
             <RangeEntryCard
               label={`Slope (${direction} uses signed execution behind the scenes)`}
@@ -1610,7 +1652,7 @@ export function SimulationCreationPanel({
               emptyMessage={errors.flat.slopeEmpty}
               rangesAreAlternatives={Boolean(alternatives.slope)}
               onToggleAlternatives={() => toggleAlternatives("slope")}
-              isDisabled={Boolean(sourceSimulationId)}
+              isDisabled={Boolean(effectiveSourceSimulationId)}
             />
             <RangeEntryCard
               label="Historical leader leverage"
@@ -1631,7 +1673,7 @@ export function SimulationCreationPanel({
               emptyMessage={errors.flat.leverageEmpty}
               rangesAreAlternatives={Boolean(alternatives.leverage)}
               onToggleAlternatives={() => toggleAlternatives("leverage")}
-              isDisabled={Boolean(sourceSimulationId)}
+              isDisabled={Boolean(effectiveSourceSimulationId)}
             />
             <RangeEntryCard
               label="Historical leader collateral (USD)"
@@ -1657,7 +1699,7 @@ export function SimulationCreationPanel({
               emptyMessage={errors.flat.collateralEmpty}
               rangesAreAlternatives={Boolean(alternatives.collateral)}
               onToggleAlternatives={() => toggleAlternatives("collateral")}
-              isDisabled={Boolean(sourceSimulationId)}
+              isDisabled={Boolean(effectiveSourceSimulationId)}
             />
             <RangeEntryCard
               label="Historical leader size (USD)"
@@ -1678,7 +1720,7 @@ export function SimulationCreationPanel({
               emptyMessage={errors.flat.sizeEmpty}
               rangesAreAlternatives={Boolean(alternatives.size)}
               onToggleAlternatives={() => toggleAlternatives("size")}
-              isDisabled={Boolean(sourceSimulationId)}
+              isDisabled={Boolean(effectiveSourceSimulationId)}
             />
             <RangeEntryCard
               label="Score"
@@ -1700,7 +1742,7 @@ export function SimulationCreationPanel({
               emptyMessage={errors.flat.scoreEmpty}
               rangesAreAlternatives={Boolean(alternatives.score)}
               onToggleAlternatives={() => toggleAlternatives("score")}
-              isDisabled={Boolean(sourceSimulationId)}
+              isDisabled={Boolean(effectiveSourceSimulationId)}
             />
           </div>
 
@@ -1934,11 +1976,11 @@ export function SimulationCreationPanel({
                 loading ||
                 sourceCreationLoading ||
                 sourceLoading ||
-                Boolean(sourceSimulationId && !sourceSimulation)
+                Boolean(effectiveSourceSimulationId && !sourceSimulation)
               }
               onPress={handleSave}
             >
-              {sourceSimulationId
+              {effectiveSourceSimulationId
                 ? "Create Research from Simulation"
                 : "Create Research"}
             </Button>
