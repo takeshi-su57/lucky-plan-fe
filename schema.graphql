@@ -974,6 +974,10 @@ type SimulationEvaluatorPipelineView {
   queuedEvaluationTasks: Int!
   readyEvaluationTasks: Int!
   readyToFinalizeSimulations: Int!
+  sourceDerivedFailed: Int!
+  sourceDerivedReadyToRecalculate: Int!
+  sourceDerivedRecalculating: Int!
+  sourceDerivedWaitingToMaterialize: Int!
   workerClaimLimit: Int!
 }
 

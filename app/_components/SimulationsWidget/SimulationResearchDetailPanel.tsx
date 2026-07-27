@@ -399,9 +399,11 @@ export function SimulationResearchDetailPanel({
             <span>
               {simulationResearch.progressMessage || "Waiting to run"}
             </span>
-            <span className="text-neutral-600">
-              {simulationResearch.progressPhase || "created"}
-            </span>
+            {simulationResearch.status !== SimulationStatus.Completed ? (
+              <span className="text-neutral-600">
+                {simulationResearch.progressPhase || "created"}
+              </span>
+            ) : null}
           </div>
           {simulationResearch.lastError ? (
             <div className="border-danger-500/30 bg-danger-500/10 text-danger-200 rounded-lg border px-3 py-2 text-xs">
@@ -417,33 +419,54 @@ export function SimulationResearchDetailPanel({
           awaitingEventPlans={simulationResearch.awaitingEventPlans}
           finalizedPlans={simulationResearch.finalizedPlans}
           status={simulationResearch.status}
+          sourceSimulationId={simulationResearch.sourceSimulationId}
         />
         <div className="border-warning-500/20 bg-warning-500/5 mt-4 rounded-lg border p-3 text-xs text-neutral-300">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-warning-200 font-semibold">
-              Dynamic scheduler
+              {simulationResearch.sourceSimulationId
+                ? "Source-derived fast lane"
+                : "Dynamic scheduler"}
             </span>
             <span>
-              {simulationResearch.outstandingPlans} / 20 outstanding plan slots
+              {simulationResearch.sourceSimulationId
+                ? `${simulationResearch.materializedPlans} / ${simulationResearch.totalPlans} Layer 2 variants materialized`
+                : `${simulationResearch.outstandingPlans} / 20 outstanding plan slots`}
             </span>
           </div>
           <div className="mt-2 flex flex-wrap gap-2 text-neutral-400">
-            <span>
-              {simulationStatusCounts[SimulationStatus.Running] || 0} running
-            </span>
-            <span>
-              {simulationStatusCounts[SimulationStatus.Queued] || 0} queued
-            </span>
-            <span>
-              {simulationStatusCounts[SimulationStatus.Completed] || 0}{" "}
-              completed
-            </span>
-            <span>{simulationResearch.queuedPlans} plans queued</span>
-            <span>{simulationResearch.runningPlans} plans claimed</span>
-            <span>
-              {simulationResearch.finalizingPlans} awaiting finalization or
-              event data
-            </span>
+            {simulationResearch.sourceSimulationId ? (
+              <>
+                <span>Layer 1 snapshots reused</span>
+                <span>
+                  {simulationResearch.materializedPlans} Layer 2 variants
+                  materialized
+                </span>
+                <span>
+                  {simulationResearch.finalizedPlans} Layer 3 variants
+                  recalculated
+                </span>
+              </>
+            ) : (
+              <>
+                <span>
+                  {simulationStatusCounts[SimulationStatus.Running] || 0} running
+                </span>
+                <span>
+                  {simulationStatusCounts[SimulationStatus.Queued] || 0} queued
+                </span>
+                <span>
+                  {simulationStatusCounts[SimulationStatus.Completed] || 0}{" "}
+                  completed
+                </span>
+                <span>{simulationResearch.queuedPlans} plans queued</span>
+                <span>{simulationResearch.runningPlans} plans claimed</span>
+                <span>
+                  {simulationResearch.finalizingPlans} awaiting finalization or
+                  event data
+                </span>
+              </>
+            )}
             {simulationStatusCounts[SimulationStatus.Failed] ? (
               <span className="text-danger-300">
                 {simulationStatusCounts[SimulationStatus.Failed]} failed

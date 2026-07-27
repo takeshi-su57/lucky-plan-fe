@@ -70,6 +70,10 @@ export function SimulationEvaluatorWorkersPanel() {
   const hasEventWait = Boolean(pipeline?.awaitingEventLogPlans);
   const finalizerReady = pipeline?.readyToFinalizeSimulations ?? 0;
   const activeFinalizations = pipeline?.finalizingSimulations ?? 0;
+  const sourceDerivedWaiting = pipeline?.sourceDerivedWaitingToMaterialize ?? 0;
+  const sourceDerivedReady = pipeline?.sourceDerivedReadyToRecalculate ?? 0;
+  const sourceDerivedActive = pipeline?.sourceDerivedRecalculating ?? 0;
+  const sourceDerivedFailed = pipeline?.sourceDerivedFailed ?? 0;
   const constraint = hasFailedPlans
     ? {
         title: "Recovery required",
@@ -208,6 +212,26 @@ export function SimulationEvaluatorWorkersPanel() {
               }}
               detail={`${pipeline?.awaitingEventLogPlans ?? 0} plans are awaiting event data; they are not finalizer-ready queue depth.`}
             />
+          </div>
+        </section>
+
+        <section className="border-primary-200 bg-primary-50/40 rounded-xl border p-4">
+          <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h2 className="font-semibold">Source-derived fast lane</h2>
+              <p className="text-default-500 text-sm">
+                Reuses completed Layer 1 snapshots; only Layer 2 variants and Layer 3 follower calculations run.
+              </p>
+            </div>
+            <Chip color={sourceDerivedFailed ? "danger" : "primary"} size="sm" variant="flat">
+              {sourceDerivedWaiting + sourceDerivedReady + sourceDerivedActive} active or waiting
+            </Chip>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-4">
+            <FleetMetric label="Waiting for Layer 2" value={sourceDerivedWaiting} />
+            <FleetMetric label="Ready for Layer 3" value={sourceDerivedReady} />
+            <FleetMetric label="Recalculating" value={sourceDerivedActive} tone={sourceDerivedActive ? "warning" : undefined} />
+            <FleetMetric label="Failed" value={sourceDerivedFailed} tone={sourceDerivedFailed ? "danger" : undefined} />
           </div>
         </section>
 
