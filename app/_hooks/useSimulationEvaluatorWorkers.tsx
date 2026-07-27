@@ -273,6 +273,7 @@ const SIMULATION_WORKFLOW_CONFIG_DOCUMENT = graphql(`
       maxOutstandingDynamicPlans
       finalizerBatchSize
       finalizerConcurrency
+      sourceDerivedRecalculationConcurrency
       finalizerBotCacheConcurrency
       finalizerRetryDelayMs
       maxAwaitingFinalizationPlans

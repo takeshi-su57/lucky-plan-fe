@@ -974,6 +974,10 @@ type SimulationEvaluatorPipelineView {
   queuedEvaluationTasks: Int!
   readyEvaluationTasks: Int!
   readyToFinalizeSimulations: Int!
+  sourceDerivedFailed: Int!
+  sourceDerivedReadyToRecalculate: Int!
+  sourceDerivedRecalculating: Int!
+  sourceDerivedWaitingToMaterialize: Int!
   workerClaimLimit: Int!
 }
 
@@ -1280,6 +1284,7 @@ type SimulationWorkflowConfigView {
   prebuildChunkSourceRecordLimit: Int!
   queuedTaskBatchSize: Int!
   readyTaskScanLimit: Int!
+  sourceDerivedRecalculationConcurrency: Int!
 }
 
 type Strategy {
@@ -1391,6 +1396,7 @@ input UpdateSimulationWorkflowConfigInput {
   prebuildChunkSourceRecordLimit: Int
   queuedTaskBatchSize: Int
   readyTaskScanLimit: Int
+  sourceDerivedRecalculationConcurrency: Int
 }
 
 input UpdateSlInput {

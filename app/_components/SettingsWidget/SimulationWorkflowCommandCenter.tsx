@@ -14,6 +14,7 @@ const sliderFields = [
   ["maxOutstandingDynamicPlans", "Max outstanding dynamic plans", 1, 500, 1],
   ["finalizerBatchSize", "Finalizer batch size", 1, 100, 1],
   ["finalizerConcurrency", "Active finalizers", 1, 100, 1],
+  ["sourceDerivedRecalculationConcurrency", "Source-derived recalculations", 1, 100, 1],
   ["finalizerBotCacheConcurrency", "Bot-cache workers per finalizer", 1, 32, 1],
   ["maxAwaitingFinalizationPlans", "Max awaiting finalization", 1, 500, 1],
   ["leaderScoringWindowDays", "Leader scoring lookback (days)", 1, 365, 1],
