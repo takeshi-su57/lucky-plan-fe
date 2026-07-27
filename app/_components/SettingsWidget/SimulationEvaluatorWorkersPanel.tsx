@@ -74,6 +74,31 @@ export function SimulationEvaluatorWorkersPanel() {
   const sourceDerivedReady = pipeline?.sourceDerivedReadyToRecalculate ?? 0;
   const sourceDerivedActive = pipeline?.sourceDerivedRecalculating ?? 0;
   const sourceDerivedFailed = pipeline?.sourceDerivedFailed ?? 0;
+  const sourceDerivedInFlight =
+    sourceDerivedWaiting + sourceDerivedReady + sourceDerivedActive;
+  const sourceDerivedStages = [
+    {
+      label: "Materializing Layer 2",
+      shortLabel: "Layer 2 queue",
+      value: sourceDerivedWaiting,
+      color: "bg-primary",
+      dotColor: "bg-primary",
+    },
+    {
+      label: "Ready for Layer 3",
+      shortLabel: "Layer 3 ready",
+      value: sourceDerivedReady,
+      color: "bg-warning",
+      dotColor: "bg-warning",
+    },
+    {
+      label: "Recalculating followers",
+      shortLabel: "Recalculating",
+      value: sourceDerivedActive,
+      color: "bg-secondary",
+      dotColor: "bg-secondary",
+    },
+  ];
   const constraint = hasFailedPlans
     ? {
         title: "Recovery required",
@@ -100,7 +125,8 @@ export function SimulationEvaluatorWorkersPanel() {
             }
           : {
               title: "Simulation workflow is progressing",
-              detail: "No failed plans, downstream backpressure, or event-data wait is currently reported.",
+              detail:
+                "No failed plans, downstream backpressure, or event-data wait is currently reported.",
               tone: "success" as const,
             };
 
@@ -111,11 +137,10 @@ export function SimulationEvaluatorWorkersPanel() {
       <CardBody className="gap-5 p-4 sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h6 className="text-lg font-semibold">
-              Simulation workflow
-            </h6>
+            <h6 className="text-lg font-semibold">Simulation workflow</h6>
             <p className="text-default-500 text-sm">
-              Follow each cron-owned layer to see the current queue and the real blocker.
+              Follow each cron-owned layer to see the current queue and the real
+              blocker.
             </p>
           </div>
           <Chip size="sm" variant="flat">
@@ -134,11 +159,17 @@ export function SimulationEvaluatorWorkersPanel() {
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="font-semibold">Current constraint: {constraint.title}</p>
-              <p className="text-default-600 mt-1 text-sm">{constraint.detail}</p>
+              <p className="font-semibold">
+                Current constraint: {constraint.title}
+              </p>
+              <p className="text-default-600 mt-1 text-sm">
+                {constraint.detail}
+              </p>
             </div>
             <Chip color={constraint.tone} size="sm" variant="flat">
-              {constraint.tone === "success" ? "No active blocker" : "Needs attention"}
+              {constraint.tone === "success"
+                ? "No active blocker"
+                : "Needs attention"}
             </Chip>
           </div>
         </div>
@@ -148,10 +179,13 @@ export function SimulationEvaluatorWorkersPanel() {
             <div>
               <h2 className="font-semibold">Cron workflow</h2>
               <p className="text-default-500 text-sm">
-                Queue units stay explicit: evaluator tasks, materializer plans, then finalizer simulations.
+                Queue units stay explicit: evaluator tasks, materializer plans,
+                then finalizer simulations.
               </p>
             </div>
-            <Chip size="sm" variant="flat">Each cron is scheduled every 5 seconds</Chip>
+            <Chip size="sm" variant="flat">
+              Each cron is scheduled every 5 seconds
+            </Chip>
           </div>
           <div className="grid gap-3 xl:grid-cols-3">
             <WorkflowLane
@@ -163,7 +197,11 @@ export function SimulationEvaluatorWorkersPanel() {
               statusTone={evaluatorHealthy ? "success" : "warning"}
               metrics={[
                 { label: "Reservoir", value: evaluationWaiting, unit: "tasks" },
-                { label: "Claimed", value: `${pipeline?.claimedEvaluationTasks ?? 0} / ${pipeline?.workerClaimLimit ?? 0}`, unit: "tasks" },
+                {
+                  label: "Claimed",
+                  value: `${pipeline?.claimedEvaluationTasks ?? 0} / ${pipeline?.workerClaimLimit ?? 0}`,
+                  unit: "tasks",
+                },
               ]}
               capacity={{
                 label: "Evaluator queue capacity",
@@ -172,7 +210,11 @@ export function SimulationEvaluatorWorkersPanel() {
                 target: pipeline?.queueLowWatermark ?? 0,
                 unit: "tasks",
               }}
-              detail={pipeline ? `Reservoir target ${pipeline.queueLowWatermark}–${pipeline.queueHighWatermark} tasks · ${pipeline.queuedEvaluationTasks} queued, ${pipeline.readyEvaluationTasks} ready` : "Loading evaluator queue"}
+              detail={
+                pipeline
+                  ? `Reservoir target ${pipeline.queueLowWatermark}–${pipeline.queueHighWatermark} tasks · ${pipeline.queuedEvaluationTasks} queued, ${pipeline.readyEvaluationTasks} ready`
+                  : "Loading evaluator queue"
+              }
             />
             <WorkflowLane
               number="2"
@@ -182,8 +224,16 @@ export function SimulationEvaluatorWorkersPanel() {
               status={materializerSaturated ? "Backpressure active" : "Healthy"}
               statusTone={materializerSaturated ? "danger" : "success"}
               metrics={[
-                { label: "Waiting", value: pipeline?.awaitingFinalizationPlans ?? 0, unit: "plans" },
-                { label: "Active", value: `${pipeline?.finalizingPlans ?? 0} / ${pipeline?.finalizerConcurrency ?? 0}`, unit: "plans" },
+                {
+                  label: "Waiting",
+                  value: pipeline?.awaitingFinalizationPlans ?? 0,
+                  unit: "plans",
+                },
+                {
+                  label: "Active",
+                  value: `${pipeline?.finalizingPlans ?? 0} / ${pipeline?.finalizerConcurrency ?? 0}`,
+                  unit: "plans",
+                },
               ]}
               capacity={{
                 label: "Materializer queue capacity",
@@ -202,7 +252,11 @@ export function SimulationEvaluatorWorkersPanel() {
               statusTone={hasEventWait ? "warning" : "success"}
               metrics={[
                 { label: "Ready", value: finalizerReady, unit: "simulations" },
-                { label: "Active", value: activeFinalizations, unit: "simulations" },
+                {
+                  label: "Active",
+                  value: activeFinalizations,
+                  unit: "simulations",
+                },
               ]}
               capacity={{
                 label: "Finalizer concurrency",
@@ -216,22 +270,108 @@ export function SimulationEvaluatorWorkersPanel() {
         </section>
 
         <section className="border-primary-200 bg-primary-50/40 rounded-xl border p-4">
-          <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="font-semibold">Source-derived fast lane</h2>
               <p className="text-default-500 text-sm">
-                Reuses completed Layer 1 snapshots; only Layer 2 variants and Layer 3 follower calculations run.
+                Reuses completed Layer 1 snapshots; only Layer 2 variants and
+                Layer 3 follower calculations run.
               </p>
             </div>
-            <Chip color={sourceDerivedFailed ? "danger" : "primary"} size="sm" variant="flat">
-              {sourceDerivedWaiting + sourceDerivedReady + sourceDerivedActive} active or waiting
+            <Chip
+              color={sourceDerivedFailed ? "danger" : "primary"}
+              size="sm"
+              variant="flat"
+            >
+              {sourceDerivedInFlight} in flight
             </Chip>
           </div>
-          <div className="grid gap-3 sm:grid-cols-4">
-            <FleetMetric label="Waiting for Layer 2" value={sourceDerivedWaiting} />
-            <FleetMetric label="Ready for Layer 3" value={sourceDerivedReady} />
-            <FleetMetric label="Recalculating" value={sourceDerivedActive} tone={sourceDerivedActive ? "warning" : undefined} />
-            <FleetMetric label="Failed" value={sourceDerivedFailed} tone={sourceDerivedFailed ? "danger" : undefined} />
+
+          <div className="mt-5">
+            <div className="mb-2 flex items-center justify-between gap-3 text-xs">
+              <span className="text-default-600 font-medium">
+                Current in-flight distribution
+              </span>
+              <span className="text-default-500 tabular-nums">
+                {sourceDerivedInFlight.toLocaleString()} simulations
+              </span>
+            </div>
+            <div
+              className="bg-default-200 flex h-3 overflow-hidden rounded-full"
+              role="img"
+              aria-label={`${sourceDerivedWaiting} materializing Layer 2, ${sourceDerivedReady} ready for Layer 3, ${sourceDerivedActive} recalculating followers`}
+            >
+              {sourceDerivedInFlight > 0 ? (
+                sourceDerivedStages
+                  .filter((stage) => stage.value > 0)
+                  .map((stage) => (
+                    <div
+                      key={stage.label}
+                      className={`${stage.color} h-full min-w-1 transition-[flex-grow] duration-700 ease-out`}
+                      style={{ flexGrow: stage.value, flexBasis: 0 }}
+                      title={`${stage.label}: ${stage.value}`}
+                    />
+                  ))
+              ) : (
+                <div className="bg-success/50 h-full w-full" />
+              )}
+            </div>
+            <p className="text-default-400 mt-1.5 text-[11px]">
+              Work moves left to right. Completed recalculations leave this bar.
+            </p>
+          </div>
+
+          <div className="mt-4 grid items-stretch gap-2 md:grid-cols-[1fr_auto_1fr_auto_1fr]">
+            {sourceDerivedStages.map((stage, index) => (
+              <div key={stage.label} className="contents">
+                <div className="border-default-200 bg-content1/70 rounded-lg border px-3 py-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-default-500 flex items-center gap-2 text-xs font-medium">
+                      <span
+                        className={`h-2 w-2 rounded-full ${stage.dotColor}`}
+                      />
+                      {stage.shortLabel}
+                    </span>
+                    <span className="text-default-400 text-[11px] tabular-nums">
+                      {sourceDerivedInFlight > 0
+                        ? `${Math.round((stage.value / sourceDerivedInFlight) * 100)}%`
+                        : "0%"}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xl font-semibold tabular-nums">
+                    {stage.value.toLocaleString()}
+                  </p>
+                  <p className="text-default-400 text-[11px]">{stage.label}</p>
+                </div>
+                {index < sourceDerivedStages.length - 1 ? (
+                  <span
+                    aria-hidden="true"
+                    className="text-default-300 hidden self-center text-lg md:block"
+                  >
+                    →
+                  </span>
+                ) : null}
+              </div>
+            ))}
+          </div>
+
+          <div
+            className={`mt-3 flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-xs ${
+              sourceDerivedFailed
+                ? "border-danger-200 bg-danger-50 text-danger-700"
+                : "border-success-200 bg-success-50 text-success-700"
+            }`}
+          >
+            <span className="font-medium">
+              {sourceDerivedFailed
+                ? "Recovery required"
+                : sourceDerivedInFlight
+                  ? "Fast lane is processing normally"
+                  : "Fast lane is clear"}
+            </span>
+            <span className="font-semibold tabular-nums">
+              {sourceDerivedFailed.toLocaleString()} failed
+            </span>
           </div>
         </section>
 
@@ -239,14 +379,56 @@ export function SimulationEvaluatorWorkersPanel() {
           <CardBody className="gap-3 p-4">
             <div>
               <h2 className="font-semibold">Workflow diagnostics</h2>
-              <p className="text-default-500 text-sm">The exact state that can slow or stop each layer.</p>
+              <p className="text-default-500 text-sm">
+                The exact state that can slow or stop each layer.
+              </p>
             </div>
             <div className="overflow-x-auto">
-              <div className="min-w-[720px] divide-default-100 divide-y text-sm">
-                <DiagnosticRow state="Evaluator reservoir" count={`${evaluationWaiting} tasks`} meaning="Work available for evaluator workers" action={pipeline ? `Keep between ${pipeline.queueLowWatermark} and ${pipeline.queueHighWatermark} tasks` : "Loading target"} tone={evaluatorHealthy ? "success" : "warning"} />
-                <DiagnosticRow state="Materializer backlog" count={`${finalizerBacklog} plans`} meaning="Completed evaluations awaiting or using materializer capacity" action={materializerSaturated ? "Increase capacity or wait for backlog to drain" : "No action needed"} tone={materializerSaturated ? "danger" : "success"} />
-                <DiagnosticRow state="Future-event wait" count={`${pipeline?.awaitingEventLogPlans ?? 0} plans`} meaning="Waiting for position-close data before finalization" action={hasEventWait ? "Monitor event ingestion; this does not consume materializer capacity" : "No event-data wait"} tone={hasEventWait ? "warning" : "success"} />
-                <DiagnosticRow state="Failed execution plans" count={`${pipeline?.failedExecutionPlans ?? 0} plans`} meaning="Plans requiring recovery" action={hasFailedPlans ? "Inspect failures and retry or recover" : "No recovery required"} tone={hasFailedPlans ? "danger" : "success"} />
+              <div className="divide-default-100 min-w-180 divide-y text-sm">
+                <DiagnosticRow
+                  state="Evaluator reservoir"
+                  count={`${evaluationWaiting} tasks`}
+                  meaning="Work available for evaluator workers"
+                  action={
+                    pipeline
+                      ? `Keep between ${pipeline.queueLowWatermark} and ${pipeline.queueHighWatermark} tasks`
+                      : "Loading target"
+                  }
+                  tone={evaluatorHealthy ? "success" : "warning"}
+                />
+                <DiagnosticRow
+                  state="Materializer backlog"
+                  count={`${finalizerBacklog} plans`}
+                  meaning="Completed evaluations awaiting or using materializer capacity"
+                  action={
+                    materializerSaturated
+                      ? "Increase capacity or wait for backlog to drain"
+                      : "No action needed"
+                  }
+                  tone={materializerSaturated ? "danger" : "success"}
+                />
+                <DiagnosticRow
+                  state="Future-event wait"
+                  count={`${pipeline?.awaitingEventLogPlans ?? 0} plans`}
+                  meaning="Waiting for position-close data before finalization"
+                  action={
+                    hasEventWait
+                      ? "Monitor event ingestion; this does not consume materializer capacity"
+                      : "No event-data wait"
+                  }
+                  tone={hasEventWait ? "warning" : "success"}
+                />
+                <DiagnosticRow
+                  state="Failed execution plans"
+                  count={`${pipeline?.failedExecutionPlans ?? 0} plans`}
+                  meaning="Plans requiring recovery"
+                  action={
+                    hasFailedPlans
+                      ? "Inspect failures and retry or recover"
+                      : "No recovery required"
+                  }
+                  tone={hasFailedPlans ? "danger" : "success"}
+                />
               </div>
             </div>
           </CardBody>
@@ -291,7 +473,7 @@ export function SimulationEvaluatorWorkersPanel() {
             </div>
 
             <div className="border-default-200 overflow-x-auto rounded-xl border">
-              <div className="min-w-[840px]">
+              <div className="min-w-210">
                 <div className="border-default-100 text-default-400 grid grid-cols-[minmax(260px,1.3fr)_minmax(190px,.8fr)_minmax(190px,.8fr)_auto] items-center gap-6 border-b px-5 py-3 text-xs font-medium tracking-wide uppercase">
                   <span>Worker</span>
                   <span>Capacity</span>
@@ -354,7 +536,9 @@ export function SimulationEvaluatorWorkersPanel() {
                             <span>·</span>
                             <span>{worker.runtimeStatus}</span>
                             <span>·</span>
-                            <span>{worker.version || "version unavailable"}</span>
+                            <span>
+                              {worker.version || "version unavailable"}
+                            </span>
                             <span>·</span>
                             <span>{age(worker.lastHeartbeatAt)}</span>
                           </div>
@@ -474,7 +658,9 @@ function WorkflowLane({
       <CardBody className="gap-4 p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
-            <span className={`${laneToneClass} flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold`}>
+            <span
+              className={`${laneToneClass} flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold`}
+            >
               {number}
             </span>
             <div>
@@ -482,7 +668,9 @@ function WorkflowLane({
               <p className="text-default-500 font-mono text-xs">{cron}</p>
             </div>
           </div>
-          <Chip color={statusTone} size="sm" variant="flat">{status}</Chip>
+          <Chip color={statusTone} size="sm" variant="flat">
+            {status}
+          </Chip>
         </div>
         <div className="grid grid-cols-2 gap-2">
           {metrics.map((metric) => (
@@ -518,7 +706,9 @@ function CapacityGauge({
   tone: "primary" | "secondary" | "warning";
 }) {
   const safeMaximum = Math.max(maximum, 0);
-  const percent = safeMaximum ? Math.min(100, (current / safeMaximum) * 100) : 0;
+  const percent = safeMaximum
+    ? Math.min(100, (current / safeMaximum) * 100)
+    : 0;
   const targetPercent =
     safeMaximum && target ? Math.min(100, (target / safeMaximum) * 100) : null;
   const fillClass = {
@@ -532,7 +722,10 @@ function CapacityGauge({
       <div className="flex items-baseline justify-between gap-3">
         <p className="text-default-500 text-xs">{label}</p>
         <p className="text-sm font-semibold tabular-nums">
-          {current} <span className="text-default-500 font-normal">/ {safeMaximum} {unit}</span>
+          {current}{" "}
+          <span className="text-default-500 font-normal">
+            / {safeMaximum} {unit}
+          </span>
         </p>
       </div>
       <div className="bg-default-200 relative mt-2 h-2 overflow-visible rounded-full">
