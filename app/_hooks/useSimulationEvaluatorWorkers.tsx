@@ -88,6 +88,10 @@ export const SIMULATION_EVALUATOR_PIPELINE_DOCUMENT = graphql(`
       maxAwaitingFinalizationPlans
       maxOutstandingDynamicPlans
       backpressureActive
+      sourceDerivedWaitingToMaterialize
+      sourceDerivedReadyToRecalculate
+      sourceDerivedRecalculating
+      sourceDerivedFailed
     }
   }
 `);

@@ -64,15 +64,16 @@ const availableVersions = {
     Version.V9,
     Version.V10,
   ],
-  [Platform.Gmx]: [Version.V2],
+  [Platform.Gmx]: [Version.V1, Version.V2],
   [Platform.Avnt]: [Version.V1],
 };
 
 function isHistoricalGnsContract(contract: Contract) {
   return (
-    contract.platform === Platform.Gns &&
-    (contract.version === Version.V6V7 ||
-      contract.version === Version.V8V9_2)
+    (contract.platform === Platform.Gns &&
+      (contract.version === Version.V6V7 ||
+        contract.version === Version.V8V9_2)) ||
+    (contract.platform === Platform.Gmx && contract.version === Version.V1)
   );
 }
 

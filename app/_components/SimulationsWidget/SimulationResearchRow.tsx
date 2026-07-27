@@ -206,6 +206,7 @@ export function SimulationResearchRow({
             awaitingEventPlans={simulationResearch.awaitingEventPlans}
             finalizedPlans={simulationResearch.finalizedPlans}
             status={simulationResearch.status as SimulationStatus}
+            sourceSimulationId={simulationResearch.sourceSimulationId}
             compact
           />
         </CardBody>
