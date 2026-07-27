@@ -20,6 +20,16 @@ export function SimulationCreateTabs() {
           Define a research rule. Simulations, plan windows, and automations are
           generated from it.
         </p>
+        <a
+          className="text-primary-400 mt-2 w-fit text-sm font-medium hover:underline"
+          href={`/simulations/create/professional${
+            Number.isInteger(sourceSimulationId) && sourceSimulationId! > 0
+              ? `?sourceSimulationId=${sourceSimulationId}`
+              : ""
+          }`}
+        >
+          Professional batch creation →
+        </a>
       </div>
 
       <SimulationCreationPanel

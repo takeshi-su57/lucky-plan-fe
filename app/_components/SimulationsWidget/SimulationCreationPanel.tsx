@@ -59,7 +59,7 @@ type RangeEntryErrors = Partial<Record<"min" | "max", string>>;
 
 type ImportedRange = { min: number; max: number };
 type ImportedRangeGroup = { ranges: ImportedRange[] };
-type ImportedResearchConfiguration = {
+export type ImportedResearchConfiguration = {
   version: 2;
   title: string;
   description: string;
@@ -377,7 +377,40 @@ function parseImportedRangeGroups(
   return groups;
 }
 
-function parseImportedResearchConfiguration(
+export function getImportedConfigurationSimulationCount(
+  configuration: Pick<
+    ImportedResearchConfiguration,
+    | "trade"
+    | "r2"
+    | "slope"
+    | "collateral"
+    | "size"
+    | "leverage"
+    | "score"
+    | "leaderExecutionCollateral"
+    | "leaderExecutionSize"
+    | "leaderExecutionLeverage"
+  >,
+) {
+  return Object.values({
+    trade: configuration.trade,
+    r2: configuration.r2,
+    slope: configuration.slope,
+    collateral: configuration.collateral,
+    size: configuration.size,
+    leverage: configuration.leverage,
+    score: configuration.score,
+    leaderExecutionCollateral: configuration.leaderExecutionCollateral,
+    leaderExecutionSize: configuration.leaderExecutionSize,
+    leaderExecutionLeverage: configuration.leaderExecutionLeverage,
+  }).reduce(
+    (count, groups) =>
+      count * (groups.length === 1 ? groups[0].ranges.length : groups.length),
+    1,
+  );
+}
+
+export function parseImportedResearchConfiguration(
   rawText: string,
 ): ImportedResearchConfiguration {
   let value: unknown;
@@ -539,22 +572,8 @@ function parseImportedResearchConfiguration(
     { min: 0 },
   );
 
-  const simulationCount = Object.values({
-    trade: configuration.trade,
-    r2: configuration.r2,
-    slope: configuration.slope,
-    collateral: configuration.collateral,
-    size: configuration.size,
-    leverage: configuration.leverage,
-    score: configuration.score,
-    leaderExecutionCollateral: configuration.leaderExecutionCollateral,
-    leaderExecutionSize: configuration.leaderExecutionSize,
-    leaderExecutionLeverage: configuration.leaderExecutionLeverage,
-  }).reduce(
-    (count, groups) =>
-      count * (groups.length === 1 ? groups[0].ranges.length : groups.length),
-    1,
-  );
+  const simulationCount =
+    getImportedConfigurationSimulationCount(configuration);
 
   if (simulationCount > MAX_SIMULATIONS_PER_RESEARCH) {
     throw new Error(
@@ -598,9 +617,15 @@ function countPlanWindows(
 export function SimulationCreationPanel({
   compactHeading = false,
   sourceSimulationId,
+  initialConfigurationText,
+  hideConfigurationImporter = false,
+  onCreated,
 }: {
   compactHeading?: boolean;
   sourceSimulationId?: number;
+  initialConfigurationText?: string;
+  hideConfigurationImporter?: boolean;
+  onCreated?: (researchId: number) => void;
 }) {
   const router = useRouter();
   const { createSimulationResearch, loading } = useCreateSimulationResearch();
@@ -706,8 +731,9 @@ export function SimulationCreationPanel({
         }),
       );
 
-    setTitle(`${sourceSimulation.title} — Layer 2/3 research`);
-    setDescription(sourceSimulation.description);
+    // A source simulation supplies the frozen Layer 1 baseline only. Title
+    // and description describe this new Layer 2/3 research and remain owned
+    // by the imported configuration.
     setPlatform(sourceSimulation.platform);
     setDirection(sourceSimulation.direction);
     setScoreFormular(sourceSimulation.scoreFormular);
@@ -752,13 +778,12 @@ export function SimulationCreationPanel({
     alternatives: groups.length === 1 && groups[0].ranges.length > 1,
   });
 
-  const applyConfiguration = () => {
+  const applyConfiguration = (rawText = configurationText) => {
     setConfigurationError(null);
     setConfigurationMessage(null);
 
     try {
-      const configuration =
-        parseImportedResearchConfiguration(configurationText);
+      const configuration = parseImportedResearchConfiguration(rawText);
       const trade = mapImportedRangeGroups("trade", configuration.trade);
       const r2 = mapImportedRangeGroups("r2", configuration.r2);
       const slope = mapImportedRangeGroups("slope", configuration.slope);
@@ -848,6 +873,16 @@ export function SimulationCreationPanel({
       );
     }
   };
+
+  useEffect(() => {
+    if (!initialConfigurationText) return;
+
+    setConfigurationText(initialConfigurationText);
+    applyConfiguration(initialConfigurationText);
+    // Each batch-review panel is keyed by its configuration, so this applies
+    // exactly once for that review step.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialConfigurationText]);
 
   const handleConfigurationFile = async (
     event: ChangeEvent<HTMLInputElement>,
@@ -1264,6 +1299,11 @@ export function SimulationCreationPanel({
         )
       : null;
 
+    if (research?.id && onCreated) {
+      onCreated(research.id);
+      return;
+    }
+
     if (research?.id) {
       router.push(`/simulations/research/${research.id}`);
     }
@@ -1284,73 +1324,75 @@ export function SimulationCreationPanel({
         </div>
       ) : null}
 
-      <Card
-        shadow="none"
-        className="border-default-200 bg-content1 rounded-lg border"
-      >
-        <CardBody className="gap-4">
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h2 className="text-base font-semibold text-white">
-                Expert: Input Configuration From JSON
-              </h2>
-              <p className="text-sm text-neutral-400">
-                Paste an AI-generated configuration or load a JSON file. It only
-                fills this form; Create Research remains the sole submission
-                step.
-              </p>
+      {!hideConfigurationImporter ? (
+        <Card
+          shadow="none"
+          className="border-default-200 bg-content1 rounded-lg border"
+        >
+          <CardBody className="gap-4">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-base font-semibold text-white">
+                  Expert: Input Configuration From JSON
+                </h2>
+                <p className="text-sm text-neutral-400">
+                  Paste an AI-generated configuration or load a JSON file. It
+                  only fills this form; Create Research remains the sole
+                  submission step.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="flat"
+                onPress={() => void copyConfigurationTemplate()}
+              >
+                Copy JSON Template
+              </Button>
             </div>
-            <Button
-              size="sm"
-              variant="flat"
-              onPress={() => void copyConfigurationTemplate()}
-            >
-              Copy JSON Template
-            </Button>
-          </div>
 
-          <Textarea
-            minRows={8}
-            value={configurationText}
-            onValueChange={setConfigurationText}
-            label="Simulation research configuration JSON"
-            placeholder='{"version": 2, "title": "...", ...}'
-            aria-label="Simulation research configuration JSON"
-            isInvalid={Boolean(configurationError)}
-            errorMessage={configurationError ?? undefined}
-          />
+            <Textarea
+              minRows={8}
+              value={configurationText}
+              onValueChange={setConfigurationText}
+              label="Simulation research configuration JSON"
+              placeholder='{"version": 2, "title": "...", ...}'
+              aria-label="Simulation research configuration JSON"
+              isInvalid={Boolean(configurationError)}
+              errorMessage={configurationError ?? undefined}
+            />
 
-          <input
-            ref={configurationFileInputRef}
-            className="hidden"
-            type="file"
-            accept="application/json,.json"
-            onChange={(event) => void handleConfigurationFile(event)}
-          />
+            <input
+              ref={configurationFileInputRef}
+              className="hidden"
+              type="file"
+              accept="application/json,.json"
+              onChange={(event) => void handleConfigurationFile(event)}
+            />
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              size="sm"
-              variant="flat"
-              onPress={() => configurationFileInputRef.current?.click()}
-            >
-              Choose JSON File
-            </Button>
-            <Button
-              size="sm"
-              color="primary"
-              isDisabled={configurationText.trim() === ""}
-              onPress={applyConfiguration}
-            >
-              Apply Configuration
-            </Button>
-          </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant="flat"
+                onPress={() => configurationFileInputRef.current?.click()}
+              >
+                Choose JSON File
+              </Button>
+              <Button
+                size="sm"
+                color="primary"
+                isDisabled={configurationText.trim() === ""}
+                onPress={() => applyConfiguration()}
+              >
+                Apply Configuration
+              </Button>
+            </div>
 
-          {configurationMessage ? (
-            <p className="text-sm text-emerald-400">{configurationMessage}</p>
-          ) : null}
-        </CardBody>
-      </Card>
+            {configurationMessage ? (
+              <p className="text-sm text-emerald-400">{configurationMessage}</p>
+            ) : null}
+          </CardBody>
+        </Card>
+      ) : null}
 
       <Card
         shadow="none"
