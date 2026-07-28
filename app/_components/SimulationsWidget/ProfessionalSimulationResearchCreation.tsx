@@ -2,20 +2,59 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { useMutation } from "@apollo/client/react";
 import { Button, Card, CardBody, Textarea } from "@heroui/react";
 
 import {
   getImportedConfigurationSimulationCount,
+  type ImportedResearchConfiguration,
   parseImportedResearchConfiguration,
   SimulationCreationPanel,
 } from "./SimulationCreationPanel";
+import {
+  CREATE_SIMULATION_RESEARCH_DOCUMENT,
+  CREATE_SIMULATION_RESEARCH_FROM_SIMULATION_DOCUMENT,
+  SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT,
+} from "@/app/_hooks/useSimulations";
+import { getFragmentData } from "@/graphql/gql";
+import type { CreateSimulationResearchInput } from "@/graphql/gql/graphql";
 
 type ParsedConfiguration = {
   text: string;
   title: string;
   sourceSimulationId?: number;
   simulationCount: number;
+  configuration: ImportedResearchConfiguration;
 };
+
+function toCreateSimulationResearchInput(
+  configuration: ImportedResearchConfiguration,
+): CreateSimulationResearchInput {
+  return {
+    title: configuration.title,
+    description: configuration.description,
+    platform: configuration.platform,
+    startAt: configuration.startAt,
+    endAt: configuration.endAt,
+    days: configuration.days,
+    gapDays: configuration.gapDays,
+    direction: configuration.direction,
+    trade: configuration.trade,
+    r2: configuration.r2,
+    slope: configuration.slope,
+    collateral: configuration.collateral,
+    size: configuration.size,
+    leverage: configuration.leverage,
+    leaderExecutionCollateral: configuration.leaderExecutionCollateral,
+    leaderExecutionSize: configuration.leaderExecutionSize,
+    leaderExecutionLeverage: configuration.leaderExecutionLeverage,
+    followerRiskSize: configuration.followerRiskSize,
+    followerRiskCollateral: configuration.followerRiskCollateral,
+    score: configuration.score,
+    scoreFormular: configuration.scoreFormular,
+    sizingFormular: configuration.sizingFormular,
+  };
+}
 
 function parseProfessionalConfigurations(
   rawText: string,
@@ -45,6 +84,7 @@ function parseProfessionalConfigurations(
         title: parsed.title,
         sourceSimulationId: parsed.sourceSimulationId,
         simulationCount: getImportedConfigurationSimulationCount(parsed),
+        configuration: parsed,
       };
     } catch (error) {
       const message =
@@ -65,9 +105,20 @@ export function ProfessionalSimulationResearchCreation({
     [],
   );
   const [error, setError] = useState<string | null>(null);
-  const [step, setStep] = useState<"import" | "review" | "complete">("import");
+  const [step, setStep] = useState<
+    "import" | "review" | "creating" | "complete"
+  >("import");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [createdResearchIds, setCreatedResearchIds] = useState<number[]>([]);
+  const [bulkCreationError, setBulkCreationError] = useState<string | null>(
+    null,
+  );
+  const [createSimulationResearch] = useMutation(
+    CREATE_SIMULATION_RESEARCH_DOCUMENT,
+  );
+  const [createSimulationResearchFromSimulation] = useMutation(
+    CREATE_SIMULATION_RESEARCH_FROM_SIMULATION_DOCUMENT,
+  );
 
   const validateConfigurations = () => {
     setError(null);
@@ -91,7 +142,62 @@ export function ProfessionalSimulationResearchCreation({
     }
     setCurrentIndex(0);
     setCreatedResearchIds([]);
+    setBulkCreationError(null);
     setStep("review");
+  };
+
+  const createAllFromCurrent = async () => {
+    setBulkCreationError(null);
+    setStep("creating");
+
+    for (let index = currentIndex; index < configurations.length; index += 1) {
+      const configuration = configurations[index];
+      setCurrentIndex(index);
+
+      try {
+        const input = toCreateSimulationResearchInput(
+          configuration.configuration,
+        );
+        const effectiveSourceSimulationId =
+          configuration.sourceSimulationId ?? sourceSimulationId;
+        const { data } = effectiveSourceSimulationId
+          ? await createSimulationResearchFromSimulation({
+              variables: {
+                sourceSimulationId: effectiveSourceSimulationId,
+                input,
+              },
+            })
+          : await createSimulationResearch({ variables: { input } });
+        const createdResearch =
+          data && "createSimulationResearchFromSimulation" in data
+            ? data.createSimulationResearchFromSimulation
+            : data?.createSimulationResearch;
+        const research = createdResearch
+          ? getFragmentData(
+              SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT,
+              createdResearch,
+            )
+          : null;
+
+        if (!research?.id) {
+          throw new Error("The research was created without a returned ID");
+        }
+
+        setCreatedResearchIds((ids) => [...ids, research.id]);
+      } catch (creationError) {
+        setBulkCreationError(
+          `Creation stopped at ${index + 1} of ${configurations.length}: ${
+            creationError instanceof Error
+              ? creationError.message
+              : "Unable to create this research"
+          }`,
+        );
+        setStep("review");
+        return;
+      }
+    }
+
+    setStep("complete");
   };
 
   const handleFile = async (file: File | undefined) => {
@@ -146,6 +252,29 @@ export function ProfessionalSimulationResearchCreation({
     );
   }
 
+  if (step === "creating") {
+    const configuration = configurations[currentIndex];
+    return (
+      <Card
+        className="bg-content1 max-w-3xl border border-primary-500/30"
+        shadow="none"
+      >
+        <CardBody className="gap-3 p-6">
+          <p className="text-primary-400 text-sm font-medium">
+            Creating {currentIndex + 1} of {configurations.length}
+          </p>
+          <h1 className="text-xl font-bold text-white">
+            Creating batch researches sequentially
+          </h1>
+          <p className="text-sm text-neutral-300">
+            Creating {configuration.title}. Please keep this page open until
+            the batch finishes.
+          </p>
+        </CardBody>
+      </Card>
+    );
+  }
+
   if (step === "review") {
     const configuration = configurations[currentIndex];
     return (
@@ -171,11 +300,22 @@ export function ProfessionalSimulationResearchCreation({
                   : null}
               </p>
             </div>
-            <Button variant="flat" onPress={() => setStep("import")}>
-              Edit batch
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="flat" onPress={() => setStep("import")}>
+                Edit batch
+              </Button>
+              <Button color="primary" onPress={() => void createAllFromCurrent()}>
+                Create all from here
+              </Button>
+            </div>
           </CardBody>
         </Card>
+
+        {bulkCreationError ? (
+          <p className="rounded-xl border border-danger-500/30 bg-danger-500/10 p-3 text-sm text-danger-300">
+            {bulkCreationError}
+          </p>
+        ) : null}
 
         <SimulationCreationPanel
           key={`${currentIndex}-${configuration.text}`}
@@ -187,6 +327,7 @@ export function ProfessionalSimulationResearchCreation({
           hideConfigurationImporter
           onCreated={(researchId) => {
             setCreatedResearchIds((ids) => [...ids, researchId]);
+            setBulkCreationError(null);
             if (currentIndex + 1 === configurations.length) {
               setStep("complete");
               return;
