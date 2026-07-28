@@ -6,6 +6,7 @@ import { FaPlus } from "react-icons/fa";
 import { useEffect, useState } from "react";
 
 import { SimulationResearchRow } from "./SimulationResearchRow";
+import { BatchAiReportDownloadButton } from "./BatchAiReportDownloadButton";
 import { useGetSimulationResearches } from "@/app/_hooks/useSimulations";
 import { PaginatedViews } from "@/components/views/PaginatedViews";
 
@@ -29,16 +30,19 @@ export function Simulations() {
       <div className="flex items-center justify-between">
         <h1>Simulations</h1>
 
-        <Link href="/simulations/create">
-          <Button
-            color="primary"
-            variant="flat"
-            size="sm"
-            startContent={<FaPlus />}
-          >
-            Create Simulation
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <BatchAiReportDownloadButton />
+          <Link href="/simulations/create">
+            <Button
+              color="primary"
+              variant="flat"
+              size="sm"
+              startContent={<FaPlus />}
+            >
+              Create Simulation
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <PaginatedViews
@@ -54,7 +58,6 @@ export function Simulations() {
               simulationResearch={simulationResearch}
             />
           ))}
-
         </div>
       </PaginatedViews>
     </div>
