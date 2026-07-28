@@ -377,10 +377,17 @@ type LeaderEvaluationMetrics {
 type Log {
   checked: Boolean!
   details: String
-  id: Int!
+  id: ID!
+  service: String!
   severity: LogSeverity!
   summary: String!
   timestamp: Date!
+}
+
+type LogReviewWeek {
+  reviewedAt: Date
+  reviewedBy: String
+  weekStart: Date!
 }
 
 enum LogSeverity {
@@ -401,12 +408,12 @@ type LogsConnection {
 }
 
 type LogsEdge {
-  cursor: Int!
+  cursor: String!
   node: Log!
 }
 
 type LogsPageInfo {
-  endCursor: Int
+  endCursor: String
   hasNextPage: Boolean!
 }
 
@@ -509,7 +516,7 @@ type Mutation {
   cancelUnassignedSimulationEvaluatorWorkerTask(taskId: String!): Boolean!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
-  checkLog(id: Int!): Log!
+  checkLog(id: String!): Log!
   cleanDB: Boolean!
   cloneMission(id: Int!, manualParams: ManualParams): Boolean!
   closeMission(id: Int!, isForce: Boolean!): Boolean!
@@ -557,6 +564,7 @@ type Mutation {
   resumeSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
   resumeSystem(password: String): Boolean!
   retrySimulationEvaluatorWorkerCache(cacheId: Int!): String!
+  reviewLogWeek(weekStart: Date!): LogReviewWeek!
   setSimulationEvaluatorWorkerCapacity(capacity: Float!, workerId: String!): String!
   startAdaption(contractId: Int!, shouldRestart: Boolean!): Boolean!
   startPlan(id: Int!): Boolean!
@@ -754,7 +762,7 @@ type PnlSnapshotV2InitializedFlag {
 }
 
 type Query {
-  allLogs(after: Int, checked: Boolean!, first: Int!, severity: LogSeverity): LogsConnection!
+  allLogs(after: String, checked: Boolean!, first: Int!, severity: LogSeverity): LogsConnection!
   backendReleaseInfo: BackendReleaseInfo!
   findContract(id: Int!): Contract!
   findStrategy(id: Int!): Strategy
@@ -783,6 +791,7 @@ type Query {
   getSimulationPlanById(id: Int!): SimulationPlanDetails!
   isPnlSnapshotV2Initialized(dateStr: String!, platform: Platform!): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
+  logReviewWeeks: [LogReviewWeek!]!
   simulation(id: Int!): Simulation
   simulationEvaluatorPipeline: SimulationEvaluatorPipelineView!
   simulationEvaluatorWorkerTaskConnection(archive: Boolean! = false, cursor: String, limit: Int! = 30, workerId: String!): SimulationEvaluatorWorkerTaskConnection!

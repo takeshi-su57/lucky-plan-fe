@@ -17,6 +17,7 @@ export const LOG_INFO_FRAGMENT_DOCUMENT = graphql(`
     severity
     summary
     details
+    service
     timestamp
     checked
   }
@@ -27,7 +28,7 @@ export const GET_LOGS_DOCUMENT = graphql(`
     $severity: LogSeverity
     $checked: Boolean!
     $first: Int!
-    $after: Int
+    $after: String
   ) {
     allLogs(
       severity: $severity
@@ -59,9 +60,29 @@ export const GET_LOGS_SEVERITY_COUNTS_DOCUMENT = graphql(`
 `);
 
 export const CHECK_LOG_DOCUMENT = graphql(`
-  mutation checkLog($id: Int!) {
+  mutation checkLog($id: String!) {
     checkLog(id: $id) {
       ...LogInfo
+    }
+  }
+`);
+
+export const GET_LOG_REVIEW_WEEKS_DOCUMENT = graphql(`
+  query logReviewWeeks {
+    logReviewWeeks {
+      weekStart
+      reviewedAt
+      reviewedBy
+    }
+  }
+`);
+
+export const REVIEW_LOG_WEEK_DOCUMENT = graphql(`
+  mutation reviewLogWeek($weekStart: Date!) {
+    reviewLogWeek(weekStart: $weekStart) {
+      weekStart
+      reviewedAt
+      reviewedBy
     }
   }
 `);
@@ -153,7 +174,17 @@ export function useGetLogs(severity: LogSeverity | null, checked: boolean) {
 }
 
 export function useGetLogsSeverityCounts() {
-  return useQuery(GET_LOGS_SEVERITY_COUNTS_DOCUMENT, { pollInterval: 6_000 });
+  return useQuery(GET_LOGS_SEVERITY_COUNTS_DOCUMENT, { pollInterval: 60_000 });
+}
+
+export function useLogReviewWeeks() {
+  return useQuery(GET_LOG_REVIEW_WEEKS_DOCUMENT, { pollInterval: 60_000 });
+}
+
+export function useReviewLogWeek() {
+  return useMutation(REVIEW_LOG_WEEK_DOCUMENT, {
+    refetchQueries: [GET_LOG_REVIEW_WEEKS_DOCUMENT, GET_LOGS_DOCUMENT],
+  });
 }
 
 export function useCheckLog() {

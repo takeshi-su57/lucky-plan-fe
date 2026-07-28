@@ -64,7 +64,9 @@ const wsLink = new GraphQLWsLink(
     connectionParams: () => {
       const userJWTStr = localStorage.getItem(LOCAL_USER_JWT_KEY);
       return {
-        authToken: userJWTStr ? `${JSON.parse(userJWTStr)}` : "",
+        // WebSocket connection parameters are not HTTP headers, but the API
+        // maps this standard authorization value into the guard request.
+        authorization: userJWTStr ? `Bearer ${JSON.parse(userJWTStr)}` : "",
       };
     },
   }),
