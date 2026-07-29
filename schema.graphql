@@ -39,6 +39,17 @@ type BackendReleaseInfo {
   version: String!
 }
 
+input BehavioralFiltersInput {
+  directionalLossPurity: [BehavioralFloatRangeInput!]
+  medianPostLossLeverageRatio: [BehavioralFloatRangeInput!]
+  negativeActiveDayRate: [BehavioralFloatRangeInput!]
+}
+
+input BehavioralFloatRangeInput {
+  max: Float
+  min: Float!
+}
+
 type BotBackwardDetails {
   endedAt: Date
   follower: Follower!
@@ -223,6 +234,7 @@ input CreatePlanInput {
 }
 
 input CreateSimulationResearchInput {
+  behavioralFilters: BehavioralFiltersInput
   collateral: [FloatRangeGroupInput!]!
   days: Int! = 1
   description: String!
@@ -833,6 +845,7 @@ type SeverityCount {
 }
 
 type Simulation {
+  behavioralFiltersJson: String!
   collateral: [SimulationValueRange!]!
   completedPlans: Int!
   createdAt: Date!
@@ -890,6 +903,7 @@ type SimulationBot {
   avgPositivePnl: Float!
   avgSize: Float!
   baseRatio: Float!
+  behavioralFeaturesJson: String
   evaluationMetrics: LeaderEvaluationMetrics!
   followerRiskCollateral: [SimulationValueRange!]!
   followerRiskSize: [SimulationValueRange!]!
@@ -936,6 +950,7 @@ type SimulationBotDetails {
   avgPositivePnl: Float!
   avgSize: Float!
   baseRatio: Float!
+  behavioralFeaturesJson: String
   cacheState: SimulationBotCacheState
   evaluationMetrics: LeaderEvaluationMetrics!
   followerRiskCollateral: [SimulationValueRange!]!
@@ -1112,6 +1127,7 @@ type SimulationResearch {
   aiReportReady: Boolean!
   aiReportRevision: Int!
   awaitingEventPlans: Int!
+  behavioralFiltersJson: String!
   collateral: [SimulationValueRangeGroup!]!
   completedPlans: Int!
   completedRanges: Int!
@@ -1169,6 +1185,7 @@ type SimulationResearchDetails {
   aiReportReady: Boolean!
   aiReportRevision: Int!
   awaitingEventPlans: Int!
+  behavioralFiltersJson: String!
   collateral: [SimulationValueRangeGroup!]!
   completedPlans: Int!
   completedRanges: Int!

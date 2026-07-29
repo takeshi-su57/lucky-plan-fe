@@ -53,6 +53,7 @@ function toCreateSimulationResearchInput(
     score: configuration.score,
     scoreFormular: configuration.scoreFormular,
     sizingFormular: configuration.sizingFormular,
+    behavioralFilters: configuration.behavioralFilters,
   };
 }
 
@@ -256,7 +257,7 @@ export function ProfessionalSimulationResearchCreation({
     const configuration = configurations[currentIndex];
     return (
       <Card
-        className="bg-content1 max-w-3xl border border-primary-500/30"
+        className="bg-content1 border-primary-500/30 max-w-3xl border"
         shadow="none"
       >
         <CardBody className="gap-3 p-6">
@@ -267,8 +268,8 @@ export function ProfessionalSimulationResearchCreation({
             Creating batch researches sequentially
           </h1>
           <p className="text-sm text-neutral-300">
-            Creating {configuration.title}. Please keep this page open until
-            the batch finishes.
+            Creating {configuration.title}. Please keep this page open until the
+            batch finishes.
           </p>
         </CardBody>
       </Card>
@@ -304,7 +305,10 @@ export function ProfessionalSimulationResearchCreation({
               <Button variant="flat" onPress={() => setStep("import")}>
                 Edit batch
               </Button>
-              <Button color="primary" onPress={() => void createAllFromCurrent()}>
+              <Button
+                color="primary"
+                onPress={() => void createAllFromCurrent()}
+              >
                 Create all from here
               </Button>
             </div>
@@ -312,7 +316,7 @@ export function ProfessionalSimulationResearchCreation({
         </Card>
 
         {bulkCreationError ? (
-          <p className="rounded-xl border border-danger-500/30 bg-danger-500/10 p-3 text-sm text-danger-300">
+          <p className="border-danger-500/30 bg-danger-500/10 text-danger-300 rounded-xl border p-3 text-sm">
             {bulkCreationError}
           </p>
         ) : null}

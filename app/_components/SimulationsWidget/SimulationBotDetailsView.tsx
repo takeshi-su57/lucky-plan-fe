@@ -15,10 +15,51 @@ export type SimulationBotDetailsViewProps = {
   simulationBot: SimulationBotDetails;
 };
 
+type BehavioralFeatures = {
+  schemaVersion: 1;
+  sample?: {
+    closedEpisodeCount?: number;
+    activeWindowCount?: number;
+    validPostLossObservationCount?: number;
+    validWindowTransitionCount?: number;
+    gapClosedEpisodeCount?: number;
+  };
+  persistence?: {
+    negativeActiveDayRate?: { value: number | null };
+    negativeWindowContinuationRate?: { value: number | null };
+    negativeToPositiveRecoveryRate?: { value: number | null };
+  };
+  lossComposition?: { directionalLossPurity?: number | null };
+  postLossEscalation?: {
+    medianSizeRatio?: number | null;
+    medianCollateralRatio?: number | null;
+    medianLeverageRatio?: number | null;
+  };
+};
+
+function parseBehavioralFeatures(value: string | null | undefined) {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value) as Partial<BehavioralFeatures>;
+    return parsed.schemaVersion === 1 ? (parsed as BehavioralFeatures) : null;
+  } catch {
+    return null;
+  }
+}
+
+function formatRate(value: number | null | undefined) {
+  return value === null || value === undefined
+    ? "Insufficient data"
+    : `${(value * 100).toFixed(0)}%`;
+}
+
 export function SimulationBotDetailsView({
   simulationBot,
 }: SimulationBotDetailsViewProps) {
   const cacheState = simulationBot.cacheState;
+  const behavioralFeatures = parseBehavioralFeatures(
+    simulationBot.behavioralFeaturesJson,
+  );
   const hasPositions = simulationBot.positions.length > 0;
   const cacheStatusLabel = cacheState
     ? cacheState.rebuilding
@@ -92,9 +133,64 @@ export function SimulationBotDetailsView({
           <span>
             L3 follower size{" "}
             {simulationBot.followerRiskSize
-              .map((range) => `${getPriceStr(range.min)} - ${getPriceStr(range.max)}`)
+              .map(
+                (range) =>
+                  `${getPriceStr(range.min)} - ${getPriceStr(range.max)}`,
+              )
               .join(", ")}
           </span>
+          {behavioralFeatures ? (
+            <div className="mt-2 flex max-w-xl flex-col gap-1 rounded-md border border-amber-500/20 bg-amber-500/5 p-2 text-amber-900 dark:text-amber-200">
+              <span className="font-semibold">Behavioral evaluation</span>
+              <span>
+                {behavioralFeatures.sample?.closedEpisodeCount ?? 0} episodes,{" "}
+                {behavioralFeatures.sample?.activeWindowCount ?? 0} active
+                windows,{" "}
+                {behavioralFeatures.sample?.validPostLossObservationCount ?? 0}{" "}
+                post-loss observations,{" "}
+                {behavioralFeatures.sample?.validWindowTransitionCount ?? 0}{" "}
+                transitions
+                {(behavioralFeatures.sample?.gapClosedEpisodeCount ?? 0) > 0
+                  ? `, ${behavioralFeatures.sample?.gapClosedEpisodeCount} gap closes`
+                  : ""}
+              </span>
+              <span>
+                Negative active days{" "}
+                {formatRate(
+                  behavioralFeatures.persistence?.negativeActiveDayRate?.value,
+                )}
+                , continuation{" "}
+                {formatRate(
+                  behavioralFeatures.persistence?.negativeWindowContinuationRate
+                    ?.value,
+                )}
+                , recovery{" "}
+                {formatRate(
+                  behavioralFeatures.persistence?.negativeToPositiveRecoveryRate
+                    ?.value,
+                )}
+              </span>
+              <span>
+                Directional-loss purity{" "}
+                {formatRate(
+                  behavioralFeatures.lossComposition?.directionalLossPurity,
+                )}
+                ; post-loss size/collateral/leverage{" "}
+                {behavioralFeatures.postLossEscalation?.medianSizeRatio?.toFixed(
+                  2,
+                ) ?? "—"}
+                x /{" "}
+                {behavioralFeatures.postLossEscalation?.medianCollateralRatio?.toFixed(
+                  2,
+                ) ?? "—"}
+                x /{" "}
+                {behavioralFeatures.postLossEscalation?.medianLeverageRatio?.toFixed(
+                  2,
+                ) ?? "—"}
+                x
+              </span>
+            </div>
+          ) : null}
         </div>
 
         <div className="flex flex-col gap-2 font-mono">

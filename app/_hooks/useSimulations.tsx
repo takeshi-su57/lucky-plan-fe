@@ -66,6 +66,7 @@ export const SIMULATION_BOT_INFO_FRAGMENT_DOCUMENT = graphql(`
       copiedProfitFactor
       copiedMaxDrawdownUsd
     }
+    behavioralFeaturesJson
     followerRiskSize {
       min
       max
@@ -103,6 +104,7 @@ export const SIMULATION_PLAN_INFO_FRAGMENT_DOCUMENT = graphql(`
 
 export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment SimulationInfo on Simulation {
+    behavioralFiltersJson
     completedPlans
     createdAt
     cursor
@@ -188,6 +190,7 @@ export const SIMULATION_INFO_FRAGMENT_DOCUMENT = graphql(`
 
 export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment SimulationResearchInfo on SimulationResearch {
+    behavioralFiltersJson
     sourceSimulationId
     completedSimulations
     createdAt
@@ -308,6 +311,7 @@ export const SIMULATION_RESEARCH_INFO_FRAGMENT_DOCUMENT = graphql(`
 
 export const SIMULATION_RESEARCH_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
   fragment SimulationResearchDetailsInfo on SimulationResearchDetails {
+    behavioralFiltersJson
     sourceSimulationId
     completedSimulations
     createdAt
@@ -498,6 +502,7 @@ export const SIMULATION_BOT_DETAILS_INFO_FRAGMENT_DOCUMENT = graphql(`
       copiedProfitFactor
       copiedMaxDrawdownUsd
     }
+    behavioralFeaturesJson
     followerRiskSize {
       min
       max

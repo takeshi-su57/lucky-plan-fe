@@ -28,6 +28,7 @@ import { NumericInput } from "@/components/inputs/NumericInput";
 import { getServerTimezone } from "@/utils";
 import {
   BotMode,
+  BehavioralFiltersInput,
   Platform,
   SimulationScoreFormular,
   SimulationSizingFormular,
@@ -59,6 +60,71 @@ type RangeEntryErrors = Partial<Record<"min" | "max", string>>;
 
 type ImportedRange = { min: number; max: number };
 type ImportedRangeGroup = { ranges: ImportedRange[] };
+const BEHAVIORAL_FILTER_KEYS = [
+  "negativeActiveDayRate",
+  "directionalLossPurity",
+  "medianPostLossLeverageRatio",
+] as const;
+
+function parseBehavioralFilters(value: unknown): BehavioralFiltersInput {
+  if (value === undefined || value === null) return {};
+  if (typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("behavioralFilters must be an object");
+  }
+  const source = value as Record<string, unknown>;
+  const unknownKeys = Object.keys(source).filter(
+    (key) => !BEHAVIORAL_FILTER_KEYS.includes(key as never),
+  );
+  if (unknownKeys.length) {
+    throw new Error(`Unknown behavioral filter: ${unknownKeys[0]}`);
+  }
+  const configuredKeys = BEHAVIORAL_FILTER_KEYS.filter((key) => {
+    const ranges = source[key];
+    return Array.isArray(ranges) && ranges.length > 0;
+  });
+  if (configuredKeys.length > 1) {
+    throw new Error(
+      "Behavioral research currently supports one filter feature at a time",
+    );
+  }
+  return Object.fromEntries(
+    configuredKeys.map((key) => {
+      const ranges = source[key] as unknown[];
+      return [
+        key,
+        ranges.map((range, index) => {
+          const name = `behavioralFilters.${key}[${index}]`;
+          if (
+            !isRecord(range) ||
+            typeof range.min !== "number" ||
+            !Number.isFinite(range.min) ||
+            range.min < 0
+          ) {
+            throw new Error(`${name}.min must be a non-negative number`);
+          }
+          const max = range.max;
+          if (max === null || max === undefined) {
+            if (key !== "medianPostLossLeverageRatio") {
+              throw new Error(`${name}.max is required for rate filters`);
+            }
+            return { min: range.min, max: null };
+          }
+          if (typeof max !== "number" || !Number.isFinite(max)) {
+            throw new Error(`${name}.max must be a number or null`);
+          }
+          if (max < range.min) {
+            throw new Error(`${name}.max must be at least min`);
+          }
+          if (key !== "medianPostLossLeverageRatio" && max > 1) {
+            throw new Error(`${name}.max must be at most 1`);
+          }
+          return { min: range.min, max };
+        }),
+      ];
+    }),
+  ) as BehavioralFiltersInput;
+}
+
 export type ImportedResearchConfiguration = {
   version: 2;
   sourceSimulationId?: number;
@@ -84,6 +150,7 @@ export type ImportedResearchConfiguration = {
   score: ImportedRangeGroup[];
   scoreFormular: SimulationScoreFormular;
   sizingFormular: SimulationSizingFormular;
+  behavioralFilters?: BehavioralFiltersInput;
 };
 
 const EXPERT_CONFIGURATION_TEMPLATE = {
@@ -94,8 +161,9 @@ const EXPERT_CONFIGURATION_TEMPLATE = {
   platform: Platform.Gns,
   startAt: "2026-01-01",
   endAt: "2026-06-30",
-  days: 7,
-  gapDays: 1,
+  days: 1,
+  gapDays: 0,
+  behavioralFilters: {},
   direction: BotMode.Reversed,
   trade: [{ ranges: [{ min: 3, max: 10 }] }],
   r2: [{ ranges: [{ min: 0.25, max: 0.5 }] }],
@@ -112,7 +180,7 @@ const EXPERT_CONFIGURATION_TEMPLATE = {
   scoreFormular: SimulationScoreFormular.RiskAdjustedCopyScore,
   sizingFormular: SimulationSizingFormular.ScoreScaledCollateralSizing,
   guide:
-    "sourceSimulationId is optional: omit it or set it to null for normal research; set it to a completed simulation ID for source-driven Layer 2/3 research. Every parameter uses range groups: one group may contain several OR ranges in one generated simulation, while multiple single-range groups create separate generated variants. Groups from different parameters are combined as a Cartesian product, never matched or zipped together. Use separate professional-batch configurations for exact paired combinations.",
+    "sourceSimulationId is optional: omit it or set it to null for normal research; set it to a completed simulation ID for source-driven Layer 2/3 research. Every standard parameter uses range groups: one group may contain several OR ranges in one generated simulation, while multiple single-range groups create separate generated variants. Behavioral filters are different: configure at most one of negativeActiveDayRate, directionalLossPurity, or medianPostLossLeverageRatio, and every listed behavioral range creates a separate simulation. Use max: null for an unbounded leverage maximum. Groups from different standard parameters are combined as a Cartesian product, never matched or zipped together. Use separate professional-batch configurations for exact paired combinations.",
 } as const;
 
 const OR_RANGES_EXAMPLE = {
@@ -464,9 +532,10 @@ export function getImportedConfigurationSimulationCount(
     | "leaderExecutionCollateral"
     | "leaderExecutionSize"
     | "leaderExecutionLeverage"
+    | "behavioralFilters"
   >,
 ) {
-  return Object.values({
+  const parameterVariantCount = Object.values({
     trade: configuration.trade,
     r2: configuration.r2,
     slope: configuration.slope,
@@ -482,6 +551,12 @@ export function getImportedConfigurationSimulationCount(
       count * (groups.length === 1 ? groups[0].ranges.length : groups.length),
     1,
   );
+  const behavioralVariantCount = BEHAVIORAL_FILTER_KEYS.reduce(
+    (count, key) =>
+      count + (configuration.behavioralFilters?.[key]?.length ?? 0),
+    0,
+  );
+  return parameterVariantCount * Math.max(1, behavioralVariantCount);
 }
 
 export function parseImportedResearchConfiguration(
@@ -582,6 +657,7 @@ export function parseImportedResearchConfiguration(
     endAt: value.endAt as string,
     days: value.days as number,
     gapDays: value.gapDays as number,
+    behavioralFilters: parseBehavioralFilters(value.behavioralFilters),
     direction: value.direction as BotMode,
     trade: parseImportedRangeGroups(value.trade, "trade"),
     r2: parseImportedRangeGroups(value.r2, "r2"),
@@ -759,6 +835,10 @@ export function SimulationCreationPanel({
     });
   const [days, setDays] = useState("1");
   const [gapDays, setGapDays] = useState("0");
+  const [behavioralFiltersText, setBehavioralFiltersText] = useState("{}");
+  const [behavioralFiltersError, setBehavioralFiltersError] = useState<
+    string | null
+  >(null);
   const [tradeRanges, setTradeRanges] = useState<RangeEntryState[]>([
     createRangeEntry("trade", { min: "3", max: "10" }),
   ]);
@@ -928,6 +1008,9 @@ export function SimulationCreationPanel({
         });
         setDays(String(configuration.days));
         setGapDays(String(configuration.gapDays));
+        setBehavioralFiltersText(
+          JSON.stringify(configuration.behavioralFilters ?? {}, null, 2),
+        );
         setTradeRanges(trade.entries);
         setR2Ranges(r2.entries);
         setSlopeRanges(slope.entries);
@@ -1332,6 +1415,18 @@ export function SimulationCreationPanel({
       return;
     }
 
+    let behavioralFilters: BehavioralFiltersInput;
+    try {
+      behavioralFilters = parseBehavioralFilters(
+        JSON.parse(behavioralFiltersText || "{}"),
+      );
+      setBehavioralFiltersError(null);
+    } catch (error) {
+      setBehavioralFiltersError(
+        error instanceof Error ? error.message : String(error),
+      );
+      return;
+    }
     const input = {
       title: title.trim(),
       description: description.trim(),
@@ -1376,6 +1471,7 @@ export function SimulationCreationPanel({
       score: normalizeRangeGroups(scoreRanges, Boolean(alternatives.score)),
       scoreFormular,
       sizingFormular,
+      behavioralFilters,
     };
     const { data } = effectiveSourceSimulationId
       ? await createSimulationResearchFromSimulation({
@@ -1600,6 +1696,17 @@ export function SimulationCreationPanel({
               isDisabled={Boolean(effectiveSourceSimulationId)}
             />
           </div>
+
+          <Textarea
+            label="Behavioral filters (JSON)"
+            description="Choose one feature per research. Every listed range creates a separate simulation; use max: null for the 1.25–INF leverage bucket."
+            value={behavioralFiltersText}
+            onValueChange={setBehavioralFiltersText}
+            minRows={4}
+            isDisabled={Boolean(effectiveSourceSimulationId)}
+            isInvalid={Boolean(behavioralFiltersError)}
+            errorMessage={behavioralFiltersError ?? undefined}
+          />
 
           <div className="grid gap-4 md:grid-cols-2">
             <Select
