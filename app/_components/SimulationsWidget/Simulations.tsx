@@ -7,13 +7,17 @@ import { useEffect, useState } from "react";
 
 import { SimulationResearchRow } from "./SimulationResearchRow";
 import { BatchAiReportDownloadButton } from "./BatchAiReportDownloadButton";
+import { BatchSimulationResearchRemoveButton } from "./BatchSimulationResearchRemoveButton";
 import { useGetSimulationResearches } from "@/app/_hooks/useSimulations";
+import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { PaginatedViews } from "@/components/views/PaginatedViews";
+import { UserPermission } from "@/graphql/gql/graphql";
 
 const RESEARCHES_PER_PAGE = 10;
 
 export function Simulations() {
   const [page, setPage] = useState(1);
+  const { userJwtQuery } = useUserJWT();
   const {
     simulationResearches,
     loading: researchesLoading,
@@ -32,6 +36,9 @@ export function Simulations() {
 
         <div className="flex items-center gap-2">
           <BatchAiReportDownloadButton />
+          {userJwtQuery.data?.permission === UserPermission.Admin ? (
+            <BatchSimulationResearchRemoveButton />
+          ) : null}
           <Link href="/simulations/create">
             <Button
               color="primary"
