@@ -125,17 +125,19 @@ const REMOVE_OFFLINE_SIMULATION_EVALUATOR_WORKER_DOCUMENT = graphql(`
 `);
 
 const PREBUILD_SIMULATION_EVALUATOR_WORKER_DOCUMENT = graphql(`
-  mutation prebuildSimulationEvaluatorWorker(
+  mutation prebuildSimulationEvaluatorWorkerWithCacheRefresh(
     $workerId: String!
     $platform: String!
     $startedAt: String!
     $endedAt: String!
+    $refreshExisting: Boolean
   ) {
     prebuildSimulationEvaluatorWorker(
       workerId: $workerId
       platform: $platform
       startedAt: $startedAt
       endedAt: $endedAt
+      refreshExisting: $refreshExisting
     )
   }
 `);

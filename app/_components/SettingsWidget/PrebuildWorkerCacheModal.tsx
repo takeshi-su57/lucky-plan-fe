@@ -5,6 +5,7 @@ import { parseDate, type DateValue } from "@internationalized/date";
 import dayjs from "dayjs";
 import {
   Button,
+  Checkbox,
   DatePicker,
   ModalFooter,
   ModalHeader,
@@ -47,6 +48,7 @@ export function PrebuildWorkerCacheModal({
   const [endedAt, setEndedAt] = useState<DateValue>(
     parseDate(dayjs().format("YYYY-MM-DD")),
   );
+  const [refreshExisting, setRefreshExisting] = useState(false);
   const [prebuild, { loading }] = usePrebuildSimulationEvaluatorWorker();
   // The selected "To" date is inclusive. Cache tasks use an exclusive end.
   const start = utcDayStart(startedAt);
@@ -62,6 +64,7 @@ export function PrebuildWorkerCacheModal({
         platform,
         startedAt: start.toISOString(),
         endedAt: end.toISOString(),
+        refreshExisting,
       },
     });
     onOpenChange(false);
@@ -95,6 +98,13 @@ export function PrebuildWorkerCacheModal({
       <p className="text-default-500 text-sm">
         This will create {jobCount} monthly cache{" "}
         {jobCount === 1 ? "job" : "jobs"}. The selected end date is included.
+      </p>
+      <Checkbox isSelected={refreshExisting} onValueChange={setRefreshExisting}>
+        Refresh already cached months
+      </Checkbox>
+      <p className="text-default-500 -mt-2 text-sm">
+        Re-fetches every selected month, including existing cache coverage, and
+        merges any newly available event logs.
       </p>
       <ModalFooter className="px-0">
         <Button variant="light" onPress={() => onOpenChange(false)}>

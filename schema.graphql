@@ -564,7 +564,7 @@ type Mutation {
   pauseSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
   pauseSystem: Boolean!
   playAutoResearch(id: Int!): SimulationResearch!
-  prebuildSimulationEvaluatorWorker(endedAt: String!, platform: String!, startedAt: String!, workerId: String!): String!
+  prebuildSimulationEvaluatorWorker(endedAt: String!, platform: String!, refreshExisting: Boolean, startedAt: String!, workerId: String!): String!
   recoverResearch(id: Int!): SimulationResearch!
   rejectSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
   removeOfflineSimulationEvaluatorWorker(workerId: String!): Boolean!
