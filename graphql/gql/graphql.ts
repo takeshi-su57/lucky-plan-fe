@@ -43,6 +43,22 @@ export type Action = {
   txHash?: Maybe<Scalars['String']['output']>;
 };
 
+export type AggressiveAdaptionProgress = {
+  __typename?: 'AggressiveAdaptionProgress';
+  chainId: Scalars['Int']['output'];
+  checkpointBlock: Scalars['Float']['output'];
+  completedAheadRanges: Scalars['Int']['output'];
+  completedBlocks: Scalars['Float']['output'];
+  contractId: Scalars['Int']['output'];
+  cursorBlock: Scalars['Float']['output'];
+  endBlock: Scalars['Float']['output'];
+  fromBlock: Scalars['Float']['output'];
+  inFlightRanges: Scalars['Int']['output'];
+  retryRanges: Scalars['Int']['output'];
+  startedAt: Scalars['Float']['output'];
+  totalBlocks: Scalars['Float']['output'];
+};
+
 export type AssetInput = {
   address: Scalars['String']['input'];
   amount: Scalars['String']['input'];
@@ -261,6 +277,17 @@ export type CreatePlanInput = {
   scheduledEnd: Scalars['Date']['input'];
   scheduledStart: Scalars['Date']['input'];
   title: Scalars['String']['input'];
+};
+
+export type CreateRpcEndpointsInput = {
+  chainIds: Array<Scalars['Int']['input']>;
+  label?: InputMaybe<Scalars['String']['input']>;
+  maxBlockRange?: InputMaybe<Scalars['Int']['input']>;
+  provider: RpcEndpointProvider;
+  tier?: RpcEndpointTier;
+  token?: InputMaybe<Scalars['String']['input']>;
+  url?: InputMaybe<Scalars['String']['input']>;
+  verify?: Scalars['Boolean']['input'];
 };
 
 export type CreateSimulationResearchInput = {
@@ -563,6 +590,8 @@ export enum MissionStatus {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  /** Adds chains to an existing token. */
+  addRpcTokenChains: Scalars['Int']['output'];
   allowAuto: User;
   approveSimulationEvaluatorWorker: SimulationEvaluatorWorkerView;
   batchCreateBots: Array<BotBackwardDetails>;
@@ -574,12 +603,16 @@ export type Mutation = {
   changePassword: Scalars['Boolean']['output'];
   changeUserPermission: User;
   checkLog: Log;
+  /** Health-checks endpoints (eth_blockNumber). With no filter, checks all. */
+  checkRpcEndpoints: Array<RpcEndpointCheckResult>;
   cleanDB: Scalars['Boolean']['output'];
   cloneMission: Scalars['Boolean']['output'];
   closeMission: Scalars['Boolean']['output'];
   closeTradeMarket: ContractExecutionResult;
   createBot: BotBackwardDetails;
   createPlan: Plan;
+  /** Returns the number of endpoints created. */
+  createRpcEndpoints: Scalars['Int']['output'];
   createSLTP: SltpRequest;
   createSimulationResearch: SimulationResearch;
   createSimulationResearchFromSimulation: SimulationResearch;
@@ -587,6 +620,9 @@ export type Mutation = {
   decreasePositionSize: ContractExecutionResult;
   deleteBot: BotBackwardDetails;
   deletePlan: Scalars['Int']['output'];
+  deleteRpcEndpoint: Scalars['Boolean']['output'];
+  /** Deletes every endpoint of a token. Returns the count. */
+  deleteRpcToken: Scalars['Int']['output'];
   deleteSLTP: SltpRequest;
   deleteSimulation: Scalars['Int']['output'];
   deleteSimulationResearch: Scalars['Int']['output'];
@@ -606,6 +642,7 @@ export type Mutation = {
   makeSafeApp: Scalars['Boolean']['output'];
   openTradeMarket: ContractExecutionResult;
   pauseResearch: SimulationResearch;
+  pauseRpcEndpoint: Scalars['Boolean']['output'];
   pauseSimulationEvaluatorWorker: SimulationEvaluatorWorkerView;
   pauseSystem: Scalars['Boolean']['output'];
   playAutoResearch: SimulationResearch;
@@ -618,10 +655,16 @@ export type Mutation = {
   restartResearch: SimulationResearch;
   restoreSimulationWorkflowDefaults: SimulationWorkflowConfigView;
   resumeResearch: SimulationResearch;
+  resumeRpcEndpoint: Scalars['Boolean']['output'];
   resumeSimulationEvaluatorWorker: SimulationEvaluatorWorkerView;
   resumeSystem: Scalars['Boolean']['output'];
   retrySimulationEvaluatorWorkerCache: Scalars['String']['output'];
   reviewLogWeek: LogReviewWeek;
+  /** When true, backfills use only Paid-tier endpoints. Endpoint states are kept. */
+  setRpcBackfillPaidOnly: Scalars['Boolean']['output'];
+  setRpcRateGroupLimit: Scalars['Boolean']['output'];
+  /** Pauses or resumes every chain of a token. Returns the count. */
+  setRpcTokenState: Scalars['Int']['output'];
   setSimulationEvaluatorWorkerCapacity: Scalars['String']['output'];
   startAdaption: Scalars['Boolean']['output'];
   startPlan: Scalars['Boolean']['output'];
@@ -631,6 +674,9 @@ export type Mutation = {
   updateLeverage: ContractExecutionResult;
   updateMaxOpenMissions: Scalars['Boolean']['output'];
   updatePlan: Plan;
+  updateRpcEndpoint: Scalars['Boolean']['output'];
+  /** Sets max block range (0 = learn it) and/or parallel requests on every chain of a token. */
+  updateRpcToken: Scalars['Int']['output'];
   updateSimulationResearch: SimulationResearch;
   updateSimulationWorkflowConfig: SimulationWorkflowConfigView;
   updateSl: ContractExecutionResult;
@@ -643,6 +689,12 @@ export type Mutation = {
   withdrawETHToUser: Scalars['Boolean']['output'];
   withdrawErc20ToUser: Scalars['Boolean']['output'];
   withdrawPositivePnl: ContractExecutionResult;
+};
+
+
+export type MutationAddRpcTokenChainsArgs = {
+  chainIds: Array<Scalars['Int']['input']>;
+  tokenId: Scalars['String']['input'];
 };
 
 
@@ -709,6 +761,13 @@ export type MutationCheckLogArgs = {
 };
 
 
+export type MutationCheckRpcEndpointsArgs = {
+  chainId?: InputMaybe<Scalars['Int']['input']>;
+  ids?: InputMaybe<Array<Scalars['Int']['input']>>;
+  tokenId?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type MutationCloneMissionArgs = {
   id: Scalars['Int']['input'];
   manualParams?: InputMaybe<ManualParams>;
@@ -733,6 +792,11 @@ export type MutationCreateBotArgs = {
 
 export type MutationCreatePlanArgs = {
   createPlanInput: CreatePlanInput;
+};
+
+
+export type MutationCreateRpcEndpointsArgs = {
+  input: CreateRpcEndpointsInput;
 };
 
 
@@ -772,6 +836,16 @@ export type MutationDeleteBotArgs = {
 
 export type MutationDeletePlanArgs = {
   id: Scalars['Int']['input'];
+};
+
+
+export type MutationDeleteRpcEndpointArgs = {
+  id: Scalars['Int']['input'];
+};
+
+
+export type MutationDeleteRpcTokenArgs = {
+  tokenId: Scalars['String']['input'];
 };
 
 
@@ -874,6 +948,11 @@ export type MutationPauseResearchArgs = {
 };
 
 
+export type MutationPauseRpcEndpointArgs = {
+  id: Scalars['Int']['input'];
+};
+
+
 export type MutationPauseSimulationEvaluatorWorkerArgs = {
   workerId: Scalars['String']['input'];
 };
@@ -928,6 +1007,11 @@ export type MutationResumeResearchArgs = {
 };
 
 
+export type MutationResumeRpcEndpointArgs = {
+  id: Scalars['Int']['input'];
+};
+
+
 export type MutationResumeSimulationEvaluatorWorkerArgs = {
   workerId: Scalars['String']['input'];
 };
@@ -945,6 +1029,24 @@ export type MutationRetrySimulationEvaluatorWorkerCacheArgs = {
 
 export type MutationReviewLogWeekArgs = {
   weekStart: Scalars['Date']['input'];
+};
+
+
+export type MutationSetRpcBackfillPaidOnlyArgs = {
+  enabled: Scalars['Boolean']['input'];
+};
+
+
+export type MutationSetRpcRateGroupLimitArgs = {
+  key: Scalars['String']['input'];
+  limit: Scalars['Int']['input'];
+  ratePerSecond?: InputMaybe<Scalars['Float']['input']>;
+};
+
+
+export type MutationSetRpcTokenStateArgs = {
+  state: RpcEndpointState;
+  tokenId: Scalars['String']['input'];
 };
 
 
@@ -992,6 +1094,18 @@ export type MutationUpdateMaxOpenMissionsArgs = {
 
 export type MutationUpdatePlanArgs = {
   updatePlanInput: UpdatePlanInput;
+};
+
+
+export type MutationUpdateRpcEndpointArgs = {
+  input: UpdateRpcEndpointInput;
+};
+
+
+export type MutationUpdateRpcTokenArgs = {
+  concurrency?: InputMaybe<Scalars['Int']['input']>;
+  maxBlockRange?: InputMaybe<Scalars['Int']['input']>;
+  tokenId: Scalars['String']['input'];
 };
 
 
@@ -1281,6 +1395,7 @@ export type Query = {
   isPnlSnapshotV2Initialized?: Maybe<PnlSnapshotV2InitializedFlag>;
   isSafeApp: Scalars['Boolean']['output'];
   logReviewWeeks: Array<LogReviewWeek>;
+  rpcWorkerDashboard: RpcWorkerDashboard;
   simulation?: Maybe<Simulation>;
   simulationEvaluatorPipeline: SimulationEvaluatorPipelineView;
   simulationEvaluatorWorkerTaskConnection: SimulationEvaluatorWorkerTaskConnection;
@@ -1439,6 +1554,102 @@ export type QuerySimulationResearchesArgs = {
 export type QuerySimulationsByResearchArgs = {
   researchId: Scalars['Int']['input'];
 };
+
+export type RpcEndpointCheckResult = {
+  __typename?: 'RpcEndpointCheckResult';
+  chainId: Scalars['Int']['output'];
+  endpointId: Scalars['Int']['output'];
+  error?: Maybe<Scalars['String']['output']>;
+  errorKind?: Maybe<Scalars['String']['output']>;
+  latencyMs?: Maybe<Scalars['Int']['output']>;
+  ok: Scalars['Boolean']['output'];
+};
+
+export enum RpcEndpointProvider {
+  Alchemy = 'ALCHEMY',
+  Custom = 'CUSTOM',
+  Drpc = 'DRPC',
+  Public = 'PUBLIC'
+}
+
+export enum RpcEndpointState {
+  Active = 'Active',
+  Disabled = 'Disabled',
+  Paused = 'Paused'
+}
+
+export enum RpcEndpointTier {
+  Free = 'Free',
+  Paid = 'Paid'
+}
+
+export type RpcRateGroup = {
+  __typename?: 'RpcRateGroup';
+  cooldownUntil?: Maybe<Scalars['Float']['output']>;
+  inFlight: Scalars['Int']['output'];
+  key: Scalars['String']['output'];
+  limit: Scalars['Int']['output'];
+  rateLimitedCount: Scalars['Int']['output'];
+  ratePerSecond?: Maybe<Scalars['Float']['output']>;
+};
+
+export type RpcWorker = {
+  __typename?: 'RpcWorker';
+  activeSlots: Scalars['Int']['output'];
+  assignmentContractId?: Maybe<Scalars['Int']['output']>;
+  assignmentFromBlock?: Maybe<Scalars['Float']['output']>;
+  assignmentStartedAt?: Maybe<Scalars['Float']['output']>;
+  assignmentToBlock?: Maybe<Scalars['Float']['output']>;
+  avgLatencyMs?: Maybe<Scalars['Int']['output']>;
+  blocksProcessed: Scalars['Float']['output'];
+  chainId: Scalars['Int']['output'];
+  concurrency: Scalars['Int']['output'];
+  endpointId?: Maybe<Scalars['Int']['output']>;
+  failureCount: Scalars['Int']['output'];
+  key: Scalars['String']['output'];
+  label?: Maybe<Scalars['String']['output']>;
+  lastCheckError?: Maybe<Scalars['String']['output']>;
+  lastCheckErrorKind?: Maybe<Scalars['String']['output']>;
+  lastCheckLatencyMs?: Maybe<Scalars['Int']['output']>;
+  lastCheckOk?: Maybe<Scalars['Boolean']['output']>;
+  lastCheckedAt?: Maybe<Scalars['Float']['output']>;
+  lastError?: Maybe<Scalars['String']['output']>;
+  lastErrorAt?: Maybe<Scalars['Float']['output']>;
+  lastErrorKind?: Maybe<Scalars['String']['output']>;
+  lastSuccessAt?: Maybe<Scalars['Float']['output']>;
+  maskedUrl: Scalars['String']['output'];
+  maxBlockRange?: Maybe<Scalars['Int']['output']>;
+  penaltyLevel: Scalars['Int']['output'];
+  penaltyUntil?: Maybe<Scalars['Float']['output']>;
+  provider: RpcEndpointProvider;
+  state: RpcEndpointState;
+  stateReason?: Maybe<Scalars['String']['output']>;
+  status: RpcWorkerStatus;
+  successCount: Scalars['Int']['output'];
+  tier: RpcEndpointTier;
+  tokenHint?: Maybe<Scalars['String']['output']>;
+  tokenId?: Maybe<Scalars['String']['output']>;
+};
+
+export type RpcWorkerDashboard = {
+  __typename?: 'RpcWorkerDashboard';
+  adaptions: Array<AggressiveAdaptionProgress>;
+  analyticsOnline: Scalars['Boolean']['output'];
+  generatedAt: Scalars['Float']['output'];
+  paidOnly: Scalars['Boolean']['output'];
+  rateGroups: Array<RpcRateGroup>;
+  workers: Array<RpcWorker>;
+};
+
+export enum RpcWorkerStatus {
+  Available = 'Available',
+  Disabled = 'Disabled',
+  Idle = 'Idle',
+  Paused = 'Paused',
+  Penalized = 'Penalized',
+  Unknown = 'Unknown',
+  Working = 'Working'
+}
 
 export type SltpRequest = {
   __typename?: 'SLTPRequest';
@@ -2095,6 +2306,14 @@ export type UpdatePlanInput = {
   startedAt?: InputMaybe<Scalars['Date']['input']>;
   status: PlanStatus;
   title?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateRpcEndpointInput = {
+  concurrency?: InputMaybe<Scalars['Int']['input']>;
+  id: Scalars['Int']['input'];
+  label?: InputMaybe<Scalars['String']['input']>;
+  maxBlockRange?: InputMaybe<Scalars['Int']['input']>;
+  tier?: InputMaybe<RpcEndpointTier>;
 };
 
 export type UpdateSimulationResearchInput = {
@@ -2894,6 +3113,103 @@ export type PlanUpdatedSubscription = { __typename?: 'Subscription', planUpdated
     & { ' $fragmentRefs'?: { 'PlanInfoFragment': PlanInfoFragment } }
   ) };
 
+export type RpcWorkerDashboardQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type RpcWorkerDashboardQuery = { __typename?: 'Query', rpcWorkerDashboard: { __typename?: 'RpcWorkerDashboard', analyticsOnline: boolean, paidOnly: boolean, generatedAt: number, rateGroups: Array<{ __typename?: 'RpcRateGroup', key: string, inFlight: number, limit: number, ratePerSecond?: number | null, cooldownUntil?: number | null, rateLimitedCount: number }>, adaptions: Array<{ __typename?: 'AggressiveAdaptionProgress', contractId: number, chainId: number, startedAt: number, fromBlock: number, endBlock: number, checkpointBlock: number, cursorBlock: number, retryRanges: number, inFlightRanges: number, completedAheadRanges: number, completedBlocks: number, totalBlocks: number }>, workers: Array<{ __typename?: 'RpcWorker', key: string, endpointId?: number | null, chainId: number, provider: RpcEndpointProvider, tier: RpcEndpointTier, label?: string | null, maskedUrl: string, state: RpcEndpointState, stateReason?: string | null, status: RpcWorkerStatus, maxBlockRange?: number | null, concurrency: number, activeSlots: number, penaltyLevel: number, penaltyUntil?: number | null, successCount: number, failureCount: number, blocksProcessed: number, avgLatencyMs?: number | null, lastErrorKind?: string | null, lastError?: string | null, lastErrorAt?: number | null, lastSuccessAt?: number | null, assignmentContractId?: number | null, assignmentFromBlock?: number | null, assignmentToBlock?: number | null, assignmentStartedAt?: number | null, tokenId?: string | null, tokenHint?: string | null, lastCheckedAt?: number | null, lastCheckOk?: boolean | null, lastCheckLatencyMs?: number | null, lastCheckErrorKind?: string | null, lastCheckError?: string | null }> } };
+
+export type PauseRpcEndpointMutationVariables = Exact<{
+  id: Scalars['Int']['input'];
+}>;
+
+
+export type PauseRpcEndpointMutation = { __typename?: 'Mutation', pauseRpcEndpoint: boolean };
+
+export type ResumeRpcEndpointMutationVariables = Exact<{
+  id: Scalars['Int']['input'];
+}>;
+
+
+export type ResumeRpcEndpointMutation = { __typename?: 'Mutation', resumeRpcEndpoint: boolean };
+
+export type DeleteRpcEndpointMutationVariables = Exact<{
+  id: Scalars['Int']['input'];
+}>;
+
+
+export type DeleteRpcEndpointMutation = { __typename?: 'Mutation', deleteRpcEndpoint: boolean };
+
+export type CreateRpcEndpointsMutationVariables = Exact<{
+  input: CreateRpcEndpointsInput;
+}>;
+
+
+export type CreateRpcEndpointsMutation = { __typename?: 'Mutation', createRpcEndpoints: number };
+
+export type UpdateRpcEndpointMutationVariables = Exact<{
+  input: UpdateRpcEndpointInput;
+}>;
+
+
+export type UpdateRpcEndpointMutation = { __typename?: 'Mutation', updateRpcEndpoint: boolean };
+
+export type SetRpcRateGroupLimitMutationVariables = Exact<{
+  key: Scalars['String']['input'];
+  limit: Scalars['Int']['input'];
+  ratePerSecond?: InputMaybe<Scalars['Float']['input']>;
+}>;
+
+
+export type SetRpcRateGroupLimitMutation = { __typename?: 'Mutation', setRpcRateGroupLimit: boolean };
+
+export type CheckRpcEndpointsMutationVariables = Exact<{
+  ids?: InputMaybe<Array<Scalars['Int']['input']> | Scalars['Int']['input']>;
+  tokenId?: InputMaybe<Scalars['String']['input']>;
+  chainId?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type CheckRpcEndpointsMutation = { __typename?: 'Mutation', checkRpcEndpoints: Array<{ __typename?: 'RpcEndpointCheckResult', endpointId: number, ok: boolean }> };
+
+export type SetRpcTokenStateMutationVariables = Exact<{
+  tokenId: Scalars['String']['input'];
+  state: RpcEndpointState;
+}>;
+
+
+export type SetRpcTokenStateMutation = { __typename?: 'Mutation', setRpcTokenState: number };
+
+export type AddRpcTokenChainsMutationVariables = Exact<{
+  tokenId: Scalars['String']['input'];
+  chainIds: Array<Scalars['Int']['input']> | Scalars['Int']['input'];
+}>;
+
+
+export type AddRpcTokenChainsMutation = { __typename?: 'Mutation', addRpcTokenChains: number };
+
+export type DeleteRpcTokenMutationVariables = Exact<{
+  tokenId: Scalars['String']['input'];
+}>;
+
+
+export type DeleteRpcTokenMutation = { __typename?: 'Mutation', deleteRpcToken: number };
+
+export type SetRpcBackfillPaidOnlyMutationVariables = Exact<{
+  enabled: Scalars['Boolean']['input'];
+}>;
+
+
+export type SetRpcBackfillPaidOnlyMutation = { __typename?: 'Mutation', setRpcBackfillPaidOnly: boolean };
+
+export type UpdateRpcTokenMutationVariables = Exact<{
+  tokenId: Scalars['String']['input'];
+  maxBlockRange?: InputMaybe<Scalars['Int']['input']>;
+  concurrency?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type UpdateRpcTokenMutation = { __typename?: 'Mutation', updateRpcToken: number };
+
 export type GetBackendReleaseInfoQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -3580,6 +3896,19 @@ export const StartPlanDocument = {"kind":"Document","definitions":[{"kind":"Oper
 export const EndPlanDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"endPlan"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endPlan"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<EndPlanMutation, EndPlanMutationVariables>;
 export const PlanCreatedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"planCreated"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"planCreated"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PlanInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PlanInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Plan"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledStart"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledEnd"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"endedAt"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}}]}}]} as unknown as DocumentNode<PlanCreatedSubscription, PlanCreatedSubscriptionVariables>;
 export const PlanUpdatedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"planUpdated"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"planUpdated"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PlanInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PlanInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Plan"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledStart"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledEnd"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"endedAt"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}}]}}]} as unknown as DocumentNode<PlanUpdatedSubscription, PlanUpdatedSubscriptionVariables>;
+export const RpcWorkerDashboardDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"rpcWorkerDashboard"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rpcWorkerDashboard"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"analyticsOnline"}},{"kind":"Field","name":{"kind":"Name","value":"paidOnly"}},{"kind":"Field","name":{"kind":"Name","value":"generatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"rateGroups"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"inFlight"}},{"kind":"Field","name":{"kind":"Name","value":"limit"}},{"kind":"Field","name":{"kind":"Name","value":"ratePerSecond"}},{"kind":"Field","name":{"kind":"Name","value":"cooldownUntil"}},{"kind":"Field","name":{"kind":"Name","value":"rateLimitedCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"adaptions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"fromBlock"}},{"kind":"Field","name":{"kind":"Name","value":"endBlock"}},{"kind":"Field","name":{"kind":"Name","value":"checkpointBlock"}},{"kind":"Field","name":{"kind":"Name","value":"cursorBlock"}},{"kind":"Field","name":{"kind":"Name","value":"retryRanges"}},{"kind":"Field","name":{"kind":"Name","value":"inFlightRanges"}},{"kind":"Field","name":{"kind":"Name","value":"completedAheadRanges"}},{"kind":"Field","name":{"kind":"Name","value":"completedBlocks"}},{"kind":"Field","name":{"kind":"Name","value":"totalBlocks"}}]}},{"kind":"Field","name":{"kind":"Name","value":"workers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"endpointId"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"provider"}},{"kind":"Field","name":{"kind":"Name","value":"tier"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"maskedUrl"}},{"kind":"Field","name":{"kind":"Name","value":"state"}},{"kind":"Field","name":{"kind":"Name","value":"stateReason"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"maxBlockRange"}},{"kind":"Field","name":{"kind":"Name","value":"concurrency"}},{"kind":"Field","name":{"kind":"Name","value":"activeSlots"}},{"kind":"Field","name":{"kind":"Name","value":"penaltyLevel"}},{"kind":"Field","name":{"kind":"Name","value":"penaltyUntil"}},{"kind":"Field","name":{"kind":"Name","value":"successCount"}},{"kind":"Field","name":{"kind":"Name","value":"failureCount"}},{"kind":"Field","name":{"kind":"Name","value":"blocksProcessed"}},{"kind":"Field","name":{"kind":"Name","value":"avgLatencyMs"}},{"kind":"Field","name":{"kind":"Name","value":"lastErrorKind"}},{"kind":"Field","name":{"kind":"Name","value":"lastError"}},{"kind":"Field","name":{"kind":"Name","value":"lastErrorAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastSuccessAt"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentContractId"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentFromBlock"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentToBlock"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentStartedAt"}},{"kind":"Field","name":{"kind":"Name","value":"tokenId"}},{"kind":"Field","name":{"kind":"Name","value":"tokenHint"}},{"kind":"Field","name":{"kind":"Name","value":"lastCheckedAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastCheckOk"}},{"kind":"Field","name":{"kind":"Name","value":"lastCheckLatencyMs"}},{"kind":"Field","name":{"kind":"Name","value":"lastCheckErrorKind"}},{"kind":"Field","name":{"kind":"Name","value":"lastCheckError"}}]}}]}}]}}]} as unknown as DocumentNode<RpcWorkerDashboardQuery, RpcWorkerDashboardQueryVariables>;
+export const PauseRpcEndpointDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"pauseRpcEndpoint"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pauseRpcEndpoint"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<PauseRpcEndpointMutation, PauseRpcEndpointMutationVariables>;
+export const ResumeRpcEndpointDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"resumeRpcEndpoint"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resumeRpcEndpoint"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<ResumeRpcEndpointMutation, ResumeRpcEndpointMutationVariables>;
+export const DeleteRpcEndpointDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"deleteRpcEndpoint"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteRpcEndpoint"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<DeleteRpcEndpointMutation, DeleteRpcEndpointMutationVariables>;
+export const CreateRpcEndpointsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createRpcEndpoints"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateRpcEndpointsInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createRpcEndpoints"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}]}]}}]} as unknown as DocumentNode<CreateRpcEndpointsMutation, CreateRpcEndpointsMutationVariables>;
+export const UpdateRpcEndpointDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"updateRpcEndpoint"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateRpcEndpointInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateRpcEndpoint"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}]}]}}]} as unknown as DocumentNode<UpdateRpcEndpointMutation, UpdateRpcEndpointMutationVariables>;
+export const SetRpcRateGroupLimitDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"setRpcRateGroupLimit"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"ratePerSecond"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setRpcRateGroupLimit"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"ratePerSecond"},"value":{"kind":"Variable","name":{"kind":"Name","value":"ratePerSecond"}}}]}]}}]} as unknown as DocumentNode<SetRpcRateGroupLimitMutation, SetRpcRateGroupLimitMutationVariables>;
+export const CheckRpcEndpointsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"checkRpcEndpoints"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"ids"}},"type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"tokenId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"chainId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"checkRpcEndpoints"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"ids"},"value":{"kind":"Variable","name":{"kind":"Name","value":"ids"}}},{"kind":"Argument","name":{"kind":"Name","value":"tokenId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"tokenId"}}},{"kind":"Argument","name":{"kind":"Name","value":"chainId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"chainId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endpointId"}},{"kind":"Field","name":{"kind":"Name","value":"ok"}}]}}]}}]} as unknown as DocumentNode<CheckRpcEndpointsMutation, CheckRpcEndpointsMutationVariables>;
+export const SetRpcTokenStateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"setRpcTokenState"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"tokenId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"state"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"RpcEndpointState"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setRpcTokenState"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"tokenId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"tokenId"}}},{"kind":"Argument","name":{"kind":"Name","value":"state"},"value":{"kind":"Variable","name":{"kind":"Name","value":"state"}}}]}]}}]} as unknown as DocumentNode<SetRpcTokenStateMutation, SetRpcTokenStateMutationVariables>;
+export const AddRpcTokenChainsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"addRpcTokenChains"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"tokenId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"chainIds"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addRpcTokenChains"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"tokenId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"tokenId"}}},{"kind":"Argument","name":{"kind":"Name","value":"chainIds"},"value":{"kind":"Variable","name":{"kind":"Name","value":"chainIds"}}}]}]}}]} as unknown as DocumentNode<AddRpcTokenChainsMutation, AddRpcTokenChainsMutationVariables>;
+export const DeleteRpcTokenDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"deleteRpcToken"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"tokenId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteRpcToken"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"tokenId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"tokenId"}}}]}]}}]} as unknown as DocumentNode<DeleteRpcTokenMutation, DeleteRpcTokenMutationVariables>;
+export const SetRpcBackfillPaidOnlyDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"setRpcBackfillPaidOnly"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"enabled"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setRpcBackfillPaidOnly"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"enabled"},"value":{"kind":"Variable","name":{"kind":"Name","value":"enabled"}}}]}]}}]} as unknown as DocumentNode<SetRpcBackfillPaidOnlyMutation, SetRpcBackfillPaidOnlyMutationVariables>;
+export const UpdateRpcTokenDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"updateRpcToken"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"tokenId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"maxBlockRange"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"concurrency"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateRpcToken"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"tokenId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"tokenId"}}},{"kind":"Argument","name":{"kind":"Name","value":"maxBlockRange"},"value":{"kind":"Variable","name":{"kind":"Name","value":"maxBlockRange"}}},{"kind":"Argument","name":{"kind":"Name","value":"concurrency"},"value":{"kind":"Variable","name":{"kind":"Name","value":"concurrency"}}}]}]}}]} as unknown as DocumentNode<UpdateRpcTokenMutation, UpdateRpcTokenMutationVariables>;
 export const GetBackendReleaseInfoDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetBackendReleaseInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"backendReleaseInfo"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"gitSha"}},{"kind":"Field","name":{"kind":"Name","value":"builtAt"}}]}}]}}]} as unknown as DocumentNode<GetBackendReleaseInfoQuery, GetBackendReleaseInfoQueryVariables>;
 export const GetSimulationEvaluatorWorkersDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetSimulationEvaluatorWorkers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"simulationEvaluatorWorkers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"authorizationStatus"}},{"kind":"Field","name":{"kind":"Name","value":"runtimeStatus"}},{"kind":"Field","name":{"kind":"Name","value":"desiredState"}},{"kind":"Field","name":{"kind":"Name","value":"desiredCapacity"}},{"kind":"Field","name":{"kind":"Name","value":"activeCapacity"}},{"kind":"Field","name":{"kind":"Name","value":"version"}},{"kind":"Field","name":{"kind":"Name","value":"versionReportedAt"}},{"kind":"Field","name":{"kind":"Name","value":"claimedEvaluationTasks"}},{"kind":"Field","name":{"kind":"Name","value":"evaluationClaimLimit"}},{"kind":"Field","name":{"kind":"Name","value":"lastHeartbeatAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastTaskAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastError"}},{"kind":"Field","name":{"kind":"Name","value":"lastDiagnosticAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastDiagnostic"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pid"}},{"kind":"Field","name":{"kind":"Name","value":"uptimeSeconds"}},{"kind":"Field","name":{"kind":"Name","value":"childCapacity"}},{"kind":"Field","name":{"kind":"Name","value":"childCount"}},{"kind":"Field","name":{"kind":"Name","value":"idleChildCount"}},{"kind":"Field","name":{"kind":"Name","value":"runningTaskCount"}},{"kind":"Field","name":{"kind":"Name","value":"lastPollAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastPollError"}},{"kind":"Field","name":{"kind":"Name","value":"recentLogs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"at"}},{"kind":"Field","name":{"kind":"Name","value":"level"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"platformCaches"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"coveredStartAt"}},{"kind":"Field","name":{"kind":"Name","value":"coveredEndAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastError"}}]}},{"kind":"Field","name":{"kind":"Name","value":"prebuildProgress"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"taskId"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"percent"}},{"kind":"Field","name":{"kind":"Name","value":"records"}},{"kind":"Field","name":{"kind":"Name","value":"totalRecords"}},{"kind":"Field","name":{"kind":"Name","value":"bytes"}}]}}]}}]}}]} as unknown as DocumentNode<GetSimulationEvaluatorWorkersQuery, GetSimulationEvaluatorWorkersQueryVariables>;
 export const GetSimulationEvaluatorPipelineDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetSimulationEvaluatorPipeline"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"simulationEvaluatorPipeline"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"fleetCapacity"}},{"kind":"Field","name":{"kind":"Name","value":"queueLowWatermark"}},{"kind":"Field","name":{"kind":"Name","value":"queueHighWatermark"}},{"kind":"Field","name":{"kind":"Name","value":"workerClaimLimit"}},{"kind":"Field","name":{"kind":"Name","value":"queuedEvaluationTasks"}},{"kind":"Field","name":{"kind":"Name","value":"readyEvaluationTasks"}},{"kind":"Field","name":{"kind":"Name","value":"claimedEvaluationTasks"}},{"kind":"Field","name":{"kind":"Name","value":"awaitingFinalizationPlans"}},{"kind":"Field","name":{"kind":"Name","value":"finalizingPlans"}},{"kind":"Field","name":{"kind":"Name","value":"awaitingEventLogPlans"}},{"kind":"Field","name":{"kind":"Name","value":"readyToFinalizeSimulations"}},{"kind":"Field","name":{"kind":"Name","value":"finalizingSimulations"}},{"kind":"Field","name":{"kind":"Name","value":"failedExecutionPlans"}},{"kind":"Field","name":{"kind":"Name","value":"outstandingExecutionPlans"}},{"kind":"Field","name":{"kind":"Name","value":"finalizerConcurrency"}},{"kind":"Field","name":{"kind":"Name","value":"maxAwaitingFinalizationPlans"}},{"kind":"Field","name":{"kind":"Name","value":"maxOutstandingDynamicPlans"}},{"kind":"Field","name":{"kind":"Name","value":"backpressureActive"}},{"kind":"Field","name":{"kind":"Name","value":"sourceDerivedWaitingToMaterialize"}},{"kind":"Field","name":{"kind":"Name","value":"sourceDerivedReadyToRecalculate"}},{"kind":"Field","name":{"kind":"Name","value":"sourceDerivedRecalculating"}},{"kind":"Field","name":{"kind":"Name","value":"sourceDerivedFailed"}}]}}]}}]} as unknown as DocumentNode<GetSimulationEvaluatorPipelineQuery, GetSimulationEvaluatorPipelineQueryVariables>;

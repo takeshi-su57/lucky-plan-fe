@@ -8,6 +8,8 @@ import {
   Chip,
   Select,
   SelectItem,
+  Tab,
+  Tabs,
 } from "@heroui/react";
 import { Address } from "viem";
 
@@ -31,6 +33,7 @@ import { useUserJWT } from "@/app/_hooks/useUserJWT";
 import { ServiceStatus } from "@/types";
 import { ContractAdaptionButton } from "./ContractAdaptionButton";
 import { ContractLiveButton } from "./ContractLiveButton";
+import { RpcWorkersPanel } from "./RpcWorkersPanel";
 
 const columns: TableColumnProps[] = [
   {
@@ -58,12 +61,7 @@ const columns: TableColumnProps[] = [
 ];
 
 const availableVersions = {
-  [Platform.Gns]: [
-    Version.V6V7,
-    Version.V8V9_2,
-    Version.V9,
-    Version.V10,
-  ],
+  [Platform.Gns]: [Version.V6V7, Version.V8V9_2, Version.V9, Version.V10],
   [Platform.Gmx]: [Version.V1, Version.V2],
   [Platform.Avnt]: [Version.V1],
 };
@@ -91,6 +89,7 @@ export function ContractPanel() {
     Platform.Gns,
   );
   const [selectedVersion, setSelectedVersion] = useState<Version>(Version.V9);
+  const [view, setView] = useState<"contracts" | "workers">("contracts");
 
   const handleDisableContract = useCallback(
     (contract: Contract) => () => {
@@ -202,45 +201,66 @@ export function ContractPanel() {
   return (
     <Card>
       <CardBody className="flex flex-col gap-8">
-        <div className="flex items-center gap-6">
-          <Select
-            isRequired
-            className="max-w-xs"
-            label="Platform"
-            placeholder="Select a platform"
-            selectedKeys={[selectedPlatform]}
-            onChange={(e) => setSelectedPlatform(e.target.value as Platform)}
-            selectionMode="single"
+        {isAdmin ? (
+          <Tabs
+            aria-label="contract-panel-tabs"
+            selectedKey={view}
+            onSelectionChange={(key) =>
+              key && setView(key as "contracts" | "workers")
+            }
           >
-            {Object.values(Platform).map((platform) => (
-              <SelectItem key={platform}>{platform}</SelectItem>
-            ))}
-          </Select>
+            <Tab key="contracts" title="Contracts" />
+            <Tab key="workers" title="RPC Workers" />
+          </Tabs>
+        ) : null}
 
-          <Select
-            isRequired
-            className="max-w-xs"
-            label="Version"
-            placeholder="Select a version"
-            selectedKeys={[selectedVersion]}
-            onChange={(e) => setSelectedVersion(e.target.value as Version)}
-            selectionMode="single"
-          >
-            {availableVersions[selectedPlatform].map((version) => (
-              <SelectItem key={version}>{version}</SelectItem>
-            ))}
-          </Select>
-        </div>
+        {isAdmin && view === "workers" ? (
+          <RpcWorkersPanel />
+        ) : (
+          <>
+            <div className="flex items-center gap-6">
+              <Select
+                isRequired
+                className="max-w-xs"
+                label="Platform"
+                placeholder="Select a platform"
+                selectedKeys={[selectedPlatform]}
+                onChange={(e) =>
+                  setSelectedPlatform(e.target.value as Platform)
+                }
+                selectionMode="single"
+              >
+                {Object.values(Platform).map((platform) => (
+                  <SelectItem key={platform}>{platform}</SelectItem>
+                ))}
+              </Select>
 
-        <DataTable
-          columns={columns}
-          rows={rows}
-          classNames={{
-            tr: "font-mono cursor-pointer",
-            td: "py-3 ",
-            th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
-          }}
-        />
+              <Select
+                isRequired
+                className="max-w-xs"
+                label="Version"
+                placeholder="Select a version"
+                selectedKeys={[selectedVersion]}
+                onChange={(e) => setSelectedVersion(e.target.value as Version)}
+                selectionMode="single"
+              >
+                {availableVersions[selectedPlatform].map((version) => (
+                  <SelectItem key={version}>{version}</SelectItem>
+                ))}
+              </Select>
+            </div>
+
+            <DataTable
+              columns={columns}
+              rows={rows}
+              classNames={{
+                tr: "font-mono cursor-pointer",
+                td: "py-3 ",
+                th: "text-sm leading-tight tracking-widest font-normal text-neutral-4 00 uppercase",
+              }}
+            />
+          </>
+        )}
       </CardBody>
     </Card>
   );

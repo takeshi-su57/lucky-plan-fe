@@ -25,6 +25,21 @@ type Action {
   txHash: String
 }
 
+type AggressiveAdaptionProgress {
+  chainId: Int!
+  checkpointBlock: Float!
+  completedAheadRanges: Int!
+  completedBlocks: Float!
+  contractId: Int!
+  cursorBlock: Float!
+  endBlock: Float!
+  fromBlock: Float!
+  inFlightRanges: Int!
+  retryRanges: Int!
+  startedAt: Float!
+  totalBlocks: Float!
+}
+
 input AssetInput {
   address: String!
   amount: String!
@@ -231,6 +246,17 @@ input CreatePlanInput {
   scheduledEnd: Date!
   scheduledStart: Date!
   title: String!
+}
+
+input CreateRpcEndpointsInput {
+  chainIds: [Int!]!
+  label: String
+  maxBlockRange: Int
+  provider: RpcEndpointProvider!
+  tier: RpcEndpointTier! = Free
+  token: String
+  url: String
+  verify: Boolean! = true
 }
 
 input CreateSimulationResearchInput {
@@ -518,6 +544,8 @@ enum MissionStatus {
 }
 
 type Mutation {
+  """Adds chains to an existing token."""
+  addRpcTokenChains(chainIds: [Int!]!, tokenId: String!): Int!
   allowAuto(address: String!, allowAuto: Boolean!, budget: Float!, followerContractId: Int!, ratio: Float!): User!
   approveSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
   batchCreateBots(input: [CreateBotAndStrategyInput!]!): [BotBackwardDetails!]!
@@ -529,12 +557,16 @@ type Mutation {
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
   checkLog(id: String!): Log!
+  """Health-checks endpoints (eth_blockNumber). With no filter, checks all."""
+  checkRpcEndpoints(chainId: Int, ids: [Int!], tokenId: String): [RpcEndpointCheckResult!]!
   cleanDB: Boolean!
   cloneMission(id: Int!, manualParams: ManualParams): Boolean!
   closeMission(id: Int!, isForce: Boolean!): Boolean!
   closeTradeMarket(input: CloseTradeInput!): ContractExecutionResult!
   createBot(input: CreateBotInput!): BotBackwardDetails!
   createPlan(createPlanInput: CreatePlanInput!): Plan!
+  """Returns the number of endpoints created."""
+  createRpcEndpoints(input: CreateRpcEndpointsInput!): Int!
   createSLTP(input: SLTPRequestInput!): SLTPRequest!
   createSimulationResearch(input: CreateSimulationResearchInput!): SimulationResearch!
   createSimulationResearchFromSimulation(input: CreateSimulationResearchInput!, sourceSimulationId: Int!): SimulationResearch!
@@ -542,6 +574,9 @@ type Mutation {
   decreasePositionSize(input: DecreasePositionSizeInput!): ContractExecutionResult!
   deleteBot(id: Int!): BotBackwardDetails!
   deletePlan(id: Int!): Int!
+  deleteRpcEndpoint(id: Int!): Boolean!
+  """Deletes every endpoint of a token. Returns the count."""
+  deleteRpcToken(tokenId: String!): Int!
   deleteSLTP(id: Int!): SLTPRequest!
   deleteSimulation(id: Int!): Int!
   deleteSimulationResearch(id: Int!): Int!
@@ -561,6 +596,7 @@ type Mutation {
   makeSafeApp(password: String!): Boolean!
   openTradeMarket(input: OpenTradeInput!): ContractExecutionResult!
   pauseResearch(id: Int!): SimulationResearch!
+  pauseRpcEndpoint(id: Int!): Boolean!
   pauseSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
   pauseSystem: Boolean!
   playAutoResearch(id: Int!): SimulationResearch!
@@ -573,10 +609,23 @@ type Mutation {
   restartResearch(id: Int!): SimulationResearch!
   restoreSimulationWorkflowDefaults: SimulationWorkflowConfigView!
   resumeResearch(id: Int!): SimulationResearch!
+  resumeRpcEndpoint(id: Int!): Boolean!
   resumeSimulationEvaluatorWorker(workerId: String!): SimulationEvaluatorWorkerView!
   resumeSystem(password: String): Boolean!
   retrySimulationEvaluatorWorkerCache(cacheId: Int!): String!
   reviewLogWeek(weekStart: Date!): LogReviewWeek!
+  """
+  When true, backfills use only Paid-tier endpoints. Endpoint states are kept.
+  """
+  setRpcBackfillPaidOnly(enabled: Boolean!): Boolean!
+  setRpcRateGroupLimit(
+    key: String!
+    limit: Int!
+    """Requests per second; 0 removes the rate limit."""
+    ratePerSecond: Float
+  ): Boolean!
+  """Pauses or resumes every chain of a token. Returns the count."""
+  setRpcTokenState(state: RpcEndpointState!, tokenId: String!): Int!
   setSimulationEvaluatorWorkerCapacity(capacity: Float!, workerId: String!): String!
   startAdaption(contractId: Int!, shouldRestart: Boolean!): Boolean!
   startPlan(id: Int!): Boolean!
@@ -586,6 +635,11 @@ type Mutation {
   updateLeverage(input: UpdateLeverageInput!): ContractExecutionResult!
   updateMaxOpenMissions(maxCount: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
+  updateRpcEndpoint(input: UpdateRpcEndpointInput!): Boolean!
+  """
+  Sets max block range (0 = learn it) and/or parallel requests on every chain of a token.
+  """
+  updateRpcToken(concurrency: Int, maxBlockRange: Int, tokenId: String!): Int!
   updateSimulationResearch(input: UpdateSimulationResearchInput!): SimulationResearch!
   updateSimulationWorkflowConfig(input: UpdateSimulationWorkflowConfigInput!): SimulationWorkflowConfigView!
   updateSl(input: UpdateSlInput!): ContractExecutionResult!
@@ -804,6 +858,7 @@ type Query {
   isPnlSnapshotV2Initialized(dateStr: String!, platform: Platform!): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   logReviewWeeks: [LogReviewWeek!]!
+  rpcWorkerDashboard: RpcWorkerDashboard!
   simulation(id: Int!): Simulation
   simulationEvaluatorPipeline: SimulationEvaluatorPipelineView!
   simulationEvaluatorWorkerTaskConnection(archive: Boolean! = false, cursor: String, limit: Int! = 30, workerId: String!): SimulationEvaluatorWorkerTaskConnection!
@@ -816,6 +871,98 @@ type Query {
   simulationWorkflowConfig: SimulationWorkflowConfigView!
   simulationsByResearch(researchId: Int!): [Simulation!]!
   systemStatus: Boolean!
+}
+
+type RpcEndpointCheckResult {
+  chainId: Int!
+  endpointId: Int!
+  error: String
+  errorKind: String
+  latencyMs: Int
+  ok: Boolean!
+}
+
+enum RpcEndpointProvider {
+  ALCHEMY
+  CUSTOM
+  DRPC
+  PUBLIC
+}
+
+enum RpcEndpointState {
+  Active
+  Disabled
+  Paused
+}
+
+enum RpcEndpointTier {
+  Free
+  Paid
+}
+
+type RpcRateGroup {
+  cooldownUntil: Float
+  inFlight: Int!
+  key: String!
+  limit: Int!
+  rateLimitedCount: Int!
+  ratePerSecond: Float
+}
+
+type RpcWorker {
+  activeSlots: Int!
+  assignmentContractId: Int
+  assignmentFromBlock: Float
+  assignmentStartedAt: Float
+  assignmentToBlock: Float
+  avgLatencyMs: Int
+  blocksProcessed: Float!
+  chainId: Int!
+  concurrency: Int!
+  endpointId: Int
+  failureCount: Int!
+  key: String!
+  label: String
+  lastCheckError: String
+  lastCheckErrorKind: String
+  lastCheckLatencyMs: Int
+  lastCheckOk: Boolean
+  lastCheckedAt: Float
+  lastError: String
+  lastErrorAt: Float
+  lastErrorKind: String
+  lastSuccessAt: Float
+  maskedUrl: String!
+  maxBlockRange: Int
+  penaltyLevel: Int!
+  penaltyUntil: Float
+  provider: RpcEndpointProvider!
+  state: RpcEndpointState!
+  stateReason: String
+  status: RpcWorkerStatus!
+  successCount: Int!
+  tier: RpcEndpointTier!
+  tokenHint: String
+  tokenId: String
+}
+
+type RpcWorkerDashboard {
+  adaptions: [AggressiveAdaptionProgress!]!
+  analyticsOnline: Boolean!
+  generatedAt: Float!
+  paidOnly: Boolean!
+  rateGroups: [RpcRateGroup!]!
+  workers: [RpcWorker!]!
+}
+
+enum RpcWorkerStatus {
+  Available
+  Disabled
+  Idle
+  Paused
+  Penalized
+  Unknown
+  Working
 }
 
 type SLTPRequest {
@@ -1396,6 +1543,14 @@ input UpdatePlanInput {
   startedAt: Date
   status: PlanStatus!
   title: String
+}
+
+input UpdateRpcEndpointInput {
+  concurrency: Int
+  id: Int!
+  label: String
+  maxBlockRange: Int
+  tier: RpcEndpointTier
 }
 
 input UpdateSimulationResearchInput {
