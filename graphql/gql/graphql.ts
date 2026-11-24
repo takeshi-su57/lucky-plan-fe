@@ -603,6 +603,8 @@ export type Mutation = {
   changePassword: Scalars['Boolean']['output'];
   changeUserPermission: User;
   checkLog: Log;
+  /** Compares chain / GMX API with the live config. Read-only. */
+  checkPlatformConfigs: Array<PlatformConfigReport>;
   /** Health-checks endpoints (eth_blockNumber). With no filter, checks all. */
   checkRpcEndpoints: Array<RpcEndpointCheckResult>;
   cleanDB: Scalars['Boolean']['output'];
@@ -671,6 +673,8 @@ export type Mutation = {
   startSubService: Scalars['Boolean']['output'];
   stopBot: Scalars['Boolean']['output'];
   stopTask: Scalars['Boolean']['output'];
+  /** Applies missing pairs/markets to the runtime overlay (Metadata). Other services pick it up within 5 minutes. */
+  syncPlatformConfigs: Array<PlatformConfigReport>;
   updateLeverage: ContractExecutionResult;
   updateMaxOpenMissions: Scalars['Boolean']['output'];
   updatePlan: Plan;
@@ -758,6 +762,12 @@ export type MutationChangeUserPermissionArgs = {
 
 export type MutationCheckLogArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type MutationCheckPlatformConfigsArgs = {
+  chainId?: InputMaybe<Scalars['Int']['input']>;
+  platform: Platform;
 };
 
 
@@ -1082,6 +1092,12 @@ export type MutationStopTaskArgs = {
 };
 
 
+export type MutationSyncPlatformConfigsArgs = {
+  chainId?: InputMaybe<Scalars['Int']['input']>;
+  platform: Platform;
+};
+
+
 export type MutationUpdateLeverageArgs = {
   input: UpdateLeverageInput;
 };
@@ -1330,6 +1346,61 @@ export enum Platform {
   Gns = 'GNS'
 }
 
+export type PlatformConfigChain = {
+  __typename?: 'PlatformConfigChain';
+  chainId: Scalars['Int']['output'];
+  /** Primary items the parsers use now. */
+  effectiveCount: Scalars['Int']['output'];
+  /** Primary item kind: "pairs" or "markets". */
+  itemLabel: Scalars['String']['output'];
+  lastCheck?: Maybe<PlatformConfigReport>;
+  lastSync?: Maybe<PlatformConfigReport>;
+  network: Scalars['String']['output'];
+  platform: Platform;
+  secondaryEffectiveCount: Scalars['Int']['output'];
+  /** Secondary item kind: "collaterals" or "tokens". */
+  secondaryLabel: Scalars['String']['output'];
+  secondarySnapshotCount: Scalars['Int']['output'];
+  /** Primary items in the committed snapshot. */
+  snapshotCount: Scalars['Int']['output'];
+};
+
+export type PlatformConfigDashboard = {
+  __typename?: 'PlatformConfigDashboard';
+  chains: Array<PlatformConfigChain>;
+  generatedAt: Scalars['Float']['output'];
+};
+
+export type PlatformConfigItem = {
+  __typename?: 'PlatformConfigItem';
+  detail: Scalars['String']['output'];
+  /** Pair/collateral index or address. */
+  key: Scalars['String']['output'];
+  /** pair | collateral | market | token */
+  kind: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  /** True when the entry came from a runtime sync. */
+  synced: Scalars['Boolean']['output'];
+};
+
+export type PlatformConfigReport = {
+  __typename?: 'PlatformConfigReport';
+  applied: Array<Scalars['String']['output']>;
+  chainId: Scalars['Int']['output'];
+  changed: Array<Scalars['String']['output']>;
+  /** Pairs / markets known after the run. */
+  effectiveCount: Scalars['Int']['output'];
+  error?: Maybe<Scalars['String']['output']>;
+  finishedAt: Scalars['Float']['output'];
+  missing: Array<Scalars['String']['output']>;
+  /** "check" (read-only) or "sync" (applied). */
+  mode: Scalars['String']['output'];
+  network: Scalars['String']['output'];
+  platform: Platform;
+  /** Pairs / markets listed by the source. */
+  sourceCount: Scalars['Int']['output'];
+};
+
 export type PnlSnapshotV2 = {
   __typename?: 'PnlSnapshotV2';
   accUSDPnl: Scalars['Float']['output'];
@@ -1395,6 +1466,8 @@ export type Query = {
   isPnlSnapshotV2Initialized?: Maybe<PnlSnapshotV2InitializedFlag>;
   isSafeApp: Scalars['Boolean']['output'];
   logReviewWeeks: Array<LogReviewWeek>;
+  platformConfigDashboard: PlatformConfigDashboard;
+  platformConfigItems: Array<PlatformConfigItem>;
   rpcWorkerDashboard: RpcWorkerDashboard;
   simulation?: Maybe<Simulation>;
   simulationEvaluatorPipeline: SimulationEvaluatorPipelineView;
@@ -1508,6 +1581,12 @@ export type QueryGetSimulationPlanByIdArgs = {
 
 export type QueryIsPnlSnapshotV2InitializedArgs = {
   dateStr: Scalars['String']['input'];
+  platform: Platform;
+};
+
+
+export type QueryPlatformConfigItemsArgs = {
+  chainId: Scalars['Int']['input'];
   platform: Platform;
 };
 
@@ -3113,6 +3192,35 @@ export type PlanUpdatedSubscription = { __typename?: 'Subscription', planUpdated
     & { ' $fragmentRefs'?: { 'PlanInfoFragment': PlanInfoFragment } }
   ) };
 
+export type PlatformConfigDashboardQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type PlatformConfigDashboardQuery = { __typename?: 'Query', platformConfigDashboard: { __typename?: 'PlatformConfigDashboard', generatedAt: number, chains: Array<{ __typename?: 'PlatformConfigChain', platform: Platform, chainId: number, network: string, itemLabel: string, snapshotCount: number, effectiveCount: number, secondaryLabel: string, secondarySnapshotCount: number, secondaryEffectiveCount: number, lastCheck?: { __typename?: 'PlatformConfigReport', platform: Platform, chainId: number, network: string, mode: string, sourceCount: number, effectiveCount: number, missing: Array<string>, changed: Array<string>, applied: Array<string>, error?: string | null, finishedAt: number } | null, lastSync?: { __typename?: 'PlatformConfigReport', platform: Platform, chainId: number, network: string, mode: string, sourceCount: number, effectiveCount: number, missing: Array<string>, changed: Array<string>, applied: Array<string>, error?: string | null, finishedAt: number } | null }> } };
+
+export type PlatformConfigItemsQueryVariables = Exact<{
+  platform: Platform;
+  chainId: Scalars['Int']['input'];
+}>;
+
+
+export type PlatformConfigItemsQuery = { __typename?: 'Query', platformConfigItems: Array<{ __typename?: 'PlatformConfigItem', kind: string, key: string, name: string, detail: string, synced: boolean }> };
+
+export type CheckPlatformConfigsMutationVariables = Exact<{
+  platform: Platform;
+  chainId?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type CheckPlatformConfigsMutation = { __typename?: 'Mutation', checkPlatformConfigs: Array<{ __typename?: 'PlatformConfigReport', chainId: number, network: string, missing: Array<string>, changed: Array<string>, error?: string | null }> };
+
+export type SyncPlatformConfigsMutationVariables = Exact<{
+  platform: Platform;
+  chainId?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type SyncPlatformConfigsMutation = { __typename?: 'Mutation', syncPlatformConfigs: Array<{ __typename?: 'PlatformConfigReport', chainId: number, network: string, applied: Array<string>, error?: string | null }> };
+
 export type RpcWorkerDashboardQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -3896,6 +4004,10 @@ export const StartPlanDocument = {"kind":"Document","definitions":[{"kind":"Oper
 export const EndPlanDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"endPlan"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"endPlan"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<EndPlanMutation, EndPlanMutationVariables>;
 export const PlanCreatedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"planCreated"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"planCreated"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PlanInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PlanInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Plan"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledStart"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledEnd"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"endedAt"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}}]}}]} as unknown as DocumentNode<PlanCreatedSubscription, PlanCreatedSubscriptionVariables>;
 export const PlanUpdatedDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"planUpdated"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"planUpdated"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PlanInfo"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PlanInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Plan"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledStart"}},{"kind":"Field","name":{"kind":"Name","value":"scheduledEnd"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"endedAt"}},{"kind":"Field","name":{"kind":"Name","value":"userId"}}]}}]} as unknown as DocumentNode<PlanUpdatedSubscription, PlanUpdatedSubscriptionVariables>;
+export const PlatformConfigDashboardDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"platformConfigDashboard"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformConfigDashboard"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"generatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"chains"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"network"}},{"kind":"Field","name":{"kind":"Name","value":"itemLabel"}},{"kind":"Field","name":{"kind":"Name","value":"snapshotCount"}},{"kind":"Field","name":{"kind":"Name","value":"effectiveCount"}},{"kind":"Field","name":{"kind":"Name","value":"secondaryLabel"}},{"kind":"Field","name":{"kind":"Name","value":"secondarySnapshotCount"}},{"kind":"Field","name":{"kind":"Name","value":"secondaryEffectiveCount"}},{"kind":"Field","name":{"kind":"Name","value":"lastCheck"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"network"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}},{"kind":"Field","name":{"kind":"Name","value":"sourceCount"}},{"kind":"Field","name":{"kind":"Name","value":"effectiveCount"}},{"kind":"Field","name":{"kind":"Name","value":"missing"}},{"kind":"Field","name":{"kind":"Name","value":"changed"}},{"kind":"Field","name":{"kind":"Name","value":"applied"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"finishedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"lastSync"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platform"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"network"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}},{"kind":"Field","name":{"kind":"Name","value":"sourceCount"}},{"kind":"Field","name":{"kind":"Name","value":"effectiveCount"}},{"kind":"Field","name":{"kind":"Name","value":"missing"}},{"kind":"Field","name":{"kind":"Name","value":"changed"}},{"kind":"Field","name":{"kind":"Name","value":"applied"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"finishedAt"}}]}}]}}]}}]}}]} as unknown as DocumentNode<PlatformConfigDashboardQuery, PlatformConfigDashboardQueryVariables>;
+export const PlatformConfigItemsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"platformConfigItems"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"platform"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Platform"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"chainId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"platformConfigItems"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"platform"},"value":{"kind":"Variable","name":{"kind":"Name","value":"platform"}}},{"kind":"Argument","name":{"kind":"Name","value":"chainId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"chainId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"kind"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"detail"}},{"kind":"Field","name":{"kind":"Name","value":"synced"}}]}}]}}]} as unknown as DocumentNode<PlatformConfigItemsQuery, PlatformConfigItemsQueryVariables>;
+export const CheckPlatformConfigsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"checkPlatformConfigs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"platform"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Platform"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"chainId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"checkPlatformConfigs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"platform"},"value":{"kind":"Variable","name":{"kind":"Name","value":"platform"}}},{"kind":"Argument","name":{"kind":"Name","value":"chainId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"chainId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"network"}},{"kind":"Field","name":{"kind":"Name","value":"missing"}},{"kind":"Field","name":{"kind":"Name","value":"changed"}},{"kind":"Field","name":{"kind":"Name","value":"error"}}]}}]}}]} as unknown as DocumentNode<CheckPlatformConfigsMutation, CheckPlatformConfigsMutationVariables>;
+export const SyncPlatformConfigsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"syncPlatformConfigs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"platform"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Platform"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"chainId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"syncPlatformConfigs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"platform"},"value":{"kind":"Variable","name":{"kind":"Name","value":"platform"}}},{"kind":"Argument","name":{"kind":"Name","value":"chainId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"chainId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"network"}},{"kind":"Field","name":{"kind":"Name","value":"applied"}},{"kind":"Field","name":{"kind":"Name","value":"error"}}]}}]}}]} as unknown as DocumentNode<SyncPlatformConfigsMutation, SyncPlatformConfigsMutationVariables>;
 export const RpcWorkerDashboardDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"rpcWorkerDashboard"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rpcWorkerDashboard"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"analyticsOnline"}},{"kind":"Field","name":{"kind":"Name","value":"paidOnly"}},{"kind":"Field","name":{"kind":"Name","value":"generatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"rateGroups"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"inFlight"}},{"kind":"Field","name":{"kind":"Name","value":"limit"}},{"kind":"Field","name":{"kind":"Name","value":"ratePerSecond"}},{"kind":"Field","name":{"kind":"Name","value":"cooldownUntil"}},{"kind":"Field","name":{"kind":"Name","value":"rateLimitedCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"adaptions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"contractId"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"fromBlock"}},{"kind":"Field","name":{"kind":"Name","value":"endBlock"}},{"kind":"Field","name":{"kind":"Name","value":"checkpointBlock"}},{"kind":"Field","name":{"kind":"Name","value":"cursorBlock"}},{"kind":"Field","name":{"kind":"Name","value":"retryRanges"}},{"kind":"Field","name":{"kind":"Name","value":"inFlightRanges"}},{"kind":"Field","name":{"kind":"Name","value":"completedAheadRanges"}},{"kind":"Field","name":{"kind":"Name","value":"completedBlocks"}},{"kind":"Field","name":{"kind":"Name","value":"totalBlocks"}}]}},{"kind":"Field","name":{"kind":"Name","value":"workers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"endpointId"}},{"kind":"Field","name":{"kind":"Name","value":"chainId"}},{"kind":"Field","name":{"kind":"Name","value":"provider"}},{"kind":"Field","name":{"kind":"Name","value":"tier"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"maskedUrl"}},{"kind":"Field","name":{"kind":"Name","value":"state"}},{"kind":"Field","name":{"kind":"Name","value":"stateReason"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"maxBlockRange"}},{"kind":"Field","name":{"kind":"Name","value":"concurrency"}},{"kind":"Field","name":{"kind":"Name","value":"activeSlots"}},{"kind":"Field","name":{"kind":"Name","value":"penaltyLevel"}},{"kind":"Field","name":{"kind":"Name","value":"penaltyUntil"}},{"kind":"Field","name":{"kind":"Name","value":"successCount"}},{"kind":"Field","name":{"kind":"Name","value":"failureCount"}},{"kind":"Field","name":{"kind":"Name","value":"blocksProcessed"}},{"kind":"Field","name":{"kind":"Name","value":"avgLatencyMs"}},{"kind":"Field","name":{"kind":"Name","value":"lastErrorKind"}},{"kind":"Field","name":{"kind":"Name","value":"lastError"}},{"kind":"Field","name":{"kind":"Name","value":"lastErrorAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastSuccessAt"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentContractId"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentFromBlock"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentToBlock"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentStartedAt"}},{"kind":"Field","name":{"kind":"Name","value":"tokenId"}},{"kind":"Field","name":{"kind":"Name","value":"tokenHint"}},{"kind":"Field","name":{"kind":"Name","value":"lastCheckedAt"}},{"kind":"Field","name":{"kind":"Name","value":"lastCheckOk"}},{"kind":"Field","name":{"kind":"Name","value":"lastCheckLatencyMs"}},{"kind":"Field","name":{"kind":"Name","value":"lastCheckErrorKind"}},{"kind":"Field","name":{"kind":"Name","value":"lastCheckError"}}]}}]}}]}}]} as unknown as DocumentNode<RpcWorkerDashboardQuery, RpcWorkerDashboardQueryVariables>;
 export const PauseRpcEndpointDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"pauseRpcEndpoint"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pauseRpcEndpoint"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<PauseRpcEndpointMutation, PauseRpcEndpointMutationVariables>;
 export const ResumeRpcEndpointDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"resumeRpcEndpoint"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"resumeRpcEndpoint"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<ResumeRpcEndpointMutation, ResumeRpcEndpointMutationVariables>;
