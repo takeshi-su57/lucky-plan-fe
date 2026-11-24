@@ -557,6 +557,8 @@ type Mutation {
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   changeUserPermission(address: String!, permission: String!): User!
   checkLog(id: String!): Log!
+  """Compares chain / GMX API with the live config. Read-only."""
+  checkPlatformConfigs(chainId: Int, platform: Platform!): [PlatformConfigReport!]!
   """Health-checks endpoints (eth_blockNumber). With no filter, checks all."""
   checkRpcEndpoints(chainId: Int, ids: [Int!], tokenId: String): [RpcEndpointCheckResult!]!
   cleanDB: Boolean!
@@ -632,6 +634,10 @@ type Mutation {
   startSubService(service: String!): Boolean!
   stopBot(id: Int!): Boolean!
   stopTask(id: Int!): Boolean!
+  """
+  Applies missing pairs/markets to the runtime overlay (Metadata). Other services pick it up within 5 minutes.
+  """
+  syncPlatformConfigs(chainId: Int, platform: Platform!): [PlatformConfigReport!]!
   updateLeverage(input: UpdateLeverageInput!): ContractExecutionResult!
   updateMaxOpenMissions(maxCount: Int!): Boolean!
   updatePlan(updatePlanInput: UpdatePlanInput!): Plan!
@@ -798,6 +804,57 @@ enum Platform {
   GNS
 }
 
+type PlatformConfigChain {
+  chainId: Int!
+  """Primary items the parsers use now."""
+  effectiveCount: Int!
+  """Primary item kind: "pairs" or "markets"."""
+  itemLabel: String!
+  lastCheck: PlatformConfigReport
+  lastSync: PlatformConfigReport
+  network: String!
+  platform: Platform!
+  secondaryEffectiveCount: Int!
+  """Secondary item kind: "collaterals" or "tokens"."""
+  secondaryLabel: String!
+  secondarySnapshotCount: Int!
+  """Primary items in the committed snapshot."""
+  snapshotCount: Int!
+}
+
+type PlatformConfigDashboard {
+  chains: [PlatformConfigChain!]!
+  generatedAt: Float!
+}
+
+type PlatformConfigItem {
+  detail: String!
+  """Pair/collateral index or address."""
+  key: String!
+  """pair | collateral | market | token"""
+  kind: String!
+  name: String!
+  """True when the entry came from a runtime sync."""
+  synced: Boolean!
+}
+
+type PlatformConfigReport {
+  applied: [String!]!
+  chainId: Int!
+  changed: [String!]!
+  """Pairs / markets known after the run."""
+  effectiveCount: Int!
+  error: String
+  finishedAt: Float!
+  missing: [String!]!
+  """"check" (read-only) or "sync" (applied)."""
+  mode: String!
+  network: String!
+  platform: Platform!
+  """Pairs / markets listed by the source."""
+  sourceCount: Int!
+}
+
 type PnlSnapshotV2 {
   accUSDPnl: Float!
   address: String!
@@ -858,6 +915,8 @@ type Query {
   isPnlSnapshotV2Initialized(dateStr: String!, platform: Platform!): PnlSnapshotV2InitializedFlag
   isSafeApp: Boolean!
   logReviewWeeks: [LogReviewWeek!]!
+  platformConfigDashboard: PlatformConfigDashboard!
+  platformConfigItems(chainId: Int!, platform: Platform!): [PlatformConfigItem!]!
   rpcWorkerDashboard: RpcWorkerDashboard!
   simulation(id: Int!): Simulation
   simulationEvaluatorPipeline: SimulationEvaluatorPipelineView!

@@ -34,6 +34,7 @@ import { ServiceStatus } from "@/types";
 import { ContractAdaptionButton } from "./ContractAdaptionButton";
 import { ContractLiveButton } from "./ContractLiveButton";
 import { RpcWorkersPanel } from "./RpcWorkersPanel";
+import { PlatformConfigsPanel } from "./PlatformConfigsPanel";
 
 const columns: TableColumnProps[] = [
   {
@@ -89,7 +90,9 @@ export function ContractPanel() {
     Platform.Gns,
   );
   const [selectedVersion, setSelectedVersion] = useState<Version>(Version.V9);
-  const [view, setView] = useState<"contracts" | "workers">("contracts");
+  const [view, setView] = useState<"contracts" | "workers" | "configs">(
+    "contracts",
+  );
 
   const handleDisableContract = useCallback(
     (contract: Contract) => () => {
@@ -206,16 +209,19 @@ export function ContractPanel() {
             aria-label="contract-panel-tabs"
             selectedKey={view}
             onSelectionChange={(key) =>
-              key && setView(key as "contracts" | "workers")
+              key && setView(key as "contracts" | "workers" | "configs")
             }
           >
             <Tab key="contracts" title="Contracts" />
             <Tab key="workers" title="RPC Workers" />
+            <Tab key="configs" title="Pair Configs" />
           </Tabs>
         ) : null}
 
         {isAdmin && view === "workers" ? (
           <RpcWorkersPanel />
+        ) : isAdmin && view === "configs" ? (
+          <PlatformConfigsPanel />
         ) : (
           <>
             <div className="flex items-center gap-6">
